@@ -1,14 +1,14 @@
 {
-  "name": "obsidian-sample-plugin",
-  "version": "0.9.7",
-  "description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+  "name": "kanban",
+  "version": "0.0.1",
+  "description": "Kanban view for your TODOs",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
     "build": "rollup --config rollup.config.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "roovo",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^15.1.0",
