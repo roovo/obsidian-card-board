@@ -1,4 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { todo } from './src/todo';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -12,7 +13,7 @@ export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
 
 	async onload() {
-		console.log('loading kanban plugin');
+		console.log('loading plugin');
 
 		await this.loadSettings();
 
@@ -54,7 +55,7 @@ export default class MyPlugin extends Plugin {
 	}
 
 	onunload() {
-		console.log('unloading kanban plugin');
+		console.log('unloading plugin');
 	}
 
 	async loadSettings() {
