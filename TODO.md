@@ -1,0 +1,3 @@
+- scan todos in all files
+- filter into 2 groups: incomplete and done
+- display on simple 2 colum board: todo & done
