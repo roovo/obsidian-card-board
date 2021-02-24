@@ -10,17 +10,15 @@ type $Todo = Todo & {
   isComplete: boolean
 };
 
-function buildTodo(matchArray: RegExpMatchArray): Todo {
+function buildTodo([ , mark, title]: [string , string, string]): Todo {
   const todoFields = {
-    title: matchArray[2],
-    isComplete: matchArray[1] === 'x'
+    title: title,
+    isComplete: mark === 'x'
   };
 
   return (todoFields as $Todo) as Todo;
 }
 
 export function parse(markdown: string): Todo[] {
-  const matchArrays = [...markdown.matchAll(matcher)];
-
-  return matchArrays.map(buildTodo);
+  return [...markdown.matchAll(matcher)].map(buildTodo);
 }
