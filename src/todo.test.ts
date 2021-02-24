@@ -33,3 +33,10 @@ test('parses multiple uncompleted markdown TODOs', async () => {
     {title: "thing three", isComplete: false},
   ]);
 });
+
+test('parses string with no valid todos', async () => {
+  const markdown = "nothing to do here";
+  const todo = obsidianTodo.parse(markdown);
+
+  expect(todo).toEqual([ ]);
+});
