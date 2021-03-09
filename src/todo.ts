@@ -20,5 +20,6 @@ function buildTodo([ , mark, title]: [string , string, string]): Todo {
 }
 
 export function parse(markdown: string): Todo[] {
-  return [...markdown.matchAll(matcher)].map(buildTodo);
+  // return [...markdown.matchAll(matcher)].map(buildTodo);
+  return [];
 }

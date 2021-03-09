@@ -4,15 +4,16 @@
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "inlineSources": true,
+    "allowSyntheticDefaultImports": true,
     "module": "ESNext",
-    "target": "es6",
+    "target": "es5",
     "allowJs": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "lib": [
       "dom",
-      "es5",
+      "es6",
       "scripthost",
       "es2020"
     ]

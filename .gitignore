@@ -1,4 +1,5 @@
 .tool-versions
+*.LICENSE.txt
 main.js
 node_modules/
 package-lock.json
