@@ -1,4 +1,5 @@
 import {ItemView, WorkspaceLeaf} from 'obsidian';
+import { Elm } from '../src/Main';
 import KanbanPlugin from './main';
 
 export class KanbanView extends ItemView {
@@ -10,7 +11,13 @@ export class KanbanView extends ItemView {
   }
 
   async onOpen() {
-    // set up the view
+    const elmDiv = document.createElement('div');
+    elmDiv.id = "elm-node";
+    this.containerEl.children[1].appendChild(elmDiv);  // let app = Elm.Main.init({ flags: null });
+    Elm.Main.init({
+        // node: document.getElementById("elm-node")
+        node: elmDiv
+    })
   }
 
   getDisplayText(): string {

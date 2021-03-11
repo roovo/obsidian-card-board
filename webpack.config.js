@@ -12,13 +12,24 @@ module.exports = {
       {
         test: /\.ts$/,
         use: 'ts-loader',
-      }
+      },
+      {
+        test: [/\.elm$/],
+        exclude: [/elm-stuff/, /node_modules/],
+          use: [
+            { loader: "elm-hot-webpack-loader" },
+            {
+              loader: "elm-webpack-loader",
+              options: {}
+            }
+          ]
+      },
     ]
   },
   externals: {
     obsidian: 'obsidian'
   },
   resolve: {
-    extensions: ['.js', '.ts']
+    extensions: ['.js', '.ts', '.elm']
   }
 };
