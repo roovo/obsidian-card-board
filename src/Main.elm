@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
+import Ports exposing (DataForElm)
 
 
 main : Program String Model Msg
@@ -9,7 +10,7 @@ main =
     Browser.element
         { init = init
         , update = update
-        , subscriptions = \s -> Sub.none
+        , subscriptions = subscriptions
         , view = view
         }
 
@@ -34,12 +35,29 @@ init displayText =
 
 
 type Msg
-    = NoOp
+    = DataFromTypeScript DataForElm
+    | LogError String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case ( msg, model ) of
+        ( DataFromTypeScript dataForElm, _ ) ->
+            case dataForElm of
+                Ports.MarkdownToParse markdownFile ->
+                    ( markdownFile.fileContents, Cmd.none )
+
+        ( LogError error, _ ) ->
+            ( model, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Ports.receiveDataFromTypescript DataFromTypeScript LogError
 
 
 

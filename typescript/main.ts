@@ -19,7 +19,7 @@ export default class KanbanPlugin extends Plugin {
 
     this.addRibbonIcon('dice', 'Kanban Plugin', async () => {
       const leaf = this.app.workspace.getLeaf(!(this.app.workspace.activeLeaf.view.getViewType() == 'empty'));
-      const view = new KanbanView(this, leaf);
+      const view = new KanbanView(this.app.vault, leaf);
       await leaf.open(view);
     });
   }

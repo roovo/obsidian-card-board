@@ -1,23 +1,36 @@
-import {ItemView, WorkspaceLeaf} from 'obsidian';
+import {ItemView, Vault, WorkspaceLeaf} from 'obsidian';
 import { Elm } from '../src/Main';
 import KanbanPlugin from './main';
 
 export class KanbanView extends ItemView {
-  plugin: KanbanPlugin;
+  private vault: Vault;
 
-  constructor(plugin: KanbanPlugin, leaf: WorkspaceLeaf) {
+  constructor(vault: Vault, leaf: WorkspaceLeaf) {
     super(leaf);
-    this.plugin = plugin;
+    this.vault = vault;
   }
 
   async onOpen() {
     const elmDiv = document.createElement('div');
     elmDiv.id = "elm-node";
-    this.containerEl.children[1].appendChild(elmDiv);  // let app = Elm.Main.init({ flags: null });
-    Elm.Main.init({
+    this.containerEl.children[1].appendChild(elmDiv);
+
+    const app = Elm.Main.init({
       node: elmDiv,
       flags: "Hello from flags"
     })
+
+    const markdownFiles = this.vault.getMarkdownFiles();
+    for (const file of markdownFiles) {
+      const fileContents = await this.vault.cachedRead(file);
+      app.ports.dataForElm.send({
+        tag: "MarkdownToParse",
+        data: {
+          filePath: file.path,
+          fileContents: fileContents
+        }
+      });
+    }
   }
 
   getDisplayText(): string {

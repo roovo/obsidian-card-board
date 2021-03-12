@@ -6,7 +6,9 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
-        
+        dataForElm: {
+          send(data: { tag: string; data: { filePath: string; fileContents: string } }): void
+        }
       };
     }
     export function init(options: {
