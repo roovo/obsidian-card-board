@@ -15,8 +15,8 @@ export class KanbanView extends ItemView {
     elmDiv.id = "elm-node";
     this.containerEl.children[1].appendChild(elmDiv);  // let app = Elm.Main.init({ flags: null });
     Elm.Main.init({
-        // node: document.getElementById("elm-node")
-        node: elmDiv
+      node: elmDiv,
+      flags: "Hello from flags"
     })
   }
 
