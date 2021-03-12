@@ -4,8 +4,8 @@
   "description": "Kanban view for your TODOs",
   "main": "main.js",
   "scripts": {
-    "dev": "webpack --mode=development --watch --progress --color",
-    "build": "webpack --progress --color",
+    "dev": "elm-typescript-interop && webpack --mode=development --watch --progress --color",
+    "build": "elm-typescript-interop && webpack --progress --color",
     "test": "jest"
   },
   "keywords": [],
@@ -17,6 +17,7 @@
     "@types/webpack": "^4.41.26",
     "elm": "^0.19.1-5",
     "elm-hot-webpack-loader": "^1.1.8",
+    "elm-typescript-interop": "0.0.17",
     "elm-webpack-loader": "^7.0.1",
     "jest": "^26.6.3",
     "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
