@@ -1,4 +1,3 @@
-- elm format
 - elm typescript interop
 - elm debugger
 - pass pages into elm for parsing for todo
@@ -11,3 +10,4 @@
 
 # Done
 - put an elm application in the Kanban window
+- elm format
