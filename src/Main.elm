@@ -93,6 +93,12 @@ view model =
             Html.div [ class "board" ]
                 [ Html.div [ class "column" ]
                     (taskItems
+                        |> List.filter (\t -> not <| TaskItem.isCompleted t)
+                        |> List.map card
+                    )
+                , Html.div [ class "column" ]
+                    (taskItems
+                        |> List.filter TaskItem.isCompleted
                         |> List.map card
                     )
                 ]
