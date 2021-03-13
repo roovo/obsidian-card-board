@@ -28,4 +28,18 @@ suite =
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "parses non contiguous TaskList items" <|
+            \() ->
+                """- [ ] foo
+
+
+                - [x] bar
+
+                - [X] baz
+
+                """
+                    |> Advanced.run TaskItems.parser
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.title t)
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         ]
