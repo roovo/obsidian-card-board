@@ -50,6 +50,7 @@ update msg model =
                 Ports.MarkdownToParse markdownFile ->
                     ( Parser.run TaskItems.parser markdownFile.fileContents
                         |> Result.withDefault []
+                        |> List.append model
                     , Cmd.none
                     )
 
