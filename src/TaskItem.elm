@@ -51,18 +51,36 @@ parser =
         |= prefixParser
         |. chompWhile isSpaceOrTab
         |= nonEmptyStringParser
-        |. spaces
+        |. lineEndOrEnd
+
+
+lineEndOrEnd : Parser ()
+lineEndOrEnd =
+    oneOf
+        [ lineEnd
+        , end
+        ]
+
+
+lineEnd : Parser ()
+lineEnd =
+    chompWhile (\c -> c == '\n' || c == carriageReturn)
+
+
+carriageReturn : Char
+carriageReturn =
+    Char.fromCode 13
 
 
 prefixParser : Parser Completion
 prefixParser =
     oneOf
         [ succeed Incomplete
-            |. symbol "- [ ] "
+            |. token "- [ ] "
         , succeed Completed
-            |. symbol "- [x] "
+            |. token "- [x] "
         , succeed Completed
-            |. symbol "- [X] "
+            |. token "- [X] "
         ]
 
 
@@ -94,9 +112,11 @@ isLineEnd : Char -> Bool
 isLineEnd char =
     case Char.toCode char of
         10 ->
+            -- new line
             True
 
         13 ->
+            -- carriage return
             True
 
         _ ->

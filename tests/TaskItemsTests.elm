@@ -21,9 +21,9 @@ suite =
         , test "parses a contiguous block of TaskList items" <|
             \() ->
                 """- [ ] foo
-                - [x] bar
-                - [X] baz
-                """
+- [x] bar
+- [X] baz
+"""
                     |> Advanced.run TaskItems.parser
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
@@ -33,11 +33,26 @@ suite =
                 """- [ ] foo
 
 
-                - [x] bar
+- [x] bar
 
-                - [X] baz
+- [X] baz
 
-                """
+"""
+                    |> Advanced.run TaskItems.parser
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.title t)
+                    |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "parses TaskList items with non-tasks interspersed" <|
+            \() ->
+                """- [ ] foo
+
+not a task
+
+- [x] bar
+
+- [X] baz
+
+"""
                     |> Advanced.run TaskItems.parser
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)

@@ -1,3 +1,4 @@
+- factor out common parser helpers
 - build todos from markdown content
 - make it switch to the kanban window when shown
 - filter into 2 groups: incomplete and done
