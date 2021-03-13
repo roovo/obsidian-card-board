@@ -2,7 +2,10 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
+import Parser
 import Ports exposing (DataForElm)
+import TaskItem exposing (TaskItem)
+import TaskItems
 
 
 main : Program String Model Msg
@@ -20,12 +23,12 @@ main =
 
 
 type alias Model =
-    String
+    List TaskItem
 
 
 init : String -> ( Model, Cmd Msg )
 init displayText =
-    ( displayText
+    ( []
     , Cmd.none
     )
 
@@ -45,7 +48,10 @@ update msg model =
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
-                    ( markdownFile.fileContents, Cmd.none )
+                    ( Parser.run TaskItems.parser markdownFile.fileContents
+                        |> Result.withDefault []
+                    , Cmd.none
+                    )
 
         ( LogError error, _ ) ->
             ( model, Cmd.none )
@@ -66,4 +72,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    Html.text model
+    model
+        |> List.map TaskItem.title
+        |> String.join ", "
+        |> Html.text
