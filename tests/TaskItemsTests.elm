@@ -57,4 +57,20 @@ not a task
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "ignores indented tasks" <|
+            \() ->
+                """- [ ] foo
+
+not a task
+
+- [x] bar
+
+- [X] baz
+  - [ ] a subtask
+
+"""
+                    |> Advanced.run TaskItems.parser
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.title t)
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         ]
