@@ -3,6 +3,7 @@
 - filter into 2 groups: incomplete and done
 - display on simple 2 colum board: todo & done
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
+- in TaskItem, how can I check for a carridge return as elm-format converts \r to \u{xxx} which webpack won't load.
 
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
