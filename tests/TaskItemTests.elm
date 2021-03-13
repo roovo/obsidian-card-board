@@ -1,4 +1,4 @@
-module TodoTests exposing (suite)
+module TaskItemTests exposing (suite)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
