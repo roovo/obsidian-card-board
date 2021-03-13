@@ -14,15 +14,15 @@ taskItemsHelp revTaskItems =
     oneOf
         [ TaskItem.parser
             |> map (\taskItem -> Loop (taskItem :: revTaskItems))
-        , line
+        , anyLineParser
             |> map (\_ -> Loop revTaskItems)
         , succeed ()
             |> map (\_ -> Done (List.reverse revTaskItems))
         ]
 
 
-line : Parser ()
-line =
+anyLineParser : Parser ()
+anyLineParser =
     succeed ()
         |. nonEmptyStringParser
         |. lineEnd
@@ -36,7 +36,9 @@ nonEmptyStringParser =
 
 chompToEndOfLine : Parser ()
 chompToEndOfLine =
-    chompWhile (not << isLineEnd)
+    succeed ()
+        |. chompWhile (not << isLineEnd)
+        |. chompIf isLineEnd
 
 
 checkIfEmpty : String -> Parser String

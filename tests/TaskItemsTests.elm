@@ -73,4 +73,15 @@ not a task
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "parses tasks when the first line of the file is blank" <|
+            \() ->
+                """
+- [ ] foo
+- [x] bar
+- [X] baz
+"""
+                    |> Advanced.run TaskItems.parser
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.title t)
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         ]
