@@ -1,10 +1,12 @@
 module Main exposing (main)
 
 import Browser
+import Date exposing (Date)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Parser
 import Ports exposing (DataForElm)
+import Task exposing (Task)
 import TaskItem exposing (TaskItem)
 import TaskItems
 
@@ -26,6 +28,7 @@ main =
 type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
+    , today : Maybe Date
     , taskList : State (List TaskItem)
     }
 
@@ -49,9 +52,10 @@ init flags =
     in
     ( { dailyNotesFolder = flags.folder
       , dailyNotesFormat = flags.format
+      , today = Nothing
       , taskList = Loading
       }
-    , Cmd.none
+    , Date.today |> Task.perform ReceiveDate
     )
 
 
@@ -62,6 +66,7 @@ init flags =
 type Msg
     = DataFromTypeScript DataForElm
     | LogError String
+    | ReceiveDate Date
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,6 +75,10 @@ update msg model =
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
+                    let
+                        foo =
+                            Debug.log "fileDate" markdownFile.fileDate
+                    in
                     ( Parser.run (TaskItems.parser markdownFile.fileDate) markdownFile.fileContents
                         |> Result.withDefault []
                         |> addToModel model
@@ -78,6 +87,11 @@ update msg model =
 
         ( LogError error, _ ) ->
             ( model, Cmd.none )
+
+        ( ReceiveDate today, _ ) ->
+            ( { model | today = Just today }
+            , Cmd.none
+            )
 
 
 addToModel : Model -> List TaskItem -> Model
@@ -105,30 +119,30 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    case model.taskList of
-        Loading ->
-            Html.text ""
-
-        Loaded taskItems ->
+    case ( model.taskList, model.today ) of
+        ( Loaded taskItems, Just today ) ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
-                        (taskItems
-                            |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
-                        )
+                        (TaskItems.undated taskItems)
                     , column
-                        "Dated"
-                        (taskItems
-                            |> List.filter (\t -> (not <| TaskItem.isCompleted t) && TaskItem.isDated t)
-                        )
+                        "Today"
+                        (TaskItems.forToday today taskItems)
+                    , column
+                        "Tomorrow"
+                        (TaskItems.forTomorrow today taskItems)
+                    , column
+                        "Future"
+                        (TaskItems.forFuture today taskItems)
                     , column
                         "Done"
-                        (taskItems
-                            |> List.filter (\t -> TaskItem.isCompleted t)
-                        )
+                        (TaskItems.completed taskItems)
                     ]
                 ]
+
+        ( _, _ ) ->
+            Html.text ""
 
 
 column : String -> List TaskItem -> Html Msg

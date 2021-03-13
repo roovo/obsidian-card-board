@@ -1,6 +1,8 @@
 module TaskItem exposing
     ( Completion(..)
+    , Dated(..)
     , TaskItem
+    , due
     , isCompleted
     , isDated
     , parser
@@ -50,14 +52,21 @@ isCompleted (TaskItem c _ _) =
             True
 
 
-isDated : TaskItem -> Bool
-isDated (TaskItem _ d _) =
+due : TaskItem -> Maybe Date
+due (TaskItem _ d _) =
     case d of
         Undated ->
-            False
+            Nothing
 
-        Due _ ->
-            True
+        Due date ->
+            Just date
+
+
+isDated : TaskItem -> Bool
+isDated taskItem =
+    taskItem
+        |> due
+        |> ME.isJust
 
 
 

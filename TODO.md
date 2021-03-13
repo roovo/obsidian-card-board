@@ -1,6 +1,13 @@
+- Add some tests to work out why cards are not appearing in tomorrow and future?
+- Update board as files are updated in the app
+- click on card to jump to location in file
+- edit in place via popup
+- show a trash icon on a card and click it to delete (with confirmation)
+- drag and drop -> into today, tomorrow, and done columns
+- specify directories/files to ignore (allow and deny lists?)
+- light/dark/user installed themes
 - make it switch to the kanban window when shown
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
-- click on card to jump to location in file
 
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
