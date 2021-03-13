@@ -51,6 +51,7 @@ parser =
         |= prefixParser
         |. chompWhile isSpaceOrTab
         |= nonEmptyStringParser
+        |. spaces
 
 
 prefixParser : Parser Completion
@@ -91,12 +92,13 @@ chompToEndOfLine =
 
 isLineEnd : Char -> Bool
 isLineEnd char =
-    case char of
-        '\n' ->
+    case Char.toCode char of
+        10 ->
             True
 
-        -- '\u{000D}' ->
-        --     True
+        13 ->
+            True
+
         _ ->
             False
 
