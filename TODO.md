@@ -1,7 +1,4 @@
-- build todos from markdown content
 - make it switch to the kanban window when shown
-- filter into 2 groups: incomplete and done
-- display on simple 2 colum board: todo & done
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 
 - put the target in dist
@@ -12,6 +9,9 @@
 
 
 # Done
+- filter into 2 groups: incomplete and done
+- display on simple 2 colum board: todo & done
+- build todos from markdown content
 - factor out common parser helpers
 - pass pages into elm for parsing for todo
 - elm typescript interop

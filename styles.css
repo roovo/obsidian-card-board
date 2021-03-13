@@ -1,4 +1,47 @@
-.board {
+.card-board {
   display: flex;
-  flex-flow: row nowrap;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.card-board-container {
+  display: flex;
+  flex-direction: row;
+  padding: 10px 0 10px 10px;
+}
+
+.card-board-column {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+  min-width: 300px;
+  max-width: 300px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  background-color: #eee;
+}
+
+.card-board-column-header {
+  padding: 10px;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.card-board-column-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 10px 10px 0;
+  list-style: none;
+}
+
+.card-baord-card {
+  padding: 20px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  margin-bottom: 10px;
+  cursor: pointer;
 }

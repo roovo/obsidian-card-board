@@ -90,21 +90,35 @@ view model =
             Html.text ""
 
         Loaded taskItems ->
-            Html.div [ class "board" ]
-                [ Html.div [ class "column" ]
-                    (taskItems
-                        |> List.filter (\t -> not <| TaskItem.isCompleted t)
-                        |> List.map card
-                    )
-                , Html.div [ class "column" ]
-                    (taskItems
-                        |> List.filter TaskItem.isCompleted
-                        |> List.map card
-                    )
+            Html.div [ class "card-board" ]
+                [ Html.div [ class "card-board-container" ]
+                    [ column
+                        "To Do"
+                        (taskItems
+                            |> List.filter (\t -> not <| TaskItem.isCompleted t)
+                        )
+                    , column
+                        "Done"
+                        (taskItems
+                            |> List.filter (\t -> TaskItem.isCompleted t)
+                        )
+                    ]
                 ]
+
+
+column : String -> List TaskItem -> Html Msg
+column title taskItems =
+    Html.div [ class "card-board-column" ]
+        [ Html.div [ class "card-board-column-header" ]
+            [ Html.text title ]
+        , Html.ul [ class "card-board-column-list" ]
+            (taskItems
+                |> List.map card
+            )
+        ]
 
 
 card : TaskItem -> Html Msg
 card taskItem =
-    Html.div [ class "card" ]
+    Html.li [ class "card-baord-card" ]
         [ Html.text <| TaskItem.title taskItem ]
