@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
+import Html.Attributes exposing (class)
 import Parser
 import Ports exposing (DataForElm)
 import TaskItem exposing (TaskItem)
@@ -22,13 +23,14 @@ main =
 -- MODEL
 
 
-type alias Model =
-    List TaskItem
+type Model
+    = Loading
+    | Loaded (List TaskItem)
 
 
 init : String -> ( Model, Cmd Msg )
 init displayText =
-    ( []
+    ( Loading
     , Cmd.none
     )
 
@@ -50,12 +52,22 @@ update msg model =
                 Ports.MarkdownToParse markdownFile ->
                     ( Parser.run TaskItems.parser markdownFile.fileContents
                         |> Result.withDefault []
-                        |> List.append model
+                        |> addToModel model
                     , Cmd.none
                     )
 
         ( LogError error, _ ) ->
             ( model, Cmd.none )
+
+
+addToModel : Model -> List TaskItem -> Model
+addToModel model taskItems =
+    case model of
+        Loading ->
+            Loaded taskItems
+
+        Loaded currentItems ->
+            Loaded (currentItems ++ taskItems)
 
 
 
@@ -73,7 +85,20 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    model
-        |> List.map TaskItem.title
-        |> String.join ", "
-        |> Html.text
+    case model of
+        Loading ->
+            Html.text ""
+
+        Loaded taskItems ->
+            Html.div [ class "board" ]
+                [ Html.div [ class "column" ]
+                    (taskItems
+                        |> List.map card
+                    )
+                ]
+
+
+card : TaskItem -> Html Msg
+card taskItem =
+    Html.div [ class "card" ]
+        [ Html.text <| TaskItem.title taskItem ]
