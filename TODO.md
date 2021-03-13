@@ -1,5 +1,6 @@
 - make it switch to the kanban window when shown
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
+- click on card to jump to location in file
 
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too

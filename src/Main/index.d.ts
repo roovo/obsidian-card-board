@@ -7,13 +7,13 @@ export namespace Elm {
     export interface App {
       ports: {
         dataForElm: {
-          send(data: { tag: string; data: { filePath: string; fileContents: string } }): void
+          send(data: { tag: string; data: { fileDate: string | null; fileContents: string } }): void
         }
       };
     }
     export function init(options: {
       node?: HTMLElement | null;
-      flags: string;
+      flags: { folder: string; format: string };
     }): Elm.Main.App;
   }
 }

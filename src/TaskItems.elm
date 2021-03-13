@@ -5,15 +5,15 @@ import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (TaskItem)
 
 
-parser : Parser (List TaskItem)
-parser =
-    loop [] taskItemsHelp
+parser : Maybe String -> Parser (List TaskItem)
+parser fileDate =
+    loop [] (taskItemsHelp fileDate)
 
 
-taskItemsHelp : List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
-taskItemsHelp revTaskItems =
+taskItemsHelp : Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
+taskItemsHelp fileDate revTaskItems =
     oneOf
-        [ TaskItem.parser
+        [ TaskItem.parser fileDate
             |> map (\taskItem -> Loop (taskItem :: revTaskItems))
         , anyLineParser
             |> map (\_ -> Loop revTaskItems)

@@ -9,7 +9,7 @@ import TaskItem exposing (TaskItem)
 import TaskItems
 
 
-main : Program String Model Msg
+main : Program Flags Model Msg
 main =
     Browser.element
         { init = init
@@ -20,17 +20,37 @@ main =
 
 
 
--- MODEL
+-- TYPES
 
 
-type Model
+type alias Model =
+    { dailyNotesFolder : String
+    , dailyNotesFormat : String
+    , taskList : State (List TaskItem)
+    }
+
+
+type State a
     = Loading
-    | Loaded (List TaskItem)
+    | Loaded a
 
 
-init : String -> ( Model, Cmd Msg )
-init displayText =
-    ( Loading
+type alias Flags =
+    { folder : String
+    , format : String
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
+    let
+        foo =
+            Debug.log "flags" flags
+    in
+    ( { dailyNotesFolder = flags.folder
+      , dailyNotesFormat = flags.format
+      , taskList = Loading
+      }
     , Cmd.none
     )
 
@@ -50,7 +70,7 @@ update msg model =
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
-                    ( Parser.run TaskItems.parser markdownFile.fileContents
+                    ( Parser.run (TaskItems.parser markdownFile.fileDate) markdownFile.fileContents
                         |> Result.withDefault []
                         |> addToModel model
                     , Cmd.none
@@ -62,12 +82,12 @@ update msg model =
 
 addToModel : Model -> List TaskItem -> Model
 addToModel model taskItems =
-    case model of
+    case model.taskList of
         Loading ->
-            Loaded taskItems
+            { model | taskList = Loaded taskItems }
 
         Loaded currentItems ->
-            Loaded (currentItems ++ taskItems)
+            { model | taskList = Loaded (currentItems ++ taskItems) }
 
 
 
@@ -85,7 +105,7 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    case model of
+    case model.taskList of
         Loading ->
             Html.text ""
 
@@ -93,9 +113,14 @@ view model =
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ column
-                        "To Do"
+                        "Undated"
                         (taskItems
-                            |> List.filter (\t -> not <| TaskItem.isCompleted t)
+                            |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
+                        )
+                    , column
+                        "Dated"
+                        (taskItems
+                            |> List.filter (\t -> (not <| TaskItem.isCompleted t) && TaskItem.isDated t)
                         )
                     , column
                         "Done"

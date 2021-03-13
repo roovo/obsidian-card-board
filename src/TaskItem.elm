@@ -2,10 +2,13 @@ module TaskItem exposing
     ( Completion(..)
     , TaskItem
     , isCompleted
+    , isDated
     , parser
     , title
     )
 
+import Date exposing (Date)
+import Maybe.Extra as ME
 import Parser exposing (..)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
@@ -15,7 +18,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem Completion String
+    = TaskItem Completion Dated String
 
 
 type Completion
@@ -23,17 +26,22 @@ type Completion
     | Completed
 
 
+type Dated
+    = Undated
+    | Due Date
+
+
 
 -- INFO
 
 
 title : TaskItem -> String
-title (TaskItem _ t) =
+title (TaskItem _ _ t) =
     t
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem c _) =
+isCompleted (TaskItem c _ _) =
     case c of
         Incomplete ->
             False
@@ -42,15 +50,26 @@ isCompleted (TaskItem c _) =
             True
 
 
+isDated : TaskItem -> Bool
+isDated (TaskItem _ d _) =
+    case d of
+        Undated ->
+            False
+
+        Due _ ->
+            True
+
+
 
 -- SERIALIZATION
 
 
-parser : Parser TaskItem
-parser =
+parser : Maybe String -> Parser TaskItem
+parser fileDate =
     succeed TaskItem
         |= prefixParser
         |. chompWhile isSpaceOrTab
+        |= fileDateParser fileDate
         |= nonEmptyStringParser
         |. lineEndOrEnd
 
@@ -65,3 +84,14 @@ prefixParser =
         , succeed Completed
             |. token "- [X] "
         ]
+
+
+fileDateParser : Maybe String -> Parser Dated
+fileDateParser fileDate =
+    fileDate
+        |> Maybe.map Date.fromIsoString
+        |> Maybe.map Result.toMaybe
+        |> ME.join
+        |> Maybe.map Due
+        |> Maybe.withDefault Undated
+        |> succeed
