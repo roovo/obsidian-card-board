@@ -11,7 +11,8 @@ type DataForElm
 
 
 type alias MarkdownFile =
-    { fileDate : Maybe String
+    { filePath : String
+    , fileDate : Maybe String
     , fileContents : String
     }
 

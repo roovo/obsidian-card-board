@@ -7,7 +7,7 @@ export namespace Elm {
     export interface App {
       ports: {
         dataForElm: {
-          send(data: { tag: string; data: { fileDate: string | null; fileContents: string } }): void
+          send(data: { tag: string; data: { filePath: string; fileDate: string | null; fileContents: string } }): void
         }
       };
     }

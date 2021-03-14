@@ -75,7 +75,7 @@ update msg model =
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
-                    ( Parser.run (TaskItems.parser markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                    ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                         |> Result.withDefault []
                         |> addToModel model
                     , Cmd.none

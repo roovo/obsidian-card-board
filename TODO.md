@@ -1,4 +1,5 @@
 - Update board as files are updated in the app
+  - files created, updated, deleted, renamed
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
 - Show checkbox to mark as done

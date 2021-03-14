@@ -17,9 +17,9 @@ import TaskItem exposing (Dated(..), TaskItem)
 -- PARSEING
 
 
-parser : Maybe String -> Parser (List TaskItem)
-parser fileDate =
-    loop [] (taskItemsHelp fileDate)
+parser : String -> Maybe String -> Parser (List TaskItem)
+parser filePath fileDate =
+    loop [] (taskItemsHelp filePath fileDate)
 
 
 
@@ -100,10 +100,10 @@ completed =
 -- PRIVATE
 
 
-taskItemsHelp : Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
-taskItemsHelp fileDate revTaskItems =
+taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
+taskItemsHelp filePath fileDate revTaskItems =
     oneOf
-        [ TaskItem.parser fileDate
+        [ TaskItem.parser filePath fileDate
             |> map (\taskItem -> Loop (taskItem :: revTaskItems))
         , anyLineParser
             |> map (\_ -> Loop revTaskItems)

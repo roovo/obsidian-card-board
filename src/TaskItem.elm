@@ -3,6 +3,7 @@ module TaskItem exposing
     , Dated(..)
     , TaskItem
     , due
+    , filePath
     , isCompleted
     , isDated
     , parser
@@ -20,7 +21,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem Completion Dated String
+    = TaskItem String Completion Dated String
 
 
 type Completion
@@ -38,13 +39,18 @@ type Dated
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem _ d _) =
+due (TaskItem _ _ d _) =
     case d of
         Undated ->
             Nothing
 
         Due date ->
             Just date
+
+
+filePath : TaskItem -> String
+filePath (TaskItem p _ _ _) =
+    p
 
 
 isDated : TaskItem -> Bool
@@ -55,7 +61,7 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem c _ _) =
+isCompleted (TaskItem _ c _ _) =
     case c of
         Incomplete ->
             False
@@ -65,7 +71,7 @@ isCompleted (TaskItem c _ _) =
 
 
 title : TaskItem -> String
-title (TaskItem _ _ t) =
+title (TaskItem _ _ _ t) =
     t
 
 
@@ -73,9 +79,10 @@ title (TaskItem _ _ t) =
 -- SERIALIZATION
 
 
-parser : Maybe String -> Parser TaskItem
-parser fileDate =
+parser : String -> Maybe String -> Parser TaskItem
+parser pathToFile fileDate =
     succeed TaskItem
+        |= succeed pathToFile
         |= prefixParser
         |. chompWhile isSpaceOrTab
         |= fileDateParser fileDate

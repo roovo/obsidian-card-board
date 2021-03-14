@@ -43,6 +43,7 @@ export class KanbanView extends ItemView {
       app.ports.dataForElm.send({
         tag: "MarkdownToParse",
         data: {
+          filePath: file.path,
           fileDate: fileDate,
           fileContents: fileContents
         }
