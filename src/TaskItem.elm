@@ -6,6 +6,7 @@ module TaskItem exposing
     , forFuture
     , forToday
     , forTomorrow
+    , fromFile
     , parser
     , title
     , undated
@@ -115,7 +116,12 @@ forFuture today =
 
 completed : List TaskItem -> List TaskItem
 completed =
-    List.filter (\t -> isCompleted t)
+    List.filter isCompleted
+
+
+fromFile : String -> List TaskItem -> List TaskItem
+fromFile pathToFile =
+    List.filter <| isFromFile pathToFile
 
 
 
@@ -190,3 +196,8 @@ isCompleted (TaskItem _ c _ _) =
 
         Completed ->
             True
+
+
+isFromFile : String -> TaskItem -> Bool
+isFromFile pathToFile (TaskItem p _ _ _) =
+    p == pathToFile

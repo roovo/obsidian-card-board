@@ -125,7 +125,7 @@ filtering =
                 parsedFiles
                     |> TaskItem.undated
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "undated incomplete", "invalid date incomplete" ]
+                    |> Expect.equal [ "undated incomplete", "invalid date incomplete", "chosen file incomplete" ]
         , test "forToday" <|
             \() ->
                 parsedFiles
@@ -156,7 +156,14 @@ filtering =
                         , "tomorrow complete"
                         , "future complete"
                         , "invalid date complete"
+                        , "chosen file complete"
                         ]
+        , test "fromFile" <|
+            \() ->
+                parsedFiles
+                    |> TaskItem.fromFile "/path/to/file"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "chosen file incomplete", "chosen file complete" ]
         ]
 
 
@@ -201,6 +208,10 @@ taskFiles =
     , ( "", Just "invalid date", """
 - [ ] invalid date incomplete
 - [x] invalid date complete
+""" )
+    , ( "/path/to/file", Nothing, """
+- [ ] chosen file incomplete
+- [x] chosen file complete
 """ )
     ]
 
