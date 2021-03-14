@@ -1,5 +1,6 @@
 module TaskItemsTests exposing (suite)
 
+import Date
 import Expect exposing (Expectation)
 import Parser
 import TaskItem exposing (Completion(..), TaskItem)
@@ -10,7 +11,14 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "todo parsing"
-        [ test "parses a single incomplete TaskList item" <|
+        [ test "parses an empty file" <|
+            \() ->
+                ""
+                    |> Parser.run (TaskItems.parser Nothing)
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.title t)
+                    |> Expect.equal []
+        , test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItems.parser Nothing)
@@ -83,4 +91,34 @@ not a task
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "pareses completion" <|
+            \() ->
+                """- [ ] foo
+- [x] bar
+- [X] baz
+"""
+                    |> Parser.run (TaskItems.parser Nothing)
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal [ False, True, True ]
+        , test "pareses undated tasks" <|
+            \() ->
+                """- [ ] foo
+- [x] bar
+- [X] baz
+"""
+                    |> Parser.run (TaskItems.parser Nothing)
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.due t)
+                    |> Expect.equal [ Nothing, Nothing, Nothing ]
+        , test "pareses dated tasks" <|
+            \() ->
+                """- [ ] foo
+- [x] bar
+- [X] baz
+"""
+                    |> Parser.run (TaskItems.parser <| Just "2020-02-22")
+                    |> Result.withDefault []
+                    |> List.map (\t -> TaskItem.due t |> Maybe.map Date.toIsoString)
+                    |> Expect.equal [ Just "2020-02-22", Just "2020-02-22", Just "2020-02-22" ]
         ]
