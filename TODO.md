@@ -1,9 +1,12 @@
 - Add some tests to work out why cards are not appearing in tomorrow and future?
 - Update board as files are updated in the app
+- Show checkbox to mark as done
+- Implement mark as done (add Pending Completion to type)
 - click on card to jump to location in file
 - edit in place via popup
 - show a trash icon on a card and click it to delete (with confirmation)
 - drag and drop -> into today, tomorrow, and done columns
+- do I want to keep trailing spaces when parsing TaskItem title?
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
 - make it switch to the kanban window when shown

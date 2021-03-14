@@ -37,21 +37,6 @@ type Dated
 -- INFO
 
 
-title : TaskItem -> String
-title (TaskItem _ _ t) =
-    t
-
-
-isCompleted : TaskItem -> Bool
-isCompleted (TaskItem c _ _) =
-    case c of
-        Incomplete ->
-            False
-
-        Completed ->
-            True
-
-
 due : TaskItem -> Maybe Date
 due (TaskItem _ d _) =
     case d of
@@ -67,6 +52,21 @@ isDated taskItem =
     taskItem
         |> due
         |> ME.isJust
+
+
+isCompleted : TaskItem -> Bool
+isCompleted (TaskItem c _ _) =
+    case c of
+        Incomplete ->
+            False
+
+        Completed ->
+            True
+
+
+title : TaskItem -> String
+title (TaskItem _ _ t) =
+    t
 
 
 

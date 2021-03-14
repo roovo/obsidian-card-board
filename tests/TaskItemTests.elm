@@ -1,5 +1,6 @@
 module TaskItemTests exposing (suite)
 
+import Date
 import Expect exposing (Expectation)
 import Parser
 import TaskItem exposing (Completion(..), TaskItem)
@@ -65,6 +66,26 @@ suite =
                     |> Parser.run (TaskItem.parser Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "foo")
+        , test "sets as Undated if there is NO fileDate" <|
+            \() ->
+                "- [X] foo"
+                    |> Parser.run (TaskItem.parser Nothing)
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Expect.equal (Ok Nothing)
+        , test "sets as Due if there is a valid fileDate" <|
+            \() ->
+                "- [X] foo"
+                    |> Parser.run (TaskItem.parser <| Just "2020-03-23")
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Result.withDefault Nothing
+                    |> Maybe.map Date.toIsoString
+                    |> Expect.equal (Just "2020-03-23")
+        , test "sets as Unsated if there is an INVALID fileDate" <|
+            \() ->
+                "- [X] foo"
+                    |> Parser.run (TaskItem.parser <| Just "not a date")
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Expect.equal (Ok Nothing)
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
