@@ -2,12 +2,13 @@ module TaskItem exposing
     ( Completion(..)
     , Dated(..)
     , TaskItem
-    , due
-    , filePath
-    , isCompleted
-    , isDated
+    , completed
+    , forFuture
+    , forToday
+    , forTomorrow
     , parser
     , title
+    , undated
     )
 
 import Date exposing (Date)
@@ -38,41 +39,83 @@ type Dated
 -- INFO
 
 
-due : TaskItem -> Maybe Date
-due (TaskItem _ _ d _) =
-    case d of
-        Undated ->
-            Nothing
-
-        Due date ->
-            Just date
-
-
-filePath : TaskItem -> String
-filePath (TaskItem p _ _ _) =
-    p
-
-
-isDated : TaskItem -> Bool
-isDated taskItem =
-    taskItem
-        |> due
-        |> ME.isJust
-
-
-isCompleted : TaskItem -> Bool
-isCompleted (TaskItem _ c _ _) =
-    case c of
-        Incomplete ->
-            False
-
-        Completed ->
-            True
-
-
 title : TaskItem -> String
 title (TaskItem _ _ _ t) =
     t
+
+
+
+-- FILTERS
+
+
+undated : List TaskItem -> List TaskItem
+undated =
+    List.filter (\t -> (not <| isCompleted t) && (not <| isDated t))
+
+
+forToday : Date -> List TaskItem -> List TaskItem
+forToday today =
+    let
+        isToday t =
+            case due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days today date <= 0 then
+                        True
+
+                    else
+                        False
+    in
+    List.filter (\t -> (not <| isCompleted t) && isToday t)
+
+
+forTomorrow : Date -> List TaskItem -> List TaskItem
+forTomorrow today =
+    let
+        tomorrow =
+            Date.add Date.Days 1 today
+
+        isTomorrow t =
+            case due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days tomorrow date == 0 then
+                        True
+
+                    else
+                        False
+    in
+    List.filter (\t -> isTomorrow t && (not <| isCompleted t))
+
+
+forFuture : Date -> List TaskItem -> List TaskItem
+forFuture today =
+    let
+        tomorrow =
+            Date.add Date.Days 1 today
+
+        isToday t =
+            case due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days tomorrow date > 0 then
+                        True
+
+                    else
+                        False
+    in
+    List.filter (\t -> (not <| isCompleted t) && isToday t)
+
+
+completed : List TaskItem -> List TaskItem
+completed =
+    List.filter (\t -> isCompleted t)
 
 
 
@@ -111,3 +154,39 @@ fileDateParser fileDate =
         |> Maybe.map Due
         |> Maybe.withDefault Undated
         |> succeed
+
+
+
+-- PRIVATE
+
+
+due : TaskItem -> Maybe Date
+due (TaskItem _ _ d _) =
+    case d of
+        Undated ->
+            Nothing
+
+        Due date ->
+            Just date
+
+
+filePath : TaskItem -> String
+filePath (TaskItem p _ _ _) =
+    p
+
+
+isDated : TaskItem -> Bool
+isDated taskItem =
+    taskItem
+        |> due
+        |> ME.isJust
+
+
+isCompleted : TaskItem -> Bool
+isCompleted (TaskItem _ c _ _) =
+    case c of
+        Incomplete ->
+            False
+
+        Completed ->
+            True

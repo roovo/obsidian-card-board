@@ -121,19 +121,19 @@ view model =
                 [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
-                        (TaskItems.undated taskItems)
+                        (TaskItem.undated taskItems)
                     , column
                         "Today"
-                        (TaskItems.forToday today taskItems)
+                        (TaskItem.forToday today taskItems)
                     , column
                         "Tomorrow"
-                        (TaskItems.forTomorrow today taskItems)
+                        (TaskItem.forTomorrow today taskItems)
                     , column
                         "Future"
-                        (TaskItems.forFuture today taskItems)
+                        (TaskItem.forFuture today taskItems)
                     , column
                         "Done"
-                        (TaskItems.completed taskItems)
+                        (TaskItem.completed taskItems)
                     ]
                 ]
 
