@@ -38,6 +38,7 @@ export class KanbanView extends ItemView {
           fileDate = moment(file.basename, dailyNotesSettings.format).format('YYYY-MM-DD');
         }
       }
+
       const fileContents = await this.vault.cachedRead(file);
       app.ports.dataForElm.send({
         tag: "MarkdownToParse",
@@ -47,7 +48,15 @@ export class KanbanView extends ItemView {
         }
       });
     }
+
+    this.registerEvent(
+      this.app.vault.on("modify", (...args) => {
+        // handle change here
+        console.log("change detected")
+      })
+    )
   }
+
 
   getDisplayText(): string {
     return 'Kanban';
