@@ -49,25 +49,6 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "the task   ")
-
-        -- , test "counts a task prefixed with '- [ ] ' as NOT completed" <|
-        --     \() ->
-        --         "- [ ] foo"
-        --             |> Parser.run (TaskItem.parser "" Nothing)
-        --             |> Result.map (\t -> TaskItem.isCompleted t)
-        --             |> Expect.equal (Ok False)
-        -- , test "counts a task prefixed with '- [x] ' as completed" <|
-        --     \() ->
-        --         "- [x] foo"
-        --             |> Parser.run (TaskItem.parser "" Nothing)
-        --             |> Result.map (\t -> TaskItem.isCompleted t)
-        --             |> Expect.equal (Ok True)
-        -- , test "counts a task prefixed with '- [X] ' as completed" <|
-        --     \() ->
-        --         "- [X] foo"
-        --             |> Parser.run (TaskItem.parser "" Nothing)
-        --             |> Result.map (\t -> TaskItem.isCompleted t)
-        --             |> Expect.equal (Ok True)
         , test "only looks at the first line of a multline string" <|
             \() ->
                 """- [X] foo
@@ -144,7 +125,7 @@ filtering =
                 parsedFiles
                     |> TaskItem.undated
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "undated incomplete" ]
+                    |> Expect.equal [ "undated incomplete", "invalid date incomplete" ]
         , test "forToday" <|
             \() ->
                 parsedFiles
@@ -174,6 +155,7 @@ filtering =
                         , "today complete"
                         , "tomorrow complete"
                         , "future complete"
+                        , "invalid date complete"
                         ]
         ]
 
@@ -181,7 +163,7 @@ filtering =
 parsedFiles : List TaskItem
 parsedFiles =
     taskFiles
-        |> List.map (\( d, ts ) -> Parser.run (TaskItems.parser "" d) ts)
+        |> List.map (\( p, d, ts ) -> Parser.run (TaskItems.parser p d) ts)
         |> List.concatMap (Result.withDefault [])
 
 
@@ -194,27 +176,31 @@ todayAsDate =
         |> Date.fromRataDie
 
 
-taskFiles : List ( Maybe String, String )
+taskFiles : List ( String, Maybe String, String )
 taskFiles =
-    [ ( Nothing, """
+    [ ( "", Nothing, """
 - [ ] undated incomplete
 - [x] undated complete
 """ )
-    , ( Just yesterday, """
+    , ( "", Just yesterday, """
 - [ ] yesterday incomplete
 - [x] yesterday complete
 """ )
-    , ( Just today, """
+    , ( "", Just today, """
 - [ ] today incomplete
 - [x] today complete
 """ )
-    , ( Just tomorrow, """
+    , ( "", Just tomorrow, """
 - [ ] tomorrow incomplete
 - [x] tomorrow complete
 """ )
-    , ( Just future, """
+    , ( "", Just future, """
 - [ ] future incomplete
 - [x] future complete
+""" )
+    , ( "", Just "invalid date", """
+- [ ] invalid date incomplete
+- [x] invalid date complete
 """ )
     ]
 
