@@ -10,20 +10,70 @@ import Test exposing (..)
 
 suite : Test
 suite =
+    concat
+        [ parsing
+        , filtering
+        ]
+
+
+filtering : Test
+filtering =
+    describe "filtering"
+        [ test "undated" <|
+            \() ->
+                parsedFiles
+                    |> TaskItems.undated
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "undated incomplete" ]
+        , test "forToday" <|
+            \() ->
+                parsedFiles
+                    |> TaskItems.forToday todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "yesterday incomplete", "today incomplete" ]
+        , test "forTommorrow" <|
+            \() ->
+                parsedFiles
+                    |> TaskItems.forTomorrow todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "tomorrow incomplete" ]
+        , test "forFuture" <|
+            \() ->
+                parsedFiles
+                    |> TaskItems.forFuture todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "future incomplete" ]
+        , test "completed" <|
+            \() ->
+                parsedFiles
+                    |> TaskItems.completed
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "undated complete"
+                        , "yesterday complete"
+                        , "today complete"
+                        , "tomorrow complete"
+                        , "future complete"
+                        ]
+        ]
+
+
+parsing : Test
+parsing =
     describe "todo parsing"
         [ test "parses an empty file" <|
             \() ->
                 ""
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal []
         , test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo" ]
         , test "parses a contiguous block of TaskList items" <|
             \() ->
@@ -33,7 +83,7 @@ suite =
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses non contiguous TaskList items" <|
             \() ->
@@ -47,7 +97,7 @@ suite =
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses TaskList items with non-tasks interspersed" <|
             \() ->
@@ -62,7 +112,7 @@ not a task
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "ignores indented tasks" <|
             \() ->
@@ -78,7 +128,7 @@ not a task
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the first line of the file is blank" <|
             \() ->
@@ -89,9 +139,9 @@ not a task
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.title t)
+                    |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
-        , test "pareses completion" <|
+        , test "parses completion" <|
             \() ->
                 """- [ ] foo
 - [x] bar
@@ -99,9 +149,9 @@ not a task
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.isCompleted t)
+                    |> List.map TaskItem.isCompleted
                     |> Expect.equal [ False, True, True ]
-        , test "pareses undated tasks" <|
+        , test "parses undated tasks" <|
             \() ->
                 """- [ ] foo
 - [x] bar
@@ -109,9 +159,9 @@ not a task
 """
                     |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
-                    |> List.map (\t -> TaskItem.due t)
+                    |> List.map TaskItem.due
                     |> Expect.equal [ Nothing, Nothing, Nothing ]
-        , test "pareses dated tasks" <|
+        , test "parses dated tasks" <|
             \() ->
                 """- [ ] foo
 - [x] bar
@@ -122,3 +172,64 @@ not a task
                     |> List.map (\t -> TaskItem.due t |> Maybe.map Date.toIsoString)
                     |> Expect.equal [ Just "2020-02-22", Just "2020-02-22", Just "2020-02-22" ]
         ]
+
+
+parsedFiles : List TaskItem
+parsedFiles =
+    taskFiles
+        |> List.map (\( d, ts ) -> Parser.run (TaskItems.parser d) ts)
+        |> List.concatMap (Result.withDefault [])
+
+
+todayAsDate : Date.Date
+todayAsDate =
+    today
+        |> Date.fromIsoString
+        |> Result.map Date.toRataDie
+        |> Result.withDefault 0
+        |> Date.fromRataDie
+
+
+taskFiles : List ( Maybe String, String )
+taskFiles =
+    [ ( Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+    , ( Just yesterday, """
+- [ ] yesterday incomplete
+- [x] yesterday complete
+""" )
+    , ( Just today, """
+- [ ] today incomplete
+- [x] today complete
+""" )
+    , ( Just tomorrow, """
+- [ ] tomorrow incomplete
+- [x] tomorrow complete
+""" )
+    , ( Just future, """
+- [ ] future incomplete
+- [x] future complete
+""" )
+    ]
+
+
+yesterday : String
+yesterday =
+    "2020-06-19"
+
+
+today : String
+today =
+    "2020-06-20"
+
+
+tomorrow : String
+tomorrow =
+    "2020-06-21"
+
+
+future : String
+future =
+    "2020-06-22"

@@ -61,16 +61,6 @@ forTomorrow today =
                     False
 
                 Just date ->
-                    let
-                        foo =
-                            Debug.log "date" date
-
-                        fooxz =
-                            Debug.log "date" <| Date.toIsoString date
-
-                        bar =
-                            Debug.log "diff" <| Date.diff Date.Days tomorrow date
-                    in
                     if Date.diff Date.Days tomorrow date == 0 then
                         True
 

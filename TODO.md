@@ -1,4 +1,4 @@
-- Add some tests to work out why cards are not appearing in tomorrow and future?
+- Work out why cards are not appearing in tomorrow and future?
 - Update board as files are updated in the app
 - Show checkbox to mark as done
 - Implement mark as done (add Pending Completion to type)
@@ -20,6 +20,7 @@
 
 
 # Done
+- Add some tests for card filtering
 - filter into 2 groups: incomplete and done
 - display on simple 2 colum board: todo & done
 - build todos from markdown content
