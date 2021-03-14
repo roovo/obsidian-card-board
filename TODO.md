@@ -1,5 +1,6 @@
-- Work out why cards are not appearing in tomorrow and future?
 - Update board as files are updated in the app
+- Ordering when reading files and displaying tasks
+  - specially for today, future, and done columns
 - Show checkbox to mark as done
 - Implement mark as done (add Pending Completion to type)
 - click on card to jump to location in file
@@ -12,6 +13,7 @@
 - make it switch to the kanban window when shown
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 
+- can I get parser to always work when there is no "\n" on the end of the input
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - elm review
@@ -20,6 +22,7 @@
 
 
 # Done
+- Work out why some cards are not appearing in tomorrow and future?
 - Add some tests for card filtering
 - filter into 2 groups: incomplete and done
 - display on simple 2 colum board: todo & done
