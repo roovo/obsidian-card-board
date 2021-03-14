@@ -2,7 +2,6 @@ module TaskItemsTests exposing (suite)
 
 import Expect exposing (Expectation)
 import Parser
-import Parser.Advanced as Advanced
 import TaskItem exposing (Completion(..), TaskItem)
 import TaskItems
 import Test exposing (..)
@@ -14,7 +13,7 @@ suite =
         [ test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo" ]
@@ -24,7 +23,7 @@ suite =
 - [x] bar
 - [X] baz
 """
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -38,7 +37,7 @@ suite =
 - [X] baz
 
 """
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -53,7 +52,7 @@ not a task
 - [X] baz
 
 """
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -69,7 +68,7 @@ not a task
   - [ ] a subtask
 
 """
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -80,7 +79,7 @@ not a task
 - [x] bar
 - [X] baz
 """
-                    |> Advanced.run TaskItems.parser
+                    |> Parser.run (TaskItems.parser Nothing)
                     |> Result.withDefault []
                     |> List.map (\t -> TaskItem.title t)
                     |> Expect.equal [ "foo", "bar", "baz" ]

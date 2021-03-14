@@ -13,9 +13,17 @@ import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (Dated(..), TaskItem)
 
 
+
+-- PARSEING
+
+
 parser : Maybe String -> Parser (List TaskItem)
 parser fileDate =
     loop [] (taskItemsHelp fileDate)
+
+
+
+-- FILTERS
 
 
 undated : List TaskItem -> List TaskItem
