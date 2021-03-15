@@ -1,4 +1,4 @@
-import {ItemView, App, Vault, WorkspaceLeaf} from 'obsidian';
+import { App, ItemView, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
 import { Elm } from '../src/Main';
 import KanbanPlugin from './main';
 
@@ -24,7 +24,7 @@ export class KanbanView extends ItemView {
     elmDiv.id = "elm-node";
     this.containerEl.children[1].appendChild(elmDiv);
 
-    const app = Elm.Main.init({
+    const elm = Elm.Main.init({
       node: elmDiv,
       flags: dailyNotesSettings
     })
@@ -32,15 +32,10 @@ export class KanbanView extends ItemView {
     const markdownFiles = this.vault.getMarkdownFiles();
 
     for (const file of markdownFiles) {
-      var fileDate = null;
-      if (dailyNotesSettings.folder != null) {
-        if (file.path.startsWith(dailyNotesSettings.folder)) {
-          fileDate = moment(file.basename, dailyNotesSettings.format).format('YYYY-MM-DD');
-        }
-      }
+      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
 
       const fileContents = await this.vault.cachedRead(file);
-      app.ports.dataForElm.send({
+      elm.ports.dataForElm.send({
         tag: "MarkdownToParse",
         data: {
           filePath: file.path,
@@ -50,14 +45,26 @@ export class KanbanView extends ItemView {
       });
     }
 
-    this.registerEvent(
-      this.app.vault.on("modify", (...args) => {
-        // handle change here
-        console.log("change detected")
-      })
-    )
+    this.registerEvent(this.app.vault.on("modify",
+      (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
   }
 
+  async handleFileModified(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
+
+    if (file instanceof TFile) {
+      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileContents = await this.vault.read(file);
+
+      elm.ports.dataForElm.send({
+        tag: "FileModified",
+        data: {
+          filePath: file.path,
+          fileDate: fileDate,
+          fileContents: fileContents
+        }
+      })
+    }
+  }
 
   getDisplayText(): string {
     return 'Kanban';
@@ -65,5 +72,15 @@ export class KanbanView extends ItemView {
 
   getViewType(): string {
     return 'Kanban';
+  }
+
+  getFileDate(dailyNotesFolder: string, dailyNotesNameFormat: string, file: any): string | null {
+    var fileDate = null;
+    if (dailyNotesFolder != null) {
+      if (file.path.startsWith(dailyNotesFolder)) {
+        fileDate = moment(file.basename, dailyNotesNameFormat).format('YYYY-MM-DD');
+      }
+    }
+    return fileDate
   }
 }

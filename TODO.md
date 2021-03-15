@@ -1,9 +1,24 @@
+- bug
+  parsing fails if there is a task list that contains a task prefix with nothing after it, so:
+
+- [ ] bar task
+- [ ] this is a new task that I am adding right now :)
+- [ ]<only a single space here>
+
+  will not parse the task list!!
+
+- add some tests for filtering for taskItems not from a given path
+- add some testing around adding, updating, removing tasks from a list of TaskItems
 - Update board as files are updated in the app
-  - files created, updated, deleted, renamed
+  - files created, deleted, renamed : DONE updated
+  - does a create get called when a file with content is added to the vault directory?
+    I think it might as I can update outside of obsidian and these are tracked using my
+    check for modification code :)
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
 - Show checkbox to mark as done
 - Implement mark as done (add Pending Completion to type)
+- render card title as markdown
 - click on card to jump to location in file
 - edit in place via popup
 - show a trash icon on a card and click it to delete (with confirmation)
@@ -11,7 +26,7 @@
 - do I want to keep trailing spaces when parsing TaskItem title?
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
-- make it switch to the kanban window when shown
+- make it switch to the kanban window when ribbon icon clicked
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 
 - can I get parser to always work when there is no "\n" on the end of the input

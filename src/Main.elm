@@ -77,7 +77,14 @@ update msg model =
                 Ports.MarkdownToParse markdownFile ->
                     ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                         |> Result.withDefault []
-                        |> addToModel model
+                        |> addTaskItems model
+                    , Cmd.none
+                    )
+
+                Ports.UpdatedMarkdownToParse markdownFile ->
+                    ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                        |> Result.withDefault []
+                        |> updateTaskItems model markdownFile.filePath
                     , Cmd.none
                     )
 
@@ -90,14 +97,37 @@ update msg model =
             )
 
 
-addToModel : Model -> List TaskItem -> Model
-addToModel model taskItems =
+addTaskItems : Model -> List TaskItem -> Model
+addTaskItems model taskItems =
     case model.taskList of
         Loading ->
             { model | taskList = Loaded taskItems }
 
         Loaded currentItems ->
             { model | taskList = Loaded (currentItems ++ taskItems) }
+
+
+updateTaskItems : Model -> String -> List TaskItem -> Model
+updateTaskItems model filePath taskItems =
+    let
+        modelWithTasksRemoved =
+            removeTaskItems model filePath
+    in
+    addTaskItems modelWithTasksRemoved taskItems
+
+
+removeTaskItems : Model -> String -> Model
+removeTaskItems model filePath =
+    case model.taskList of
+        Loading ->
+            model
+
+        Loaded currentItems ->
+            let
+                leftOverTaskItems =
+                    TaskItem.notFromFile filePath currentItems
+            in
+            { model | taskList = Loaded leftOverTaskItems }
 
 
 

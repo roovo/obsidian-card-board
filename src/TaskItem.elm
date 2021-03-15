@@ -7,6 +7,7 @@ module TaskItem exposing
     , forToday
     , forTomorrow
     , fromFile
+    , notFromFile
     , parser
     , title
     , undated
@@ -122,6 +123,12 @@ completed =
 fromFile : String -> List TaskItem -> List TaskItem
 fromFile pathToFile =
     List.filter <| isFromFile pathToFile
+
+
+notFromFile : String -> List TaskItem -> List TaskItem
+notFromFile pathToFile taskItems =
+    taskItems
+        |> List.filter (\t -> not (isFromFile pathToFile t))
 
 
 

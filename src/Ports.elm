@@ -8,6 +8,7 @@ port module Ports exposing
 
 type DataForElm
     = MarkdownToParse MarkdownFile
+    | UpdatedMarkdownToParse MarkdownFile
 
 
 type alias MarkdownFile =
@@ -32,6 +33,9 @@ receiveDataFromTypescript tagger onError =
     dataForElm <|
         \typescriptData ->
             case typescriptData.tag of
+                "FileModified" ->
+                    tagger <| UpdatedMarkdownToParse typescriptData.data
+
                 "MarkdownToParse" ->
                     tagger <| MarkdownToParse typescriptData.data
 
