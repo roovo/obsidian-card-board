@@ -57,33 +57,6 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "foo")
-
-        -- , test "sets the filePath" <|
-        --     \() ->
-        --         "- [X] foo"
-        --             |> Parser.run (TaskItem.parser "/path/to/file" Nothing)
-        --             |> Result.map (\t -> TaskItem.filePath t)
-        --             |> Expect.equal (Ok "/path/to/file")
-        -- , test "sets as Undated if there is NO fileDate" <|
-        --     \() ->
-        --         "- [X] foo"
-        --             |> Parser.run (TaskItem.parser "" Nothing)
-        --             |> Result.map (\t -> TaskItem.due t)
-        --             |> Expect.equal (Ok Nothing)
-        -- , test "sets as Due if there is a valid fileDate" <|
-        --     \() ->
-        --         "- [X] foo"
-        --             |> Parser.run (TaskItem.parser "" <| Just "2020-03-23")
-        --             |> Result.map (\t -> TaskItem.due t)
-        --             |> Result.withDefault Nothing
-        --             |> Maybe.map Date.toIsoString
-        --             |> Expect.equal (Just "2020-03-23")
-        -- , test "sets as Unsated if there is an INVALID fileDate" <|
-        --     \() ->
-        --         "- [X] foo"
-        --             |> Parser.run (TaskItem.parser "" <| Just "not a date")
-        --             |> Result.map (\t -> TaskItem.due t)
-        --             |> Expect.equal (Ok Nothing)
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
