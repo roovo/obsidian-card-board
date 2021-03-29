@@ -4,7 +4,7 @@ import Date
 import Expect exposing (Expectation)
 import Parser
 import TaskItem exposing (Completion(..), TaskItem)
-import TaskItems exposing (TaskList)
+import TaskList exposing (TaskList)
 import Test exposing (..)
 
 
@@ -96,35 +96,35 @@ filtering =
         [ test "undated" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.undated
                     |> List.map TaskItem.title
                     |> Expect.equal [ "undated incomplete", "invalid date incomplete", "chosen file incomplete" ]
         , test "forToday" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.forToday todayAsDate
                     |> List.map TaskItem.title
                     |> Expect.equal [ "yesterday incomplete", "today incomplete" ]
         , test "forTommorrow" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.forTomorrow todayAsDate
                     |> List.map TaskItem.title
                     |> Expect.equal [ "tomorrow incomplete" ]
         , test "forFuture" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.forFuture todayAsDate
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete" ]
         , test "completed" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.completed
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -139,14 +139,14 @@ filtering =
         , test "fromFile" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.fromFile "/path/to/file"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "chosen file incomplete", "chosen file complete" ]
         , test "notFromFile" <|
             \() ->
                 parsedFiles
-                    |> TaskItems.taskItems
+                    |> TaskList.taskItems
                     |> TaskItem.notFromFile "/path/to/file"
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -169,9 +169,9 @@ filtering =
 parsedFiles : TaskList
 parsedFiles =
     taskFiles
-        |> List.map (\( p, d, ts ) -> Parser.run (TaskItems.parser p d) ts)
-        |> List.map (Result.withDefault TaskItems.empty)
-        |> TaskItems.concat
+        |> List.map (\( p, d, ts ) -> Parser.run (TaskList.parser p d) ts)
+        |> List.map (Result.withDefault TaskList.empty)
+        |> TaskList.concat
 
 
 todayAsDate : Date.Date

@@ -1,4 +1,4 @@
-module TaskItems exposing
+module TaskList exposing
     ( TaskList
     , build
     , concat

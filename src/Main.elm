@@ -8,7 +8,7 @@ import Parser
 import Ports exposing (DataForElm)
 import Task exposing (Task)
 import TaskItem exposing (TaskItem)
-import TaskItems exposing (TaskList)
+import TaskList exposing (TaskList)
 
 
 main : Program Flags Model Msg
@@ -75,15 +75,15 @@ update msg model =
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
-                    ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault TaskItems.empty
+                    ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                        |> Result.withDefault TaskList.empty
                         |> addTaskItems model
                     , Cmd.none
                     )
 
                 Ports.UpdatedMarkdownToParse markdownFile ->
-                    ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault TaskItems.empty
+                    ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                        |> Result.withDefault TaskList.empty
                         |> updateTaskItems model markdownFile.filePath
                     , Cmd.none
                     )
@@ -104,7 +104,7 @@ addTaskItems model taskList =
             { model | taskList = Loaded taskList }
 
         Loaded currentItems ->
-            { model | taskList = Loaded (TaskItems.build (TaskItems.taskItems currentItems ++ TaskItems.taskItems taskList)) }
+            { model | taskList = Loaded (TaskList.build (TaskList.taskItems currentItems ++ TaskList.taskItems taskList)) }
 
 
 updateTaskItems : Model -> String -> TaskList -> Model
@@ -125,9 +125,9 @@ removeTaskItems model filePath =
         Loaded currentItems ->
             let
                 leftOverTaskItems =
-                    TaskItem.notFromFile filePath (TaskItems.taskItems currentItems)
+                    TaskItem.notFromFile filePath (TaskList.taskItems currentItems)
             in
-            { model | taskList = Loaded (TaskItems.build leftOverTaskItems) }
+            { model | taskList = Loaded (TaskList.build leftOverTaskItems) }
 
 
 
@@ -151,19 +151,19 @@ view model =
                 [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
-                        (TaskItem.undated <| TaskItems.taskItems taskItems)
+                        (TaskItem.undated <| TaskList.taskItems taskItems)
                     , column
                         "Today"
-                        (TaskItem.forToday today <| TaskItems.taskItems taskItems)
+                        (TaskItem.forToday today <| TaskList.taskItems taskItems)
                     , column
                         "Tomorrow"
-                        (TaskItem.forTomorrow today <| TaskItems.taskItems taskItems)
+                        (TaskItem.forTomorrow today <| TaskList.taskItems taskItems)
                     , column
                         "Future"
-                        (TaskItem.forFuture today <| TaskItems.taskItems taskItems)
+                        (TaskItem.forFuture today <| TaskList.taskItems taskItems)
                     , column
                         "Done"
-                        (TaskItem.completed <| TaskItems.taskItems taskItems)
+                        (TaskItem.completed <| TaskList.taskItems taskItems)
                     ]
                 ]
 
