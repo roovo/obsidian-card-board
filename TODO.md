@@ -1,12 +1,3 @@
-- bug
-  parsing fails if there is a task list that contains a task prefix with nothing after it, so:
-
-- [ ] bar task
-- [ ] this is a new task that I am adding right now :)
-- [ ]<only a single space here>
-
-  will not parse the task list!!
-
 - add some tests for filtering for taskItems not from a given path
 - add some testing around adding, updating, removing tasks from a list of TaskItems
 - Update board as files are updated in the app
@@ -28,6 +19,8 @@
 - light/dark/user installed themes
 - make it switch to the kanban window when ribbon icon clicked
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
+- if it is slow parsing vaults then see if I can speed it up by
+  dropping backtrackable in the TaskItems parser.
 
 - can I get parser to always work when there is no "\n" on the end of the input
 - put the target in dist
@@ -38,6 +31,15 @@
 
 
 # Done
+
+- bug
+  parsing fails if there is a task list that contains a task prefix with nothing after it, so:
+
+- [ ] bar task
+- [ ] this is a new task that I am adding right now :)
+- [ ]<only a single space here>
+
+  will not parse the task list!!
 - Work out why some cards are not appearing in tomorrow and future?
 - Add some tests for card filtering
 - filter into 2 groups: incomplete and done

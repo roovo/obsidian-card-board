@@ -22,8 +22,10 @@ parser filePath fileDate =
 taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
 taskItemsHelp filePath fileDate revTaskItems =
     oneOf
-        [ TaskItem.parser filePath fileDate
-            |> map (\taskItem -> Loop (taskItem :: revTaskItems))
+        [ backtrackable
+            (TaskItem.parser filePath fileDate
+                |> map (\taskItem -> Loop (taskItem :: revTaskItems))
+            )
         , anyLineParser
             |> map (\_ -> Loop revTaskItems)
         , succeed ()

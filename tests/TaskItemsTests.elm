@@ -112,6 +112,18 @@ not a task
                     |> Result.withDefault []
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
+        , test "parses tasks ignoring any that don't have a title" <|
+            \() ->
+                """
+- [ ] foo
+- [ ] 
+- [x] bar
+- [X] baz
+"""
+                    |> Parser.run (TaskItems.parser "" Nothing)
+                    |> Result.withDefault []
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the last line is a task and has NO line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar"
