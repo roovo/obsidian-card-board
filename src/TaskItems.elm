@@ -1,9 +1,32 @@
-module TaskItems exposing (parser)
+module TaskItems exposing
+    ( TaskList
+    , build
+    , parser
+    , taskItems
+    )
 
 import Date exposing (Date)
 import Parser exposing (..)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (Dated(..), TaskItem)
+
+
+
+-- TYPES
+
+
+type TaskList
+    = TaskList (List TaskItem)
+
+
+taskItems : TaskList -> List TaskItem
+taskItems (TaskList l) =
+    l
+
+
+build : List TaskItem -> TaskList
+build source =
+    TaskList source
 
 
 

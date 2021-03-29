@@ -8,7 +8,7 @@ import Parser
 import Ports exposing (DataForElm)
 import Task exposing (Task)
 import TaskItem exposing (TaskItem)
-import TaskItems
+import TaskItems exposing (TaskList)
 
 
 main : Program Flags Model Msg
@@ -29,7 +29,7 @@ type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
     , today : Maybe Date
-    , taskList : State (List TaskItem)
+    , taskList : State TaskList
     }
 
 
@@ -101,10 +101,10 @@ addTaskItems : Model -> List TaskItem -> Model
 addTaskItems model taskItems =
     case model.taskList of
         Loading ->
-            { model | taskList = Loaded taskItems }
+            { model | taskList = Loaded (TaskItems.build taskItems) }
 
         Loaded currentItems ->
-            { model | taskList = Loaded (currentItems ++ taskItems) }
+            { model | taskList = Loaded (TaskItems.build (TaskItems.taskItems currentItems ++ taskItems)) }
 
 
 updateTaskItems : Model -> String -> List TaskItem -> Model
@@ -125,9 +125,9 @@ removeTaskItems model filePath =
         Loaded currentItems ->
             let
                 leftOverTaskItems =
-                    TaskItem.notFromFile filePath currentItems
+                    TaskItem.notFromFile filePath (TaskItems.taskItems currentItems)
             in
-            { model | taskList = Loaded leftOverTaskItems }
+            { model | taskList = Loaded (TaskItems.build leftOverTaskItems) }
 
 
 
@@ -151,19 +151,19 @@ view model =
                 [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
-                        (TaskItem.undated taskItems)
+                        (TaskItem.undated <| TaskItems.taskItems taskItems)
                     , column
                         "Today"
-                        (TaskItem.forToday today taskItems)
+                        (TaskItem.forToday today <| TaskItems.taskItems taskItems)
                     , column
                         "Tomorrow"
-                        (TaskItem.forTomorrow today taskItems)
+                        (TaskItem.forTomorrow today <| TaskItems.taskItems taskItems)
                     , column
                         "Future"
-                        (TaskItem.forFuture today taskItems)
+                        (TaskItem.forFuture today <| TaskItems.taskItems taskItems)
                     , column
                         "Done"
-                        (TaskItem.completed taskItems)
+                        (TaskItem.completed <| TaskItems.taskItems taskItems)
                     ]
                 ]
 
