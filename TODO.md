@@ -1,4 +1,3 @@
-- add some tests for filtering for taskItems not from a given path
 - add some testing around adding, updating, removing tasks from a list of TaskItems
 - Update board as files are updated in the app
   - files created, deleted, renamed : DONE updated
@@ -32,6 +31,7 @@
 
 # Done
 
+- add some tests for filtering for taskItems not from a given path
 - bug
   parsing fails if there is a task list that contains a task prefix with nothing after it, so:
 

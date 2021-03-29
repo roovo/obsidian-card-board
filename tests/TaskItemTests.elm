@@ -137,6 +137,25 @@ filtering =
                     |> TaskItem.fromFile "/path/to/file"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "chosen file incomplete", "chosen file complete" ]
+        , test "notFromFile" <|
+            \() ->
+                parsedFiles
+                    |> TaskItem.notFromFile "/path/to/file"
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "undated incomplete"
+                        , "undated complete"
+                        , "yesterday incomplete"
+                        , "yesterday complete"
+                        , "today incomplete"
+                        , "today complete"
+                        , "tomorrow incomplete"
+                        , "tomorrow complete"
+                        , "future incomplete"
+                        , "future complete"
+                        , "invalid date incomplete"
+                        , "invalid date complete"
+                        ]
         ]
 
 
