@@ -1,6 +1,8 @@
 module TaskItems exposing
     ( TaskList
     , build
+    , concat
+    , empty
     , parser
     , taskItems
     )
@@ -29,13 +31,27 @@ build source =
     TaskList source
 
 
+empty : TaskList
+empty =
+    TaskList []
+
+
+concat : List TaskList -> TaskList
+concat taskLists =
+    taskLists
+        |> List.map (\l -> taskItems l)
+        |> List.concat
+        |> build
+
+
 
 -- PARSEING
 
 
-parser : String -> Maybe String -> Parser (List TaskItem)
+parser : String -> Maybe String -> Parser TaskList
 parser filePath fileDate =
     loop [] (taskItemsHelp filePath fileDate)
+        |> map (\ts -> TaskList ts)
 
 
 

@@ -23,7 +23,8 @@ parsingToFix =
             \() ->
                 "- [ ] foo\na"
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal []
         ]
@@ -36,14 +37,16 @@ parsing =
             \() ->
                 ""
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal []
         , test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo" ]
         , test "parses a contiguous block of TaskList items" <|
@@ -53,7 +56,8 @@ parsing =
 - [X] baz
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses non contiguous TaskList items" <|
@@ -67,7 +71,8 @@ parsing =
 
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses TaskList items with non-tasks interspersed" <|
@@ -82,7 +87,8 @@ not a task
 
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "ignores indented tasks" <|
@@ -98,7 +104,8 @@ not a task
 
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the first line of the file is blank" <|
@@ -109,7 +116,8 @@ not a task
 - [X] baz
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks ignoring any that don't have a title" <|
@@ -121,21 +129,24 @@ not a task
 - [X] baz
 """
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the last line is a task and has NO line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar"
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar" ]
         , test "parses tasks when the last line is a non-task and has a line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar\n\n## Log\n"
                     |> Parser.run (TaskItems.parser "" Nothing)
-                    |> Result.withDefault []
+                    |> Result.withDefault TaskItems.empty
+                    |> TaskItems.taskItems
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo", "bar" ]
         ]

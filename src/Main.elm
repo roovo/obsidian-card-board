@@ -76,14 +76,14 @@ update msg model =
             case dataForElm of
                 Ports.MarkdownToParse markdownFile ->
                     ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault []
+                        |> Result.withDefault TaskItems.empty
                         |> addTaskItems model
                     , Cmd.none
                     )
 
                 Ports.UpdatedMarkdownToParse markdownFile ->
                     ( Parser.run (TaskItems.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault []
+                        |> Result.withDefault TaskItems.empty
                         |> updateTaskItems model markdownFile.filePath
                     , Cmd.none
                     )
@@ -97,23 +97,23 @@ update msg model =
             )
 
 
-addTaskItems : Model -> List TaskItem -> Model
-addTaskItems model taskItems =
+addTaskItems : Model -> TaskList -> Model
+addTaskItems model taskList =
     case model.taskList of
         Loading ->
-            { model | taskList = Loaded (TaskItems.build taskItems) }
+            { model | taskList = Loaded taskList }
 
         Loaded currentItems ->
-            { model | taskList = Loaded (TaskItems.build (TaskItems.taskItems currentItems ++ taskItems)) }
+            { model | taskList = Loaded (TaskItems.build (TaskItems.taskItems currentItems ++ TaskItems.taskItems taskList)) }
 
 
-updateTaskItems : Model -> String -> List TaskItem -> Model
-updateTaskItems model filePath taskItems =
+updateTaskItems : Model -> String -> TaskList -> Model
+updateTaskItems model filePath taskList =
     let
         modelWithTasksRemoved =
             removeTaskItems model filePath
     in
-    addTaskItems modelWithTasksRemoved taskItems
+    addTaskItems modelWithTasksRemoved taskList
 
 
 removeTaskItems : Model -> String -> Model
