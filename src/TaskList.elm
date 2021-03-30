@@ -1,9 +1,10 @@
 module TaskList exposing
     ( TaskList
-    , build
+    , append
     , concat
     , empty
     , parser
+    , replaceForFile
     , taskItems
     )
 
@@ -14,11 +15,7 @@ import TaskItem exposing (Dated(..), TaskItem)
 
 
 
--- TYPES
-
-
-type TaskList
-    = TaskList (List TaskItem)
+-- TO REMOVE??
 
 
 taskItems : TaskList -> List TaskItem
@@ -26,9 +23,20 @@ taskItems (TaskList l) =
     l
 
 
-build : List TaskItem -> TaskList
-build source =
-    TaskList source
+concat : List TaskList -> TaskList
+concat taskLists =
+    taskLists
+        |> List.map (\l -> taskItems l)
+        |> List.concat
+        |> TaskList
+
+
+
+-- TYPES
+
+
+type TaskList
+    = TaskList (List TaskItem)
 
 
 empty : TaskList
@@ -36,16 +44,30 @@ empty =
     TaskList []
 
 
-concat : List TaskList -> TaskList
-concat taskLists =
-    taskLists
-        |> List.map (\l -> taskItems l)
-        |> List.concat
-        |> build
+
+-- COMBINE
+
+
+append : TaskList -> TaskList -> TaskList
+append (TaskList root) (TaskList toAppend) =
+    TaskList <| root ++ toAppend
 
 
 
--- PARSEING
+-- MANIPULATE
+
+
+replaceForFile : String -> TaskList -> TaskList -> TaskList
+replaceForFile filePath updatedList currentList =
+    let
+        modelWithTasksRemoved =
+            removeForFile currentList filePath
+    in
+    append modelWithTasksRemoved updatedList
+
+
+
+-- PARSING
 
 
 parser : String -> Maybe String -> Parser TaskList
@@ -56,6 +78,15 @@ parser filePath fileDate =
 
 
 -- PRIVATE
+
+
+removeForFile : TaskList -> String -> TaskList
+removeForFile taskList filePath =
+    let
+        leftOverTaskItems =
+            TaskItem.notFromFile filePath (taskItems taskList)
+    in
+    TaskList leftOverTaskItems
 
 
 taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))

@@ -103,31 +103,18 @@ addTaskItems model taskList =
         Loading ->
             { model | taskList = Loaded taskList }
 
-        Loaded currentItems ->
-            { model | taskList = Loaded (TaskList.build (TaskList.taskItems currentItems ++ TaskList.taskItems taskList)) }
+        Loaded currentList ->
+            { model | taskList = Loaded (TaskList.append currentList taskList) }
 
 
 updateTaskItems : Model -> String -> TaskList -> Model
-updateTaskItems model filePath taskList =
-    let
-        modelWithTasksRemoved =
-            removeTaskItems model filePath
-    in
-    addTaskItems modelWithTasksRemoved taskList
-
-
-removeTaskItems : Model -> String -> Model
-removeTaskItems model filePath =
+updateTaskItems model filePath updatedList =
     case model.taskList of
         Loading ->
-            model
+            { model | taskList = Loaded updatedList }
 
-        Loaded currentItems ->
-            let
-                leftOverTaskItems =
-                    TaskItem.notFromFile filePath (TaskList.taskItems currentItems)
-            in
-            { model | taskList = Loaded (TaskList.build leftOverTaskItems) }
+        Loaded currentList ->
+            { model | taskList = Loaded (TaskList.replaceForFile filePath updatedList currentList) }
 
 
 
