@@ -1,34 +1,22 @@
 module TaskList exposing
     ( TaskList
     , append
+    , completedItems
     , concat
     , empty
+    , futureItems
     , parser
     , replaceForFile
-    , taskItems
+    , taskTitles
+    , todaysItems
+    , tomorrowsItems
+    , undatedItems
     )
 
 import Date exposing (Date)
 import Parser exposing (..)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (Dated(..), TaskItem)
-
-
-
--- TO REMOVE??
-
-
-taskItems : TaskList -> List TaskItem
-taskItems (TaskList l) =
-    l
-
-
-concat : List TaskList -> TaskList
-concat taskLists =
-    taskLists
-        |> List.map (\l -> taskItems l)
-        |> List.concat
-        |> TaskList
 
 
 
@@ -45,12 +33,35 @@ empty =
 
 
 
+-- PARSING
+
+
+parser : String -> Maybe String -> Parser TaskList
+parser filePath fileDate =
+    loop [] (taskItemsHelp filePath fileDate)
+        |> map (\ts -> TaskList ts)
+
+
+
 -- COMBINE
 
 
 append : TaskList -> TaskList -> TaskList
 append (TaskList root) (TaskList toAppend) =
     TaskList <| root ++ toAppend
+
+
+concat : List TaskList -> TaskList
+concat taskLists =
+    let
+        taskItems : TaskList -> List TaskItem
+        taskItems (TaskList l) =
+            l
+    in
+    taskLists
+        |> List.map (\l -> taskItems l)
+        |> List.concat
+        |> TaskList
 
 
 
@@ -67,13 +78,92 @@ replaceForFile filePath updatedList currentList =
 
 
 
--- PARSING
+-- INFO
 
 
-parser : String -> Maybe String -> Parser TaskList
-parser filePath fileDate =
-    loop [] (taskItemsHelp filePath fileDate)
-        |> map (\ts -> TaskList ts)
+taskTitles : TaskList -> List String
+taskTitles (TaskList taskItems) =
+    taskItems
+        |> List.map TaskItem.title
+
+
+
+-- FILTERS
+
+
+undatedItems : TaskList -> List TaskItem
+undatedItems (TaskList taskItems) =
+    taskItems
+        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
+
+
+todaysItems : Date -> TaskList -> List TaskItem
+todaysItems today (TaskList taskItems) =
+    let
+        isToday t =
+            case TaskItem.due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days today date <= 0 then
+                        True
+
+                    else
+                        False
+    in
+    taskItems
+        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+
+
+tomorrowsItems : Date -> TaskList -> List TaskItem
+tomorrowsItems today (TaskList taskItems) =
+    let
+        tomorrow =
+            Date.add Date.Days 1 today
+
+        isTomorrow t =
+            case TaskItem.due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days tomorrow date == 0 then
+                        True
+
+                    else
+                        False
+    in
+    taskItems
+        |> List.filter (\t -> isTomorrow t && (not <| TaskItem.isCompleted t))
+
+
+futureItems : Date -> TaskList -> List TaskItem
+futureItems today (TaskList taskItems) =
+    let
+        tomorrow =
+            Date.add Date.Days 1 today
+
+        isToday t =
+            case TaskItem.due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days tomorrow date > 0 then
+                        True
+
+                    else
+                        False
+    in
+    taskItems
+        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+
+
+completedItems : TaskList -> List TaskItem
+completedItems (TaskList taskItems) =
+    taskItems
+        |> List.filter TaskItem.isCompleted
 
 
 
@@ -81,12 +171,23 @@ parser filePath fileDate =
 
 
 removeForFile : TaskList -> String -> TaskList
-removeForFile taskList filePath =
+removeForFile (TaskList taskItems) filePath =
     let
         leftOverTaskItems =
-            TaskItem.notFromFile filePath (taskItems taskList)
+            itemsNotFromFile filePath taskItems
     in
     TaskList leftOverTaskItems
+
+
+itemsFromFile : String -> List TaskItem -> List TaskItem
+itemsFromFile pathToFile =
+    List.filter <| TaskItem.isFromFile pathToFile
+
+
+itemsNotFromFile : String -> List TaskItem -> List TaskItem
+itemsNotFromFile pathToFile taskItems =
+    taskItems
+        |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
 taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))

@@ -133,24 +133,24 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     case ( model.taskList, model.today ) of
-        ( Loaded taskItems, Just today ) ->
+        ( Loaded taskList, Just today ) ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
-                        (TaskItem.undated <| TaskList.taskItems taskItems)
+                        (TaskList.undatedItems taskList)
                     , column
                         "Today"
-                        (TaskItem.forToday today <| TaskList.taskItems taskItems)
+                        (TaskList.todaysItems today taskList)
                     , column
                         "Tomorrow"
-                        (TaskItem.forTomorrow today <| TaskList.taskItems taskItems)
+                        (TaskList.tomorrowsItems today taskList)
                     , column
                         "Future"
-                        (TaskItem.forFuture today <| TaskList.taskItems taskItems)
+                        (TaskList.futureItems today taskList)
                     , column
                         "Done"
-                        (TaskItem.completed <| TaskList.taskItems taskItems)
+                        (TaskList.completedItems taskList)
                     ]
                 ]
 
