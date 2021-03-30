@@ -11,7 +11,98 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ parsing
+        [ info
+        , parsing
+        ]
+
+
+info : Test
+info =
+    describe "info"
+        [ test "due returns Nothing if there was no date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Expect.equal (Ok Nothing)
+        , test "due returns Nothing if the date is invalid" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" <| Just "not a date")
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Expect.equal (Ok Nothing)
+        , test "due returns Just the date if the date is valid" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" <| Just "2020-01-07")
+                    |> Result.map (\t -> TaskItem.due t)
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737431)
+        , test "isCompleted returns False if the checkbox is NOT checked" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok False)
+        , test "isCompleted returns True if the checkbox is checked with an x" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok True)
+        , test "isCompleted returns True if the checkbox is checked with an X" <|
+            \() ->
+                "- [X] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok True)
+        , test "isDated returns False if there was no date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Expect.equal (Ok False)
+        , test "isDated returns False if the date is invalid" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" <| Just "not a date")
+                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Expect.equal (Ok False)
+        , test "isDated returns True if the date is valid" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" <| Just "2020-01-07")
+                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Expect.equal (Ok True)
+        , test "isFromFile returns False if the filenames do NOT match" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "File B" t)
+                    |> Expect.equal (Ok False)
+        , test "isFromFile returns True if the filenames do match" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "File A" t)
+                    |> Expect.equal (Ok True)
+        , test "isFromFile returns True if the filenames are both blank" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "" t)
+                    |> Expect.equal (Ok True)
+        , test "isFromFile returns False if the filenames do NOT match case" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "File a" t)
+                    |> Expect.equal (Ok False)
+        , test "isFromFile returns False if the filenames are a partial match" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "File" t)
+                    |> Expect.equal (Ok False)
         ]
 
 
