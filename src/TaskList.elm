@@ -52,16 +52,8 @@ append (TaskList root) (TaskList toAppend) =
 
 
 concat : List TaskList -> TaskList
-concat taskLists =
-    let
-        taskItems : TaskList -> List TaskItem
-        taskItems (TaskList l) =
-            l
-    in
-    taskLists
-        |> List.map (\l -> taskItems l)
-        |> List.concat
-        |> TaskList
+concat =
+    List.foldr append empty
 
 
 
@@ -71,10 +63,10 @@ concat taskLists =
 replaceForFile : String -> TaskList -> TaskList -> TaskList
 replaceForFile filePath updatedList currentList =
     let
-        modelWithTasksRemoved =
+        listWithTasksRemoved =
             removeForFile currentList filePath
     in
-    append modelWithTasksRemoved updatedList
+    append updatedList listWithTasksRemoved
 
 
 

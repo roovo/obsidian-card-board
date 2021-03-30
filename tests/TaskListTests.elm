@@ -11,9 +11,42 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ filtering
+        [ combine
+        , filtering
+        , replaceForFile
         , parsing
         , parsingToFix
+        ]
+
+
+parsingToFix : Test
+parsingToFix =
+    describe "todo parsing it would be good to fix (save appending \n to end of string before parsing"
+        [ test "FAILS to parse tasks when the last line is a non-task and has NO line ending" <|
+            \() ->
+                "- [ ] foo\na"
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        ]
+
+
+combine : Test
+combine =
+    describe "combine"
+        [ test "append joins two TaskLists" <|
+            \() ->
+                parsedTasks undatedTasks
+                    |> TaskList.append (parsedTasks yesterdaysTasks)
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "yesterday incomplete", "yesterday complete", "undated incomplete", "undated complete" ]
+        , test "concat concatinates a list of TaskLists into a single TaskList" <|
+            \() ->
+                [ parsedTasks undatedTasks, parsedTasks yesterdaysTasks ]
+                    |> TaskList.concat
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "undated incomplete", "undated complete", "yesterday incomplete", "yesterday complete" ]
         ]
 
 
@@ -61,16 +94,38 @@ filtering =
         ]
 
 
-parsingToFix : Test
-parsingToFix =
-    describe "todo parsing it would be good to fix (save appending \n to end of string before parsing"
-        [ test "FAILS to parse tasks when the last line is a non-task and has NO line ending" <|
+
+-- replaceForFile filePath updatedList currentList =
+
+
+replaceForFile : Test
+replaceForFile =
+    describe "replacing tasks from a chosen file"
+        [ test "adds the tasks if the TaskList is empty" <|
             \() ->
-                "- [ ] foo\na"
-                    |> Parser.run (TaskList.parser "" Nothing)
-                    |> Result.withDefault TaskList.empty
+                TaskList.empty
+                    |> TaskList.replaceForFile "ignored"
+                        (parsedTasks <| tasksFromFile "file a")
                     |> TaskList.taskTitles
-                    |> Expect.equal []
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "chosen file incomplete", "chosen file complete" ])
+        , test "adds the tasks if the list doesn't contain tasks from the file" <|
+            \() ->
+                parsedTasks undatedTasks
+                    |> TaskList.replaceForFile "ignored"
+                        (parsedTasks <| tasksFromFile "file a")
+                    |> TaskList.taskTitles
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "undated incomplete", "undated complete", "chosen file incomplete", "chosen file complete" ])
+        , test "replaces tasks from the file" <|
+            \() ->
+                parsedTasks undatedTasks
+                    |> TaskList.append (parsedTasks <| tasksFromFile "file a")
+                    |> TaskList.replaceForFile "file a"
+                        (parsedTasks <| tasksFromNewFile "could be another file")
+                    |> TaskList.taskTitles
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "new file incomplete", "new file complete", "undated incomplete", "undated complete" ])
         ]
 
 
@@ -189,9 +244,14 @@ not a task
 parsedFiles : TaskList
 parsedFiles =
     taskFiles
-        |> List.map (\( p, d, ts ) -> Parser.run (TaskList.parser p d) ts)
-        |> List.map (Result.withDefault TaskList.empty)
+        |> List.map parsedTasks
         |> TaskList.concat
+
+
+parsedTasks : ( String, Maybe String, String ) -> TaskList
+parsedTasks ( p, d, ts ) =
+    Parser.run (TaskList.parser p d) ts
+        |> Result.withDefault TaskList.empty
 
 
 todayAsDate : Date.Date
@@ -205,14 +265,8 @@ todayAsDate =
 
 taskFiles : List ( String, Maybe String, String )
 taskFiles =
-    [ ( "", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete
-""" )
-    , ( "", Just yesterday, """
-- [ ] yesterday incomplete
-- [x] yesterday complete
-""" )
+    [ undatedTasks
+    , yesterdaysTasks
     , ( "", Just today, """
 - [ ] today incomplete
 - [x] today complete
@@ -229,11 +283,40 @@ taskFiles =
 - [ ] invalid date incomplete
 - [x] invalid date complete
 """ )
-    , ( "/path/to/file", Nothing, """
+    , tasksFromFile "/path/to/file"
+    ]
+
+
+undatedTasks : ( String, Maybe String, String )
+undatedTasks =
+    ( "", Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+
+
+yesterdaysTasks : ( String, Maybe String, String )
+yesterdaysTasks =
+    ( "", Just yesterday, """
+- [ ] yesterday incomplete
+- [x] yesterday complete
+""" )
+
+
+tasksFromFile : String -> ( String, Maybe String, String )
+tasksFromFile path =
+    ( path, Nothing, """
 - [ ] chosen file incomplete
 - [x] chosen file complete
 """ )
-    ]
+
+
+tasksFromNewFile : String -> ( String, Maybe String, String )
+tasksFromNewFile path =
+    ( path, Nothing, """
+- [ ] new file incomplete
+- [x] new file complete
+""" )
 
 
 yesterday : String

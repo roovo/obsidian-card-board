@@ -1,4 +1,3 @@
-- add some testing around adding, updating, removing tasks from a list of TaskItems
 - Update board as files are updated in the app
   - files created, deleted, renamed : DONE updated
   - does a create get called when a file with content is added to the vault directory?
@@ -6,6 +5,8 @@
     check for modification code :)
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
+  - this is relevant when someone is updating a file as I don't want the tasks from that file
+    to move around the column they are in.
 - Show checkbox to mark as done
 - Implement mark as done (add Pending Completion to type)
 - render card title as markdown
@@ -31,6 +32,7 @@
 
 # Done
 
+- add some testing around adding, updating, removing tasks from a list of TaskItems
 - add some tests for filtering for taskItems not from a given path
 - bug
   parsing fails if there is a task list that contains a task prefix with nothing after it, so:
