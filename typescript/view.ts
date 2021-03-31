@@ -36,7 +36,7 @@ export class KanbanView extends ItemView {
 
       const fileContents = await this.vault.cachedRead(file);
       elm.ports.dataForElm.send({
-        tag: "MarkdownToParse",
+        tag: "NewFile",
         data: {
           filePath: file.path,
           fileDate: fileDate,
@@ -56,7 +56,7 @@ export class KanbanView extends ItemView {
       const fileContents = await this.vault.read(file);
 
       elm.ports.dataForElm.send({
-        tag: "FileModified",
+        tag: "UpdatedFile",
         data: {
           filePath: file.path,
           fileDate: fileDate,

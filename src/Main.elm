@@ -74,14 +74,14 @@ update msg model =
     case ( msg, model ) of
         ( DataFromTypeScript dataForElm, _ ) ->
             case dataForElm of
-                Ports.MarkdownToParse markdownFile ->
+                Ports.NewFile markdownFile ->
                     ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                         |> Result.withDefault TaskList.empty
                         |> addTaskItems model
                     , Cmd.none
                     )
 
-                Ports.UpdatedMarkdownToParse markdownFile ->
+                Ports.UpdatedFile markdownFile ->
                     ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                         |> Result.withDefault TaskList.empty
                         |> updateTaskItems model markdownFile.filePath
