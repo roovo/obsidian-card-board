@@ -45,8 +45,28 @@ export class KanbanView extends ItemView {
       });
     }
 
+    this.registerEvent(this.app.vault.on("create",
+      (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
+
     this.registerEvent(this.app.vault.on("modify",
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
+  }
+
+  async handleFileCreated(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
+
+    if (file instanceof TFile) {
+      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileContents = await this.vault.read(file);
+
+      elm.ports.dataForElm.send({
+        tag: "NewFile",
+        data: {
+          filePath: file.path,
+          fileDate: fileDate,
+          fileContents: fileContents
+        }
+      })
+    }
   }
 
   async handleFileModified(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
