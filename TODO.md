@@ -1,7 +1,3 @@
-- Ordering when reading files and displaying tasks
-  - specially for today, future, and done columns
-  - this is relevant when someone is updating a file as I don't want the tasks from that file
-    to move around the column they are in.
 - Show checkbox to mark as done
 - Implement mark as done (add Pending Completion to type)
 - render card title as markdown
@@ -18,6 +14,9 @@
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
 
+- define boards by #tags
+- support multiple kanban boards
+
 - can I get parser to always work when there is no "\n" on the end of the input
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
@@ -28,6 +27,10 @@
 
 # Done
 
+- Ordering when reading files and displaying tasks
+  - specially for today, future, and done columns
+  - this is relevant when someone is updating a file as I don't want the tasks from that file
+    to move around the column they are in.
 - Update board as files are updated in the app vault
   - updated, created, deleted
 - add some testing around adding, updating, removing tasks from a list of TaskItems

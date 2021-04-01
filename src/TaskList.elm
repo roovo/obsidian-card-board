@@ -117,6 +117,7 @@ todaysItems today (TaskList taskItems) =
     in
     taskItems
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+        |> List.sortBy TaskItem.filePath
 
 
 tomorrowsItems : Date -> TaskList -> List TaskItem
@@ -161,12 +162,14 @@ futureItems today (TaskList taskItems) =
     in
     taskItems
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+        |> List.sortBy TaskItem.filePath
 
 
 completedItems : TaskList -> List TaskItem
 completedItems (TaskList taskItems) =
     taskItems
         |> List.filter TaskItem.isCompleted
+        |> List.sortBy TaskItem.filePath
 
 
 
