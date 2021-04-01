@@ -3,6 +3,7 @@ module TaskItem exposing
     , Dated(..)
     , TaskItem
     , due
+    , filePath
     , isCompleted
     , isDated
     , isFromFile
@@ -51,6 +52,11 @@ due (TaskItem _ _ d _) =
 
         Due date ->
             Just date
+
+
+filePath : TaskItem -> String
+filePath (TaskItem p _ _ _) =
+    p
 
 
 isDated : TaskItem -> Bool
@@ -111,12 +117,3 @@ fileDateParser fileDate =
         |> Maybe.map Due
         |> Maybe.withDefault Undated
         |> succeed
-
-
-
--- PRIVATE
-
-
-filePath : TaskItem -> String
-filePath (TaskItem p _ _ _) =
-    p

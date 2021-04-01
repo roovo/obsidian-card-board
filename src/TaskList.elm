@@ -97,6 +97,7 @@ undatedItems : TaskList -> List TaskItem
 undatedItems (TaskList taskItems) =
     taskItems
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
+        |> List.sortBy TaskItem.filePath
 
 
 todaysItems : Date -> TaskList -> List TaskItem

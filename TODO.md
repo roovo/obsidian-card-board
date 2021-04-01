@@ -1,5 +1,3 @@
-- Update board as files are updated in the app vault
-  - files renamed : DONE updated, created, deleted
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
   - this is relevant when someone is updating a file as I don't want the tasks from that file
@@ -8,6 +6,7 @@
 - Implement mark as done (add Pending Completion to type)
 - render card title as markdown
 - click on card to jump to location in file
+- handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
 - show a trash icon on a card and click it to delete (with confirmation)
 - drag and drop -> into today, tomorrow, and done columns
@@ -29,6 +28,8 @@
 
 # Done
 
+- Update board as files are updated in the app vault
+  - updated, created, deleted
 - add some testing around adding, updating, removing tasks from a list of TaskItems
 - add some tests for filtering for taskItems not from a given path
 - bug

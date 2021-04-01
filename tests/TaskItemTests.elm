@@ -73,6 +73,12 @@ info =
                     |> Parser.run (TaskItem.parser "" <| Just "2020-01-07")
                     |> Result.map (\t -> TaskItem.isDated t)
                     |> Expect.equal (Ok True)
+        , test "filePath returns filePath" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map TaskItem.filePath
+                    |> Expect.equal (Ok "File A")
         , test "isFromFile returns False if the filenames do NOT match" <|
             \() ->
                 "- [ ] foo"

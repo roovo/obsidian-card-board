@@ -54,12 +54,12 @@ combine =
 filtering : Test
 filtering =
     describe "filtering"
-        [ test "undatedItems" <|
+        [ test "undatedItems are sorted by path ascending" <|
             \() ->
                 parsedFiles
                     |> TaskList.undatedItems
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "undated incomplete", "invalid date incomplete", "chosen file incomplete" ]
+                    |> Expect.equal [ "invalid date incomplete", "undated incomplete", "chosen file incomplete" ]
         , test "todaysItems" <|
             \() ->
                 parsedFiles
@@ -285,29 +285,29 @@ taskFiles : List ( String, Maybe String, String )
 taskFiles =
     [ undatedTasks
     , yesterdaysTasks
-    , ( "", Just today, """
+    , ( "b", Just today, """
 - [ ] today incomplete
 - [x] today complete
 """ )
-    , ( "", Just tomorrow, """
+    , ( "c", Just tomorrow, """
 - [ ] tomorrow incomplete
 - [x] tomorrow complete
 """ )
-    , ( "", Just future, """
+    , ( "d", Just future, """
 - [ ] future incomplete
 - [x] future complete
 """ )
-    , ( "", Just "invalid date", """
+    , ( "e", Just "invalid date", """
 - [ ] invalid date incomplete
 - [x] invalid date complete
 """ )
-    , tasksFromFile "/path/to/file"
+    , tasksFromFile "path/to/file"
     ]
 
 
 undatedTasks : ( String, Maybe String, String )
 undatedTasks =
-    ( "", Nothing, """
+    ( "f", Nothing, """
 - [ ] undated incomplete
 - [x] undated complete
 """ )
@@ -315,7 +315,7 @@ undatedTasks =
 
 yesterdaysTasks : ( String, Maybe String, String )
 yesterdaysTasks =
-    ( "", Just yesterday, """
+    ( "a", Just yesterday, """
 - [ ] yesterday incomplete
 - [x] yesterday complete
 """ )
