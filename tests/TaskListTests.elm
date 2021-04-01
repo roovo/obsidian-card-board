@@ -14,6 +14,7 @@ suite =
         [ combine
         , filtering
         , replaceForFile
+        , removeForFile
         , parsing
         , parsingToFix
         ]
@@ -94,10 +95,6 @@ filtering =
         ]
 
 
-
--- replaceForFile filePath updatedList currentList =
-
-
 replaceForFile : Test
 replaceForFile =
     describe "replacing tasks from a chosen file"
@@ -126,6 +123,27 @@ replaceForFile =
                     |> TaskList.taskTitles
                     |> List.sort
                     |> Expect.equal (List.sort [ "new file incomplete", "new file complete", "undated incomplete", "undated complete" ])
+        ]
+
+
+removeForFile : Test
+removeForFile =
+    describe "removing tasks from a chosen file"
+        [ test "has no effect if the TaskList is empty" <|
+            \() ->
+                TaskList.empty
+                    |> TaskList.removeForFile "a file"
+                    |> TaskList.taskTitles
+                    |> List.sort
+                    |> Expect.equal (List.sort [])
+        , test "remove tasks from the file" <|
+            \() ->
+                parsedTasks undatedTasks
+                    |> TaskList.append (parsedTasks <| tasksFromFile "file a")
+                    |> TaskList.removeForFile "file a"
+                    |> TaskList.taskTitles
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "undated incomplete", "undated complete" ])
         ]
 
 

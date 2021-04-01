@@ -6,6 +6,7 @@ module TaskList exposing
     , empty
     , futureItems
     , parser
+    , removeForFile
     , replaceForFile
     , taskTitles
     , todaysItems
@@ -64,9 +65,18 @@ replaceForFile : String -> TaskList -> TaskList -> TaskList
 replaceForFile filePath updatedList currentList =
     let
         listWithTasksRemoved =
-            removeForFile currentList filePath
+            removeForFile filePath currentList
     in
     append updatedList listWithTasksRemoved
+
+
+removeForFile : String -> TaskList -> TaskList
+removeForFile filePath (TaskList taskItems) =
+    let
+        leftOverTaskItems =
+            itemsNotFromFile filePath taskItems
+    in
+    TaskList leftOverTaskItems
 
 
 
@@ -160,15 +170,6 @@ completedItems (TaskList taskItems) =
 
 
 -- PRIVATE
-
-
-removeForFile : TaskList -> String -> TaskList
-removeForFile (TaskList taskItems) filePath =
-    let
-        leftOverTaskItems =
-            itemsNotFromFile filePath taskItems
-    in
-    TaskList leftOverTaskItems
 
 
 itemsFromFile : String -> List TaskItem -> List TaskItem

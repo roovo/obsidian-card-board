@@ -35,18 +35,18 @@ export class KanbanView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
 
       const fileContents = await this.vault.cachedRead(file);
-      elm.ports.dataForElm.send({
-        tag: "NewFile",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
+      elm.ports.fileAdded.send({
+        filePath: file.path,
+        fileDate: fileDate,
+        fileContents: fileContents
       });
     }
 
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
+
+    this.registerEvent(this.app.vault.on("delete",
+      (file) => this.handleFileDeleted(elm, dailyNotesSettings, file)));
 
     this.registerEvent(this.app.vault.on("modify",
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
@@ -58,14 +58,20 @@ export class KanbanView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
       const fileContents = await this.vault.read(file);
 
-      elm.ports.dataForElm.send({
-        tag: "NewFile",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
+      elm.ports.fileAdded.send({
+        filePath: file.path,
+        fileDate: fileDate,
+        fileContents: fileContents
       })
+    }
+  }
+
+  async handleFileDeleted(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
+
+    if (file instanceof TFile) {
+      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+
+      elm.ports.fileDeleted.send(file.path)
     }
   }
 
@@ -75,13 +81,10 @@ export class KanbanView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
       const fileContents = await this.vault.read(file);
 
-      elm.ports.dataForElm.send({
-        tag: "UpdatedFile",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
+      elm.ports.fileUpdated.send({
+        filePath: file.path,
+        fileDate: fileDate,
+        fileContents: fileContents
       })
     }
   }

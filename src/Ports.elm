@@ -1,14 +1,11 @@
 port module Ports exposing
-    ( DataForElm(..)
-    , receiveDataFromTypescript
+    ( MarkdownFile
+    , fileAdded
+    , fileDeleted
+    , fileUpdated
     )
 
--- MODEL
-
-
-type DataForElm
-    = NewFile MarkdownFile
-    | UpdatedFile MarkdownFile
+-- TYPES
 
 
 type alias MarkdownFile =
@@ -18,33 +15,14 @@ type alias MarkdownFile =
     }
 
 
-type alias GenericTypescriptData =
-    { tag : String
-    , data : MarkdownFile
-    }
-
-
-
--- INTERFACE
-
-
-receiveDataFromTypescript : (DataForElm -> msg) -> (String -> msg) -> Sub msg
-receiveDataFromTypescript tagger onError =
-    dataForElm <|
-        \typescriptData ->
-            case typescriptData.tag of
-                "UpdatedFile" ->
-                    tagger <| UpdatedFile typescriptData.data
-
-                "NewFile" ->
-                    tagger <| NewFile typescriptData.data
-
-                _ ->
-                    onError "unexpected data from Typescript"
-
-
 
 -- PORTS
 
 
-port dataForElm : (GenericTypescriptData -> msg) -> Sub msg
+port fileUpdated : (MarkdownFile -> msg) -> Sub msg
+
+
+port fileAdded : (MarkdownFile -> msg) -> Sub msg
+
+
+port fileDeleted : (String -> msg) -> Sub msg

@@ -6,8 +6,14 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
-        dataForElm: {
-          send(data: { tag: string; data: { filePath: string; fileDate: string | null; fileContents: string } }): void
+        fileUpdated: {
+          send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
+        }
+        fileAdded: {
+          send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
+        }
+        fileDeleted: {
+          send(data: string): void
         }
       };
     }

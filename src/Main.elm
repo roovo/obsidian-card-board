@@ -5,7 +5,7 @@ import Date exposing (Date)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Parser
-import Ports exposing (DataForElm)
+import Ports exposing (MarkdownFile)
 import Task exposing (Task)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -64,37 +64,46 @@ init flags =
 
 
 type Msg
-    = DataFromTypeScript DataForElm
-    | LogError String
-    | ReceiveDate Date
+    = ReceiveDate Date
+    | VaultFileAdded MarkdownFile
+    | VaultFileDeleted String
+    | VaultFileUpdated MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( DataFromTypeScript dataForElm, _ ) ->
-            case dataForElm of
-                Ports.NewFile markdownFile ->
-                    ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault TaskList.empty
-                        |> addTaskItems model
-                    , Cmd.none
-                    )
+        ( VaultFileAdded markdownFile, _ ) ->
+            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                |> Result.withDefault TaskList.empty
+                |> addTaskItems model
+            , Cmd.none
+            )
 
-                Ports.UpdatedFile markdownFile ->
-                    ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                        |> Result.withDefault TaskList.empty
-                        |> updateTaskItems model markdownFile.filePath
-                    , Cmd.none
-                    )
+        ( VaultFileDeleted filePath, _ ) ->
+            ( deleteItemsFromFile model filePath, Cmd.none )
 
-        ( LogError error, _ ) ->
-            ( model, Cmd.none )
+        ( VaultFileUpdated markdownFile, _ ) ->
+            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                |> Result.withDefault TaskList.empty
+                |> updateTaskItems model markdownFile.filePath
+            , Cmd.none
+            )
 
         ( ReceiveDate today, _ ) ->
             ( { model | today = Just today }
             , Cmd.none
             )
+
+
+deleteItemsFromFile : Model -> String -> Model
+deleteItemsFromFile model filePath =
+    case model.taskList of
+        Loading ->
+            model
+
+        Loaded currentList ->
+            { model | taskList = Loaded (TaskList.removeForFile filePath currentList) }
 
 
 addTaskItems : Model -> TaskList -> Model
@@ -123,7 +132,11 @@ updateTaskItems model filePath updatedList =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Ports.receiveDataFromTypescript DataFromTypeScript LogError
+    Sub.batch
+        [ Ports.fileAdded VaultFileAdded
+        , Ports.fileUpdated VaultFileUpdated
+        , Ports.fileDeleted VaultFileDeleted
+        ]
 
 
 

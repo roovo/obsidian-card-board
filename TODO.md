@@ -1,8 +1,5 @@
-- Update board as files are updated in the app
-  - files deleted, renamed : DONE updated, created
-  - does a create get called when a file with content is added to the vault directory?
-    I think it might as I can update outside of obsidian and these are tracked using my
-    check for modification code :) - Answer == YES
+- Update board as files are updated in the app vault
+  - files renamed : DONE updated, created, deleted
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
   - this is relevant when someone is updating a file as I don't want the tasks from that file
