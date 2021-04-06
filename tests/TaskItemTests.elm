@@ -79,6 +79,12 @@ info =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
+        , test "id returns filePath:lineNumber" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map TaskItem.id
+                    |> Expect.equal (Ok "File A:1")
         , test "isFromFile returns False if the filenames do NOT match" <|
             \() ->
                 "- [ ] foo"

@@ -257,6 +257,20 @@ not a task
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar" ]
+        , test "parses ids consiting of the filePath and line number" <|
+            \() ->
+                """- [ ] foo
+
+
+- [x] bar
+
+- [X] baz
+
+"""
+                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TaskList.taskIds
+                    |> Expect.equal [ "file_a:1", "file_a:4", "file_a:6" ]
         ]
 
 

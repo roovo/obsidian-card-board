@@ -8,6 +8,7 @@ module TaskList exposing
     , parser
     , removeForFile
     , replaceForFile
+    , taskIds
     , taskTitles
     , todaysItems
     , tomorrowsItems
@@ -87,6 +88,12 @@ taskTitles : TaskList -> List String
 taskTitles (TaskList taskItems) =
     taskItems
         |> List.map TaskItem.title
+
+
+taskIds : TaskList -> List String
+taskIds (TaskList taskItems) =
+    taskItems
+        |> List.map TaskItem.id
 
 
 

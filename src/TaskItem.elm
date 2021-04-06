@@ -4,6 +4,7 @@ module TaskItem exposing
     , TaskItem
     , due
     , filePath
+    , id
     , isCompleted
     , isDated
     , isFromFile
@@ -22,7 +23,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem String Completion Dated String
+    = TaskItem String Int Completion Dated String
 
 
 type Completion
@@ -40,12 +41,12 @@ type Dated
 
 
 title : TaskItem -> String
-title (TaskItem _ _ _ t) =
+title (TaskItem _ _ _ _ t) =
     t
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem _ _ d _) =
+due (TaskItem _ _ _ d _) =
     case d of
         Undated ->
             Nothing
@@ -55,8 +56,13 @@ due (TaskItem _ _ d _) =
 
 
 filePath : TaskItem -> String
-filePath (TaskItem p _ _ _) =
+filePath (TaskItem p _ _ _ _) =
     p
+
+
+id : TaskItem -> String
+id (TaskItem p l _ _ _) =
+    p ++ ":" ++ String.fromInt l
 
 
 isDated : TaskItem -> Bool
@@ -67,7 +73,7 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem _ c _ _) =
+isCompleted (TaskItem _ _ c _ _) =
     case c of
         Incomplete ->
             False
@@ -77,7 +83,7 @@ isCompleted (TaskItem _ c _ _) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem p _ _ _) =
+isFromFile pathToFile (TaskItem p _ _ _ _) =
     p == pathToFile
 
 
@@ -89,6 +95,7 @@ parser : String -> Maybe String -> Parser TaskItem
 parser pathToFile fileDate =
     succeed TaskItem
         |= succeed pathToFile
+        |= Parser.getRow
         |= prefixParser
         |. chompWhile isSpaceOrTab
         |= fileDateParser fileDate
