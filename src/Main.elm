@@ -186,4 +186,8 @@ column title taskItems =
 card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-baord-card" ]
-        [ Html.text <| TaskItem.title taskItem ]
+        [ Html.div [ class "card-board-card-checkbox-area" ]
+            [ Html.text "O" ]
+        , Html.div [ class "card-board-card-body" ]
+            [ Html.text <| TaskItem.title taskItem ]
+        ]
