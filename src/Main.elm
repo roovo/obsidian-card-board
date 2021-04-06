@@ -3,7 +3,8 @@ module Main exposing (main)
 import Browser
 import Date exposing (Date)
 import Html exposing (Html)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, type_)
+import Html.Events exposing (onClick)
 import Parser
 import Ports exposing (MarkdownFile)
 import Task exposing (Task)
@@ -65,6 +66,7 @@ init flags =
 
 type Msg
     = ReceiveDate Date
+    | TaskItemToggled String
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileUpdated MarkdownFile
@@ -73,6 +75,18 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( ReceiveDate today, _ ) ->
+            ( { model | today = Just today }
+            , Cmd.none
+            )
+
+        ( TaskItemToggled id, _ ) ->
+            let
+                foo =
+                    Debug.log "toggle" id
+            in
+            ( model, Cmd.none )
+
         ( VaultFileAdded markdownFile, _ ) ->
             ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                 |> Result.withDefault TaskList.empty
@@ -87,11 +101,6 @@ update msg model =
             ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                 |> Result.withDefault TaskList.empty
                 |> updateTaskItems model markdownFile.filePath
-            , Cmd.none
-            )
-
-        ( ReceiveDate today, _ ) ->
-            ( { model | today = Just today }
             , Cmd.none
             )
 
@@ -187,7 +196,12 @@ card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-baord-card" ]
         [ Html.div [ class "card-board-card-checkbox-area" ]
-            [ Html.text "O" ]
+            [ Html.input
+                [ type_ "checkbox"
+                , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                ]
+                []
+            ]
         , Html.div [ class "card-board-card-body" ]
             [ Html.text <| TaskItem.title taskItem ]
         ]
