@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Date exposing (Date)
 import Html exposing (Html)
-import Html.Attributes exposing (class, type_)
+import Html.Attributes exposing (checked, class, type_)
 import Html.Events exposing (onClick)
 import Parser
 import Ports exposing (MarkdownFile)
@@ -212,6 +212,7 @@ card taskItem =
             [ Html.input
                 [ type_ "checkbox"
                 , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                , checked <| TaskItem.isCompleted taskItem
                 ]
                 []
             ]

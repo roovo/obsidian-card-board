@@ -1,5 +1,3 @@
-- Show checkbox to mark as done
-- Implement mark as done (add Pending Completion to type)
 - render card title as markdown
 - click on card to jump to location in file
 - handle renames - make sure I cope with both directory and file renames
@@ -22,11 +20,12 @@
   - put the static sources in an assets dir and copy them into dist on build too
 - elm review
 - elm debugger
-- why does the compilation fail with  TS2307: Cannot find module '../src/Main' or its corresponding type declarations.
 
 
 # Done
 
+- Show checkbox to mark as done
+- Implement mark as done (add Pending Completion to type)
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
   - this is relevant when someone is updating a file as I don't want the tasks from that file

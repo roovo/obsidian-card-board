@@ -42,6 +42,12 @@ export class KanbanView extends ItemView {
       });
     }
 
+    const that = this;
+
+    elm.ports.toggleTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string, setToChecked: boolean}) {
+      that.handleToggleTodo(data);
+    })
+
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
 
@@ -50,6 +56,18 @@ export class KanbanView extends ItemView {
 
     this.registerEvent(this.app.vault.on("modify",
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
+  }
+
+  async handleToggleTodo(data: {filePath: string, lineNumber: number, title: string, setToChecked: boolean}) {
+    const afile = this.app.vault.getAbstractFileByPath(data.filePath)
+    if (afile instanceof TFile) {
+      const markdown = await this.vault.read(afile)
+      const markdownLines = markdown.split(/\r?\n/)
+      if (markdownLines[data.lineNumber - 1].includes(data.title)) {
+        markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(\-\s\[)([^\]]+)(\].*$)/, `$1${data.setToChecked ? "x" : " "}$3`)
+        this.vault.modify(afile, markdownLines.join("\n"))
+      }
+    }
   }
 
   async handleFileCreated(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
