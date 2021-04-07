@@ -37,7 +37,7 @@
   list-style: none;
 }
 
-.card-board-card {
+.xcard-board-card {
   display: flex;
   flex-direction: row;
   padding: 10px 5px;
@@ -48,6 +48,46 @@
   cursor: pointer;
 }
 
+.card-board-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.card-board-card-content-area {
+  grid-row-start: 1;
+  grid-column-start: 1;
+  padding: 10px 5px;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+}
+
 .card-board-card-checkbox-area {
-  padding: 0px 10px;
+  grid-column-start: 1;
+  grid-row-start: 1;
+}
+
+.card-board-card-checkbox-area input {
+  width: 18px;
+  height: 18px;
+}
+
+.card-board-card-body {
+  grid-column-start: 2;
+  grid-row-start: 1;
+}
+
+.card-board-card-action-area {
+  grid-column-start: 1;
+  grid-row-start: 2;
+  margin-left: auto;
+}
+
+.card-board-card-action-area button {
+  height: 18px;
 }

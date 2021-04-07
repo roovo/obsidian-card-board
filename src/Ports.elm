@@ -1,5 +1,6 @@
 port module Ports exposing
     ( MarkdownFile
+    , deleteTodo
     , fileAdded
     , fileDeleted
     , fileUpdated
@@ -18,6 +19,9 @@ type alias MarkdownFile =
 
 
 -- PORTS
+
+
+port deleteTodo : { filePath : String, lineNumber : Int, title : String } -> Cmd msg
 
 
 port toggleTodo : { filePath : String, lineNumber : Int, title : String, setToChecked : Bool } -> Cmd msg

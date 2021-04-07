@@ -66,6 +66,7 @@ init flags =
 
 type Msg
     = ReceiveDate Date
+    | TaskItemDeleteClicked String
     | TaskItemToggled String
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
@@ -79,6 +80,25 @@ update msg model =
             ( { model | today = Just today }
             , Cmd.none
             )
+
+        ( TaskItemDeleteClicked id, _ ) ->
+            case model.taskList of
+                Loaded taskList ->
+                    case TaskList.taskFromId id taskList of
+                        Just matchingItem ->
+                            ( model
+                            , Ports.deleteTodo
+                                { filePath = TaskItem.filePath matchingItem
+                                , lineNumber = TaskItem.lineNumber matchingItem
+                                , title = TaskItem.title matchingItem
+                                }
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                Loading ->
+                    ( model, Cmd.none )
 
         ( TaskItemToggled id, _ ) ->
             case model.taskList of
@@ -208,14 +228,20 @@ column title taskItems =
 card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-board-card" ]
-        [ Html.div [ class "card-board-card-checkbox-area" ]
-            [ Html.input
-                [ type_ "checkbox"
-                , onClick <| TaskItemToggled <| TaskItem.id taskItem
-                , checked <| TaskItem.isCompleted taskItem
-                ]
-                []
+        [ Html.div [ class "card-board-card-action-area" ]
+            [ Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
+                [ Html.text "Delete" ]
             ]
-        , Html.div [ class "card-board-card-body" ]
-            [ Html.text <| TaskItem.title taskItem ]
+        , Html.div [ class "card-board-card-content-area" ]
+            [ Html.div [ class "card-board-card-checkbox-area" ]
+                [ Html.input
+                    [ type_ "checkbox"
+                    , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                    , checked <| TaskItem.isCompleted taskItem
+                    ]
+                    []
+                ]
+            , Html.div [ class "card-board-card-body" ]
+                [ Html.text <| TaskItem.title taskItem ]
+            ]
         ]

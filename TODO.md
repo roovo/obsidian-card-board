@@ -1,8 +1,10 @@
+- add tests around mark as done and delete functionality
+- use a trash icon for delete
+- confirm deletion
 - render card title as markdown
 - click on card to jump to location in file
 - handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
-- show a trash icon on a card and click it to delete (with confirmation)
 - drag and drop -> into today, tomorrow, and done columns
 - do I want to keep trailing spaces when parsing TaskItem title?
 - specify directories/files to ignore (allow and deny lists?)
@@ -24,8 +26,9 @@
 
 # Done
 
-- Show checkbox to mark as done
+- Delete todos
 - Implement mark as done (add Pending Completion to type)
+- Show checkbox to mark as done
 - Ordering when reading files and displaying tasks
   - specially for today, future, and done columns
   - this is relevant when someone is updating a file as I don't want the tasks from that file
