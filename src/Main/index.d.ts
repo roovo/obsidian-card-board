@@ -6,6 +6,9 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
+        toggleTodo: {
+          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string; setToChecked: boolean }) => void): void
+        }
         fileUpdated: {
           send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
         }

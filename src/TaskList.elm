@@ -8,6 +8,7 @@ module TaskList exposing
     , parser
     , removeForFile
     , replaceForFile
+    , taskFromId
     , taskIds
     , taskTitles
     , todaysItems
@@ -16,6 +17,7 @@ module TaskList exposing
     )
 
 import Date exposing (Date)
+import List.Extra as LE
 import Parser exposing (..)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (Dated(..), TaskItem)
@@ -94,6 +96,12 @@ taskIds : TaskList -> List String
 taskIds (TaskList taskItems) =
     taskItems
         |> List.map TaskItem.id
+
+
+taskFromId : String -> TaskList -> Maybe TaskItem
+taskFromId id (TaskList taskItems) =
+    taskItems
+        |> LE.find (\i -> TaskItem.id i == id)
 
 
 

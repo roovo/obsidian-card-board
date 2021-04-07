@@ -8,6 +8,7 @@ module TaskItem exposing
     , isCompleted
     , isDated
     , isFromFile
+    , lineNumber
     , parser
     , title
     )
@@ -85,6 +86,11 @@ isCompleted (TaskItem _ _ c _ _) =
 isFromFile : String -> TaskItem -> Bool
 isFromFile pathToFile (TaskItem p _ _ _ _) =
     p == pathToFile
+
+
+lineNumber : TaskItem -> Int
+lineNumber (TaskItem _ l _ _ _) =
+    l
 
 
 

@@ -81,11 +81,24 @@ update msg model =
             )
 
         ( TaskItemToggled id, _ ) ->
-            let
-                foo =
-                    Debug.log "toggle" id
-            in
-            ( model, Cmd.none )
+            case model.taskList of
+                Loaded taskList ->
+                    case TaskList.taskFromId id taskList of
+                        Just matchingItem ->
+                            ( model
+                            , Ports.toggleTodo
+                                { filePath = TaskItem.filePath matchingItem
+                                , lineNumber = TaskItem.lineNumber matchingItem
+                                , title = TaskItem.title matchingItem
+                                , setToChecked = not <| TaskItem.isCompleted matchingItem
+                                }
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                Loading ->
+                    ( model, Cmd.none )
 
         ( VaultFileAdded markdownFile, _ ) ->
             ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
