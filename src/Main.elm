@@ -207,7 +207,7 @@ column title taskItems =
 
 card : TaskItem -> Html Msg
 card taskItem =
-    Html.li [ class "card-baord-card" ]
+    Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-checkbox-area" ]
             [ Html.input
                 [ type_ "checkbox"
