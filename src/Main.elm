@@ -2,6 +2,11 @@ module Main exposing (main)
 
 import Browser
 import Date exposing (Date)
+import FontAwesome.Attributes as FaAttributes
+import FontAwesome.Icon as FaIcon
+import FontAwesome.Regular as FaRegular
+import FontAwesome.Styles as FaStyles
+import FontAwesome.Svg as FaSvg
 import Html exposing (Html)
 import Html.Attributes exposing (checked, class, type_)
 import Html.Events exposing (onClick)
@@ -186,7 +191,8 @@ view model =
     case ( model.taskList, model.today ) of
         ( Loaded taskList, Just today ) ->
             Html.div [ class "card-board" ]
-                [ Html.div [ class "card-board-container" ]
+                [ FaStyles.css
+                , Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
                         (TaskList.undatedItems taskList)
@@ -226,7 +232,7 @@ card taskItem =
     Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-action-area" ]
             [ Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
-                [ Html.text "Delete" ]
+                [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
             ]
         , Html.div [ class "card-board-card-content-area" ]
             [ Html.div [ class "card-board-card-checkbox-area" ]
