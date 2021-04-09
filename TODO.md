@@ -1,8 +1,8 @@
 - add tests around mark as done and delete functionality
 - use a trash icon for delete
+- click on some icon to jump to location in file
 - confirm deletion
 - render card title as markdown
-- click on card to jump to location in file
 - handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
 - drag and drop -> into today, tomorrow, and done columns

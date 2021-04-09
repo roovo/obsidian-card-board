@@ -47,10 +47,6 @@ type alias Flags =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    let
-        foo =
-            Debug.log "flags" flags
-    in
     ( { dailyNotesFolder = flags.folder
       , dailyNotesFormat = flags.format
       , today = Nothing
