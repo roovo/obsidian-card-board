@@ -67,6 +67,7 @@ init flags =
 
 type Msg
     = ReceiveDate Date
+    | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
     | VaultFileAdded MarkdownFile
@@ -89,6 +90,25 @@ update msg model =
                         Just matchingItem ->
                             ( model
                             , Ports.deleteTodo
+                                { filePath = TaskItem.filePath matchingItem
+                                , lineNumber = TaskItem.lineNumber matchingItem
+                                , title = TaskItem.title matchingItem
+                                }
+                            )
+
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                Loading ->
+                    ( model, Cmd.none )
+
+        ( TaskItemEditClicked id, _ ) ->
+            case model.taskList of
+                Loaded taskList ->
+                    case TaskList.taskFromId id taskList of
+                        Just matchingItem ->
+                            ( model
+                            , Ports.editTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , title = TaskItem.title matchingItem
@@ -231,7 +251,9 @@ card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-action-area" ]
-            [ Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
+            [ Html.button [ onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
+                [ FaRegular.edit |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
+            , Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
                 [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
             ]
         , Html.div [ class "card-board-card-content-area" ]

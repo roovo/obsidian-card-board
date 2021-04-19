@@ -1,4 +1,4 @@
-import { App, ItemView, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
+import { App, FileView, ItemView, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
 import { Elm } from '../src/Main';
 import KanbanPlugin from './main';
 
@@ -52,6 +52,10 @@ export class KanbanView extends ItemView {
       that.handleDeleteTodo(data);
     })
 
+    elm.ports.editTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string }) {
+      that.handleEditTodo(data);
+    })
+
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
 
@@ -71,6 +75,35 @@ export class KanbanView extends ItemView {
         markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(.*)$/, "<del>$1</del>")
         this.vault.modify(file, markdownLines.join("\n"))
       }
+    }
+  }
+
+  async handleEditTodo(data: {filePath: string, lineNumber: number, title: string}) {
+    const leaves = this.app.workspace.getLeavesOfType("markdown")
+
+    let fileLeaf = null;
+
+    for (const leaf of leaves) {
+      const view = leaf.view
+      if (view instanceof FileView) {
+        if (data.filePath == view.file.path) {
+          fileLeaf = leaf
+        }
+
+      }
+    }
+
+    if (fileLeaf == null) {
+      const leaf = this.app.workspace.splitActiveLeaf();
+      const file = this.app.vault.getAbstractFileByPath(data.filePath)
+      if (file instanceof TFile) {
+        await leaf.openFile(file);
+      }
+      fileLeaf = leaf
+    }
+
+    if (fileLeaf) {
+      this.app.workspace.setActiveLeaf(fileLeaf, true, true)
     }
   }
 

@@ -1,6 +1,6 @@
 - add tests around mark as done and delete functionality
-- use a trash icon for delete
-- click on some icon to jump to location in file
+- on edit in file, jump to and highlight the relevant line
+  - https://codepen.io/Ratia/pen/gwNNgX
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
@@ -13,6 +13,7 @@
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
+- review aweful typescript code!
 
 - define boards by #tags
 - support multiple kanban boards
@@ -26,6 +27,8 @@
 
 # Done
 
+- click on some icon to jump to location in file
+- use a trash icon for delete
 - Delete todos
 - Implement mark as done (add Pending Completion to type)
 - Show checkbox to mark as done

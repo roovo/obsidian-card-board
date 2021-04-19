@@ -9,6 +9,9 @@ export namespace Elm {
         deleteTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; title: string }) => void): void
         }
+        editTodo: {
+          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string }) => void): void
+        }
         toggleTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; title: string; setToChecked: boolean }) => void): void
         }
