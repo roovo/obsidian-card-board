@@ -1,5 +1,3 @@
-- make it look nicer!
-  https://betterprogramming.pub/creating-trellos-ui-with-css-grid-ed1fbfcd9448
 - loose all reference to kanban
 - confirm deletion
 - render card title as markdown
@@ -33,6 +31,7 @@
 
 # Done
 
+- make it look nicer!
 - on edit in file, jump to and highlight the relevant line
   - https://codepen.io/Ratia/pen/gwNNgX
 - click on some icon to jump to location in file

@@ -1,49 +1,45 @@
 .card-board {
-  display: flex;
-  flex: 1 1 auto;
-  overflow: auto;
 }
 
 .card-board-container {
-  display: flex;
-  flex-direction: row;
-  padding: 10px 0 10px 10px;
+  display: grid;
+  grid-auto-columns: 272px;
+  grid-auto-flow: column;
+  grid-gap: 8px;
+  overflow: scroll;
 }
 
 .card-board-column {
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-  min-width: 300px;
-  max-width: 300px;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  background-color: #eee;
+  display: grid;
+  grid-auto-rows: max-content;
+  grid-gap: 10px;
+  padding: 10px;
+  background-color: rgb(235, 236, 240);
+  border-radius: 3px
 }
 
 .card-board-column-header {
-  padding: 10px;
   font-weight: bold;
   font-size: 0.875rem;
 }
 
-.card-board-column-list {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow-y: auto;
-  margin: 0;
-  padding: 10px 10px 0;
-  list-style: none;
+ul.card-board-column-list {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+ul.card-board-column-list > li.card-board-card::before {
+  content: "";
 }
 
 .card-board-card {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr 20px;
-  border-radius: 4px;
+  grid-template-rows: 1fr 24px;
+  border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  background-color: white;
   margin-bottom: 10px;
 }
 
@@ -76,6 +72,16 @@
   margin-left: auto;
 }
 
+.card-board-card-action-area-buttons {
+  display: grid;
+  grid-auto-flow: column;
+  grid-gap: 5px;
+  padding-right: 5px;
+}
+
 .card-board-card-action-area button {
-  padding: 2px;
+  background-color: white;
+  margin: 0px;
+  padding: 0px;
+  cursor: pointer;
 }
