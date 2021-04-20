@@ -1,6 +1,6 @@
-- add tests around mark as done and delete functionality
-- on edit in file, jump to and highlight the relevant line
-  - https://codepen.io/Ratia/pen/gwNNgX
+- make it look nicer!
+  https://betterprogramming.pub/creating-trellos-ui-with-css-grid-ed1fbfcd9448
+- loose all reference to kanban
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
@@ -24,9 +24,17 @@
 - elm review
 - elm debugger
 
+# Need help
+- how to add and track highlighting the selected line in the editor
+  ideally either want it to be only visible for a defined number of seconds
+  or for it to vanish when an edit is made
+  how do I highligt the line in the correct file??
+- how to enforce edit mode when clicking on edit link...
 
 # Done
 
+- on edit in file, jump to and highlight the relevant line
+  - https://codepen.io/Ratia/pen/gwNNgX
 - click on some icon to jump to location in file
 - use a trash icon for delete
 - Delete todos

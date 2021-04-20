@@ -6,11 +6,13 @@ const moment = require('moment');
 
 export class KanbanView extends ItemView {
   private vault: Vault;
+  private codeMirror: CodeMirror.Editor;
 
-  constructor(app: App, leaf: WorkspaceLeaf) {
+  constructor(codeMirror: CodeMirror.Editor, app: App, leaf: WorkspaceLeaf) {
     super(leaf);
     this.app = app;
     this.vault = app.vault;
+    this.codeMirror = codeMirror;
   }
 
   async onOpen() {
@@ -104,6 +106,8 @@ export class KanbanView extends ItemView {
 
     if (fileLeaf) {
       this.app.workspace.setActiveLeaf(fileLeaf, true, true)
+      // this.codeMirror.markText({line: data.lineNumber - 1, ch: 0}, {line: data.lineNumber, ch: 0}, {css: "background-color: red"})
+      this.codeMirror.setCursor(data.lineNumber - 1, 0)
     }
   }
 
