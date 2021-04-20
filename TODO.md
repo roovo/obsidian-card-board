@@ -7,7 +7,6 @@
 - do I want to keep trailing spaces when parsing TaskItem title?
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
-- make it switch to the kanban window when ribbon icon clicked
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
@@ -31,6 +30,7 @@
 
 # Done
 
+- make it switch to the kanban window when ribbon icon clicked
 - make it look nicer!
 - on edit in file, jump to and highlight the relevant line
   - https://codepen.io/Ratia/pen/gwNNgX

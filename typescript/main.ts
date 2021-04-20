@@ -19,13 +19,14 @@ export default class KanbanPlugin extends Plugin {
     await this.loadSettings();
 
     this.registerCodeMirror((cm: CodeMirror.Editor) => {
-      this.codeMirror = cm; console.log('codemirror', cm);
+      this.codeMirror = cm;
     });
 
     this.addRibbonIcon('dice', 'Kanban Plugin', async () => {
       const leaf = this.app.workspace.getLeaf(!(this.app.workspace.activeLeaf.view.getViewType() == 'empty'));
       const view = new KanbanView(this.codeMirror, this.app, leaf);
       await leaf.open(view);
+      this.app.workspace.setActiveLeaf(leaf, true, true);
     });
   }
 
