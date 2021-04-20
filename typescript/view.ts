@@ -1,10 +1,10 @@
 import { App, FileView, ItemView, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
 import { Elm } from '../src/Main';
-import KanbanPlugin from './main';
+import CardBoardPlugin from './main';
 
 const moment = require('moment');
 
-export class KanbanView extends ItemView {
+export class CardBoardView extends ItemView {
   private vault: Vault;
   private codeMirror: CodeMirror.Editor;
 
@@ -161,11 +161,11 @@ export class KanbanView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Kanban';
+    return 'Card Board';
   }
 
   getViewType(): string {
-    return 'Kanban';
+    return 'CardBoard';
   }
 
   getFileDate(dailyNotesFolder: string, dailyNotesNameFormat: string, file: any): string | null {

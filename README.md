@@ -5,7 +5,7 @@ in a test vault for development (where you can set up a hot-key for the
 `Reload without saving` command to reload the plugin after changes):
 
 ```
-ln -s path/to/this/dir path/to/vault/.obsidian/plugins/kanban
+ln -s path/to/this/dir path/to/vault/.obsidian/plugins/cardboard
 ```
 
 To get up and running:

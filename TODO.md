@@ -1,4 +1,3 @@
-- loose all reference to kanban
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
@@ -30,6 +29,7 @@
 
 # Done
 
+- loose all reference to kanban - call it card board
 - make it switch to the kanban window when ribbon icon clicked
 - make it look nicer!
 - on edit in file, jump to and highlight the relevant line

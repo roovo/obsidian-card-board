@@ -1,5 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-import { KanbanView } from './view';
+import { CardBoardView } from './view';
 
 interface MyPluginSettings {
 	mySetting: string;
@@ -9,12 +9,12 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 	mySetting: 'default'
 }
 
-export default class KanbanPlugin extends Plugin {
+export default class CardBoardPlugin extends Plugin {
   settings: MyPluginSettings;
   codeMirror: CodeMirror.Editor;
 
   async onload() {
-    console.log('loading kanban plugin');
+    console.log('loading CardBoard plugin');
 
     await this.loadSettings();
 
@@ -22,16 +22,16 @@ export default class KanbanPlugin extends Plugin {
       this.codeMirror = cm;
     });
 
-    this.addRibbonIcon('dice', 'Kanban Plugin', async () => {
+    this.addRibbonIcon('dice', 'CardBoard Plugin', async () => {
       const leaf = this.app.workspace.getLeaf(!(this.app.workspace.activeLeaf.view.getViewType() == 'empty'));
-      const view = new KanbanView(this.codeMirror, this.app, leaf);
+      const view = new CardBoardView(this.codeMirror, this.app, leaf);
       await leaf.open(view);
       this.app.workspace.setActiveLeaf(leaf, true, true);
     });
   }
 
   onunload() {
-    console.log('unloading kanban plugin');
+    console.log('unloading CardBoard plugin');
   }
 
   async loadSettings() {

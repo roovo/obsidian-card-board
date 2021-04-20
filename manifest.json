@@ -1,7 +1,7 @@
 {
-	"id": "kanban",
-	"name": "Kanban",
-	"description": "Kanban view of your TODOs",
+	"id": "cardboard",
+	"name": "CardBoard",
+	"description": "Card based view of your obsidian TODOs",
 	"version": "0.0.1",
 	"author": "roovo",
 	"authorUrl": "https://github.com/roovo",

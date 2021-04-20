@@ -1,7 +1,7 @@
 {
-  "name": "kanban",
+  "name": "cardboard",
   "version": "0.0.1",
-  "description": "Kanban view for your TODOs",
+  "description": "Card based view for your obsidian TODOs",
   "main": "main.js",
   "scripts": {
     "dev": "elm-typescript-interop && webpack --mode=development --watch --progress --color",
