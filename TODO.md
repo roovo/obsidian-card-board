@@ -1,6 +1,7 @@
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
+- don't display all completed tasks - could get quite long!
 - edit in place via popup
 - drag and drop -> into today, tomorrow, and done columns
 - do I want to keep trailing spaces when parsing TaskItem title?

@@ -3,27 +3,32 @@
 
 .card-board-container {
   display: grid;
+  height: 100vh;
   grid-auto-columns: 272px;
   grid-auto-flow: column;
   grid-gap: 8px;
-  overflow: scroll;
+  overflow-x: scroll;
 }
 
 .card-board-column {
-  display: grid;
-  grid-auto-rows: max-content;
-  grid-gap: 10px;
+  max-height: 100vh;
   padding: 10px;
-  background-color: rgb(235, 236, 240);
-  border-radius: 3px
+  background-color: #ccc;
+  border-radius: 3px;
+  overflow-y: scroll;
 }
+
 
 .card-board-column-header {
   font-weight: bold;
   font-size: 0.875rem;
+  margin-bottom: 10px;
 }
 
 ul.card-board-column-list {
+  display: grid;
+  grid-auto-flow: row;
+  grid-gap: 10px;
   list-style-type: none;
   margin: 0px;
   padding: 0px;
@@ -35,12 +40,10 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 24px;
+  grid-template-rows: 1fr auto;
   border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
-  margin-bottom: 10px;
 }
 
 .card-board-card-content-area {
