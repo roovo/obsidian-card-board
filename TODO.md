@@ -1,16 +1,31 @@
+- on completion add a @done(date) to the task
+  - remove it if marking as uncompleted
+- add @due(date) - overrides the day of the daily note it appears on
+- #-tag support
+- don't display all completed tasks - could get quite long!
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
-- don't display all completed tasks - could get quite long!
 - edit in place via popup
 - drag and drop -> into today, tomorrow, and done columns
-- do I want to keep trailing spaces when parsing TaskItem title?
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
 - review aweful typescript code!
+
+- could/should I use some taskpaper tags:
+
+    @autodone(bool) - whether the item automatically completes itself when its children are complete (true) or not (false). Named to match @done.
+    @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
+    @done(date) - completed on date
+    @due(date) - due on date
+    @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
+    @flagged - present when an item is flagged
+    @parallel(bool) - whether children are parallel (true) or sequential (false)
+    @repeat-method(method) - the repeat method: fixed, start-after-completion, or due-after-completion
+    @repeat-rule(rule) - an ICS repeat rule (see RFC244557), e.g. FREQ=WEEKLY;INTERVAL=1
 
 - define boards by #tags
 - support multiple kanban boards
@@ -30,6 +45,8 @@
 
 # Done
 
+- do I want to keep trailing spaces when parsing TaskItem title?
+  no need as toString removes them
 - loose all reference to kanban - call it card board
 - make it switch to the kanban window when ribbon icon clicked
 - make it look nicer!

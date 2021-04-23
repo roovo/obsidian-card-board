@@ -11,6 +11,7 @@ module TaskItem exposing
     , lineNumber
     , parser
     , title
+    , toString
     )
 
 import Date exposing (Date)
@@ -91,6 +92,16 @@ isFromFile pathToFile (TaskItem p _ _ _ _) =
 lineNumber : TaskItem -> Int
 lineNumber (TaskItem _ l _ _ _) =
     l
+
+
+toString : TaskItem -> String
+toString (TaskItem _ _ c _ t) =
+    case c of
+        Incomplete ->
+            "- [ ] " ++ String.trim t
+
+        Completed ->
+            "- [x] " ++ String.trim t
 
 
 

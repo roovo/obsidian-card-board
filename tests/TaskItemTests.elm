@@ -13,6 +13,7 @@ suite =
     concat
         [ info
         , parsing
+        , toString
         ]
 
 
@@ -189,4 +190,40 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.mapError (\_ -> "failed")
                     |> Expect.equal (Err "failed")
+        ]
+
+
+toString : Test
+toString =
+    describe "toString"
+        [ test "outputs an incomplete TaskList item with an empty checkbox" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [ ] foo")
+        , test "outputs a completed TaskList item with a ticked checkbox" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] foo")
+        , test "outputs a completed TaskList item with a (lower-case) ticked checkbox" <|
+            \() ->
+                "- [X] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] foo")
+        , test "removes excess whitespace between the title and the ']'" <|
+            \() ->
+                "- [X]      the task"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] the task")
+        , test "removed trailing whitespace" <|
+            \() ->
+                "- [X] the task   "
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] the task")
         ]
