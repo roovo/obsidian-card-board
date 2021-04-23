@@ -12,6 +12,7 @@ module TaskItem exposing
     , parser
     , title
     , toString
+    , toggleCompletion
     )
 
 import Date exposing (Date)
@@ -102,6 +103,20 @@ toString (TaskItem _ _ c _ t) =
 
         Completed ->
             "- [x] " ++ String.trim t
+
+
+
+-- MODIFICATION
+
+
+toggleCompletion : TaskItem -> TaskItem
+toggleCompletion (TaskItem p l c d t) =
+    case c of
+        Completed ->
+            TaskItem p l Incomplete d t
+
+        Incomplete ->
+            TaskItem p l Completed d t
 
 
 

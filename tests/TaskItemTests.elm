@@ -14,6 +14,7 @@ suite =
         [ info
         , parsing
         , toString
+        , transformation
         ]
 
 
@@ -116,6 +117,26 @@ info =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map (\t -> TaskItem.isFromFile "File" t)
                     |> Expect.equal (Ok False)
+        ]
+
+
+transformation : Test
+transformation =
+    describe "transformation"
+        [ test "toggling a complete task produces one marked as complete" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toggleCompletion t)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok False)
+        , test "toggling an incomplete task produces one marked as complete" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toggleCompletion t)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok True)
         ]
 
 
