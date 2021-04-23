@@ -127,11 +127,11 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.toggleTodo
+                            , Ports.rewriteTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , title = TaskItem.title matchingItem
-                                , setToChecked = not <| TaskItem.isCompleted matchingItem
+                                , newText = matchingItem |> TaskItem.toggleCompletion |> TaskItem.toString
                                 }
                             )
 

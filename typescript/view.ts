@@ -46,8 +46,8 @@ export class CardBoardView extends ItemView {
 
     const that = this;
 
-    elm.ports.toggleTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string, setToChecked: boolean}) {
-      that.handleToggleTodo(data);
+    elm.ports.rewriteTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string, newText: string}) {
+      that.handleRewriteTodo(data);
     })
 
     elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string }) {
@@ -111,13 +111,13 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleToggleTodo(data: {filePath: string, lineNumber: number, title: string, setToChecked: boolean}) {
+  async handleRewriteTodo(data: {filePath: string, lineNumber: number, title: string, newText: string}) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
     if (file instanceof TFile) {
       const markdown = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
       if (markdownLines[data.lineNumber - 1].includes(data.title)) {
-        markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(\-\s\[)([^\]]+)(\].*$)/, `$1${data.setToChecked ? "x" : " "}$3`)
+        markdownLines[data.lineNumber - 1] = data.newText
         this.vault.modify(file, markdownLines.join("\n"))
       }
     }

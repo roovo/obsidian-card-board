@@ -5,7 +5,7 @@ port module Ports exposing
     , fileAdded
     , fileDeleted
     , fileUpdated
-    , toggleTodo
+    , rewriteTodo
     )
 
 -- TYPES
@@ -28,7 +28,7 @@ port deleteTodo : { filePath : String, lineNumber : Int, title : String } -> Cmd
 port editTodo : { filePath : String, lineNumber : Int, title : String } -> Cmd msg
 
 
-port toggleTodo : { filePath : String, lineNumber : Int, title : String, setToChecked : Bool } -> Cmd msg
+port rewriteTodo : { filePath : String, lineNumber : Int, title : String, newText : String } -> Cmd msg
 
 
 port fileUpdated : (MarkdownFile -> msg) -> Sub msg

@@ -12,8 +12,8 @@ export namespace Elm {
         editTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; title: string }) => void): void
         }
-        toggleTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string; setToChecked: boolean }) => void): void
+        rewriteTodo: {
+          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string; newText: string }) => void): void
         }
         fileUpdated: {
           send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
