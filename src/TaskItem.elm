@@ -2,6 +2,7 @@ module TaskItem exposing
     ( Completion(..)
     , Dated(..)
     , TaskItem
+    , completion
     , due
     , filePath
     , id
@@ -46,6 +47,11 @@ type Dated
 title : TaskItem -> String
 title (TaskItem _ _ _ _ t) =
     t
+
+
+completion : TaskItem -> Completion
+completion _ =
+    Incomplete
 
 
 due : TaskItem -> Maybe Date

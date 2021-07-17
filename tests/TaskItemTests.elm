@@ -15,6 +15,19 @@ suite =
         , parsing
         , toString
         , transformation
+        , done
+        ]
+
+
+done : Test
+done =
+    describe "completion"
+        [ test "returns Incomplete for an incomplete task" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
         ]
 
 
