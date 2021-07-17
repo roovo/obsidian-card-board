@@ -28,6 +28,12 @@ done =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
+        , test "returns Complete for a completed task with no @done() date" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
         ]
 
 

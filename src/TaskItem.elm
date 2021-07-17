@@ -50,8 +50,8 @@ title (TaskItem _ _ _ _ t) =
 
 
 completion : TaskItem -> Completion
-completion _ =
-    Incomplete
+completion (TaskItem _ _ c _ _) =
+    c
 
 
 due : TaskItem -> Maybe Date
