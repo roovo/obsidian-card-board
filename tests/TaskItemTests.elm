@@ -2,7 +2,7 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect exposing (Expectation)
-import Parser
+import Parser exposing ((|=))
 import TaskItem exposing (Completion(..), TaskItem)
 import TaskList exposing (TaskList)
 import Test exposing (..)
@@ -194,12 +194,20 @@ parsing =
                     |> Expect.equal (Ok "the task   ")
         , test "only looks at the first line of a multline string" <|
             \() ->
-                """- [X] foo
-                - [ ] bar
-                """
+                "- [X] foo\n- [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "foo")
+        , test "consumes <eol> character" <|
+            \() ->
+                "- [X] foo\n- [ ] bar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= TaskItem.parser "" Nothing
+                            |= TaskItem.parser "" Nothing
+                        )
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo", "bar" ])
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
