@@ -1,8 +1,9 @@
 module ParserHelperTests exposing (suite)
 
 import Expect exposing (Expectation)
-import Parser
+import Parser exposing ((|=))
 import ParserHelper exposing (anyLineParser, nonEmptyStringParser)
+import TaskItem
 import Test exposing (..)
 
 
@@ -56,20 +57,44 @@ baz
 anyLineParserTest : Test
 anyLineParserTest =
     describe "parsing any line"
-        [ test "'foo' fails to parse" <|
+        [ test "empty string fails to parse" <|
+            \() ->
+                ""
+                    |> Parser.run anyLineParser
+                    |> Result.withDefault "eek"
+                    |> Expect.equal "eek"
+        , test "'foo' parses" <|
             \() ->
                 "foo"
                     |> Parser.run anyLineParser
-                    |> Result.toMaybe
-                    |> Expect.equal Nothing
+                    |> Expect.equal (Ok "foo")
         , test "'foo<eol>' parses" <|
             \() ->
                 "foo\n"
                     |> Parser.run anyLineParser
-                    |> Expect.equal (Ok ())
+                    |> Expect.equal (Ok "foo")
         , test "'<eol>' parses" <|
             \() ->
                 "\n"
                     |> Parser.run anyLineParser
-                    |> Expect.equal (Ok ())
+                    |> Expect.equal (Ok "")
+        , test "parses multiple lines" <|
+            \() ->
+                "foo\nbar\n"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= anyLineParser
+                            |= anyLineParser
+                        )
+                    |> Expect.equal (Ok [ "foo", "bar" ])
+        , test "won't parse beyond the end of the input" <|
+            \() ->
+                "foo"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= anyLineParser
+                            |= anyLineParser
+                        )
+                    |> Result.withDefault [ "eek" ]
+                    |> Expect.equal [ "eek" ]
         ]

@@ -142,7 +142,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ( VaultFileAdded markdownFile, _ ) ->
-            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) markdownFile.fileContents
                 |> Result.withDefault TaskList.empty
                 |> addTaskItems model
             , Cmd.none
@@ -152,7 +152,7 @@ update msg model =
             ( deleteItemsFromFile model filePath, Cmd.none )
 
         ( VaultFileUpdated markdownFile, _ ) ->
-            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) markdownFile.fileContents
                 |> Result.withDefault TaskList.empty
                 |> updateTaskItems model markdownFile.filePath
             , Cmd.none

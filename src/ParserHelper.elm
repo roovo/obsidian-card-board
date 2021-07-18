@@ -3,7 +3,6 @@ module ParserHelper exposing
     , isLineEnd
     , isSpaceOrTab
     , lineEndOrEnd
-    , nonEmptyLineParser
     , nonEmptyStringParser
     )
 
@@ -46,22 +45,45 @@ isSpaceOrTab char =
 -- PARSERS
 
 
-anyLineParser : Parser ()
+anyLineParser : Parser String
 anyLineParser =
-    succeed ()
-        |. nonEmptyLineParser
-        |. lineEnd
+    getChompedString (chompUntilEndOr "\n")
+        |> andThen failIfEndOfInput
+
+
+failIfEndOfInput : String -> Parser String
+failIfEndOfInput parsedString =
+    let
+        succeedIfNotAtEndOfInput result =
+            case result of
+                Err _ ->
+                    problem "Reached end of input"
+
+                _ ->
+                    succeed parsedString
+
+        checkIfAtEndOfInput : Int -> Int -> Result String String
+        checkIfAtEndOfInput pre post =
+            if pre == post && String.length parsedString == 0 then
+                Err ""
+
+            else
+                Ok parsedString
+    in
+    (Parser.succeed checkIfAtEndOfInput
+        |= Parser.getOffset
+        |. Parser.oneOf
+            [ Parser.end
+            , chompIf (\c -> c == '\n')
+            ]
+        |= Parser.getOffset
+    )
+        |> Parser.andThen succeedIfNotAtEndOfInput
 
 
 nonEmptyStringParser : Parser String
 nonEmptyStringParser =
     getChompedString chompToEndOfLine
-        |> andThen checkIfEmpty
-
-
-nonEmptyLineParser : Parser String
-nonEmptyLineParser =
-    getChompedString chompWithEndOfLine
         |> andThen checkIfEmpty
 
 

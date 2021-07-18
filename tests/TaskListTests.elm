@@ -16,20 +16,6 @@ suite =
         , replaceForFile
         , removeForFile
         , parsing
-        , parsingToFix
-        ]
-
-
-parsingToFix : Test
-parsingToFix =
-    describe "todo parsing it would be good to fix (save appending \n to end of string before parsing"
-        [ test "FAILS to parse tasks when the last line is a non-task and has NO line ending" <|
-            \() ->
-                "- [ ] foo\na"
-                    |> Parser.run (TaskList.parser "" Nothing)
-                    |> Result.withDefault TaskList.empty
-                    |> TaskList.taskTitles
-                    |> Expect.equal []
         ]
 
 
