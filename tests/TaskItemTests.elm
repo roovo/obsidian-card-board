@@ -34,6 +34,12 @@ done =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Completed)
+        , test "returns Incomplete for an incomplete task with a @done() date" <|
+            \() ->
+                "- [ ] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
         ]
 
 
@@ -186,12 +192,12 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "the task")
-        , test "keeps trailing whitespace" <|
+        , test "looses trailing whitespace" <|
             \() ->
                 "- [X] the task   "
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
-                    |> Expect.equal (Ok "the task   ")
+                    |> Expect.equal (Ok "the task")
         , test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"

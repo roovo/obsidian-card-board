@@ -2,7 +2,7 @@ module ParserHelperTests exposing (suite)
 
 import Expect exposing (Expectation)
 import Parser exposing ((|=))
-import ParserHelper exposing (anyLineParser, nonEmptyStringParser)
+import ParserHelper exposing (anyLineParser, nonEmptyStringParser, wordParser)
 import TaskItem
 import Test exposing (..)
 
@@ -12,6 +12,7 @@ suite =
     concat
         [ nonEmptyStringParserTest
         , anyLineParserTest
+        , wordParserTest
         ]
 
 
@@ -94,6 +95,67 @@ anyLineParserTest =
                         (Parser.succeed (\first second -> [ first, second ])
                             |= anyLineParser
                             |= anyLineParser
+                        )
+                    |> Result.withDefault [ "eek" ]
+                    |> Expect.equal [ "eek" ]
+        ]
+
+
+wordParserTest : Test
+wordParserTest =
+    describe "parsing a single word"
+        [ test "'foo' parses Ok" <|
+            \() ->
+                "foo"
+                    |> Parser.run wordParser
+                    |> Expect.equal (Ok "foo")
+        , test "'foo<eol>' parses Ok" <|
+            \() ->
+                "foo\n"
+                    |> Parser.run wordParser
+                    |> Expect.equal (Ok "foo")
+        , test "'foo bar' parses Ok picking just 'foo'" <|
+            \() ->
+                "foo bar"
+                    |> Parser.run wordParser
+                    |> Expect.equal (Ok "foo")
+        , test "'foo<eol>bar' parses Ok picking just 'foo'" <|
+            \() ->
+                "foo\nbar"
+                    |> Parser.run wordParser
+                    |> Expect.equal (Ok "foo")
+        , test "parses multiple words" <|
+            \() ->
+                "foo bar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= wordParser
+                            |= wordParser
+                        )
+                    |> Expect.equal (Ok [ "foo", "bar" ])
+        , test "fails with an empty string" <|
+            \() ->
+                ""
+                    |> Parser.run wordParser
+                    |> Result.withDefault "eek"
+                    |> Expect.equal "eek"
+        , test "won't parse beyond the end of the line" <|
+            \() ->
+                "foo\nbar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= wordParser
+                            |= wordParser
+                        )
+                    |> Result.withDefault [ "eek" ]
+                    |> Expect.equal [ "eek" ]
+        , test "won't parse beyond the end of the input" <|
+            \() ->
+                "foo"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= wordParser
+                            |= wordParser
                         )
                     |> Result.withDefault [ "eek" ]
                     |> Expect.equal [ "eek" ]

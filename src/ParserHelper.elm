@@ -4,6 +4,7 @@ module ParserHelper exposing
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
+    , wordParser
     )
 
 import Parser exposing (..)
@@ -41,6 +42,11 @@ isSpaceOrTab char =
             False
 
 
+isSpaceTabOrLineEnd : Char -> Bool
+isSpaceTabOrLineEnd char =
+    isSpaceOrTab char || isLineEnd char
+
+
 
 -- PARSERS
 
@@ -48,43 +54,7 @@ isSpaceOrTab char =
 anyLineParser : Parser String
 anyLineParser =
     getChompedString (chompUntilEndOr "\n")
-        |> andThen failIfEndOfInput
-
-
-failIfEndOfInput : String -> Parser String
-failIfEndOfInput parsedString =
-    let
-        succeedIfNotAtEndOfInput result =
-            case result of
-                Err _ ->
-                    problem "Reached end of input"
-
-                _ ->
-                    succeed parsedString
-
-        checkIfAtEndOfInput : Int -> Int -> Result String String
-        checkIfAtEndOfInput pre post =
-            if pre == post && String.length parsedString == 0 then
-                Err ""
-
-            else
-                Ok parsedString
-    in
-    (Parser.succeed checkIfAtEndOfInput
-        |= Parser.getOffset
-        |. Parser.oneOf
-            [ Parser.end
-            , chompIf (\c -> c == '\n')
-            ]
-        |= Parser.getOffset
-    )
-        |> Parser.andThen succeedIfNotAtEndOfInput
-
-
-nonEmptyStringParser : Parser String
-nonEmptyStringParser =
-    getChompedString chompToEndOfLine
-        |> andThen checkIfEmpty
+        |> andThen (consumeSeparator '\n')
 
 
 lineEndOrEnd : Parser ()
@@ -95,13 +65,54 @@ lineEndOrEnd =
         ]
 
 
+nonEmptyStringParser : Parser String
+nonEmptyStringParser =
+    getChompedString chompToEndOfLine
+        |> andThen checkIfEmpty
+
+
+wordParser : Parser String
+wordParser =
+    getChompedString chompToEndOfWord
+        |> andThen (consumeSeparator ' ')
+
+
 
 -- HELPERS
+
+
+consumeSeparator : Char -> String -> Parser String
+consumeSeparator separator parsedString =
+    let
+        checkIfAtEndOfInput : Int -> Int -> Parser String
+        checkIfAtEndOfInput preSeparatorOffset postSeparatorOffset =
+            if preSeparatorOffset == postSeparatorOffset && String.length parsedString == 0 then
+                problem "Reached end of input"
+
+            else
+                succeed parsedString
+    in
+    (Parser.succeed checkIfAtEndOfInput
+        |= Parser.getOffset
+        |. Parser.oneOf
+            [ Parser.end
+            , chompIf (\c -> c == separator)
+            , succeed ()
+            ]
+        |= Parser.getOffset
+    )
+        |> Parser.andThen identity
 
 
 chompToEndOfLine : Parser ()
 chompToEndOfLine =
     chompWhile (not << isLineEnd)
+
+
+chompToEndOfWord : Parser ()
+chompToEndOfWord =
+    succeed ()
+        |. chompWhile (not << isSpaceTabOrLineEnd)
 
 
 checkIfEmpty : String -> Parser String
