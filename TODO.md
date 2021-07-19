@@ -1,8 +1,16 @@
 - on completion add a @done(date) to the task
-  - remove it if marking as uncompleted
+  - need to save the original todo item line and pass it back out to view.ts
+    so it can veryify the line before rewriting.  The current method of checking
+    against the title will not work as the title may not be there due to the
+    fact that I don't mind if tags appear in the title when parsing and the title will
+    change if it contains multiple spaces between words
 - add @due(date) - overrides the day of the daily note it appears on
 - #-tag support
+- look into issue fixed in commit bca367 : TODO - why does this work....
+- return something to elm if I fail to re-write a TODO due to the line having changed so I can
+  let the user know why nothing has happened
 - don't display all completed tasks - could get quite long!
+- when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
 - render card title as markdown
 - handle renames - make sure I cope with both directory and file renames
