@@ -47,6 +47,12 @@ done =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedOn <| Date.fromCalendarDate 2020 Jan 1)
+        , test "returns Completed for an completed task with an invalid @done() date" <|
+            \() ->
+                "- [x] foo @done(2020-01-51)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
         , test "the @done() date is not included in the title" <|
             \() ->
                 "- [x] foo @done(2020-01-01) bar"
