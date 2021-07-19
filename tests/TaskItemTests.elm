@@ -6,6 +6,7 @@ import Parser exposing ((|=))
 import TaskItem exposing (Completion(..), TaskItem)
 import TaskList exposing (TaskList)
 import Test exposing (..)
+import Time exposing (Month(..))
 
 
 suite : Test
@@ -40,6 +41,24 @@ done =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
+        , test "returns CompletedOn for an completed task with a @done() date" <|
+            \() ->
+                "- [x] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedOn <| Date.fromCalendarDate 2020 Jan 1)
+        , test "the @done() date is not included in the title" <|
+            \() ->
+                "- [x] foo @done(2020-01-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
+        , test "the @done() date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo @done(2020-51-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo @done(2020-51-01) bar")
         ]
 
 

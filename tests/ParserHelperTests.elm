@@ -1,10 +1,12 @@
 module ParserHelperTests exposing (suite)
 
+import Date
 import Expect exposing (Expectation)
 import Parser exposing ((|=))
-import ParserHelper exposing (anyLineParser, nonEmptyStringParser, wordParser)
+import ParserHelper exposing (anyLineParser, dateParser, nonEmptyStringParser, wordParser)
 import TaskItem
 import Test exposing (..)
+import Time exposing (Month(..))
 
 
 suite : Test
@@ -13,6 +15,24 @@ suite =
         [ nonEmptyStringParserTest
         , anyLineParserTest
         , wordParserTest
+        , dateParserTest
+        ]
+
+
+dateParserTest : Test
+dateParserTest =
+    describe "parsing dates"
+        [ test "parses valid date string" <|
+            \() ->
+                "2020-01-02"
+                    |> Parser.run dateParser
+                    |> Expect.equal (Ok <| Date.fromCalendarDate 2020 Jan 2)
+        , test "fails with an invalie date string" <|
+            \() ->
+                "2020-41-02"
+                    |> Parser.run dateParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 

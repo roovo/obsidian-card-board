@@ -33,7 +33,7 @@ type TaskItem
 type Completion
     = Incomplete
     | Completed
-    | CompletedOn
+    | CompletedOn Date
 
 
 type Dated
@@ -43,6 +43,7 @@ type Dated
 
 type Content
     = Word String
+    | DoneTag Date
 
 
 
@@ -95,7 +96,7 @@ isCompleted (TaskItem _ _ c _ _) =
         Completed ->
             True
 
-        CompletedOn ->
+        CompletedOn _ ->
             True
 
 
@@ -118,7 +119,7 @@ toString (TaskItem _ _ c _ t) =
         Completed ->
             "- [x] " ++ String.trim t
 
-        CompletedOn ->
+        CompletedOn _ ->
             "- [x] " ++ String.trim t
 
 
@@ -132,11 +133,16 @@ toggleCompletion (TaskItem p l c d t) =
         Completed ->
             TaskItem p l Incomplete d t
 
-        CompletedOn ->
+        CompletedOn _ ->
             TaskItem p l Incomplete d t
 
         Incomplete ->
             TaskItem p l Completed d t
+
+
+markCompleted : TaskItem -> Date -> TaskItem
+markCompleted (TaskItem p l c d t) completionDate =
+    TaskItem p l (CompletedOn completionDate) d t
 
 
 
@@ -161,15 +167,39 @@ taskItemBuilder : String -> Int -> Completion -> Dated -> List Content -> TaskIt
 taskItemBuilder path row c dated contents =
     let
         extractWords : Content -> List String -> List String
-        extractWords content s =
+        extractWords content words =
             case content of
                 Word word ->
-                    word :: s
+                    word :: words
 
-        words =
-            List.foldr extractWords [] contents
+                DoneTag _ ->
+                    words
+
+        extractCompletionDate : Content -> Maybe Date -> Maybe Date
+        extractCompletionDate content date =
+            case content of
+                Word word ->
+                    date
+
+                DoneTag completionDate ->
+                    Just completionDate
+
+        addCompletionDate : TaskItem -> TaskItem
+        addCompletionDate item =
+            if isCompleted item then
+                contents
+                    |> List.foldr extractCompletionDate Nothing
+                    |> Maybe.map (markCompleted item)
+                    |> Maybe.withDefault item
+
+            else
+                item
     in
-    TaskItem path row c dated (String.join " " words)
+    contents
+        |> List.foldr extractWords []
+        |> String.join " "
+        |> TaskItem path row c dated
+        |> addCompletionDate
 
 
 contentParser : Parser (List Content)
@@ -181,17 +211,29 @@ contentHelp : List Content -> Parser (Step (List Content) (List Content))
 contentHelp revContents =
     oneOf
         [ succeed (\content -> Loop (content :: revContents))
-            |= wordOrDateParser
+            |= wordOrDoneTagParser
             |. chompWhile isSpaceOrTab
         , succeed ()
             |> map (\_ -> Done (List.reverse revContents))
         ]
 
 
-wordOrDateParser : Parser Content
-wordOrDateParser =
-    succeed Word
-        |= ParserHelper.wordParser
+wordOrDoneTagParser : Parser Content
+wordOrDoneTagParser =
+    oneOf
+        [ backtrackable
+            doneTagParser
+        , succeed Word
+            |= ParserHelper.wordParser
+        ]
+
+
+doneTagParser : Parser Content
+doneTagParser =
+    succeed DoneTag
+        |. token "@done("
+        |= ParserHelper.dateParser
+        |. token ")"
 
 
 prefixParser : Parser Completion

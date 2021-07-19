@@ -1,5 +1,6 @@
 module ParserHelper exposing
     ( anyLineParser
+    , dateParser
     , isLineEnd
     , isSpaceOrTab
     , lineEndOrEnd
@@ -7,6 +8,7 @@ module ParserHelper exposing
     , wordParser
     )
 
+import Date exposing (Date)
 import Parser exposing (..)
 
 
@@ -55,6 +57,19 @@ anyLineParser : Parser String
 anyLineParser =
     getChompedString (chompUntilEndOr "\n")
         |> andThen (consumeSeparator '\n')
+
+
+dateParser : Parser Date
+dateParser =
+    let
+        convertToDate dateString =
+            dateString
+                |> Date.fromIsoString
+                |> Result.map succeed
+                |> Result.withDefault (problem "not a valid date")
+    in
+    getChompedString (chompWhile <| \c -> Char.isDigit c || c == '-')
+        |> andThen convertToDate
 
 
 lineEndOrEnd : Parser ()
