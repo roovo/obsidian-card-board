@@ -53,10 +53,17 @@ isSpaceTabOrLineEnd char =
 -- PARSERS
 
 
-anyLineParser : Parser String
+anyLineParser : Parser ()
 anyLineParser =
-    getChompedString (chompUntilEndOr "\n")
-        |> andThen (consumeSeparator '\n')
+    succeed ()
+        |. nonEmptyLineParser
+        |. lineEnd
+
+
+nonEmptyLineParser : Parser String
+nonEmptyLineParser =
+    getChompedString chompWithEndOfLine
+        |> andThen checkIfEmpty
 
 
 dateParser : Parser Date
