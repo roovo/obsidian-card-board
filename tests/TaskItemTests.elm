@@ -287,13 +287,19 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.toString t)
                     |> Expect.equal (Ok "- [x] foo")
+        , test "outputs an @done(<iso-date>) TaskList item with the done date at the end" <|
+            \() ->
+                "- [X] foo @done(2020-03-22) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] foo bar @done(2020-03-22)")
         , test "removes excess whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.toString t)
                     |> Expect.equal (Ok "- [x] the task")
-        , test "removed trailing whitespace" <|
+        , test "removes trailing whitespace" <|
             \() ->
                 "- [X] the task   "
                     |> Parser.run (TaskItem.parser "" Nothing)

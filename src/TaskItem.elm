@@ -119,8 +119,8 @@ toString (TaskItem _ _ c _ t) =
         Completed ->
             "- [x] " ++ String.trim t
 
-        CompletedOn _ ->
-            "- [x] " ++ String.trim t
+        CompletedOn completionDate ->
+            "- [x] " ++ String.trim t ++ " @done(" ++ Date.toIsoString completionDate ++ ")"
 
 
 
