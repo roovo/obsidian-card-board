@@ -127,17 +127,20 @@ toString (TaskItem _ _ c _ t) =
 -- MODIFICATION
 
 
-toggleCompletion : TaskItem -> TaskItem
-toggleCompletion (TaskItem p l c d t) =
-    case c of
-        Completed ->
+toggleCompletion : Maybe Date -> TaskItem -> TaskItem
+toggleCompletion completionDate (TaskItem p l c d t) =
+    case ( c, completionDate ) of
+        ( Completed, _ ) ->
             TaskItem p l Incomplete d t
 
-        CompletedOn _ ->
+        ( CompletedOn _, _ ) ->
             TaskItem p l Incomplete d t
 
-        Incomplete ->
+        ( Incomplete, Nothing ) ->
             TaskItem p l Completed d t
+
+        ( Incomplete, Just date ) ->
+            TaskItem p l (CompletedOn date) d t
 
 
 markCompleted : TaskItem -> Date -> TaskItem

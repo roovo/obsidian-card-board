@@ -131,7 +131,7 @@ update msg model =
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , title = TaskItem.title matchingItem
-                                , newText = matchingItem |> TaskItem.toggleCompletion |> TaskItem.toString
+                                , newText = matchingItem |> TaskItem.toggleCompletion model.today |> TaskItem.toString
                                 }
                             )
 

@@ -1,6 +1,6 @@
 module TaskItemTests exposing (suite)
 
-import Date
+import Date exposing (Date)
 import Expect exposing (Expectation)
 import Parser exposing ((|=))
 import TaskItem exposing (Completion(..), TaskItem)
@@ -167,20 +167,41 @@ info =
 transformation : Test
 transformation =
     describe "transformation"
-        [ test "toggling a complete task produces one marked as complete" <|
+        [ test "toggling a completed task produces one marked as incomplete" <|
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion t)
+                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
                     |> Result.map (\t -> TaskItem.isCompleted t)
                     |> Expect.equal (Ok False)
-        , test "toggling an incomplete task produces one marked as complete" <|
+        , test "toggling a task completed on a given date produces one marked as incomplete" <|
+            \() ->
+                "- [x] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
+                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Expect.equal (Ok False)
+        , test "giving no date when toggling an incomplete task produces one marked as complete" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion t)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
-                    |> Expect.equal (Ok True)
+                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
+                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Expect.equal (Ok Completed)
+        , test "giving date when toggling an incomplete task produces one marked as complete on that date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toggleCompletion (Just today) t)
+                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Expect.equal (Ok <| CompletedOn today)
+        , test "toggling a incomplete task with a @done date updates the @done date" <|
+            \() ->
+                "- [ ] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toggleCompletion (Just today) t)
+                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Expect.equal (Ok <| CompletedOn today)
         ]
 
 
@@ -306,3 +327,8 @@ toString =
                     |> Result.map (\t -> TaskItem.toString t)
                     |> Expect.equal (Ok "- [x] the task")
         ]
+
+
+today : Date
+today =
+    Date.fromCalendarDate 2000 Oct 20
