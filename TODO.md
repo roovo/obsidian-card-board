@@ -35,6 +35,8 @@
     @repeat-method(method) - the repeat method: fixed, start-after-completion, or due-after-completion
     @repeat-rule(rule) - an ICS repeat rule (see RFC244557), e.g. FREQ=WEEKLY;INTERVAL=1
 
+    taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
+
 - define boards by #tags
 - support multiple kanban boards
 

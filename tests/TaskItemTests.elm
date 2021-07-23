@@ -244,6 +244,12 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.title t)
                     |> Expect.equal (Ok "the task")
+        , test "retains the original line text" <|
+            \() ->
+                "- [X]  the task @done(2020-01-01) title\n- [ ] another task  "
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.originalText t)
+                    |> Expect.equal (Ok "- [X]  the task @done(2020-01-01) title")
         , test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"

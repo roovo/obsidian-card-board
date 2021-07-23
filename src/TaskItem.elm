@@ -10,6 +10,7 @@ module TaskItem exposing
     , isDated
     , isFromFile
     , lineNumber
+    , originalText
     , parser
     , title
     , toString
@@ -27,7 +28,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem String Int Completion Dated String
+    = TaskItem String String Int Completion Dated String
 
 
 type Completion
@@ -51,17 +52,17 @@ type Content
 
 
 title : TaskItem -> String
-title (TaskItem _ _ _ _ t) =
+title (TaskItem _ _ _ _ _ t) =
     t
 
 
 completion : TaskItem -> Completion
-completion (TaskItem _ _ c _ _) =
+completion (TaskItem _ _ _ c _ _) =
     c
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem _ _ _ d _) =
+due (TaskItem _ _ _ _ d _) =
     case d of
         Undated ->
             Nothing
@@ -71,12 +72,12 @@ due (TaskItem _ _ _ d _) =
 
 
 filePath : TaskItem -> String
-filePath (TaskItem p _ _ _ _) =
+filePath (TaskItem _ p _ _ _ _) =
     p
 
 
 id : TaskItem -> String
-id (TaskItem p l _ _ _) =
+id (TaskItem _ p l _ _ _) =
     p ++ ":" ++ String.fromInt l
 
 
@@ -88,7 +89,7 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem _ _ c _ _) =
+isCompleted (TaskItem _ _ _ c _ _) =
     case c of
         Incomplete ->
             False
@@ -101,17 +102,22 @@ isCompleted (TaskItem _ _ c _ _) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem p _ _ _ _) =
+isFromFile pathToFile (TaskItem _ p _ _ _ _) =
     p == pathToFile
 
 
 lineNumber : TaskItem -> Int
-lineNumber (TaskItem _ l _ _ _) =
+lineNumber (TaskItem _ _ l _ _ _) =
     l
 
 
+originalText : TaskItem -> String
+originalText (TaskItem s _ _ _ _ _) =
+    s
+
+
 toString : TaskItem -> String
-toString (TaskItem _ _ c _ t) =
+toString (TaskItem _ _ _ c _ t) =
     case c of
         Incomplete ->
             "- [ ] " ++ String.trim t
@@ -128,24 +134,24 @@ toString (TaskItem _ _ c _ t) =
 
 
 toggleCompletion : Maybe Date -> TaskItem -> TaskItem
-toggleCompletion completionDate (TaskItem p l c d t) =
+toggleCompletion completionDate (TaskItem o p l c d t) =
     case ( c, completionDate ) of
         ( Completed, _ ) ->
-            TaskItem p l Incomplete d t
+            TaskItem o p l Incomplete d t
 
         ( CompletedOn _, _ ) ->
-            TaskItem p l Incomplete d t
+            TaskItem o p l Incomplete d t
 
         ( Incomplete, Nothing ) ->
-            TaskItem p l Completed d t
+            TaskItem o p l Completed d t
 
         ( Incomplete, Just date ) ->
-            TaskItem p l (CompletedOn date) d t
+            TaskItem o p l (CompletedOn date) d t
 
 
 markCompleted : TaskItem -> Date -> TaskItem
-markCompleted (TaskItem p l c d t) completionDate =
-    TaskItem p l (CompletedOn completionDate) d t
+markCompleted (TaskItem o p l c d t) completionDate =
+    TaskItem o p l (CompletedOn completionDate) d t
 
 
 
@@ -155,20 +161,27 @@ markCompleted (TaskItem p l c d t) completionDate =
 parser : String -> Maybe String -> Parser TaskItem
 parser pathToFile fileDate =
     (succeed taskItemBuilder
+        |= Parser.getOffset
         |= succeed pathToFile
         |= Parser.getRow
         |= prefixParser
         |. chompWhile isSpaceOrTab
         |= fileDateParser fileDate
         |= contentParser
+        |= Parser.getOffset
         |. lineEndOrEnd
+        |= Parser.getSource
     )
         |> andThen rejectIfNoTitle
 
 
-taskItemBuilder : String -> Int -> Completion -> Dated -> List Content -> TaskItem
-taskItemBuilder path row c dated contents =
+taskItemBuilder : Int -> String -> Int -> Completion -> Dated -> List Content -> Int -> String -> TaskItem
+taskItemBuilder startOffset path row c dated contents endOffset source =
     let
+        sourceText : String
+        sourceText =
+            String.slice startOffset endOffset source
+
         extractWords : Content -> List String -> List String
         extractWords content words =
             case content of
@@ -201,7 +214,7 @@ taskItemBuilder path row c dated contents =
     contents
         |> List.foldr extractWords []
         |> String.join " "
-        |> TaskItem path row c dated
+        |> TaskItem sourceText path row c dated
         |> addCompletionDate
 
 
