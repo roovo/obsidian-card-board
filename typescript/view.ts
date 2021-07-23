@@ -46,15 +46,15 @@ export class CardBoardView extends ItemView {
 
     const that = this;
 
-    elm.ports.rewriteTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string, newText: string}) {
+    elm.ports.rewriteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string, newText: string}) {
       that.handleRewriteTodo(data);
     })
 
-    elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string }) {
+    elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
       that.handleDeleteTodo(data);
     })
 
-    elm.ports.editTodo.subscribe(function(data: {filePath: string, lineNumber: number, title: string }) {
+    elm.ports.editTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
       that.handleEditTodo(data);
     })
 
@@ -68,19 +68,19 @@ export class CardBoardView extends ItemView {
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
   }
 
-  async handleDeleteTodo(data: {filePath: string, lineNumber: number, title: string}) {
+  async handleDeleteTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
     if (file instanceof TFile) {
       const markdown = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
-      if (markdownLines[data.lineNumber - 1].includes(data.title)) {
+      if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
         markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(.*)$/, "<del>$1</del>")
         this.vault.modify(file, markdownLines.join("\n"))
       }
     }
   }
 
-  async handleEditTodo(data: {filePath: string, lineNumber: number, title: string}) {
+  async handleEditTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
     const leaves = this.app.workspace.getLeavesOfType("markdown")
 
     let fileLeaf = null;
@@ -111,12 +111,12 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleRewriteTodo(data: {filePath: string, lineNumber: number, title: string, newText: string}) {
+  async handleRewriteTodo(data: {filePath: string, lineNumber: number, originalText: string, newText: string}) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
     if (file instanceof TFile) {
       const markdown = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
-      if (markdownLines[data.lineNumber - 1].includes(data.title)) {
+      if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
         markdownLines[data.lineNumber - 1] = data.newText
         this.vault.modify(file, markdownLines.join("\n"))
       }

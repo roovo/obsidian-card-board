@@ -92,7 +92,7 @@ update msg model =
                             , Ports.deleteTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
-                                , title = TaskItem.title matchingItem
+                                , originalText = TaskItem.originalText matchingItem
                                 }
                             )
 
@@ -111,7 +111,7 @@ update msg model =
                             , Ports.editTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
-                                , title = TaskItem.title matchingItem
+                                , originalText = TaskItem.originalText matchingItem
                                 }
                             )
 
@@ -130,7 +130,7 @@ update msg model =
                             , Ports.rewriteTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
-                                , title = TaskItem.title matchingItem
+                                , originalText = TaskItem.originalText matchingItem
                                 , newText = matchingItem |> TaskItem.toggleCompletion model.today |> TaskItem.toString
                                 }
                             )

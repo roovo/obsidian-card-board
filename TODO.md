@@ -1,9 +1,3 @@
-- on completion add a @done(date) to the task
-  - need to save the original todo item line and pass it back out to view.ts
-    so it can veryify the line before rewriting.  The current method of checking
-    against the title will not work as the title may not be there due to the
-    fact that I don't mind if tags appear in the title when parsing and the title will
-    change if it contains multiple spaces between words
 - add @due(date) - overrides the day of the daily note it appears on
 - #-tag support
 - look into issue fixed in commit bca367 : TODO - why does this work....
@@ -21,7 +15,7 @@
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
-- review aweful typescript code!
+- review awful typescript code!
 
 - could/should I use some taskpaper tags:
 
@@ -55,6 +49,8 @@
 
 # Done
 
+- on completion add a @done(date) to the task
+  - use the original source text the TaskItem was derived from to verify before re-writing
 - do I want to keep trailing spaces when parsing TaskItem title?
   no need as toString removes them
 - loose all reference to kanban - call it card board

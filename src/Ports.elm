@@ -22,13 +22,13 @@ type alias MarkdownFile =
 -- PORTS
 
 
-port deleteTodo : { filePath : String, lineNumber : Int, title : String } -> Cmd msg
+port deleteTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 
 
-port editTodo : { filePath : String, lineNumber : Int, title : String } -> Cmd msg
+port editTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 
 
-port rewriteTodo : { filePath : String, lineNumber : Int, title : String, newText : String } -> Cmd msg
+port rewriteTodo : { filePath : String, lineNumber : Int, originalText : String, newText : String } -> Cmd msg
 
 
 port fileUpdated : (MarkdownFile -> msg) -> Sub msg

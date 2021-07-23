@@ -7,13 +7,13 @@ export namespace Elm {
     export interface App {
       ports: {
         deleteTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string }) => void): void
+          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
         }
         editTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string }) => void): void
+          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
         }
         rewriteTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; title: string; newText: string }) => void): void
+          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string; newText: string }) => void): void
         }
         fileUpdated: {
           send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
