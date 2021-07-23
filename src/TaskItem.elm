@@ -1,6 +1,5 @@
 module TaskItem exposing
     ( Completion(..)
-    , Dated(..)
     , TaskItem
     , completion
     , due
@@ -28,7 +27,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem String String Int Completion Dated String
+    = TaskItem String String Int Completion (Maybe Date) String
 
 
 type Completion
@@ -37,14 +36,10 @@ type Completion
     | CompletedOn Date
 
 
-type Dated
-    = Undated
-    | Due Date
-
-
 type Content
     = Word String
     | DoneTag Date
+    | DueTag Date
 
 
 
@@ -63,12 +58,7 @@ completion (TaskItem _ _ _ c _ _) =
 
 due : TaskItem -> Maybe Date
 due (TaskItem _ _ _ _ d _) =
-    case d of
-        Undated ->
-            Nothing
-
-        Due date ->
-            Just date
+    d
 
 
 filePath : TaskItem -> String
@@ -175,7 +165,7 @@ parser pathToFile fileDate =
         |> andThen rejectIfNoTitle
 
 
-taskItemBuilder : Int -> String -> Int -> Completion -> Dated -> List Content -> Int -> String -> TaskItem
+taskItemBuilder : Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItem
 taskItemBuilder startOffset path row c dated contents endOffset source =
     let
         sourceText : String
@@ -191,6 +181,12 @@ taskItemBuilder startOffset path row c dated contents endOffset source =
                 DoneTag _ ->
                     words
 
+                DueTag completionDate ->
+                    words
+
+        dueDate =
+            dated
+
         extractCompletionDate : Content -> Maybe Date -> Maybe Date
         extractCompletionDate content date =
             case content of
@@ -199,6 +195,9 @@ taskItemBuilder startOffset path row c dated contents endOffset source =
 
                 DoneTag completionDate ->
                     Just completionDate
+
+                DueTag completionDate ->
+                    date
 
         addCompletionDate : TaskItem -> TaskItem
         addCompletionDate item =
@@ -214,7 +213,7 @@ taskItemBuilder startOffset path row c dated contents endOffset source =
     contents
         |> List.foldr extractWords []
         |> String.join " "
-        |> TaskItem sourceText path row c dated
+        |> TaskItem sourceText path row c dueDate
         |> addCompletionDate
 
 
@@ -227,15 +226,15 @@ contentHelp : List Content -> Parser (Step (List Content) (List Content))
 contentHelp revContents =
     oneOf
         [ succeed (\content -> Loop (content :: revContents))
-            |= wordOrDoneTagParser
+            |= wordOrDoneOrDueTagParser
             |. chompWhile isSpaceOrTab
         , succeed ()
             |> map (\_ -> Done (List.reverse revContents))
         ]
 
 
-wordOrDoneTagParser : Parser Content
-wordOrDoneTagParser =
+wordOrDoneOrDueTagParser : Parser Content
+wordOrDoneOrDueTagParser =
     oneOf
         [ backtrackable
             doneTagParser
@@ -252,6 +251,14 @@ doneTagParser =
         |. token ")"
 
 
+dueTagParser : Parser Content
+dueTagParser =
+    succeed DueTag
+        |. token "@due("
+        |= ParserHelper.dateParser
+        |. token ")"
+
+
 prefixParser : Parser Completion
 prefixParser =
     oneOf
@@ -264,14 +271,12 @@ prefixParser =
         ]
 
 
-fileDateParser : Maybe String -> Parser Dated
+fileDateParser : Maybe String -> Parser (Maybe Date)
 fileDateParser fileDate =
     fileDate
         |> Maybe.map Date.fromIsoString
         |> Maybe.map Result.toMaybe
         |> ME.join
-        |> Maybe.map Due
-        |> Maybe.withDefault Undated
         |> succeed
 
 

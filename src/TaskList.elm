@@ -20,7 +20,7 @@ import Date exposing (Date)
 import List.Extra as LE
 import Parser exposing (..)
 import ParserHelper exposing (anyLineParser)
-import TaskItem exposing (Dated(..), TaskItem)
+import TaskItem exposing (TaskItem)
 
 
 
