@@ -166,7 +166,7 @@ parser pathToFile fileDate =
 
 
 taskItemBuilder : Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItem
-taskItemBuilder startOffset path row c dated contents endOffset source =
+taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
     let
         sourceText : String
         sourceText =
@@ -181,22 +181,45 @@ taskItemBuilder startOffset path row c dated contents endOffset source =
                 DoneTag _ ->
                     words
 
-                DueTag completionDate ->
+                DueTag _ ->
                     words
 
+        tagDueDate : Maybe Date
+        tagDueDate =
+            contents
+                |> List.foldr extractDueDate Nothing
+
+        dueDate : Maybe Date
         dueDate =
-            dated
+            case tagDueDate of
+                Just _ ->
+                    tagDueDate
+
+                Nothing ->
+                    dueFromFile
+
+        extractDueDate : Content -> Maybe Date -> Maybe Date
+        extractDueDate content date =
+            case content of
+                Word _ ->
+                    date
+
+                DoneTag _ ->
+                    date
+
+                DueTag tagDate ->
+                    Just tagDate
 
         extractCompletionDate : Content -> Maybe Date -> Maybe Date
         extractCompletionDate content date =
             case content of
-                Word word ->
+                Word _ ->
                     date
 
                 DoneTag completionDate ->
                     Just completionDate
 
-                DueTag completionDate ->
+                DueTag _ ->
                     date
 
         addCompletionDate : TaskItem -> TaskItem
@@ -236,8 +259,8 @@ contentHelp revContents =
 wordOrDoneOrDueTagParser : Parser Content
 wordOrDoneOrDueTagParser =
     oneOf
-        [ backtrackable
-            doneTagParser
+        [ backtrackable doneTagParser
+        , backtrackable dueTagParser
         , succeed Word
             |= ParserHelper.wordParser
         ]

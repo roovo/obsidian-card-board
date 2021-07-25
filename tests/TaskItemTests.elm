@@ -17,6 +17,37 @@ suite =
         , toString
         , transformation
         , done
+        , due
+        ]
+
+
+due : Test
+due =
+    describe "due"
+        [ test "returns undated for a task with no file date or @due() date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "@due() date over-rides the file date" <|
+            \() ->
+                "- [ ] foo @due(2021-03-03)"
+                    |> Parser.run (TaskItem.parser "" <| Just "2021-03-01")
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "the @due() date is not included in the title" <|
+            \() ->
+                "- [x] foo @due(2020-01-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
+        , test "the @due() date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo @due(2020-51-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo @due(2020-51-01) bar")
         ]
 
 
@@ -246,10 +277,10 @@ parsing =
                     |> Expect.equal (Ok "the task")
         , test "retains the original line text" <|
             \() ->
-                "- [X]  the task @done(2020-01-01) title\n- [ ] another task  "
+                "- [X]  the @due(2019-12-30) task @done(2020-01-01) title\n- [ ] another task  "
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.originalText t)
-                    |> Expect.equal (Ok "- [X]  the task @done(2020-01-01) title")
+                    |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @done(2020-01-01) title")
         , test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"
