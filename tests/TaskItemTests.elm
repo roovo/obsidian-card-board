@@ -351,12 +351,24 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.toString t)
                     |> Expect.equal (Ok "- [x] foo")
-        , test "outputs an @done(<iso-date>) TaskList item with the done date at the end" <|
+        , test "outputs a @done(<iso-date>) TaskList item with the done date at the end" <|
             \() ->
                 "- [X] foo @done(2020-03-22) bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (\t -> TaskItem.toString t)
                     |> Expect.equal (Ok "- [x] foo bar @done(2020-03-22)")
+        , test "outputs a @due(<iso-date>) TaskList item if the original had a @due tag" <|
+            \() ->
+                "- [X] foo @due(2020-03-22) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] foo bar @due(2020-03-22)")
+        , test "does not output a @due(<iso-date>) TaskList item if the original had a file based due date" <|
+            \() ->
+                "- [X] foo bar"
+                    |> Parser.run (TaskItem.parser "" <| Just "2021-03-01")
+                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Expect.equal (Ok "- [x] foo bar")
         , test "removes excess whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"

@@ -27,7 +27,7 @@ import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 
 
 type TaskItem
-    = TaskItem String String Int Completion (Maybe Date) String
+    = TaskItem String String Int Completion (Maybe Date) (Maybe Date) String
 
 
 type Completion
@@ -47,27 +47,32 @@ type Content
 
 
 title : TaskItem -> String
-title (TaskItem _ _ _ _ _ t) =
+title (TaskItem _ _ _ _ _ _ t) =
     t
 
 
 completion : TaskItem -> Completion
-completion (TaskItem _ _ _ c _ _) =
+completion (TaskItem _ _ _ c _ _ _) =
     c
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem _ _ _ _ d _) =
-    d
+due (TaskItem _ _ _ _ df dt _) =
+    case dt of
+        Just _ ->
+            dt
+
+        Nothing ->
+            df
 
 
 filePath : TaskItem -> String
-filePath (TaskItem _ p _ _ _ _) =
+filePath (TaskItem _ p _ _ _ _ _) =
     p
 
 
 id : TaskItem -> String
-id (TaskItem _ p l _ _ _) =
+id (TaskItem _ p l _ _ _ _) =
     p ++ ":" ++ String.fromInt l
 
 
@@ -79,7 +84,7 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem _ _ _ c _ _) =
+isCompleted (TaskItem _ _ _ c _ _ _) =
     case c of
         Incomplete ->
             False
@@ -92,31 +97,48 @@ isCompleted (TaskItem _ _ _ c _ _) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem _ p _ _ _ _) =
+isFromFile pathToFile (TaskItem _ p _ _ _ _ _) =
     p == pathToFile
 
 
 lineNumber : TaskItem -> Int
-lineNumber (TaskItem _ _ l _ _ _) =
+lineNumber (TaskItem _ _ l _ _ _ _) =
     l
 
 
 originalText : TaskItem -> String
-originalText (TaskItem s _ _ _ _ _) =
+originalText (TaskItem s _ _ _ _ _ _) =
     s
 
 
 toString : TaskItem -> String
-toString (TaskItem _ _ _ c _ t) =
-    case c of
-        Incomplete ->
-            "- [ ] " ++ String.trim t
+toString (TaskItem _ _ _ c _ dt t) =
+    let
+        checkbox =
+            case c of
+                Incomplete ->
+                    "- [ ] "
 
-        Completed ->
-            "- [x] " ++ String.trim t
+                _ ->
+                    "- [x] "
 
-        CompletedOn completionDate ->
-            "- [x] " ++ String.trim t ++ " @done(" ++ Date.toIsoString completionDate ++ ")"
+        dueTag =
+            case dt of
+                Just date ->
+                    " @due(" ++ Date.toIsoString date ++ ")"
+
+                _ ->
+                    ""
+
+        completionTag =
+            case c of
+                CompletedOn completionDate ->
+                    " @done(" ++ Date.toIsoString completionDate ++ ")"
+
+                _ ->
+                    ""
+    in
+    checkbox ++ String.trim t ++ dueTag ++ completionTag
 
 
 
@@ -124,24 +146,24 @@ toString (TaskItem _ _ _ c _ t) =
 
 
 toggleCompletion : Maybe Date -> TaskItem -> TaskItem
-toggleCompletion completionDate (TaskItem o p l c d t) =
+toggleCompletion completionDate (TaskItem o p l c df dt t) =
     case ( c, completionDate ) of
         ( Completed, _ ) ->
-            TaskItem o p l Incomplete d t
+            TaskItem o p l Incomplete df dt t
 
         ( CompletedOn _, _ ) ->
-            TaskItem o p l Incomplete d t
+            TaskItem o p l Incomplete df dt t
 
         ( Incomplete, Nothing ) ->
-            TaskItem o p l Completed d t
+            TaskItem o p l Completed df dt t
 
         ( Incomplete, Just date ) ->
-            TaskItem o p l (CompletedOn date) d t
+            TaskItem o p l (CompletedOn date) df dt t
 
 
 markCompleted : TaskItem -> Date -> TaskItem
-markCompleted (TaskItem o p l c d t) completionDate =
-    TaskItem o p l (CompletedOn completionDate) d t
+markCompleted (TaskItem o p l c df dt t) completionDate =
+    TaskItem o p l (CompletedOn completionDate) df dt t
 
 
 
@@ -189,15 +211,6 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
             contents
                 |> List.foldr extractDueDate Nothing
 
-        dueDate : Maybe Date
-        dueDate =
-            case tagDueDate of
-                Just _ ->
-                    tagDueDate
-
-                Nothing ->
-                    dueFromFile
-
         extractDueDate : Content -> Maybe Date -> Maybe Date
         extractDueDate content date =
             case content of
@@ -236,7 +249,7 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
     contents
         |> List.foldr extractWords []
         |> String.join " "
-        |> TaskItem sourceText path row c dueDate
+        |> TaskItem sourceText path row c dueFromFile tagDueDate
         |> addCompletionDate
 
 

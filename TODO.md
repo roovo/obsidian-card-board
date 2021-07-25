@@ -1,4 +1,3 @@
-- add @due(date) - overrides the day of the daily note it appears on
 - #-tag support
 - look into issue fixed in commit bca367 : TODO - why does this work....
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
@@ -21,7 +20,6 @@
 
     @autodone(bool) - whether the item automatically completes itself when its children are complete (true) or not (false). Named to match @done.
     @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
-    @due(date) - due on date
     @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
     @flagged - present when an item is flagged
     @parallel(bool) - whether children are parallel (true) or sequential (false)
@@ -48,6 +46,7 @@
 
 # Done
 
+- add @due(date) - overrides the day of the daily note it appears on
 - on completion add a @done(date) to the task
   - use the original source text the TaskItem was derived from to verify before re-writing
 - do I want to keep trailing spaces when parsing TaskItem title?
