@@ -1,4 +1,3 @@
-- how would it parse "- [ ] foo @done(2020-01-01)xxx bar (same for @due of course)
 - #-tag support
 - display on card
   - due date
@@ -53,6 +52,7 @@
 
 # Done
 
+- ensure "- [ ] foo @done(2020-01-01)x" doesn't extract the @done tag
 - add @due(date) - overrides the day of the daily note it appears on
 - on completion add a @done(date) to the task
   - use the original source text the TaskItem was derived from to verify before re-writing

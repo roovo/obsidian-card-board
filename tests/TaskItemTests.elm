@@ -48,6 +48,12 @@ due =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @due(2020-51-01) bar")
+        , test "the @due() date is included in the title if it is followed by a non-space character" <|
+            \() ->
+                "- [x] foo @due(2020-51-01)x bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo @due(2020-51-01)x bar")
         ]
 
 
