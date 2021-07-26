@@ -2,7 +2,7 @@ module ParserHelperTests exposing (suite)
 
 import Date
 import Expect exposing (Expectation)
-import Parser exposing ((|=))
+import Parser exposing ((|.), (|=))
 import ParserHelper exposing (anyLineParser, dateParser, nonEmptyStringParser, wordParser)
 import TaskItem
 import Test exposing (..)
@@ -16,6 +16,44 @@ suite =
         , anyLineParserTest
         , wordParserTest
         , dateParserTest
+        , checkWhitespaceFollowsTests
+        ]
+
+
+checkWhitespaceFollowsTests : Test
+checkWhitespaceFollowsTests =
+    describe "parser"
+        [ test "parsers a valid token at end of string" <|
+            \() ->
+                "hi"
+                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> Expect.equal (Ok ())
+        , test "succeeeds if followed by whitespace" <|
+            \() ->
+                "hi  "
+                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> Expect.equal (Ok ())
+        , test "succeeeds if followed by a new line" <|
+            \() ->
+                "hi\nsomething else"
+                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> Expect.equal (Ok ())
+        , test "does not consume following whitespace" <|
+            \() ->
+                "hi 12"
+                    |> Parser.run
+                        (Parser.succeed (\a b -> [ a, b ])
+                            |= (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                            |. Parser.token " "
+                            |= Parser.token "12"
+                        )
+                    |> Expect.equal (Ok [ (), () ])
+        , test "fails if followed by additional non-whitespaace" <|
+            \() ->
+                "hix"
+                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 
@@ -152,6 +190,7 @@ wordParserTest =
                     |> Parser.run
                         (Parser.succeed (\first second -> [ first, second ])
                             |= wordParser
+                            |. Parser.token " "
                             |= wordParser
                         )
                     |> Expect.equal (Ok [ "foo", "bar" ])

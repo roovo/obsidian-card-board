@@ -20,6 +20,7 @@ import Date exposing (Date)
 import Maybe.Extra as ME
 import Parser exposing (..)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
+import TaskPaperTag
 
 
 
@@ -262,37 +263,21 @@ contentHelp : List Content -> Parser (Step (List Content) (List Content))
 contentHelp revContents =
     oneOf
         [ succeed (\content -> Loop (content :: revContents))
-            |= wordOrDoneOrDueTagParser
+            |= taskPaperTagOrWordParser
             |. chompWhile isSpaceOrTab
         , succeed ()
             |> map (\_ -> Done (List.reverse revContents))
         ]
 
 
-wordOrDoneOrDueTagParser : Parser Content
-wordOrDoneOrDueTagParser =
+taskPaperTagOrWordParser : Parser Content
+taskPaperTagOrWordParser =
     oneOf
-        [ backtrackable doneTagParser
-        , backtrackable dueTagParser
+        [ backtrackable <| TaskPaperTag.doneTagParser DoneTag
+        , backtrackable <| TaskPaperTag.dueTagParser DueTag
         , succeed Word
             |= ParserHelper.wordParser
         ]
-
-
-doneTagParser : Parser Content
-doneTagParser =
-    succeed DoneTag
-        |. token "@done("
-        |= ParserHelper.dateParser
-        |. token ")"
-
-
-dueTagParser : Parser Content
-dueTagParser =
-    succeed DueTag
-        |. token "@due("
-        |= ParserHelper.dateParser
-        |. token ")"
 
 
 prefixParser : Parser Completion

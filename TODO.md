@@ -1,7 +1,14 @@
+- how would it parse "- [ ] foo @done(2020-01-01)xxx bar (same for @due of course)
 - #-tag support
-- look into issue fixed in commit bca367 : TODO - why does this work....
+- display on card
+  - due date
+  - done date
+  - tags
+- check the date periodically (say every minute) so the board updates around midnight
+- where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
+- look into issue fixed in commit bca367 : TODO - why does this work....
 - don't display all completed tasks - could get quite long!
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion

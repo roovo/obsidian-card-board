@@ -1,5 +1,6 @@
 module ParserHelper exposing
     ( anyLineParser
+    , checkWhitespaceFollows
     , dateParser
     , isLineEnd
     , isSpaceOrTab
@@ -10,6 +11,14 @@ module ParserHelper exposing
 
 import Date exposing (Date)
 import Parser exposing (..)
+
+
+
+-- TYPES
+
+
+type ParseResult b
+    = ParseResult b Bool
 
 
 
@@ -49,6 +58,11 @@ isSpaceTabOrLineEnd char =
     isSpaceOrTab char || isLineEnd char
 
 
+isNotWhitespace : Char -> Bool
+isNotWhitespace char =
+    not <| isSpaceTabOrLineEnd char
+
+
 
 -- PARSERS
 
@@ -63,7 +77,7 @@ anyLineParser =
 nonEmptyLineParser : Parser String
 nonEmptyLineParser =
     getChompedString chompWithEndOfLine
-        |> andThen checkIfEmpty
+        |> andThen (checkIfEmpty "nonEmptyLineParser")
 
 
 dateParser : Parser Date
@@ -90,13 +104,34 @@ lineEndOrEnd =
 nonEmptyStringParser : Parser String
 nonEmptyStringParser =
     getChompedString chompToEndOfLine
-        |> andThen checkIfEmpty
+        |> andThen (checkIfEmpty "nonEmptyStringParser")
 
 
 wordParser : Parser String
 wordParser =
     getChompedString chompToEndOfWord
-        |> andThen (consumeSeparator ' ')
+        |> andThen (checkIfEmpty "wordParser")
+        |> checkWhitespaceFollows
+
+
+checkWhitespaceFollows : Parser a -> Parser a
+checkWhitespaceFollows xp =
+    succeed ParseResult
+        |= backtrackable xp
+        |= oneOf
+            [ map (\_ -> True) (backtrackable (chompIf isNotWhitespace))
+            , succeed False
+            ]
+        |> andThen checkEnding
+
+
+checkEnding : ParseResult b -> Parser b
+checkEnding (ParseResult p isBadEnding) =
+    if isBadEnding then
+        problem "expecting whitespace after the parsed token"
+
+    else
+        commit p
 
 
 
@@ -137,10 +172,10 @@ chompToEndOfWord =
         |. chompWhile (not << isSpaceTabOrLineEnd)
 
 
-checkIfEmpty : String -> Parser String
-checkIfEmpty parsedString =
+checkIfEmpty : String -> String -> Parser String
+checkIfEmpty calledFrom parsedString =
     if String.length parsedString == 0 then
-        problem ""
+        problem <| "Empty string found in " ++ calledFrom
 
     else
         succeed parsedString
