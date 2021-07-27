@@ -251,12 +251,9 @@ card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-action-area" ]
-            [ Html.div [ class "card-board-card-action-area-buttons" ]
-                [ Html.button [ onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
-                    [ FaRegular.edit |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
-                , Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
-                    [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
-                ]
+            [ cardDueDate taskItem
+                |> when (TaskItem.isDated taskItem)
+            , cardActionButtons taskItem
             ]
         , Html.div [ class "card-board-card-content-area" ]
             [ Html.div [ class "card-board-card-checkbox-area" ]
@@ -271,3 +268,44 @@ card taskItem =
                 [ Html.text <| TaskItem.title taskItem ]
             ]
         ]
+
+
+cardDueDate : TaskItem -> Html Msg
+cardDueDate taskItem =
+    Html.div [ class "card-board-card-action-area-due" ]
+        [ Html.text ("Due: " ++ dueDateString taskItem)
+        ]
+
+
+dueDateString : TaskItem -> String
+dueDateString taskItem =
+    case TaskItem.due taskItem of
+        Just dueDate ->
+            Date.format "E, MMM ddd" dueDate
+
+        Nothing ->
+            "n/a"
+
+
+cardActionButtons : TaskItem -> Html Msg
+cardActionButtons taskItem =
+    Html.div [ class "card-board-card-action-area-buttons" ]
+        [ Html.button [ onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
+            [ FaRegular.edit |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
+        , Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
+            [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
+        ]
+
+
+empty : Html msg
+empty =
+    Html.text ""
+
+
+when : Bool -> Html msg -> Html msg
+when shouldRender html =
+    if shouldRender then
+        html
+
+    else
+        empty

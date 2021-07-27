@@ -73,10 +73,20 @@ ul.card-board-column-list > li.card-board-card::before {
 .card-board-card-action-area {
   grid-column-start: 1;
   grid-row-start: 2;
-  margin-left: auto;
+  margin-left: 10px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  justify-content: space-between;
+}
+
+.card-board-card-action-area-due {
+  font-size: var(--font-adaptive-small);
+  grid-column-start: 1;
 }
 
 .card-board-card-action-area-buttons {
+  margin-left: auto;
+  grid-column-start: 2;
   display: grid;
   grid-auto-flow: column;
   grid-gap: 5px;
