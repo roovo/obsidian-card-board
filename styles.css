@@ -65,6 +65,7 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .card-board-card-body {
+  font-size: var(--font-adaptive-normal);
   grid-column-start: 2;
   grid-row-start: 1;
 }
