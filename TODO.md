@@ -1,4 +1,3 @@
-- #-tag support
 - display on card
   - due date
   - done date
@@ -52,6 +51,7 @@
 
 # Done
 
+- #-tag support
 - ensure "- [ ] foo @done(2020-01-01)x" doesn't extract the @done tag
 - add @due(date) - overrides the day of the daily note it appears on
 - on completion add a @done(date) to the task
