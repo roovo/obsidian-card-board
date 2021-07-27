@@ -11,6 +11,7 @@ module TaskItem exposing
     , lineNumber
     , originalText
     , parser
+    , tags
     , title
     , toString
     , toggleCompletion
@@ -110,6 +111,11 @@ lineNumber (TaskItem _ _ l _ _ _ _) =
 originalText : TaskItem -> String
 originalText (TaskItem s _ _ _ _ _ _) =
     s
+
+
+tags : TaskItem -> List String
+tags _ =
+    []
 
 
 toString : TaskItem -> String

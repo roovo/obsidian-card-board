@@ -18,6 +18,19 @@ suite =
         , transformation
         , done
         , due
+        , tags
+        ]
+
+
+tags : Test
+tags =
+    describe "tags"
+        [ test "returns an empty array if there are no tags" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.tags
+                    |> Expect.equal (Ok [])
         ]
 
 
