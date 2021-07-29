@@ -250,12 +250,7 @@ column title taskItems =
 card : TaskItem -> Html Msg
 card taskItem =
     Html.li [ class "card-board-card" ]
-        [ Html.div [ class "card-board-card-action-area" ]
-            [ cardDueDate taskItem
-                |> when (TaskItem.isDated taskItem)
-            , cardActionButtons taskItem
-            ]
-        , Html.div [ class "card-board-card-content-area" ]
+        [ Html.div [ class "card-board-card-content-area" ]
             [ Html.div [ class "card-board-card-checkbox-area" ]
                 [ Html.input
                     [ type_ "checkbox"
@@ -267,7 +262,38 @@ card taskItem =
             , Html.div [ class "card-board-card-body" ]
                 [ Html.text <| TaskItem.title taskItem ]
             ]
+        , cardTagsView taskItem
+            |> when (TaskItem.hasTags taskItem)
+        , Html.div [ class "card-board-card-action-area" ]
+            [ cardDueDate taskItem
+                |> when (TaskItem.isDated taskItem)
+            , cardActionButtons taskItem
+            ]
         ]
+
+
+cardTagsView : TaskItem -> Html Msg
+cardTagsView taskItem =
+    Html.div [ class "card-board-card-tag-area" ]
+        (List.map cardTagView (TaskItem.tags taskItem))
+
+
+cardTagView : String -> Html Msg
+cardTagView tagText =
+    Html.div [ class "card-board-card-tag" ]
+        [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
+            [ Html.text "#" ]
+        , Html.span [ class "cm-hashtag cm-hashtag-end" ]
+            [ Html.text tagText ]
+        ]
+
+
+
+-- <span class="cm-hashtag-begin cm-hashtag">#</span>
+-- <span class="cm-hashtag cm-hashtag-end">people</span>
+--
+-- <span class="cm-list-1 cm-formatting cm-formatting-hashtag cm-hashtag-begin cm-hashtag cm-meta cm-tag-people">#</span>
+-- <span class="cm-list-1 cm-hashtag cm-meta cm-hashtag-end cm-tag-people">people</span>
 
 
 cardDueDate : TaskItem -> Html Msg

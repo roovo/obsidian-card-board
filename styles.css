@@ -44,6 +44,7 @@ ul.card-board-column-list > li.card-board-card::before {
   border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
+  grid-gap: 5px;
 }
 
 .card-board-card-content-area {
@@ -74,14 +75,22 @@ ul.card-board-column-list > li.card-board-card::before {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.card-board-card-tag-area {
+  font-size: var(--font-adaptive-small);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.card-board-card-tag > span.cm-hashtag {
+  background-color: var(--background-secondary-alt);
+}
 
 .card-board-card-action-area {
   grid-column-start: 1;
-  grid-row-start: 2;
-  margin-left: 10px;
+  padding-left: 10px;
   display: grid;
   grid-template-columns: 2fr 1fr;
   justify-content: space-between;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 .card-board-card-action-area-due {

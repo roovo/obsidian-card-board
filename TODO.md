@@ -1,7 +1,3 @@
-- display on card
-  - due date
-  - done date
-  - tags
 - check the date periodically (say every minute) so the board updates around midnight
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
@@ -11,11 +7,13 @@
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
 - render card title as markdown
+- display on card - done date
 - handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
 - drag and drop -> into today, tomorrow, and done columns
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
+  - look at css to see how to use standard variables for themes
 - make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
@@ -51,6 +49,9 @@
 
 # Done
 
+- display on card
+  - tags
+  - due date
 - #-tag support
 - ensure "- [ ] foo @done(2020-01-01)x" doesn't extract the @done tag
 - add @due(date) - overrides the day of the daily note it appears on

@@ -4,6 +4,7 @@ module TaskItem exposing
     , completion
     , due
     , filePath
+    , hasTags
     , id
     , isCompleted
     , isDated
@@ -72,6 +73,11 @@ due (TaskItem _ _ _ _ df dt _ _) =
 filePath : TaskItem -> String
 filePath (TaskItem _ p _ _ _ _ _ _) =
     p
+
+
+hasTags : TaskItem -> Bool
+hasTags (TaskItem _ p l _ _ _ ts _) =
+    List.length ts /= 0
 
 
 id : TaskItem -> String
