@@ -1,4 +1,3 @@
-- check the date periodically (say every minute) so the board updates around midnight
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
@@ -6,6 +5,8 @@
 - don't display all completed tasks - could get quite long!
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
+- scrolling across the board
+- resizing columns
 - render card title as markdown
 - display on card - done date
 - handle renames - make sure I cope with both directory and file renames
@@ -49,6 +50,7 @@
 
 # Done
 
+- check the date periodically (say every minute) so the board updates around midnight
 - display on card
   - tags
   - due date

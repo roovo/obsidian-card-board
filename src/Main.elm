@@ -15,6 +15,7 @@ import Ports exposing (MarkdownFile)
 import Task exposing (Task)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import Time
 
 
 main : Program Flags Model Msg
@@ -35,6 +36,7 @@ type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
     , today : Maybe Date
+    , zone : Maybe Time.Zone
     , taskList : State TaskList
     }
 
@@ -55,9 +57,10 @@ init flags =
     ( { dailyNotesFolder = flags.folder
       , dailyNotesFormat = flags.format
       , today = Nothing
+      , zone = Nothing
       , taskList = Loading
       }
-    , Date.today |> Task.perform ReceiveDate
+    , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
     )
 
 
@@ -66,10 +69,11 @@ init flags =
 
 
 type Msg
-    = ReceiveDate Date
+    = ReceiveTime ( Time.Zone, Time.Posix )
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
+    | Tick Time.Posix
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileUpdated MarkdownFile
@@ -78,8 +82,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( ReceiveDate today, _ ) ->
-            ( { model | today = Just today }
+        ( ReceiveTime ( zone, posix ), _ ) ->
+            ( { model
+                | zone = Just zone
+                , today = Just (Date.fromPosix zone posix)
+              }
             , Cmd.none
             )
 
@@ -141,6 +148,13 @@ update msg model =
                 Loading ->
                     ( model, Cmd.none )
 
+        ( Tick time, _ ) ->
+            ( { model
+                | today = Just <| Date.fromPosix (Maybe.withDefault Time.utc model.zone) time
+              }
+            , Cmd.none
+            )
+
         ( VaultFileAdded markdownFile, _ ) ->
             ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
                 |> Result.withDefault TaskList.empty
@@ -199,6 +213,7 @@ subscriptions model =
         [ Ports.fileAdded VaultFileAdded
         , Ports.fileUpdated VaultFileUpdated
         , Ports.fileDeleted VaultFileDeleted
+        , Time.every (1000 * 60) Tick
         ]
 
 
