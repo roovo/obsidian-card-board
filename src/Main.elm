@@ -10,6 +10,7 @@ import FontAwesome.Svg as FaSvg
 import Html exposing (Html)
 import Html.Attributes exposing (checked, class, type_)
 import Html.Events exposing (onClick)
+import Html.Keyed
 import Parser
 import Ports exposing (MarkdownFile)
 import Task exposing (Task)
@@ -255,15 +256,15 @@ column title taskItems =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text title ]
-        , Html.ul [ class "card-board-column-list" ]
+        , Html.Keyed.ul [ class "card-board-column-list" ]
             (taskItems
-                |> List.map card
+                |> List.map (card title)
             )
         ]
 
 
-card : TaskItem -> Html Msg
-card taskItem =
+card : String -> TaskItem -> ( String, Html Msg )
+card columnTitle taskItem =
     Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-content-area" ]
             [ Html.div [ class "card-board-card-checkbox-area" ]
@@ -285,6 +286,7 @@ card taskItem =
             , cardActionButtons taskItem
             ]
         ]
+        |> Tuple.pair (columnTitle ++ ":" ++ TaskItem.id taskItem)
 
 
 cardTagsView : TaskItem -> Html Msg
