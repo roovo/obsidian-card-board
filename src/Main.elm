@@ -8,7 +8,7 @@ import FontAwesome.Regular as FaRegular
 import FontAwesome.Styles as FaStyles
 import FontAwesome.Svg as FaSvg
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, type_)
+import Html.Attributes exposing (checked, class, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import Parser
@@ -265,7 +265,11 @@ column title taskItems =
 
 card : String -> TaskItem -> ( String, Html Msg )
 card columnTitle taskItem =
-    Html.li [ class "card-board-card" ]
+    let
+        uniqueId =
+            columnTitle ++ ":" ++ TaskItem.id taskItem
+    in
+    Html.li [ class "card-board-card", id uniqueId ]
         [ Html.div [ class "card-board-card-content-area" ]
             [ Html.div [ class "card-board-card-checkbox-area" ]
                 [ Html.input
@@ -286,7 +290,7 @@ card columnTitle taskItem =
             , cardActionButtons taskItem
             ]
         ]
-        |> Tuple.pair (columnTitle ++ ":" ++ TaskItem.id taskItem)
+        |> Tuple.pair uniqueId
 
 
 cardTagsView : TaskItem -> Html Msg
