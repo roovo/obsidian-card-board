@@ -11,6 +11,7 @@ module TaskList exposing
     , taskFromId
     , taskIds
     , taskTitles
+    , toList
     , todaysItems
     , tomorrowsItems
     , undatedItems
@@ -102,6 +103,11 @@ taskFromId : String -> TaskList -> Maybe TaskItem
 taskFromId id (TaskList taskItems) =
     taskItems
         |> LE.find (\i -> TaskItem.id i == id)
+
+
+toList : TaskList -> List TaskItem
+toList (TaskList taskList) =
+    taskList
 
 
 

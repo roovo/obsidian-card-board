@@ -157,10 +157,16 @@ update msg model =
             )
 
         ( VaultFileAdded markdownFile, _ ) ->
-            ( Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
-                |> Result.withDefault TaskList.empty
-                |> addTaskItems model
-            , Cmd.none
+            let
+                newTaskItems =
+                    Parser.run (TaskList.parser markdownFile.filePath markdownFile.fileDate) (markdownFile.fileContents ++ "\n")
+                        |> Result.withDefault TaskList.empty
+            in
+            ( addTaskItems model newTaskItems
+            , newTaskItems
+                |> TaskList.toList
+                |> List.map (\t -> { id = TaskItem.id t, titleMarkdown = TaskItem.title t })
+                |> Ports.writeTaskTitles
             )
 
         ( VaultFileDeleted filePath, _ ) ->
