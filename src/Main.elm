@@ -273,7 +273,7 @@ card : String -> TaskItem -> ( String, Html Msg )
 card columnTitle taskItem =
     let
         uniqueId =
-            columnTitle ++ ":" ++ TaskItem.id taskItem
+            TaskItem.id taskItem
     in
     Html.li [ class "card-board-card", id uniqueId ]
         [ Html.div [ class "card-board-card-content-area" ]

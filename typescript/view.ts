@@ -1,4 +1,4 @@
-import { App, FileView, ItemView, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
+import { App, FileView, ItemView, MarkdownRenderer, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
 import { Elm } from '../src/Main';
 import CardBoardPlugin from './main';
 
@@ -31,19 +31,6 @@ export class CardBoardView extends ItemView {
       flags: dailyNotesSettings
     })
 
-    const markdownFiles = this.vault.getMarkdownFiles();
-
-    for (const file of markdownFiles) {
-      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
-
-      const fileContents = await this.vault.cachedRead(file);
-      elm.ports.fileAdded.send({
-        filePath: file.path,
-        fileDate: fileDate,
-        fileContents: fileContents
-      });
-    }
-
     const that = this;
 
     elm.ports.rewriteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string, newText: string}) {
@@ -57,6 +44,23 @@ export class CardBoardView extends ItemView {
     elm.ports.editTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
       that.handleEditTodo(data);
     })
+
+    elm.ports.writeTaskTitles.subscribe(function(data: [{id: string, titleMarkdown: string }]) {
+      that.handleWriteTaskTitles(data);
+    })
+
+    const markdownFiles = this.vault.getMarkdownFiles();
+
+    for (const file of markdownFiles) {
+      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+
+      const fileContents = await this.vault.cachedRead(file);
+      elm.ports.fileAdded.send({
+        filePath: file.path,
+        fileDate: fileDate,
+        fileContents: fileContents
+      });
+    }
 
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
@@ -121,6 +125,18 @@ export class CardBoardView extends ItemView {
         this.vault.modify(file, markdownLines.join("\n"))
       }
     }
+  }
+
+  async handleWriteTaskTitles(data: [{id: string, titleMarkdown: string }]) {
+    requestAnimationFrame(function () {
+      for (const item of data) {
+        const element = document.getElementById(item.id);
+        const plop = element.querySelector("div.card-board-card-body");
+        if (plop instanceof HTMLElement) {
+          MarkdownRenderer.renderMarkdown(item.titleMarkdown, plop, "/", this)
+        }
+      }
+    })
   }
 
   async handleFileCreated(elm: any, dailyNotesSettings: any, file: TAbstractFile) {

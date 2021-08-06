@@ -15,6 +15,9 @@ export namespace Elm {
         rewriteTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string; newText: string }) => void): void
         }
+        writeTaskTitles: {
+          subscribe(callback: (data: { id: string; titleMarkdown: string }[]) => void): void
+        }
         fileUpdated: {
           send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
         }
