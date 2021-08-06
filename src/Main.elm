@@ -276,7 +276,7 @@ card columnTitle taskItem =
                     []
                 ]
             , Html.div [ class "card-board-card-body" ]
-                [ Html.text <| TaskItem.title taskItem ]
+                []
             ]
         , cardTagsView taskItem
             |> when (TaskItem.hasTags taskItem)
