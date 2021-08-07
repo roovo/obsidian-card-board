@@ -70,7 +70,7 @@ ul.card-board-column-list > li.card-board-card::before {
   grid-column-start: 2;
   grid-row-start: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

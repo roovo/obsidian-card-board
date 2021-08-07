@@ -1,4 +1,3 @@
-- only display 2 lines of task title
 - why don't links in card titles work? (and why don't they show a linked card on hover)
 - is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
 - where to use fuzz testing
@@ -52,6 +51,7 @@
 
 # Done
 
+- only display 2 lines of task title
 - render card title as markdown
   - pass filePath with card title to ts for use in RenderMarkdown call
   - render titles in ts when card content is edited inside Obsidian
