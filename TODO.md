@@ -1,3 +1,7 @@
+- pass filePath with card title to ts for use in RenderMarkdown call
+- only display 2 lines of task title
+- why don't links in card titles work? (and why don't they show a linked card on hover)
+- is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
@@ -7,7 +11,6 @@
 - confirm deletion
 - scrolling across the board
 - resizing columns
-- render card title as markdown
 - display on card - done date
 - handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
@@ -50,6 +53,9 @@
 
 # Done
 
+- render titles in ts when card content is edited inside Obsidian
+- render titles in ts when card content is edited outside Obsidian
+- render card title as markdown
 - check the date periodically (say every minute) so the board updates around midnight
 - display on card
   - tags

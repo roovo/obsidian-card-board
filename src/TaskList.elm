@@ -4,6 +4,7 @@ module TaskList exposing
     , completedItems
     , concat
     , empty
+    , fromMarkdown
     , futureItems
     , parser
     , removeForFile
@@ -45,6 +46,12 @@ parser : String -> Maybe String -> Parser TaskList
 parser filePath fileDate =
     loop [] (taskItemsHelp filePath fileDate)
         |> map (\ts -> TaskList ts)
+
+
+fromMarkdown : String -> Maybe String -> String -> TaskList
+fromMarkdown filePath fileDate fileContents =
+    Parser.run (parser filePath fileDate) (fileContents ++ "\n")
+        |> Result.withDefault empty
 
 
 

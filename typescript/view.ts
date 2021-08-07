@@ -130,10 +130,11 @@ export class CardBoardView extends ItemView {
   async handleWriteTaskTitles(data: [{id: string, titleMarkdown: string }]) {
     requestAnimationFrame(function () {
       for (const item of data) {
-        const element = document.getElementById(item.id);
-        const plop = element.querySelector("div.card-board-card-body");
-        if (plop instanceof HTMLElement) {
-          MarkdownRenderer.renderMarkdown(item.titleMarkdown, plop, "/", this)
+        const card = document.getElementById(item.id);
+        const cardBody = card.querySelector("div.card-board-card-body");
+        if (cardBody instanceof HTMLElement) {
+          cardBody.innerHTML = "";
+          MarkdownRenderer.renderMarkdown(item.titleMarkdown, cardBody, "/", this);
         }
       }
     })
