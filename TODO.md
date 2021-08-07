@@ -1,4 +1,3 @@
-- pass filePath with card title to ts for use in RenderMarkdown call
 - only display 2 lines of task title
 - why don't links in card titles work? (and why don't they show a linked card on hover)
 - is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
@@ -53,9 +52,10 @@
 
 # Done
 
-- render titles in ts when card content is edited inside Obsidian
-- render titles in ts when card content is edited outside Obsidian
 - render card title as markdown
+  - pass filePath with card title to ts for use in RenderMarkdown call
+  - render titles in ts when card content is edited inside Obsidian
+  - render titles in ts when card content is edited outside Obsidian
 - check the date periodically (say every minute) so the board updates around midnight
 - display on card
   - tags

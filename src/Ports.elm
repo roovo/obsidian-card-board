@@ -32,7 +32,7 @@ port editTodo : { filePath : String, lineNumber : Int, originalText : String } -
 port rewriteTodo : { filePath : String, lineNumber : Int, originalText : String, newText : String } -> Cmd msg
 
 
-port writeTaskTitles : List { id : String, titleMarkdown : String } -> Cmd msg
+port writeTaskTitles : { filePath : String, titles : List { id : String, titleMarkdown : String } } -> Cmd msg
 
 
 port fileUpdated : (MarkdownFile -> msg) -> Sub msg

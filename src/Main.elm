@@ -165,7 +165,7 @@ update msg model =
             , newTaskItems
                 |> TaskList.toList
                 |> List.map (\t -> { id = TaskItem.id t, titleMarkdown = TaskItem.title t })
-                |> Ports.writeTaskTitles
+                |> writeTaskTitles markdownFile.filePath
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -180,8 +180,13 @@ update msg model =
             , newTaskItems
                 |> TaskList.toList
                 |> List.map (\t -> { id = TaskItem.id t, titleMarkdown = TaskItem.title t })
-                |> Ports.writeTaskTitles
+                |> writeTaskTitles markdownFile.filePath
             )
+
+
+writeTaskTitles : String -> List { id : String, titleMarkdown : String } -> Cmd msg
+writeTaskTitles filePath titles =
+    Ports.writeTaskTitles { filePath = filePath, titles = titles }
 
 
 deleteItemsFromFile : Model -> String -> Model

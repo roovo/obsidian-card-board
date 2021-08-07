@@ -45,7 +45,7 @@ export class CardBoardView extends ItemView {
       that.handleEditTodo(data);
     })
 
-    elm.ports.writeTaskTitles.subscribe(function(data: [{id: string, titleMarkdown: string }]) {
+    elm.ports.writeTaskTitles.subscribe(function(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
       that.handleWriteTaskTitles(data);
     })
 
@@ -127,14 +127,14 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleWriteTaskTitles(data: [{id: string, titleMarkdown: string }]) {
+  async handleWriteTaskTitles(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
     requestAnimationFrame(function () {
-      for (const item of data) {
+      for (const item of data.titles) {
         const card = document.getElementById(item.id);
         const cardBody = card.querySelector("div.card-board-card-body");
         if (cardBody instanceof HTMLElement) {
           cardBody.innerHTML = "";
-          MarkdownRenderer.renderMarkdown(item.titleMarkdown, cardBody, "/", this);
+          MarkdownRenderer.renderMarkdown(item.titleMarkdown, cardBody, data.filePath, this);
         }
       }
     })
