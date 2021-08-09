@@ -1,9 +1,17 @@
+- show indented tasks as subtasks
+- indented text as markdown task notes
+- plugin settings
+  - max title lines
+  - allow/deny directories/files
+- sort order for columns?
+- search for card by title/content
 - why don't links in card titles work? (and why don't they show a linked card on hover)
 - is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
 - look into issue fixed in commit bca367 : TODO - why does this work....
+  - can I get parser to always work when there is no "\n" on the end of the input
 - don't display all completed tasks - could get quite long!
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
@@ -36,7 +44,6 @@
 - define boards by #tags
 - support multiple kanban boards
 
-- can I get parser to always work when there is no "\n" on the end of the input
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - elm review
@@ -51,6 +58,7 @@
 
 # Done
 
+- TaskItem - use a record internally (for ease of understanding)
 - only display 2 lines of task title
 - render card title as markdown
   - pass filePath with card title to ts for use in RenderMarkdown call

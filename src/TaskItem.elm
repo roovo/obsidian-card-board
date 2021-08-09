@@ -29,8 +29,20 @@ import TaskPaperTag
 -- TYPES
 
 
+type alias TaskItemFields =
+    { originalText : String
+    , filePath : String
+    , lineNumber : Int
+    , completion : Completion
+    , dueFile : Maybe Date
+    , dueTag : Maybe Date
+    , tags : List String
+    , title : String
+    }
+
+
 type TaskItem
-    = TaskItem String String Int Completion (Maybe Date) (Maybe Date) (List String) String
+    = TaskItem TaskItemFields
 
 
 type Completion
@@ -51,38 +63,38 @@ type Content
 
 
 title : TaskItem -> String
-title (TaskItem _ _ _ _ _ _ _ t) =
-    t
+title (TaskItem fields) =
+    fields.title
 
 
 completion : TaskItem -> Completion
-completion (TaskItem _ _ _ c _ _ _ _) =
-    c
+completion (TaskItem fields) =
+    fields.completion
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem _ _ _ _ df dt _ _) =
-    case dt of
+due (TaskItem fields) =
+    case fields.dueTag of
         Just _ ->
-            dt
+            fields.dueTag
 
         Nothing ->
-            df
+            fields.dueFile
 
 
 filePath : TaskItem -> String
-filePath (TaskItem _ p _ _ _ _ _ _) =
-    p
+filePath (TaskItem fields) =
+    fields.filePath
 
 
 hasTags : TaskItem -> Bool
-hasTags (TaskItem _ p l _ _ _ ts _) =
-    List.length ts /= 0
+hasTags (TaskItem fields) =
+    List.length fields.tags /= 0
 
 
 id : TaskItem -> String
-id (TaskItem _ p l _ _ _ _ _) =
-    p ++ ":" ++ String.fromInt l
+id (TaskItem fields) =
+    fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
 
 
 isDated : TaskItem -> Bool
@@ -93,8 +105,8 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem _ _ _ c _ _ _ _) =
-    case c of
+isCompleted (TaskItem fields) =
+    case fields.completion of
         Incomplete ->
             False
 
@@ -106,30 +118,30 @@ isCompleted (TaskItem _ _ _ c _ _ _ _) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem _ p _ _ _ _ _ _) =
-    p == pathToFile
+isFromFile pathToFile (TaskItem fields) =
+    fields.filePath == pathToFile
 
 
 lineNumber : TaskItem -> Int
-lineNumber (TaskItem _ _ l _ _ _ _ _) =
-    l
+lineNumber (TaskItem fields) =
+    fields.lineNumber
 
 
 originalText : TaskItem -> String
-originalText (TaskItem s _ _ _ _ _ _ _) =
-    s
+originalText (TaskItem fields) =
+    fields.originalText
 
 
 tags : TaskItem -> List String
-tags (TaskItem _ _ _ _ _ _ ts _) =
-    ts
+tags (TaskItem fields) =
+    fields.tags
 
 
 toString : TaskItem -> String
-toString (TaskItem _ _ _ c _ dt _ t) =
+toString (TaskItem fields) =
     let
         checkbox =
-            case c of
+            case fields.completion of
                 Incomplete ->
                     "- [ ] "
 
@@ -137,7 +149,7 @@ toString (TaskItem _ _ _ c _ dt _ t) =
                     "- [x] "
 
         dueTag =
-            case dt of
+            case fields.dueTag of
                 Just date ->
                     " @due(" ++ Date.toIsoString date ++ ")"
 
@@ -145,14 +157,14 @@ toString (TaskItem _ _ _ c _ dt _ t) =
                     ""
 
         completionTag =
-            case c of
+            case fields.completion of
                 CompletedOn completionDate ->
                     " @done(" ++ Date.toIsoString completionDate ++ ")"
 
                 _ ->
                     ""
     in
-    checkbox ++ String.trim t ++ dueTag ++ completionTag
+    checkbox ++ String.trim fields.title ++ dueTag ++ completionTag
 
 
 
@@ -160,24 +172,24 @@ toString (TaskItem _ _ _ c _ dt _ t) =
 
 
 toggleCompletion : Maybe Date -> TaskItem -> TaskItem
-toggleCompletion completionDate (TaskItem o p l c df dt ts t) =
-    case ( c, completionDate ) of
+toggleCompletion completionDate (TaskItem fields) =
+    case ( fields.completion, completionDate ) of
         ( Completed, _ ) ->
-            TaskItem o p l Incomplete df dt ts t
+            TaskItem { fields | completion = Incomplete }
 
         ( CompletedOn _, _ ) ->
-            TaskItem o p l Incomplete df dt ts t
+            TaskItem { fields | completion = Incomplete }
 
         ( Incomplete, Nothing ) ->
-            TaskItem o p l Completed df dt ts t
+            TaskItem { fields | completion = Completed }
 
         ( Incomplete, Just date ) ->
-            TaskItem o p l (CompletedOn date) df dt ts t
+            TaskItem { fields | completion = CompletedOn date }
 
 
 markCompleted : TaskItem -> Date -> TaskItem
-markCompleted (TaskItem o p l c df dt ts t) completionDate =
-    TaskItem o p l (CompletedOn completionDate) df dt ts t
+markCompleted (TaskItem fields) completionDate =
+    TaskItem { fields | completion = CompletedOn completionDate }
 
 
 
@@ -282,11 +294,23 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
 
             else
                 item
+
+        parsedTitle : String
+        parsedTitle =
+            contents
+                |> List.foldr extractWords []
+                |> String.join " "
     in
-    contents
-        |> List.foldr extractWords []
-        |> String.join " "
-        |> TaskItem sourceText path row c dueFromFile tagDueDate obsidianTags
+    TaskItem
+        { originalText = sourceText
+        , filePath = path
+        , lineNumber = row
+        , completion = c
+        , dueFile = dueFromFile
+        , dueTag = tagDueDate
+        , tags = obsidianTags
+        , title = parsedTitle
+        }
         |> addCompletionDate
 
 
