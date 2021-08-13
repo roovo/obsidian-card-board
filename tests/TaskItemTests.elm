@@ -342,6 +342,13 @@ parsing =
                     |> Result.map (\ta -> TaskItem.subtasks ta)
                     |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
                     |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "it is happy even if the level of indentation decreases as long as still indented" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\ta -> TaskItem.subtasks ta)
+                    |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
+                    |> Expect.equal (Ok [ "bar", "baz" ])
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"

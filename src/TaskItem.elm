@@ -290,7 +290,6 @@ taskItemFieldsBuilder startOffset path row completion_ dueFromFile contents endO
                 |> List.foldr extractWords []
                 |> String.join " "
     in
-    -- Debug.log "built"
     { originalText = sourceText
     , filePath = path
     , lineNumber = row

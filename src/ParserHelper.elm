@@ -75,7 +75,7 @@ indentParser parser =
         list_ : ( Int, Int ) -> Parser (List a)
         list_ ( indent, column ) =
             if column > indent then
-                P.withIndent column parser_
+                P.withIndent (indent + 1) parser_
 
             else
                 P.succeed []

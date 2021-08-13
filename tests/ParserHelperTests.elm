@@ -94,6 +94,15 @@ indentParserTests =
 """
                     |> P.run (ParserHelper.indentParser P.int)
                     |> Expect.equal (Ok [ 1, 2, 3 ])
+        , test "works with decreasing indent" <|
+            \() ->
+                """   1
+  2
+ 3
+4
+"""
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [ 1, 2, 3 ])
         , test "stops when there is no longer an indent" <|
             \() ->
                 """ 1
