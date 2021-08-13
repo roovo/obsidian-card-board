@@ -1,4 +1,5 @@
 - show indented tasks as subtasks
+- support @autodone(bool) taskpaper tag
 - indented text as markdown task notes (including invalid/incomplete subtasks)
 - plugin settings
   - max title lines

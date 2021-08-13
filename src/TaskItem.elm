@@ -4,6 +4,7 @@ module TaskItem exposing
     , completion
     , due
     , filePath
+    , hasSubtasks
     , hasTags
     , id
     , isCompleted
@@ -90,7 +91,12 @@ filePath (TaskItem fields _) =
 
 hasTags : TaskItem -> Bool
 hasTags (TaskItem fields _) =
-    List.length fields.tags /= 0
+    not <| List.isEmpty fields.tags
+
+
+hasSubtasks : TaskItem -> Bool
+hasSubtasks (TaskItem _ subtasks_) =
+    not <| List.isEmpty subtasks_
 
 
 id : TaskItem -> String

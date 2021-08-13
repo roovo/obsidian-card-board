@@ -40,7 +40,6 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card {
   display: grid;
-  grid-template-rows: 1fr auto;
   border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
@@ -48,16 +47,12 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .card-board-card-content-area {
-  grid-row-start: 1;
-  grid-column-start: 1;
   padding: 10px 5px;
   display: grid;
   grid-template-columns: 30px 1fr;
 }
 
 .card-board-card-checkbox-area {
-  grid-column-start: 1;
-  grid-row-start: 1;
 }
 
 .card-board-card-checkbox-area input {
@@ -65,10 +60,13 @@ ul.card-board-column-list > li.card-board-card::before {
   height: 18px;
 }
 
-.card-board-card-body {
+.card-board-card-display-items {
+  display: grid;
+  grid-auto-flow: row;
+}
+
+.card-board-card-title {
   font-size: var(--font-adaptive-normal);
-  grid-column-start: 2;
-  grid-row-start: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -76,9 +74,13 @@ ul.card-board-column-list > li.card-board-card::before {
   text-overflow: ellipsis;
 }
 
-.card-board-card-body p {
+.card-board-card-title p {
   margin-block-start: 0;
   margin-block-end: 0;
+}
+
+.card-board-card-subtask-area {
+  font-size: var(--font-adaptive-small);
 }
 
 .card-board-card-tag-area {

@@ -131,7 +131,7 @@ export class CardBoardView extends ItemView {
     requestAnimationFrame(function () {
       for (const item of data.titles) {
         const card = document.getElementById(item.id);
-        const cardBody = card.querySelector("div.card-board-card-body");
+        const cardBody = card.querySelector("div.card-board-card-title");
         if (cardBody instanceof HTMLElement) {
           cardBody.innerHTML = "";
           MarkdownRenderer.renderMarkdown(item.titleMarkdown, cardBody, data.filePath, this);

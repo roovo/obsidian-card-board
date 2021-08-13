@@ -294,11 +294,15 @@ card columnTitle taskItem =
                     ]
                     []
                 ]
-            , Html.div [ class "card-board-card-body" ]
-                []
+            , Html.div [ class "card-board-card-display-items" ]
+                [ Html.div [ class "card-board-card-title" ]
+                    []
+                , subtasksView taskItem
+                    |> when (TaskItem.hasSubtasks taskItem)
+                , cardTagsView taskItem
+                    |> when (TaskItem.hasTags taskItem)
+                ]
             ]
-        , cardTagsView taskItem
-            |> when (TaskItem.hasTags taskItem)
         , Html.div [ class "card-board-card-action-area" ]
             [ cardDueDate taskItem
                 |> when (TaskItem.isDated taskItem)
@@ -306,6 +310,18 @@ card columnTitle taskItem =
             ]
         ]
         |> Tuple.pair uniqueId
+
+
+subtasksView : TaskItem -> Html Msg
+subtasksView taskItem =
+    Html.div [ class "card-board-card-subtask-area" ]
+        (List.map subtaskView (TaskItem.subtasks taskItem))
+
+
+subtaskView : TaskItem -> Html Msg
+subtaskView subtask =
+    Html.div []
+        [ Html.text <| TaskItem.title subtask ]
 
 
 cardTagsView : TaskItem -> Html Msg
@@ -322,14 +338,6 @@ cardTagView tagText =
         , Html.span [ class "cm-hashtag cm-hashtag-end" ]
             [ Html.text tagText ]
         ]
-
-
-
--- <span class="cm-hashtag-begin cm-hashtag">#</span>
--- <span class="cm-hashtag cm-hashtag-end">people</span>
---
--- <span class="cm-list-1 cm-formatting cm-formatting-hashtag cm-hashtag-begin cm-hashtag cm-meta cm-tag-people">#</span>
--- <span class="cm-list-1 cm-hashtag cm-meta cm-hashtag-end cm-tag-people">people</span>
 
 
 cardDueDate : TaskItem -> Html Msg
