@@ -12,6 +12,7 @@ module TaskItem exposing
     , lineNumber
     , originalText
     , parser
+    , subtasks
     , tags
     , title
     , toString
@@ -20,7 +21,7 @@ module TaskItem exposing
 
 import Date exposing (Date)
 import Maybe.Extra as ME
-import Parser exposing (..)
+import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
 import TaskPaperTag
 
@@ -42,7 +43,7 @@ type alias TaskItemFields =
 
 
 type TaskItem
-    = TaskItem TaskItemFields
+    = TaskItem TaskItemFields (List TaskItemFields)
 
 
 type Completion
@@ -63,17 +64,17 @@ type Content
 
 
 title : TaskItem -> String
-title (TaskItem fields) =
+title (TaskItem fields _) =
     fields.title
 
 
 completion : TaskItem -> Completion
-completion (TaskItem fields) =
+completion (TaskItem fields _) =
     fields.completion
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem fields) =
+due (TaskItem fields _) =
     case fields.dueTag of
         Just _ ->
             fields.dueTag
@@ -83,17 +84,17 @@ due (TaskItem fields) =
 
 
 filePath : TaskItem -> String
-filePath (TaskItem fields) =
+filePath (TaskItem fields _) =
     fields.filePath
 
 
 hasTags : TaskItem -> Bool
-hasTags (TaskItem fields) =
+hasTags (TaskItem fields _) =
     List.length fields.tags /= 0
 
 
 id : TaskItem -> String
-id (TaskItem fields) =
+id (TaskItem fields _) =
     fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
 
 
@@ -105,7 +106,7 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem fields) =
+isCompleted (TaskItem fields _) =
     case fields.completion of
         Incomplete ->
             False
@@ -118,27 +119,32 @@ isCompleted (TaskItem fields) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem fields) =
+isFromFile pathToFile (TaskItem fields _) =
     fields.filePath == pathToFile
 
 
 lineNumber : TaskItem -> Int
-lineNumber (TaskItem fields) =
+lineNumber (TaskItem fields _) =
     fields.lineNumber
 
 
 originalText : TaskItem -> String
-originalText (TaskItem fields) =
+originalText (TaskItem fields _) =
     fields.originalText
 
 
+subtasks : TaskItem -> List TaskItem
+subtasks (TaskItem fields subtasks_) =
+    List.map (\s -> TaskItem s []) subtasks_
+
+
 tags : TaskItem -> List String
-tags (TaskItem fields) =
+tags (TaskItem fields _) =
     fields.tags
 
 
 toString : TaskItem -> String
-toString (TaskItem fields) =
+toString (TaskItem fields _) =
     let
         checkbox =
             case fields.completion of
@@ -172,24 +178,24 @@ toString (TaskItem fields) =
 
 
 toggleCompletion : Maybe Date -> TaskItem -> TaskItem
-toggleCompletion completionDate (TaskItem fields) =
+toggleCompletion completionDate (TaskItem fields subtasks_) =
     case ( fields.completion, completionDate ) of
         ( Completed, _ ) ->
-            TaskItem { fields | completion = Incomplete }
+            TaskItem { fields | completion = Incomplete } subtasks_
 
         ( CompletedOn _, _ ) ->
-            TaskItem { fields | completion = Incomplete }
+            TaskItem { fields | completion = Incomplete } subtasks_
 
         ( Incomplete, Nothing ) ->
-            TaskItem { fields | completion = Completed }
+            TaskItem { fields | completion = Completed } subtasks_
 
         ( Incomplete, Just date ) ->
-            TaskItem { fields | completion = CompletedOn date }
+            TaskItem { fields | completion = CompletedOn date } subtasks_
 
 
 markCompleted : TaskItem -> Date -> TaskItem
-markCompleted (TaskItem fields) completionDate =
-    TaskItem { fields | completion = CompletedOn completionDate }
+markCompleted (TaskItem fields subtasks_) completionDate =
+    TaskItem { fields | completion = CompletedOn completionDate } subtasks_
 
 
 
@@ -198,23 +204,24 @@ markCompleted (TaskItem fields) completionDate =
 
 parser : String -> Maybe String -> Parser TaskItem
 parser pathToFile fileDate =
-    (succeed taskItemBuilder
-        |= Parser.getOffset
-        |= succeed pathToFile
-        |= Parser.getRow
+    (P.succeed taskItemFieldsBuilder
+        |= P.getOffset
+        |= P.succeed pathToFile
+        |= P.getRow
         |= prefixParser
-        |. chompWhile isSpaceOrTab
+        |. P.chompWhile isSpaceOrTab
         |= fileDateParser fileDate
         |= contentParser
-        |= Parser.getOffset
+        |= P.getOffset
         |. lineEndOrEnd
-        |= Parser.getSource
+        |= P.getSource
     )
-        |> andThen rejectIfNoTitle
+        |> P.andThen rejectIfNoTitle
+        |> P.andThen (addAnySubtasks pathToFile fileDate)
 
 
-taskItemBuilder : Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItem
-taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
+taskItemFieldsBuilder : Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder startOffset path row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
         sourceText =
@@ -226,13 +233,7 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
                 Word word ->
                     word :: words
 
-                DoneTag _ ->
-                    words
-
-                DueTag _ ->
-                    words
-
-                ObsidianTag _ ->
+                _ ->
                     words
 
         tagDueDate : Maybe Date
@@ -257,43 +258,31 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
         extractDueDate : Content -> Maybe Date -> Maybe Date
         extractDueDate content date =
             case content of
-                Word _ ->
-                    date
-
-                DoneTag _ ->
-                    date
-
                 DueTag tagDate ->
                     Just tagDate
 
-                ObsidianTag _ ->
+                _ ->
                     date
 
         extractCompletionDate : Content -> Maybe Date -> Maybe Date
         extractCompletionDate content date =
             case content of
-                Word _ ->
-                    date
-
                 DoneTag completionDate ->
                     Just completionDate
 
-                DueTag _ ->
+                _ ->
                     date
 
-                ObsidianTag _ ->
-                    date
-
-        addCompletionDate : TaskItem -> TaskItem
-        addCompletionDate item =
-            if isCompleted item then
+        addCompletionDate : TaskItemFields -> TaskItemFields
+        addCompletionDate fields =
+            if isCompleted (TaskItem fields []) then
                 contents
                     |> List.foldr extractCompletionDate Nothing
-                    |> Maybe.map (markCompleted item)
-                    |> Maybe.withDefault item
+                    |> Maybe.map (\completionDate_ -> { fields | completion = CompletedOn completionDate_ })
+                    |> Maybe.withDefault fields
 
             else
-                item
+                fields
 
         parsedTitle : String
         parsedTitle =
@@ -301,62 +290,62 @@ taskItemBuilder startOffset path row c dueFromFile contents endOffset source =
                 |> List.foldr extractWords []
                 |> String.join " "
     in
-    TaskItem
-        { originalText = sourceText
-        , filePath = path
-        , lineNumber = row
-        , completion = c
-        , dueFile = dueFromFile
-        , dueTag = tagDueDate
-        , tags = obsidianTags
-        , title = parsedTitle
-        }
+    -- Debug.log "built"
+    { originalText = sourceText
+    , filePath = path
+    , lineNumber = row
+    , completion = completion_
+    , dueFile = dueFromFile
+    , dueTag = tagDueDate
+    , tags = obsidianTags
+    , title = parsedTitle
+    }
         |> addCompletionDate
 
 
 contentParser : Parser (List Content)
 contentParser =
-    loop [] contentHelp
+    P.loop [] contentHelp
 
 
-contentHelp : List Content -> Parser (Step (List Content) (List Content))
+contentHelp : List Content -> Parser (P.Step (List Content) (List Content))
 contentHelp revContents =
-    oneOf
-        [ succeed (\content -> Loop (content :: revContents))
+    P.oneOf
+        [ P.succeed (\content -> P.Loop (content :: revContents))
             |= tokenParser
-            |. chompWhile isSpaceOrTab
-        , succeed ()
-            |> map (\_ -> Done (List.reverse revContents))
+            |. P.chompWhile isSpaceOrTab
+        , P.succeed ()
+            |> P.map (\_ -> P.Done (List.reverse revContents))
         ]
 
 
 tokenParser : Parser Content
 tokenParser =
-    oneOf
-        [ backtrackable <| TaskPaperTag.doneTagParser DoneTag
-        , backtrackable <| TaskPaperTag.dueTagParser DueTag
-        , backtrackable <| obsidianTagParser
-        , succeed Word
+    P.oneOf
+        [ P.backtrackable <| TaskPaperTag.doneTagParser DoneTag
+        , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
+        , P.backtrackable <| obsidianTagParser
+        , P.succeed Word
             |= ParserHelper.wordParser
         ]
 
 
 obsidianTagParser : Parser Content
 obsidianTagParser =
-    succeed ObsidianTag
-        |. token "#"
+    P.succeed ObsidianTag
+        |. P.token "#"
         |= ParserHelper.wordParser
 
 
 prefixParser : Parser Completion
 prefixParser =
-    oneOf
-        [ succeed Incomplete
-            |. token "- [ ] "
-        , succeed Completed
-            |. token "- [x] "
-        , succeed Completed
-            |. token "- [X] "
+    P.oneOf
+        [ P.succeed Incomplete
+            |. P.token "- [ ] "
+        , P.succeed Completed
+            |. P.token "- [x] "
+        , P.succeed Completed
+            |. P.token "- [X] "
         ]
 
 
@@ -366,13 +355,34 @@ fileDateParser fileDate =
         |> Maybe.map Date.fromIsoString
         |> Maybe.map Result.toMaybe
         |> ME.join
-        |> succeed
+        |> P.succeed
 
 
-rejectIfNoTitle : TaskItem -> Parser TaskItem
-rejectIfNoTitle item =
-    if String.length (title item) == 0 then
-        problem "Task has no title"
+addAnySubtasks : String -> Maybe String -> TaskItemFields -> Parser TaskItem
+addAnySubtasks pathToFile fileDate fields =
+    P.succeed (TaskItem fields)
+        |= ParserHelper.indentParser (subTaskParser pathToFile fileDate)
+
+
+subTaskParser : String -> Maybe String -> Parser TaskItemFields
+subTaskParser pathToFile fileDate =
+    P.succeed taskItemFieldsBuilder
+        |= P.getOffset
+        |= P.succeed pathToFile
+        |= P.getRow
+        |= prefixParser
+        |. P.chompWhile isSpaceOrTab
+        |= fileDateParser fileDate
+        |= contentParser
+        |= P.getOffset
+        |. lineEndOrEnd
+        |= P.getSource
+
+
+rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
+rejectIfNoTitle fields =
+    if String.length fields.title == 0 then
+        P.problem "Task has no title"
 
     else
-        succeed item
+        P.succeed fields

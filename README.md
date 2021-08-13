@@ -11,9 +11,9 @@ ln -s path/to/this/dir path/to/vault/.obsidian/plugins/cardboard
 To get up and running:
 
 ```
-npm install       # install dependencies
-npm run dev       # run dev build
-npm test          # run (elm) tests
+npm install             # install dependencies
+npm run dev             # run dev build
+npx elm-test --watch    # run (elm) tests
 ```
 
 So your elm code is nicely formatted, use elm-format
