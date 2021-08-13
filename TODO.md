@@ -1,5 +1,5 @@
 - show indented tasks as subtasks
-- indented text as markdown task notes
+- indented text as markdown task notes (including invalid/incomplete subtasks)
 - plugin settings
   - max title lines
   - allow/deny directories/files

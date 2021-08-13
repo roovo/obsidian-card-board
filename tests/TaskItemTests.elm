@@ -349,6 +349,16 @@ parsing =
                     |> Result.map (\ta -> TaskItem.subtasks ta)
                     |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
                     |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "consumes <eol> character where there are subtasks" <|
+            \() ->
+                "- [X] foo\n - [ ] sub foo\n- [ ] bar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= TaskItem.parser "" Nothing
+                            |= TaskItem.parser "" Nothing
+                        )
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo", "bar" ])
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
