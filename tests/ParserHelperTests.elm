@@ -2,7 +2,7 @@ module ParserHelperTests exposing (suite)
 
 import Date
 import Expect exposing (Expectation)
-import Parser exposing ((|.), (|=))
+import Parser as P exposing ((|.), (|=))
 import ParserHelper exposing (anyLineParser, dateParser, nonEmptyStringParser, wordParser)
 import TaskItem
 import Test exposing (..)
@@ -12,11 +12,12 @@ import Time exposing (Month(..))
 suite : Test
 suite =
     concat
-        [ nonEmptyStringParserTest
-        , anyLineParserTest
-        , wordParserTest
-        , dateParserTest
+        [ anyLineParserTest
         , checkWhitespaceFollowsTests
+        , dateParserTests
+        , indentParserTests
+        , nonEmptyStringParserTest
+        , wordParserTest
         ]
 
 
@@ -26,51 +27,90 @@ checkWhitespaceFollowsTests =
         [ test "parsers a valid token at end of string" <|
             \() ->
                 "hi"
-                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> P.run (ParserHelper.checkWhitespaceFollows <| P.token "hi")
                     |> Expect.equal (Ok ())
         , test "succeeeds if followed by whitespace" <|
             \() ->
                 "hi  "
-                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> P.run (ParserHelper.checkWhitespaceFollows <| P.token "hi")
                     |> Expect.equal (Ok ())
         , test "succeeeds if followed by a new line" <|
             \() ->
                 "hi\nsomething else"
-                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> P.run (ParserHelper.checkWhitespaceFollows <| P.token "hi")
                     |> Expect.equal (Ok ())
         , test "does not consume following whitespace" <|
             \() ->
                 "hi 12"
-                    |> Parser.run
-                        (Parser.succeed (\a b -> [ a, b ])
-                            |= (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
-                            |. Parser.token " "
-                            |= Parser.token "12"
+                    |> P.run
+                        (P.succeed (\a b -> [ a, b ])
+                            |= (ParserHelper.checkWhitespaceFollows <| P.token "hi")
+                            |. P.token " "
+                            |= P.token "12"
                         )
                     |> Expect.equal (Ok [ (), () ])
         , test "fails if followed by additional non-whitespaace" <|
             \() ->
                 "hix"
-                    |> Parser.run (ParserHelper.checkWhitespaceFollows <| Parser.token "hi")
+                    |> P.run (ParserHelper.checkWhitespaceFollows <| P.token "hi")
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         ]
 
 
-dateParserTest : Test
-dateParserTest =
+dateParserTests : Test
+dateParserTests =
     describe "parsing dates"
         [ test "parses valid date string" <|
             \() ->
                 "2020-01-02"
-                    |> Parser.run dateParser
+                    |> P.run dateParser
                     |> Expect.equal (Ok <| Date.fromCalendarDate 2020 Jan 2)
         , test "fails with an invalie date string" <|
             \() ->
                 "2020-41-02"
-                    |> Parser.run dateParser
+                    |> P.run dateParser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        ]
+
+
+indentParserTests : Test
+indentParserTests =
+    describe "indent parser"
+        [ test "parses an indented list of integers" <|
+            \() ->
+                """ 1
+ 2
+ 3
+"""
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [ 1, 2, 3 ])
+        , test "flattens all levels of indent" <|
+            \() ->
+                """ 1
+  2
+   3
+"""
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [ 1, 2, 3 ])
+        , test "stops when there is no longer an indent" <|
+            \() ->
+                """ 1
+  2
+   3
+4
+"""
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [ 1, 2, 3 ])
+        , test "returns an empty list if there is no indent" <|
+            \() ->
+                """1
+2
+3
+"""
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [])
         ]
 
 
@@ -80,12 +120,12 @@ nonEmptyStringParserTest =
         [ test "'foo' parses Ok" <|
             \() ->
                 "foo"
-                    |> Parser.run nonEmptyStringParser
+                    |> P.run nonEmptyStringParser
                     |> Expect.equal (Ok "foo")
         , test "'foo bar' parses Ok" <|
             \() ->
                 "foo bar"
-                    |> Parser.run nonEmptyStringParser
+                    |> P.run nonEmptyStringParser
                     |> Expect.equal (Ok "foo bar")
         , test "parses only the first line of a multiline string" <|
             \() ->
@@ -93,12 +133,12 @@ nonEmptyStringParserTest =
 bar
 baz
 """
-                    |> Parser.run nonEmptyStringParser
+                    |> P.run nonEmptyStringParser
                     |> Expect.equal (Ok "foo")
         , test "fails with an empty string" <|
             \() ->
                 ""
-                    |> Parser.run nonEmptyStringParser
+                    |> P.run nonEmptyStringParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
         , test "fails with multiline string with empty first line" <|
@@ -107,7 +147,7 @@ baz
 bar
 baz
 """
-                    |> Parser.run nonEmptyStringParser
+                    |> P.run nonEmptyStringParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
         ]
@@ -119,31 +159,31 @@ anyLineParserTest =
         [ test "empty string fails to parse" <|
             \() ->
                 ""
-                    |> Parser.run anyLineParser
+                    |> P.run anyLineParser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         , test "'foo' parses" <|
             -- this should parse but doesn't so I have to append \n on the end of input before parsing
             \() ->
                 "foo"
-                    |> Parser.run anyLineParser
+                    |> P.run anyLineParser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         , test "'foo<eol>' parses" <|
             \() ->
                 "foo\n"
-                    |> Parser.run anyLineParser
+                    |> P.run anyLineParser
                     |> Expect.equal (Ok ())
         , test "'<eol>' parses" <|
             \() ->
                 "\n"
-                    |> Parser.run anyLineParser
+                    |> P.run anyLineParser
                     |> Expect.equal (Ok ())
         , test "parses multiple lines" <|
             \() ->
                 "foo\nbar\n"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
                             |= anyLineParser
                             |= anyLineParser
                         )
@@ -151,8 +191,8 @@ anyLineParserTest =
         , test "won't parse beyond the end of the input" <|
             \() ->
                 "foo"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
                             |= anyLineParser
                             |= anyLineParser
                         )
@@ -167,44 +207,44 @@ wordParserTest =
         [ test "'foo' parses Ok" <|
             \() ->
                 "foo"
-                    |> Parser.run wordParser
+                    |> P.run wordParser
                     |> Expect.equal (Ok "foo")
         , test "'foo<eol>' parses Ok" <|
             \() ->
                 "foo\n"
-                    |> Parser.run wordParser
+                    |> P.run wordParser
                     |> Expect.equal (Ok "foo")
         , test "'foo bar' parses Ok picking just 'foo'" <|
             \() ->
                 "foo bar"
-                    |> Parser.run wordParser
+                    |> P.run wordParser
                     |> Expect.equal (Ok "foo")
         , test "'foo<eol>bar' parses Ok picking just 'foo'" <|
             \() ->
                 "foo\nbar"
-                    |> Parser.run wordParser
+                    |> P.run wordParser
                     |> Expect.equal (Ok "foo")
         , test "parses multiple words" <|
             \() ->
                 "foo bar"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
                             |= wordParser
-                            |. Parser.token " "
+                            |. P.token " "
                             |= wordParser
                         )
                     |> Expect.equal (Ok [ "foo", "bar" ])
         , test "fails with an empty string" <|
             \() ->
                 ""
-                    |> Parser.run wordParser
+                    |> P.run wordParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
         , test "won't parse beyond the end of the line" <|
             \() ->
                 "foo\nbar"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
                             |= wordParser
                             |= wordParser
                         )
@@ -213,8 +253,8 @@ wordParserTest =
         , test "won't parse beyond the end of the input" <|
             \() ->
                 "foo"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
                             |= wordParser
                             |= wordParser
                         )

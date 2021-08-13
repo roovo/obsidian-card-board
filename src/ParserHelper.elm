@@ -2,15 +2,17 @@ module ParserHelper exposing
     ( anyLineParser
     , checkWhitespaceFollows
     , dateParser
+    , indentParser
     , isLineEnd
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
+    , spaces
     , wordParser
     )
 
 import Date exposing (Date)
-import Parser exposing (..)
+import Parser as P exposing ((|.), (|=), Parser)
 
 
 
@@ -67,17 +69,109 @@ isNotWhitespace char =
 -- PARSERS
 
 
+indentParser : Parser a -> Parser (List a)
+indentParser parser =
+    let
+        list_ : ( Int, Int ) -> Parser (List a)
+        list_ ( indent, column ) =
+            if column > indent then
+                P.withIndent column parser_
+
+            else
+                P.succeed []
+
+        parser_ : Parser (List a)
+        parser_ =
+            P.succeed identity
+                |= P.loop [] (step parser)
+    in
+    P.oneOf
+        [ P.succeed (\i c -> ( i, c ))
+            |. spaces
+            |= P.getIndent
+            |= P.getCol
+            |> P.andThen list_
+        , P.succeed []
+        ]
+
+
+step : Parser a -> List a -> Parser (P.Step (List a) (List a))
+step parser_ values =
+    let
+        finish =
+            P.Done (List.reverse values)
+
+        next value_ =
+            P.Loop (value_ :: values)
+    in
+    indented
+        { smaller =
+            P.succeed finish
+        , exactly =
+            P.oneOf
+                [ P.succeed next
+                    |= parser_
+                , P.succeed finish
+                ]
+        , larger =
+            P.oneOf
+                [ P.succeed next
+                    |= parser_
+                , P.succeed finish
+                ]
+        , ending =
+            P.succeed finish
+        }
+
+
+type alias NextParser a =
+    { smaller : P.Parser a
+    , exactly : P.Parser a
+    , larger : P.Parser a
+    , ending : P.Parser a
+    }
+
+
+indented : NextParser a -> P.Parser a
+indented next =
+    let
+        proceed : ( Int, Int ) -> P.Parser a
+        proceed ( minimal, actual ) =
+            P.oneOf
+                [ P.andThen (\_ -> next.ending) P.end
+                , if actual == minimal then
+                    next.exactly
+
+                  else if actual > minimal then
+                    next.larger
+
+                  else
+                    next.smaller
+                ]
+    in
+    P.succeed (\a b -> ( a, b ))
+        |= P.getIndent
+        |. P.spaces
+        |= P.getCol
+        |> P.andThen proceed
+
+
+spaces : Parser ()
+spaces =
+    P.chompWhile isSpaceOrTab
+
+
 anyLineParser : Parser ()
 anyLineParser =
-    succeed ()
+    P.succeed ()
         |. nonEmptyLineParser
         |. lineEnd
 
 
 nonEmptyLineParser : Parser String
 nonEmptyLineParser =
-    getChompedString chompWithEndOfLine
-        |> andThen (checkIfEmpty "nonEmptyLineParser")
+    P.getChompedString chompWithEndOfLine
+        |> P.andThen (checkIfEmpty "nonEmptyLineParser")
 
 
 dateParser : Parser Date
@@ -86,52 +180,52 @@ dateParser =
         convertToDate dateString =
             dateString
                 |> Date.fromIsoString
-                |> Result.map succeed
-                |> Result.withDefault (problem "not a valid date")
+                |> Result.map P.succeed
+                |> Result.withDefault (P.problem "not a valid date")
     in
-    getChompedString (chompWhile <| \c -> Char.isDigit c || c == '-')
-        |> andThen convertToDate
+    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-')
+        |> P.andThen convertToDate
 
 
 lineEndOrEnd : Parser ()
 lineEndOrEnd =
-    oneOf
+    P.oneOf
         [ lineEnd
-        , end
+        , P.end
         ]
 
 
 nonEmptyStringParser : Parser String
 nonEmptyStringParser =
-    getChompedString chompToEndOfLine
-        |> andThen (checkIfEmpty "nonEmptyStringParser")
+    P.getChompedString chompToEndOfLine
+        |> P.andThen (checkIfEmpty "nonEmptyStringParser")
 
 
 wordParser : Parser String
 wordParser =
-    getChompedString chompToEndOfWord
-        |> andThen (checkIfEmpty "wordParser")
+    P.getChompedString chompToEndOfWord
+        |> P.andThen (checkIfEmpty "wordParser")
         |> checkWhitespaceFollows
 
 
 checkWhitespaceFollows : Parser a -> Parser a
 checkWhitespaceFollows xp =
-    succeed ParseResult
-        |= backtrackable xp
-        |= oneOf
-            [ map (\_ -> True) (backtrackable (chompIf isNotWhitespace))
-            , succeed False
+    P.succeed ParseResult
+        |= P.backtrackable xp
+        |= P.oneOf
+            [ P.map (\_ -> True) (P.backtrackable (P.chompIf isNotWhitespace))
+            , P.succeed False
             ]
-        |> andThen checkEnding
+        |> P.andThen checkEnding
 
 
 checkEnding : ParseResult b -> Parser b
 checkEnding (ParseResult p isBadEnding) =
     if isBadEnding then
-        problem "expecting whitespace after the parsed token"
+        P.problem "expecting whitespace after the parsed token"
 
     else
-        commit p
+        P.commit p
 
 
 
@@ -144,53 +238,53 @@ consumeSeparator separator parsedString =
         checkIfAtEndOfInput : Int -> Int -> Parser String
         checkIfAtEndOfInput preSeparatorOffset postSeparatorOffset =
             if preSeparatorOffset == postSeparatorOffset && String.length parsedString == 0 then
-                problem "Reached end of input"
+                P.problem "Reached end of input"
 
             else
-                succeed parsedString
+                P.succeed parsedString
     in
-    (Parser.succeed checkIfAtEndOfInput
-        |= Parser.getOffset
-        |. Parser.oneOf
-            [ Parser.end
-            , chompIf (\c -> c == separator)
-            , succeed ()
+    (P.succeed checkIfAtEndOfInput
+        |= P.getOffset
+        |. P.oneOf
+            [ P.end
+            , P.chompIf (\c -> c == separator)
+            , P.succeed ()
             ]
-        |= Parser.getOffset
+        |= P.getOffset
     )
-        |> Parser.andThen identity
+        |> P.andThen identity
 
 
 chompToEndOfLine : Parser ()
 chompToEndOfLine =
-    chompWhile (not << isLineEnd)
+    P.chompWhile (not << isLineEnd)
 
 
 chompToEndOfWord : Parser ()
 chompToEndOfWord =
-    succeed ()
-        |. chompWhile (not << isSpaceTabOrLineEnd)
+    P.succeed ()
+        |. P.chompWhile (not << isSpaceTabOrLineEnd)
 
 
 checkIfEmpty : String -> String -> Parser String
 checkIfEmpty calledFrom parsedString =
     if String.length parsedString == 0 then
-        problem <| "Empty string found in " ++ calledFrom
+        P.problem <| "Empty string found in " ++ calledFrom
 
     else
-        succeed parsedString
+        P.succeed parsedString
 
 
 chompWithEndOfLine : Parser ()
 chompWithEndOfLine =
-    succeed ()
-        |. chompWhile (not << isLineEnd)
-        |. chompIf isLineEnd
+    P.succeed ()
+        |. P.chompWhile (not << isLineEnd)
+        |. P.chompIf isLineEnd
 
 
 lineEnd : Parser ()
 lineEnd =
-    chompWhile (\c -> c == '\n' || c == carriageReturn)
+    P.chompWhile (\c -> c == '\n' || c == carriageReturn)
 
 
 carriageReturn : Char
