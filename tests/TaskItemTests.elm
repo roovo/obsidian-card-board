@@ -12,13 +12,13 @@ import Time exposing (Month(..))
 suite : Test
 suite =
     concat
-        [ info
+        [ done
+        , due
+        , info
         , parsing
+        , tags
         , toString
         , transformation
-        , done
-        , due
-        , tags
         ]
 
 
@@ -328,6 +328,13 @@ parsing =
                         )
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
+        , test "parses subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (\ta -> TaskItem.subtasks ta)
+                    |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
+                    |> Expect.equal (Ok [ "bar" ])
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
