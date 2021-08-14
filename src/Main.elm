@@ -285,28 +285,31 @@ card columnTitle taskItem =
             TaskItem.id taskItem
     in
     Html.li [ class "card-board-card", id uniqueId ]
-        [ Html.div [ class "card-board-card-content-area" ]
-            [ Html.div [ class "card-board-card-checkbox-area" ]
-                [ Html.input
-                    [ type_ "checkbox"
-                    , onClick <| TaskItemToggled <| TaskItem.id taskItem
-                    , checked <| TaskItem.isCompleted taskItem
+        [ Html.div [ class "card-board-card-content-area markdown-preview-view" ]
+            [ Html.ul [ class "contains-task-list" ]
+                [ Html.li [ class "task-list-item" ]
+                    [ Html.input
+                        [ type_ "checkbox"
+                        , class "task-list-item-checkbox"
+                        , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                        , checked <| TaskItem.isCompleted taskItem
+                        ]
+                        []
+                    , Html.div [ class "card-board-card-display-items" ]
+                        [ Html.div [ class "card-board-card-title" ]
+                            []
+                        , subtasksView taskItem
+                            |> when (TaskItem.hasSubtasks taskItem)
+                        , cardTagsView taskItem
+                            |> when (TaskItem.hasTags taskItem)
+                        ]
                     ]
-                    []
                 ]
-            , Html.div [ class "card-board-card-display-items" ]
-                [ Html.div [ class "card-board-card-title" ]
-                    []
-                , subtasksView taskItem
-                    |> when (TaskItem.hasSubtasks taskItem)
-                , cardTagsView taskItem
-                    |> when (TaskItem.hasTags taskItem)
+            , Html.div [ class "card-board-card-action-area" ]
+                [ cardDueDate taskItem
+                    |> when (TaskItem.isDated taskItem)
+                , cardActionButtons taskItem
                 ]
-            ]
-        , Html.div [ class "card-board-card-action-area" ]
-            [ cardDueDate taskItem
-                |> when (TaskItem.isDated taskItem)
-            , cardActionButtons taskItem
             ]
         ]
         |> Tuple.pair uniqueId
@@ -315,13 +318,26 @@ card columnTitle taskItem =
 subtasksView : TaskItem -> Html Msg
 subtasksView taskItem =
     Html.div [ class "card-board-card-subtask-area" ]
-        (List.map subtaskView (TaskItem.subtasks taskItem))
+        [ Html.ul [ class "contains-task-list" ]
+            (List.map subtaskView (TaskItem.subtasks taskItem))
+        ]
 
 
 subtaskView : TaskItem -> Html Msg
 subtaskView subtask =
-    Html.div []
-        [ Html.text <| TaskItem.title subtask ]
+    Html.li [ class "task-list-item" ]
+        [ Html.input
+            [ type_ "checkbox"
+            , class "task-list-item-checkbox"
+
+            -- , onClick <| TaskItemToggled <| TaskItem.id taskItem
+            , checked <| TaskItem.isCompleted subtask
+            ]
+            []
+        , Html.div [ class "card-board-card-subtask-title" ]
+            [ Html.text <| TaskItem.title subtask
+            ]
+        ]
 
 
 cardTagsView : TaskItem -> Html Msg

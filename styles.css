@@ -39,29 +39,19 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .card-board-card {
-  display: grid;
   border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
-  grid-gap: 5px;
 }
 
 .card-board-card-content-area {
-  padding: 10px 5px;
   display: grid;
-  grid-template-columns: 30px 1fr;
-}
-
-.card-board-card-checkbox-area {
-}
-
-.card-board-card-checkbox-area input {
-  width: 18px;
-  height: 18px;
+  grid-gap: 10px;
+  grid-auto-flow: row;
 }
 
 .card-board-card-display-items {
-  display: grid;
+  display: inline-grid;
   grid-auto-flow: row;
 }
 
@@ -81,6 +71,27 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card-subtask-area {
   font-size: var(--font-adaptive-small);
+  padding-left: 1em;
+}
+
+.card-board-card-subtask-area > ul > li {
+  min-height: 1.2em;
+  line-height: 1.2;
+}
+
+.card-board-card-subtask-area > ul > li > .card-board-card-subtask-title {
+  display: -webkit-inline-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.card-board-card-subtask-area > ul > li > input.task-list-item-checkbox {
+  width: 15px;
+  height: 15px;
+  top: 0px;
 }
 
 .card-board-card-tag-area {
