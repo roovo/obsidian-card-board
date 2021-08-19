@@ -339,8 +339,7 @@ subtaskView subtask =
         [ Html.input
             [ type_ "checkbox"
             , class "task-list-item-checkbox"
-
-            -- , onClick <| TaskItemToggled <| TaskItem.id taskItem
+            , onClick <| TaskItemToggled uniqueId
             , checked <| TaskItem.isCompleted subtask
             ]
             []
