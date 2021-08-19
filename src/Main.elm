@@ -162,7 +162,7 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( addTaskItems model newTaskItems
-            , writeTaskTitles markdownFile.filePath newTaskItems
+            , Ports.displayTaskTitles markdownFile.filePath newTaskItems
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -174,25 +174,8 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( updateTaskItems model markdownFile.filePath newTaskItems
-            , writeTaskTitles markdownFile.filePath newTaskItems
+            , Ports.displayTaskTitles markdownFile.filePath newTaskItems
             )
-
-
-writeTaskTitles : String -> TaskList -> Cmd msg
-writeTaskTitles filePath taskList =
-    let
-        taskTitle t =
-            { id = TaskItem.id t
-            , titleMarkdown = TaskItem.title t
-            }
-
-        titles =
-            taskList
-                |> TaskList.toList
-                |> List.concatMap
-                    (\t -> taskTitle t :: List.map taskTitle (TaskItem.subtasks t))
-    in
-    Ports.writeTaskTitles { filePath = filePath, titles = titles }
 
 
 deleteItemsFromFile : Model -> String -> Model

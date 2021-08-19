@@ -12,7 +12,7 @@ module TaskList exposing
     , taskFromId
     , taskIds
     , taskTitles
-    , toList
+    , tasks
     , todaysItems
     , tomorrowsItems
     , undatedItems
@@ -107,14 +107,17 @@ taskIds (TaskList taskItems) =
 
 
 taskFromId : String -> TaskList -> Maybe TaskItem
-taskFromId id (TaskList taskItems) =
-    taskItems
+taskFromId id taskList =
+    taskList
+        |> tasks
         |> LE.find (\i -> TaskItem.id i == id)
 
 
-toList : TaskList -> List TaskItem
-toList (TaskList taskList) =
+tasks : TaskList -> List TaskItem
+tasks (TaskList taskList) =
     taskList
+        |> List.concatMap
+            (\t -> t :: TaskItem.subtasks t)
 
 
 

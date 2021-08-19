@@ -229,6 +229,12 @@ info =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map (\t -> TaskItem.isFromFile "File" t)
                     |> Expect.equal (Ok False)
+        , test "matches id" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (\t -> TaskItem.isFromFile "File" t)
+                    |> Expect.equal (Ok False)
         ]
 
 

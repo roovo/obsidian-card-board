@@ -45,8 +45,8 @@ export class CardBoardView extends ItemView {
       that.handleEditTodo(data);
     })
 
-    elm.ports.writeTaskTitles.subscribe(function(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
-      that.handleWriteTaskTitles(data);
+    elm.ports.displayTitles.subscribe(function(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
+      that.handleDisplayTitles(data);
     })
 
     const markdownFiles = this.vault.getMarkdownFiles();
@@ -127,7 +127,7 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleWriteTaskTitles(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
+  async handleDisplayTitles(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {
     requestAnimationFrame(function () {
       for (const item of data.titles) {
         const taskTitle = document.getElementById(item.id);

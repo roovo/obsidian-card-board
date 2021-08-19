@@ -13,9 +13,11 @@ suite =
     concat
         [ combine
         , filtering
+        , parsing
         , replaceForFile
         , removeForFile
-        , parsing
+        , taskFromId
+        , tasks
         ]
 
 
@@ -34,6 +36,63 @@ combine =
                     |> TaskList.concat
                     |> TaskList.taskTitles
                     |> Expect.equal [ "undated incomplete", "undated complete", "yesterday incomplete", "yesterday complete" ]
+        ]
+
+
+tasks : Test
+tasks =
+    describe "tasks"
+        [ test "returns an empty list if there are no tasks" <|
+            \() ->
+                parsedTasks ( "a", Nothing, "" )
+                    |> TaskList.tasks
+                    |> Expect.equal []
+        , test "returns a list of all tasks and subtasks" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+  - [x] subtask complete
+""" )
+                    |> TaskList.tasks
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "undated incomplete", "subtask complete" ]
+        ]
+
+
+taskFromId : Test
+taskFromId =
+    describe "taskFromId"
+        [ test "returns nothing if there are no tasks in the list" <|
+            \() ->
+                parsedTasks ( "a", Nothing, "" )
+                    |> TaskList.taskFromId ""
+                    |> Expect.equal Nothing
+        , test "returns nothing if there are no tasks in the list with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+                    |> TaskList.taskFromId "a:4"
+                    |> Expect.equal Nothing
+        , test "returns the task if there is one in the list with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+                    |> TaskList.taskFromId "a:3"
+                    |> Maybe.map TaskItem.title
+                    |> Expect.equal (Just "undated complete")
+        , test "returns a subtask if there is one in the list with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+  - [x] subtask complete
+""" )
+                    |> TaskList.taskFromId "a:3"
+                    |> Maybe.map TaskItem.title
+                    |> Expect.equal (Just "subtask complete")
         ]
 
 
