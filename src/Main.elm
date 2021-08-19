@@ -162,10 +162,7 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( addTaskItems model newTaskItems
-            , newTaskItems
-                |> TaskList.toList
-                |> List.map (\t -> { id = TaskItem.id t, titleMarkdown = TaskItem.title t })
-                |> writeTaskTitles markdownFile.filePath
+            , writeTaskTitles markdownFile.filePath newTaskItems
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -177,15 +174,24 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( updateTaskItems model markdownFile.filePath newTaskItems
-            , newTaskItems
-                |> TaskList.toList
-                |> List.map (\t -> { id = TaskItem.id t, titleMarkdown = TaskItem.title t })
-                |> writeTaskTitles markdownFile.filePath
+            , writeTaskTitles markdownFile.filePath newTaskItems
             )
 
 
-writeTaskTitles : String -> List { id : String, titleMarkdown : String } -> Cmd msg
-writeTaskTitles filePath titles =
+writeTaskTitles : String -> TaskList -> Cmd msg
+writeTaskTitles filePath taskList =
+    let
+        taskTitle t =
+            { id = TaskItem.id t
+            , titleMarkdown = TaskItem.title t
+            }
+
+        titles =
+            taskList
+                |> TaskList.toList
+                |> List.concatMap
+                    (\t -> taskTitle t :: List.map taskTitle (TaskItem.subtasks t))
+    in
     Ports.writeTaskTitles { filePath = filePath, titles = titles }
 
 
@@ -284,7 +290,7 @@ card columnTitle taskItem =
         uniqueId =
             TaskItem.id taskItem
     in
-    Html.li [ class "card-board-card", id uniqueId ]
+    Html.li [ class "card-board-card" ]
         [ Html.div [ class "card-board-card-content-area markdown-preview-view" ]
             [ Html.ul [ class "contains-task-list" ]
                 [ Html.li [ class "task-list-item" ]
@@ -296,7 +302,7 @@ card columnTitle taskItem =
                         ]
                         []
                     , Html.div [ class "card-board-card-display-items" ]
-                        [ Html.div [ class "card-board-card-title" ]
+                        [ Html.div [ class "card-board-card-title", id uniqueId ]
                             []
                         , subtasksView taskItem
                             |> when (TaskItem.hasSubtasks taskItem)
@@ -325,6 +331,10 @@ subtasksView taskItem =
 
 subtaskView : TaskItem -> Html Msg
 subtaskView subtask =
+    let
+        uniqueId =
+            TaskItem.id subtask
+    in
     Html.li [ class "task-list-item" ]
         [ Html.input
             [ type_ "checkbox"
@@ -334,9 +344,8 @@ subtaskView subtask =
             , checked <| TaskItem.isCompleted subtask
             ]
             []
-        , Html.div [ class "card-board-card-subtask-title" ]
-            [ Html.text <| TaskItem.title subtask
-            ]
+        , Html.div [ class "card-board-card-subtask-title", id uniqueId ]
+            []
         ]
 
 
