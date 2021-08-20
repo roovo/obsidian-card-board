@@ -137,55 +137,55 @@ info =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.due t)
+                    |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
         , test "due returns Nothing if the date is invalid" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" <| Just "not a date")
-                    |> Result.map (\t -> TaskItem.due t)
+                    |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
         , test "due returns Just the date if the date is valid" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" <| Just "2020-01-07")
-                    |> Result.map (\t -> TaskItem.due t)
+                    |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737431)
         , test "isCompleted returns False if the checkbox is NOT checked" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok False)
         , test "isCompleted returns True if the checkbox is checked with an x" <|
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok True)
         , test "isCompleted returns True if the checkbox is checked with an X" <|
             \() ->
                 "- [X] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok True)
         , test "isDated returns False if there was no date" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok False)
         , test "isDated returns False if the date is invalid" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" <| Just "not a date")
-                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok False)
         , test "isDated returns True if the date is valid" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" <| Just "2020-01-07")
-                    |> Result.map (\t -> TaskItem.isDated t)
+                    |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok True)
         , test "filePath returns filePath" <|
             \() ->
@@ -203,37 +203,37 @@ info =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "File B" t)
+                    |> Result.map (TaskItem.isFromFile "File B")
                     |> Expect.equal (Ok False)
         , test "isFromFile returns True if the filenames do match" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "File A" t)
+                    |> Result.map (TaskItem.isFromFile "File A")
                     |> Expect.equal (Ok True)
         , test "isFromFile returns True if the filenames are both blank" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "" t)
+                    |> Result.map (TaskItem.isFromFile "")
                     |> Expect.equal (Ok True)
         , test "isFromFile returns False if the filenames do NOT match case" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "File a" t)
+                    |> Result.map (TaskItem.isFromFile "File a")
                     |> Expect.equal (Ok False)
         , test "isFromFile returns False if the filenames are a partial match" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "File" t)
+                    |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         , test "matches id" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (\t -> TaskItem.isFromFile "File" t)
+                    |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         ]
 
@@ -245,36 +245,36 @@ transformation =
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Result.map (TaskItem.toggleCompletion Nothing)
+                    |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok False)
         , test "toggling a task completed on a given date produces one marked as incomplete" <|
             \() ->
                 "- [x] foo @done(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
-                    |> Result.map (\t -> TaskItem.isCompleted t)
+                    |> Result.map (TaskItem.toggleCompletion Nothing)
+                    |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok False)
         , test "giving no date when toggling an incomplete task produces one marked as complete" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion Nothing t)
-                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Result.map (TaskItem.toggleCompletion Nothing)
+                    |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Completed)
         , test "giving date when toggling an incomplete task produces one marked as complete on that date" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion (Just today) t)
-                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Result.map (TaskItem.toggleCompletion (Just today))
+                    |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedOn today)
         , test "toggling a incomplete task with a @done date updates the @done date" <|
             \() ->
                 "- [ ] foo @done(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toggleCompletion (Just today) t)
-                    |> Result.map (\t -> TaskItem.completion t)
+                    |> Result.map (TaskItem.toggleCompletion (Just today))
+                    |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedOn today)
         ]
 
@@ -286,43 +286,43 @@ parsing =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo")
         , test "gets the title from a complete TaskList item" <|
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo")
         , test "gets the title from an upper case complete TaskList item" <|
             \() ->
                 "- [X] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo")
         , test "handles lots of whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "the task")
         , test "looses trailing whitespace" <|
             \() ->
                 "- [X] the task   "
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "the task")
         , test "retains the original line text" <|
             \() ->
-                "- [X]  the @due(2019-12-30) task @done(2020-01-01) title\n- [ ] another task  "
+                "- [X]  the @due(2019-12-30) task @done(2020-01-01) title"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.originalText t)
+                    |> Result.map TaskItem.originalText
                     |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @done(2020-01-01) title")
         , test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.title t)
+                    |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo")
         , test "consumes <eol> character" <|
             \() ->
@@ -338,22 +338,22 @@ parsing =
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\ta -> TaskItem.subtasks ta)
-                    |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "stops parsing subtasks at the end of indentation" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\ta -> TaskItem.subtasks ta)
-                    |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar", "baz" ])
         , test "it is happy even if the level of indentation decreases as long as still indented" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\ta -> TaskItem.subtasks ta)
-                    |> Result.map (\ta -> List.map (\tb -> TaskItem.title tb) ta)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar", "baz" ])
         , test "consumes <eol> character where there are subtasks" <|
             \() ->
@@ -369,31 +369,31 @@ parsing =
             \() ->
                 "- [X]"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.mapError (\_ -> "failed")
+                    |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
         , test "fails to parse a task with no title" <|
             \() ->
                 "- [X] "
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.mapError (\_ -> "failed")
+                    |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
         , test "fails to parse a task with a '*' as the list marker" <|
             \() ->
                 "* [X] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.mapError (\_ -> "failed")
+                    |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
         , test "fails to parse a task when there is no gap between the title and the ']'" <|
             \() ->
                 "- [X]foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.mapError (\_ -> "failed")
+                    |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
         , test "fails to parse a task when there is whitespace before the list marker" <|
             \() ->
                 " - [X] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.mapError (\_ -> "failed")
+                    |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
         ]
 
@@ -405,49 +405,49 @@ toString =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [ ] foo")
         , test "outputs a completed TaskList item with a ticked checkbox" <|
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo")
         , test "outputs a completed TaskList item with a (lower-case) ticked checkbox" <|
             \() ->
                 "- [X] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo")
         , test "outputs a @done(<iso-date>) TaskList item with the done date at the end" <|
             \() ->
                 "- [X] foo @done(2020-03-22) bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar @done(2020-03-22)")
         , test "outputs a @due(<iso-date>) TaskList item if the original had a @due tag" <|
             \() ->
                 "- [X] foo @due(2020-03-22) bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar @due(2020-03-22)")
         , test "does not output a @due(<iso-date>) TaskList item if the original had a file based due date" <|
             \() ->
                 "- [X] foo bar"
                     |> Parser.run (TaskItem.parser "" <| Just "2021-03-01")
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar")
         , test "removes excess whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] the task")
         , test "removes trailing whitespace" <|
             \() ->
                 "- [X] the task   "
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (\t -> TaskItem.toString t)
+                    |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] the task")
         ]
 
