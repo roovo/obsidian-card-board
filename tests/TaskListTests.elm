@@ -16,6 +16,7 @@ suite =
         , parsing
         , replaceForFile
         , removeForFile
+        , taskContainingId
         , taskFromId
         , tasks
         ]
@@ -56,6 +57,43 @@ tasks =
                     |> TaskList.tasks
                     |> List.map TaskItem.title
                     |> Expect.equal [ "undated incomplete", "subtask complete" ]
+        ]
+
+
+taskContainingId : Test
+taskContainingId =
+    describe "taskContainingId"
+        [ test "returns nothing if there are no tasks in the list" <|
+            \() ->
+                parsedTasks ( "a", Nothing, "" )
+                    |> TaskList.taskContainingId ""
+                    |> Expect.equal Nothing
+        , test "returns nothing if there are no tasks in the list with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+                    |> TaskList.taskContainingId "a:4"
+                    |> Expect.equal Nothing
+        , test "returns the task if there is one in the list with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+- [x] undated complete
+""" )
+                    |> TaskList.taskContainingId "a:3"
+                    |> Maybe.map TaskItem.title
+                    |> Expect.equal (Just "undated complete")
+        , test "returns the task if it contains a  subtask with the given id" <|
+            \() ->
+                parsedTasks ( "a", Nothing, """
+- [ ] undated incomplete
+  - [x] subtask complete
+""" )
+                    |> TaskList.taskContainingId "a:3"
+                    |> Maybe.map TaskItem.title
+                    |> Expect.equal (Just "undated incomplete")
         ]
 
 

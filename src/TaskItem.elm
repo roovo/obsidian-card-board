@@ -1,8 +1,10 @@
 module TaskItem exposing
-    ( Completion(..)
+    ( AutoCompletion(..)
+    , Completion(..)
     , TaskItem
     , autoComplete
     , completion
+    , containsId
     , due
     , filePath
     , hasSubtasks
@@ -16,6 +18,7 @@ module TaskItem exposing
     , parser
     , subtasks
     , tags
+    , tasksToToggle
     , title
     , toString
     , toggleCompletion
@@ -37,7 +40,7 @@ type alias TaskItemFields =
     { originalText : String
     , filePath : String
     , lineNumber : Int
-    , autoComplete : Bool
+    , autoComplete : AutoCompletion
     , completion : Completion
     , dueFile : Maybe Date
     , dueTag : Maybe Date
@@ -48,6 +51,12 @@ type alias TaskItemFields =
 
 type TaskItem
     = TaskItem TaskItemFields (List TaskItemFields)
+
+
+type AutoCompletion
+    = NotSpecifed
+    | FalseSpecified
+    | TrueSpecified
 
 
 type Completion
@@ -68,7 +77,7 @@ type Content
 -- INFO
 
 
-autoComplete : TaskItem -> Bool
+autoComplete : TaskItem -> AutoCompletion
 autoComplete (TaskItem fields _) =
     fields.autoComplete
 
@@ -81,6 +90,12 @@ title (TaskItem fields _) =
 completion : TaskItem -> Completion
 completion (TaskItem fields _) =
     fields.completion
+
+
+containsId : String -> TaskItem -> Bool
+containsId targetId taskItem =
+    (id taskItem :: List.map id (subtasks taskItem))
+        |> List.member targetId
 
 
 due : TaskItem -> Maybe Date
@@ -158,6 +173,49 @@ tags (TaskItem fields _) =
     fields.tags
 
 
+tasksToToggle : String -> TaskItem -> List TaskItem
+tasksToToggle id_ taskItem =
+    let
+        idBelongsToSubtask =
+            taskItem
+                |> subtasks
+                |> List.map id
+                |> List.member id_
+
+        resultIsAllSubtasksCompleted =
+            subtasks taskItem
+                |> List.map
+                    (\t ->
+                        if id t == id_ then
+                            toggleCompletion Nothing t
+
+                        else
+                            t
+                    )
+                |> List.all isCompleted
+
+        matchingTaskItem =
+            (taskItem :: subtasks taskItem)
+                |> List.filter (\t -> id t == id_)
+
+        topLevelTaskIsNotAlreadyComplete =
+            not <| isCompleted taskItem
+
+        shouldAutoComplete =
+            case autoComplete taskItem of
+                TrueSpecified ->
+                    True
+
+                _ ->
+                    False
+    in
+    if shouldAutoComplete && idBelongsToSubtask && resultIsAllSubtasksCompleted && topLevelTaskIsNotAlreadyComplete then
+        taskItem :: matchingTaskItem
+
+    else
+        matchingTaskItem
+
+
 toString : TaskItem -> String
 toString (TaskItem fields _) =
     let
@@ -190,8 +248,19 @@ toString (TaskItem fields _) =
 
                 _ ->
                     ""
+
+        autoCompleteTag =
+            case fields.autoComplete of
+                NotSpecifed ->
+                    ""
+
+                FalseSpecified ->
+                    " @autodone(false)"
+
+                TrueSpecified ->
+                    " @autodone(true)"
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ dueTag ++ completionTag
+    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ dueTag ++ autoCompleteTag ++ completionTag
 
 
 
@@ -295,18 +364,21 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
                 _ ->
                     date
 
-        extractAutoComplete : Content -> Bool -> Bool
+        extractAutoComplete : Content -> AutoCompletion -> AutoCompletion
         extractAutoComplete content autoComplete_ =
             case content of
-                AutoCompleteTag t ->
-                    t
+                AutoCompleteTag False ->
+                    FalseSpecified
+
+                AutoCompleteTag True ->
+                    TrueSpecified
 
                 _ ->
                     autoComplete_
 
-        autoCompletefromTag : Bool
+        autoCompletefromTag : AutoCompletion
         autoCompletefromTag =
-            List.foldr extractAutoComplete False contents
+            List.foldr extractAutoComplete NotSpecifed contents
 
         addCompletionDate : TaskItemFields -> TaskItemFields
         addCompletionDate fields =

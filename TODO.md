@@ -1,6 +1,6 @@
-- support @autodone(bool) taskpaper tag
 - include any subtask tags in the card tag list
 - indented text as markdown task notes (including invalid/incomplete subtasks)
+- what to do about due dates for subtasks
 - what about support for non-x characters in the checkbox
 - plugin settings
   - max title lines
@@ -34,7 +34,6 @@
 
 - could/should I use some taskpaper tags:
 
-    @autodone(bool) - whether the item automatically completes itself when its children are complete (true) or not (false). Named to match @done.
     @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
     @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
     @flagged - present when an item is flagged
@@ -61,6 +60,7 @@
 
 # Done
 
+- support @autodone(bool) taskpaper tag
 - show indented tasks as subtasks
 - TaskItem - use a record internally (for ease of understanding)
 - only display 2 lines of task title

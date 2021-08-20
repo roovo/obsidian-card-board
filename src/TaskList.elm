@@ -9,6 +9,7 @@ module TaskList exposing
     , parser
     , removeForFile
     , replaceForFile
+    , taskContainingId
     , taskFromId
     , taskIds
     , taskTitles
@@ -104,6 +105,13 @@ taskIds : TaskList -> List String
 taskIds (TaskList taskItems) =
     taskItems
         |> List.map TaskItem.id
+
+
+taskContainingId : String -> TaskList -> Maybe TaskItem
+taskContainingId id taskList =
+    taskList
+        |> tasks
+        |> LE.find (TaskItem.containsId id)
 
 
 taskFromId : String -> TaskList -> Maybe TaskItem

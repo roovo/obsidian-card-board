@@ -132,15 +132,13 @@ update msg model =
         ( TaskItemToggled id, _ ) ->
             case model.taskList of
                 Loaded taskList ->
-                    case TaskList.taskFromId id taskList of
+                    case TaskList.taskContainingId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.rewriteTodo
-                                { filePath = TaskItem.filePath matchingItem
-                                , lineNumber = TaskItem.lineNumber matchingItem
-                                , originalText = TaskItem.originalText matchingItem
-                                , newText = matchingItem |> TaskItem.toggleCompletion model.today |> TaskItem.toString
-                                }
+                            , Ports.rewriteTodos
+                                model.today
+                                (TaskItem.filePath matchingItem)
+                                (TaskItem.tasksToToggle id matchingItem)
                             )
 
                         Nothing ->

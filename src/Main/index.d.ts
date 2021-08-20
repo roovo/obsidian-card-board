@@ -9,23 +9,23 @@ export namespace Elm {
         deleteTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
         }
-        editTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
-        }
-        rewriteTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string; newText: string }) => void): void
-        }
         displayTitles: {
           subscribe(callback: (data: { filePath: string; titles: { id: string; titleMarkdown: string }[] }) => void): void
         }
-        fileUpdated: {
-          send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
+        editTodo: {
+          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
+        }
+        updateTodos: {
+          subscribe(callback: (data: { filePath: string; todos: { lineNumber: number; originalText: string; newText: string }[] }) => void): void
         }
         fileAdded: {
           send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
         }
         fileDeleted: {
           send(data: string): void
+        }
+        fileUpdated: {
+          send(data: { filePath: string; fileDate: string | null; fileContents: string }): void
         }
       };
     }

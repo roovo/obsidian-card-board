@@ -33,8 +33,8 @@ export class CardBoardView extends ItemView {
 
     const that = this;
 
-    elm.ports.rewriteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string, newText: string}) {
-      that.handleRewriteTodo(data);
+    elm.ports.updateTodos.subscribe(function(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
+      that.handleUpdateTodos(data);
     })
 
     elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
@@ -110,21 +110,22 @@ export class CardBoardView extends ItemView {
 
     if (fileLeaf) {
       this.app.workspace.setActiveLeaf(fileLeaf, true, true)
-      // this.codeMirror.markText({line: data.lineNumber - 1, ch: 0}, {line: data.lineNumber, ch: 0}, {css: "background-color: red"})
       this.codeMirror.setCursor(data.lineNumber - 1, 0)
     }
   }
 
-  async handleRewriteTodo(data: {filePath: string, lineNumber: number, originalText: string, newText: string}) {
-    const file = this.app.vault.getAbstractFileByPath(data.filePath)
-    if (file instanceof TFile) {
-      const markdown = await this.vault.read(file)
-      const markdownLines = markdown.split(/\r?\n/)
-      if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
-        markdownLines[data.lineNumber - 1] = data.newText
+  async handleUpdateTodos(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
+      const file = this.app.vault.getAbstractFileByPath(data.filePath)
+      if (file instanceof TFile) {
+        const markdown = await this.vault.read(file)
+        const markdownLines = markdown.split(/\r?\n/)
+        for (const item of data.todos) {
+          if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
+            markdownLines[item.lineNumber - 1] = item.newText
+          }
+        }
         this.vault.modify(file, markdownLines.join("\n"))
-      }
-    }
+     }
   }
 
   async handleDisplayTitles(data: { filePath: string, titles: [{id: string, titleMarkdown: string }]}) {

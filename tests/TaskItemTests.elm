@@ -3,7 +3,7 @@ module TaskItemTests exposing (suite)
 import Date exposing (Date)
 import Expect exposing (Expectation)
 import Parser exposing ((|=))
-import TaskItem exposing (Completion(..), TaskItem)
+import TaskItem exposing (AutoCompletion(..), Completion(..), TaskItem)
 import TaskList exposing (TaskList)
 import Test exposing (..)
 import Time exposing (Month(..))
@@ -13,6 +13,7 @@ suite : Test
 suite =
     concat
         [ autoComplete
+        , containsId
         , done
         , due
         , filePath
@@ -22,6 +23,7 @@ suite =
         , isDated
         , parsing
         , tags
+        , tasksToToggle
         , toString
         , transformation
         ]
@@ -30,24 +32,24 @@ suite =
 autoComplete : Test
 autoComplete =
     describe "autoComplete"
-        [ test "returns True where the @autodone tag is true" <|
+        [ test "returns TrueSpecified where the @autodone tag is true" <|
             \() ->
                 "- [ ] foo @autodone(true)"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok True)
-        , test "returns False where there is no @autodone tag" <|
+                    |> Expect.equal (Ok TrueSpecified)
+        , test "returns NotSpecifed where there is no @autodone tag" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok False)
-        , test "returns False where the @autodone tag is false" <|
+                    |> Expect.equal (Ok NotSpecifed)
+        , test "returns FalseSpecified where the @autodone tag is false" <|
             \() ->
                 "- [ ] foo @autodone(false)"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok False)
+                    |> Expect.equal (Ok FalseSpecified)
         , test "doesn't include the tag in the title" <|
             \() ->
                 "- [ ] foo @autodone(false)"
@@ -60,6 +62,30 @@ autoComplete =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @autodone(falsey)")
+        ]
+
+
+containsId : Test
+containsId =
+    describe "containsId"
+        [ test "returns False if the id is not in the task or any subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
+                    |> Parser.run (TaskItem.parser "fileA" Nothing)
+                    |> Result.map (TaskItem.containsId "fileA:4")
+                    |> Expect.equal (Ok False)
+        , test "returns True if the id is for the task" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
+                    |> Parser.run (TaskItem.parser "fileA" Nothing)
+                    |> Result.map (TaskItem.containsId "fileA:1")
+                    |> Expect.equal (Ok True)
+        , test "returns True if the id is for one of the subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
+                    |> Parser.run (TaskItem.parser "fileA" Nothing)
+                    |> Result.map (TaskItem.containsId "fileA:2")
+                    |> Expect.equal (Ok True)
         ]
 
 
@@ -429,6 +455,74 @@ tags =
         ]
 
 
+tasksToToggle : Test
+tasksToToggle =
+    describe "tasksToToggle"
+        [ test "returns an empty array if there are no tasks matching the id" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":3")
+                    |> Expect.equal (Ok [])
+        , test "returns the TaskItem if it matches the id" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo" ])
+        , test "returns the sub-TaskItem if it matches the id and @autodone is not set" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autodone is true and all other subtasks are complete" <|
+            \() ->
+                "- [ ] foo @autodone(true)\n  - [ ] bar\n  - [x] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo", "bar" ])
+        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autodone is false and all other subtasks are complete" <|
+            \() ->
+                "- [ ] foo @autodone(false)\n  - [ ] bar\n  - [x] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "returns the sub-TaskItem if the subtask matches the id and @autodone is set but there are other incomplete subtasks" <|
+            \() ->
+                "- [ ] foo @autodone(true)\n  - [ ] bar\n  - [ ] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "returns the sub-TaskItem if the subtask matches the id, @autodone is set and the top level task is already completed" <|
+            \() ->
+                "- [x] foo @autodone(true)\n  - [ ] bar\n  - [x] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "returns the TaskItem if it is complete, matches and all subtasks are already complete" <|
+            \() ->
+                "- [x] foo @autodone(true)\n  - [x] bar\n  - [x] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo" ])
+        , test "returns the TaskItem if it is incomplete, matches and all subtasks are already complete" <|
+            \() ->
+                "- [ ] foo @autodone(true)\n  - [x] bar\n  - [x] baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo" ])
+        ]
+
+
 toString : Test
 toString =
     describe "toString"
@@ -466,6 +560,24 @@ toString =
             \() ->
                 "- [X] foo bar"
                     |> Parser.run (TaskItem.parser "" <| Just "2021-03-01")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [x] foo bar")
+        , test "outputs an @autodone(true) TaskList item if in the original" <|
+            \() ->
+                "- [X] foo @autodone(true) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [x] foo bar @autodone(true)")
+        , test "outputs an @autodone(false) TaskList item if in the original" <|
+            \() ->
+                "- [X] foo @autodone(false) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [x] foo bar @autodone(false)")
+        , test "does not output an @autodone() TaskList item if the original didn't specify one" <|
+            \() ->
+                "- [X] foo bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar")
         , test "removes excess whitespace between the title and the ']'" <|
