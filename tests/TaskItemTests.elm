@@ -318,6 +318,13 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.originalText
                     |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @done(2020-01-01) title")
+        , test "retains leading whitepace for the  original line text for subtasks" <|
+            \() ->
+                "- [X] task\n   \t - [ ] sub-task"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.originalText)
+                    |> Expect.equal (Ok [ "   \t - [ ] sub-task" ])
         , test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"

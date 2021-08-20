@@ -212,6 +212,7 @@ parser : String -> Maybe String -> Parser TaskItem
 parser pathToFile fileDate =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
+        |= P.getCol
         |= P.succeed pathToFile
         |= P.getRow
         |= prefixParser
@@ -226,12 +227,12 @@ parser pathToFile fileDate =
         |> P.andThen (addAnySubtasks pathToFile fileDate)
 
 
-taskItemFieldsBuilder : Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
-taskItemFieldsBuilder startOffset path row completion_ dueFromFile contents endOffset source =
+taskItemFieldsBuilder : Int -> Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
         sourceText =
-            String.slice startOffset endOffset source
+            String.slice (startOffset - (startColumn - 1)) endOffset source
 
         extractWords : Content -> List String -> List String
         extractWords content words =
@@ -373,6 +374,7 @@ subTaskParser : String -> Maybe String -> Parser TaskItemFields
 subTaskParser pathToFile fileDate =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
+        |= P.getCol
         |= P.succeed pathToFile
         |= P.getRow
         |= prefixParser
