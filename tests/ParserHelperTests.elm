@@ -3,7 +3,7 @@ module ParserHelperTests exposing (suite)
 import Date
 import Expect exposing (Expectation)
 import Parser as P exposing ((|.), (|=))
-import ParserHelper exposing (anyLineParser, dateParser, nonEmptyStringParser, wordParser)
+import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, wordParser)
 import TaskItem
 import Test exposing (..)
 import Time exposing (Month(..))
@@ -13,11 +13,40 @@ suite : Test
 suite =
     concat
         [ anyLineParserTest
+        , booleanParserTest
         , checkWhitespaceFollowsTests
         , dateParserTests
         , indentParserTests
         , nonEmptyStringParserTest
         , wordParserTest
+        ]
+
+
+booleanParserTest : Test
+booleanParserTest =
+    describe "parsing a boolean"
+        [ test "true parses to True" <|
+            \() ->
+                "true"
+                    |> P.run booleanParser
+                    |> Expect.equal (Ok True)
+        , test "false parses to True" <|
+            \() ->
+                "false"
+                    |> P.run booleanParser
+                    |> Expect.equal (Ok False)
+        , test "truey fails to parse" <|
+            \() ->
+                "truey"
+                    |> P.run booleanParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        , test "empty string fails to parse" <|
+            \() ->
+                ""
+                    |> P.run booleanParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 

@@ -1,5 +1,6 @@
 module ParserHelper exposing
     ( anyLineParser
+    , booleanParser
     , checkWhitespaceFollows
     , dateParser
     , indentParser
@@ -67,6 +68,16 @@ isNotWhitespace char =
 
 
 -- PARSERS
+
+
+booleanParser : Parser Bool
+booleanParser =
+    P.oneOf
+        [ P.succeed True
+            |. P.keyword "true"
+        , P.succeed False
+            |. P.keyword "false"
+        ]
 
 
 indentParser : Parser a -> Parser (List a)

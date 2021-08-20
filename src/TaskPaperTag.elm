@@ -1,7 +1,7 @@
-module TaskPaperTag exposing (doneTagParser, dueTagParser, parser)
+module TaskPaperTag exposing (autodoneTagParser, doneTagParser, dueTagParser, parser)
 
 import Date exposing (Date)
-import Parser exposing ((|.), (|=), Parser, andThen, backtrackable, chompIf, commit, getOffset, map, oneOf, problem, succeed, token)
+import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
 
 
@@ -9,10 +9,9 @@ import ParserHelper exposing (checkWhitespaceFollows)
 -- PARSER
 
 
-parser : String -> Parser a -> (a -> b) -> Parser b
-parser tagKeyword valueParser tagger =
-    tagParser tagKeyword valueParser tagger
-        |> checkWhitespaceFollows
+autodoneTagParser : (Bool -> a) -> Parser a
+autodoneTagParser =
+    parser "autodone" ParserHelper.booleanParser
 
 
 doneTagParser : (Date -> a) -> Parser a
@@ -25,13 +24,19 @@ dueTagParser =
     parser "due" ParserHelper.dateParser
 
 
+parser : String -> Parser a -> (a -> b) -> Parser b
+parser tagKeyword valueParser tagger =
+    tagParser tagKeyword valueParser tagger
+        |> checkWhitespaceFollows
+
+
 
 -- PRIVATE
 
 
 tagParser : String -> Parser a -> (a -> b) -> Parser b
 tagParser tagKeyword valueParser tagger =
-    succeed tagger
-        |. token ("@" ++ tagKeyword ++ "(")
+    P.succeed tagger
+        |. P.token ("@" ++ tagKeyword ++ "(")
         |= valueParser
-        |. token ")"
+        |. P.token ")"

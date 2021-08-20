@@ -15,6 +15,7 @@
 - look into issue fixed in commit bca367 : TODO - why does this work....
   - can I get parser to always work when there is no "\n" on the end of the input
 - don't display all completed tasks - could get quite long!
+- better parsing errors? - https://discourse.elm-lang.org/t/newline-and-indentation-issues-in-elm-parser/4869
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
 - scrolling across the board

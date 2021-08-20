@@ -1,6 +1,7 @@
 module TaskItem exposing
     ( Completion(..)
     , TaskItem
+    , autoComplete
     , completion
     , due
     , filePath
@@ -36,6 +37,7 @@ type alias TaskItemFields =
     { originalText : String
     , filePath : String
     , lineNumber : Int
+    , autoComplete : Bool
     , completion : Completion
     , dueFile : Maybe Date
     , dueTag : Maybe Date
@@ -55,14 +57,20 @@ type Completion
 
 
 type Content
-    = Word String
+    = AutoCompleteTag Bool
     | DoneTag Date
     | DueTag Date
     | ObsidianTag String
+    | Word String
 
 
 
 -- INFO
+
+
+autoComplete : TaskItem -> Bool
+autoComplete (TaskItem fields _) =
+    fields.autoComplete
 
 
 title : TaskItem -> String
@@ -287,6 +295,19 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
                 _ ->
                     date
 
+        extractAutoComplete : Content -> Bool -> Bool
+        extractAutoComplete content autoComplete_ =
+            case content of
+                AutoCompleteTag t ->
+                    t
+
+                _ ->
+                    autoComplete_
+
+        autoCompletefromTag : Bool
+        autoCompletefromTag =
+            List.foldr extractAutoComplete False contents
+
         addCompletionDate : TaskItemFields -> TaskItemFields
         addCompletionDate fields =
             if isCompleted (TaskItem fields []) then
@@ -307,6 +328,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     { originalText = sourceText
     , filePath = path
     , lineNumber = row
+    , autoComplete = autoCompletefromTag
     , completion = completion_
     , dueFile = dueFromFile
     , dueTag = tagDueDate
@@ -337,6 +359,7 @@ tokenParser =
     P.oneOf
         [ P.backtrackable <| TaskPaperTag.doneTagParser DoneTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
+        , P.backtrackable <| TaskPaperTag.autodoneTagParser AutoCompleteTag
         , P.backtrackable <| obsidianTagParser
         , P.succeed Word
             |= ParserHelper.wordParser

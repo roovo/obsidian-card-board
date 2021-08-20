@@ -12,7 +12,8 @@ import Time exposing (Month(..))
 suite : Test
 suite =
     concat
-        [ done
+        [ autoComplete
+        , done
         , due
         , filePath
         , id
@@ -23,6 +24,42 @@ suite =
         , tags
         , toString
         , transformation
+        ]
+
+
+autoComplete : Test
+autoComplete =
+    describe "autoComplete"
+        [ test "returns True where the @autodone tag is true" <|
+            \() ->
+                "- [ ] foo @autodone(true)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.autoComplete
+                    |> Expect.equal (Ok True)
+        , test "returns False where there is no @autodone tag" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.autoComplete
+                    |> Expect.equal (Ok False)
+        , test "returns False where the @autodone tag is false" <|
+            \() ->
+                "- [ ] foo @autodone(false)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.autoComplete
+                    |> Expect.equal (Ok False)
+        , test "doesn't include the tag in the title" <|
+            \() ->
+                "- [ ] foo @autodone(false)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo")
+        , test "includes an invalid tag in the title" <|
+            \() ->
+                "- [ ] foo @autodone(falsey)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo @autodone(falsey)")
         ]
 
 
@@ -449,7 +486,6 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.subtasks
                     |> Result.withDefault []
-                    |> Debug.log "foo"
                     |> List.map TaskItem.toString
                     |> Expect.equal [ "   \t- [ ] a subtask" ]
         ]
