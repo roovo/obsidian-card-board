@@ -1,6 +1,7 @@
 - support @autodone(bool) taskpaper tag
 - include any subtask tags in the card tag list
 - indented text as markdown task notes (including invalid/incomplete subtasks)
+- what about support for non-x characters in the checkbox
 - plugin settings
   - max title lines
   - allow/deny directories/files
