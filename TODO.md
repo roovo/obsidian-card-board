@@ -1,5 +1,5 @@
-- show indented tasks as subtasks
 - support @autodone(bool) taskpaper tag
+- include any subtask tags in the card tag list
 - indented text as markdown task notes (including invalid/incomplete subtasks)
 - plugin settings
   - max title lines
@@ -59,6 +59,7 @@
 
 # Done
 
+- show indented tasks as subtasks
 - TaskItem - use a record internally (for ease of understanding)
 - only display 2 lines of task title
 - render card title as markdown

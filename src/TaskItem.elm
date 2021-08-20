@@ -21,6 +21,7 @@ module TaskItem exposing
     )
 
 import Date exposing (Date)
+import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
@@ -152,6 +153,12 @@ tags (TaskItem fields _) =
 toString : TaskItem -> String
 toString (TaskItem fields _) =
     let
+        leadingWhiteSpace =
+            fields.originalText
+                |> String.toList
+                |> LE.takeWhile ParserHelper.isSpaceOrTab
+                |> String.fromList
+
         checkbox =
             case fields.completion of
                 Incomplete ->
@@ -176,7 +183,7 @@ toString (TaskItem fields _) =
                 _ ->
                     ""
     in
-    checkbox ++ String.trim fields.title ++ dueTag ++ completionTag
+    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ dueTag ++ completionTag
 
 
 

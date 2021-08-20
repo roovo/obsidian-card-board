@@ -456,6 +456,15 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] the task")
+        , test "preserves leading whitespace for subtasks" <|
+            \() ->
+                "- [X] the task\n   \t- [ ] a subtask"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.withDefault []
+                    |> Debug.log "foo"
+                    |> List.map TaskItem.toString
+                    |> Expect.equal [ "   \t- [ ] a subtask" ]
         ]
 
 
