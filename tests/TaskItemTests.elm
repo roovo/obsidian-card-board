@@ -544,6 +544,12 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo")
+        , test "outputs any tags" <|
+            \() ->
+                "- [X] #tag1 foo #tag2 bar #tag3"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [x] foo bar #tag1 #tag2 #tag3")
         , test "outputs a @done(<iso-date>) TaskList item with the done date at the end" <|
             \() ->
                 "- [X] foo @done(2020-03-22) bar"

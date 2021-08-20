@@ -233,6 +233,16 @@ toString (TaskItem fields _) =
                 _ ->
                     "- [x] "
 
+        fieldTags =
+            if List.length fields.tags > 0 then
+                fields.tags
+                    |> List.map (String.append "#")
+                    |> String.join " "
+                    |> String.append " "
+
+            else
+                ""
+
         dueTag =
             case fields.dueTag of
                 Just date ->
@@ -260,7 +270,7 @@ toString (TaskItem fields _) =
                 TrueSpecified ->
                     " @autodone(true)"
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ dueTag ++ autoCompleteTag ++ completionTag
+    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
 
 
 

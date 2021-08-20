@@ -1,5 +1,7 @@
 - include any subtask tags in the card tag list
-- indented text as markdown task notes (including invalid/incomplete subtasks)
+- indented text as markdown task notes
+  - including invalid/incomplete subtasks
+  - including blank lines
 - what to do about due dates for subtasks
 - what about support for non-x characters in the checkbox
 - plugin settings
@@ -60,6 +62,7 @@
 
 # Done
 
+- bug - tags aren't written on re-write of a TaskItem (after toggling)
 - support @autodone(bool) taskpaper tag
 - show indented tasks as subtasks
 - TaskItem - use a record internally (for ease of understanding)
