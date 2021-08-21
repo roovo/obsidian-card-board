@@ -1,4 +1,3 @@
-- include any subtask tags in the card tag list
 - indented text as markdown task notes
   - including invalid/incomplete subtasks
   - including blank lines
@@ -62,6 +61,7 @@
 
 # Done
 
+- include any subtask tags in the card tag list
 - bug - tags aren't written on re-write of a TaskItem (after toggling)
 - support @autodone(bool) taskpaper tag
 - show indented tasks as subtasks

@@ -104,6 +104,11 @@ ul.card-board-column-list > li.card-board-card::before {
   border-top: 1px solid var(--background-modifier-border);
 }
 
+.card-board-card-tag {
+  display: inline-block;
+  margin-right: 5px;
+}
+
 .card-board-card-tag > span.cm-hashtag {
   background-color: var(--background-secondary-alt);
 }
