@@ -174,9 +174,15 @@ spaces =
 
 anyLineParser : Parser String
 anyLineParser =
+    let
+        removeTrailingEol : String -> Parser String
+        removeTrailingEol parsedLine =
+            P.succeed <| String.dropRight 1 parsedLine
+    in
     P.succeed identity
         |= nonEmptyLineParser
         |. lineEnd
+        |> P.andThen removeTrailingEol
 
 
 nonEmptyLineParser : Parser String

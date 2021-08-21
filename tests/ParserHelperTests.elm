@@ -42,26 +42,26 @@ anyLineParserTest =
             \() ->
                 "foo\n"
                     |> P.run anyLineParser
-                    |> Expect.equal (Ok "foo\n")
+                    |> Expect.equal (Ok "foo")
         , test "'<eol>' parses" <|
             \() ->
                 "\n"
                     |> P.run anyLineParser
-                    |> Expect.equal (Ok "\n")
+                    |> Expect.equal (Ok "")
         , test "parses multiple lines" <|
             \() ->
                 "foo\nbar\n"
                     |> P.run
-                        (P.succeed (\first second -> [ first, second ])
+                        (P.succeed Tuple.pair
                             |= anyLineParser
                             |= anyLineParser
                         )
-                    |> Expect.equal (Ok [ "foo\n", "bar\n" ])
+                    |> Expect.equal (Ok ( "foo", "bar" ))
         , test "won't parse beyond the end of the input" <|
             \() ->
-                "foo"
+                "foo\n"
                     |> P.run
-                        (P.succeed (\first second -> [ first, second ])
+                        (P.succeed Tuple.pair
                             |= anyLineParser
                             |= anyLineParser
                         )
