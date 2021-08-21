@@ -21,9 +21,12 @@ suite =
         , isCompleted
         , isFromFile
         , isDated
+        , originalText
         , parsing
+        , subtasks
         , tags
         , tasksToToggle
+        , title
         , toString
         , transformation
         ]
@@ -305,45 +308,15 @@ isFromFile =
         ]
 
 
-parsing : Test
-parsing =
-    describe "parsing"
-        [ test "gets the title from an incomplete TaskList item" <|
+originalText : Test
+originalText =
+    describe "originalText"
+        [ test "retains the original line text" <|
             \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo")
-        , test "gets the title from a complete TaskList item" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo")
-        , test "gets the title from an upper case complete TaskList item" <|
-            \() ->
-                "- [X] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo")
-        , test "handles lots of whitespace between the title and the ']'" <|
-            \() ->
-                "- [X]      the task"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "the task")
-        , test "looses trailing whitespace" <|
-            \() ->
-                "- [X] the task   "
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "the task")
-        , test "retains the original line text" <|
-            \() ->
-                "- [X]  the @due(2019-12-30) task @done(2020-01-01) title"
+                "- [X]  the @due(2019-12-30) task @done(2020-01-01) title "
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.originalText
-                    |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @done(2020-01-01) title")
+                    |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @done(2020-01-01) title ")
         , test "retains leading whitepace for the  original line text for subtasks" <|
             \() ->
                 "- [X] task\n   \t - [ ] sub-task"
@@ -351,7 +324,13 @@ parsing =
                     |> Result.map TaskItem.subtasks
                     |> Result.map (List.map TaskItem.originalText)
                     |> Expect.equal (Ok [ "   \t - [ ] sub-task" ])
-        , test "only looks at the first line of a multline string" <|
+        ]
+
+
+parsing : Test
+parsing =
+    describe "parsing"
+        [ test "only looks at the first line of a multline string" <|
             \() ->
                 "- [X] foo\n- [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
@@ -367,37 +346,16 @@ parsing =
                         )
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
-        , test "parses subtasks" <|
+        , test "fails to parse if not given a task" <|
             \() ->
-                "- [ ] foo\n  - [ ] bar"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.subtasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar" ])
-        , test "stops parsing subtasks at the end of indentation" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.subtasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar", "baz" ])
-        , test "it is happy even if the level of indentation decreases as long as still indented" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.subtasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar", "baz" ])
-        , test "consumes <eol> character where there are subtasks" <|
-            \() ->
-                "- [X] foo\n - [ ] sub foo\n- [ ] bar"
+                "- [X] foo"
                     |> Parser.run
                         (Parser.succeed (\first second -> [ first, second ])
                             |= TaskItem.parser "" Nothing
                             |= TaskItem.parser "" Nothing
                         )
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "foo", "bar" ])
+                    |> Result.mapError (always "failed")
+                    |> Expect.equal (Err "failed")
         , test "fails to parse a task which ends straight after the ']'" <|
             \() ->
                 "- [X]"
@@ -428,6 +386,43 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
+        ]
+
+
+subtasks : Test
+subtasks =
+    describe "subtasks"
+        [ test "parses subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "stops parsing subtasks at the end of indentation" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "it is happy even if the level of indentation decreases as long as still indented" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.subtasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "consumes <eol> character where there are subtasks" <|
+            \() ->
+                "- [X] foo\n - [ ] sub foo\n- [ ] bar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= TaskItem.parser "" Nothing
+                            |= TaskItem.parser "" Nothing
+                        )
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo", "bar" ])
         ]
 
 
@@ -520,6 +515,30 @@ tasksToToggle =
                     |> Result.map (TaskItem.tasksToToggle ":1")
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
+        ]
+
+
+title : Test
+title =
+    describe "title"
+        [ test "gets the title from a TaskList item" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo")
+        , test "handles lots of whitespace between the title and the ']'" <|
+            \() ->
+                "- [X]      the task"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "the task")
+        , test "looses trailing whitespace" <|
+            \() ->
+                "- [X] the task   "
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "the task")
         ]
 
 
