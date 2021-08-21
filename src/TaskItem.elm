@@ -169,8 +169,10 @@ subtasks (TaskItem fields subtasks_) =
 
 
 tags : TaskItem -> List String
-tags (TaskItem fields _) =
-    fields.tags
+tags ((TaskItem fields _) as taskItem) =
+    subtasks taskItem
+        |> List.concatMap (\(TaskItem fs _) -> fs.tags)
+        |> List.append fields.tags
 
 
 tasksToToggle : String -> TaskItem -> List TaskItem

@@ -440,12 +440,12 @@ tags =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
                     |> Expect.equal (Ok [])
-        , test "returns any specified tags" <|
+        , test "returns all tags from the top level and sub tasks" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2"
+                "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
-                    |> Expect.equal (Ok [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok [ "tag1", "tag2", "tag3" ])
         , test "tags are not included in the title" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2"
