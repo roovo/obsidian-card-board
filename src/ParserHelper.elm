@@ -172,10 +172,10 @@ spaces =
     P.chompWhile isSpaceOrTab
 
 
-anyLineParser : Parser ()
+anyLineParser : Parser String
 anyLineParser =
-    P.succeed ()
-        |. nonEmptyLineParser
+    P.succeed identity
+        |= nonEmptyLineParser
         |. lineEnd
 
 

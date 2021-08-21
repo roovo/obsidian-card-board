@@ -22,6 +22,54 @@ suite =
         ]
 
 
+anyLineParserTest : Test
+anyLineParserTest =
+    describe "parsing any line"
+        [ test "empty string fails to parse" <|
+            \() ->
+                ""
+                    |> P.run anyLineParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        , test "'foo' parses" <|
+            -- this should parse but doesn't so I have to append \n on the end of input before parsing
+            \() ->
+                "foo"
+                    |> P.run anyLineParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        , test "'foo<eol>' parses" <|
+            \() ->
+                "foo\n"
+                    |> P.run anyLineParser
+                    |> Expect.equal (Ok "foo\n")
+        , test "'<eol>' parses" <|
+            \() ->
+                "\n"
+                    |> P.run anyLineParser
+                    |> Expect.equal (Ok "\n")
+        , test "parses multiple lines" <|
+            \() ->
+                "foo\nbar\n"
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
+                            |= anyLineParser
+                            |= anyLineParser
+                        )
+                    |> Expect.equal (Ok [ "foo\n", "bar\n" ])
+        , test "won't parse beyond the end of the input" <|
+            \() ->
+                "foo"
+                    |> P.run
+                        (P.succeed (\first second -> [ first, second ])
+                            |= anyLineParser
+                            |= anyLineParser
+                        )
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        ]
+
+
 booleanParserTest : Test
 booleanParserTest =
     describe "parsing a boolean"
@@ -188,54 +236,6 @@ baz
                     |> P.run nonEmptyStringParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
-        ]
-
-
-anyLineParserTest : Test
-anyLineParserTest =
-    describe "parsing any line"
-        [ test "empty string fails to parse" <|
-            \() ->
-                ""
-                    |> P.run anyLineParser
-                    |> Result.toMaybe
-                    |> Expect.equal Nothing
-        , test "'foo' parses" <|
-            -- this should parse but doesn't so I have to append \n on the end of input before parsing
-            \() ->
-                "foo"
-                    |> P.run anyLineParser
-                    |> Result.toMaybe
-                    |> Expect.equal Nothing
-        , test "'foo<eol>' parses" <|
-            \() ->
-                "foo\n"
-                    |> P.run anyLineParser
-                    |> Expect.equal (Ok ())
-        , test "'<eol>' parses" <|
-            \() ->
-                "\n"
-                    |> P.run anyLineParser
-                    |> Expect.equal (Ok ())
-        , test "parses multiple lines" <|
-            \() ->
-                "foo\nbar\n"
-                    |> P.run
-                        (P.succeed (\first second -> [ first, second ])
-                            |= anyLineParser
-                            |= anyLineParser
-                        )
-                    |> Expect.equal (Ok [ (), () ])
-        , test "won't parse beyond the end of the input" <|
-            \() ->
-                "foo"
-                    |> P.run
-                        (P.succeed (\first second -> [ first, second ])
-                            |= anyLineParser
-                            |= anyLineParser
-                        )
-                    |> Result.toMaybe
-                    |> Expect.equal Nothing
         ]
 
 
