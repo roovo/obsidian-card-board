@@ -21,6 +21,7 @@ suite =
         , isCompleted
         , isFromFile
         , isDated
+        , notes
         , originalText
         , parsing
         , subtasks
@@ -308,6 +309,32 @@ isFromFile =
         ]
 
 
+notes : Test
+notes =
+    describe "notes"
+        [ test "returns an empty string if there are no notes" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.notes
+                    |> Expect.equal (Ok "")
+        , test "returns non-task indented text as notes" <|
+            \() ->
+                -- ideally this shouldn't need to have a \n on the end!
+                "- [ ] foo\n some notes\n"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.notes
+                    |> Expect.equal (Ok "some notes")
+        , test "returns multiple notes when intersperced with tasks and blank lines" <|
+            \() ->
+                -- ideally this shouldn't need to have a \n on the end!
+                "- [ ] foo\n some notes\n  - [ ] a subtask\n\n  more notes\n  - [ ]invalid subtask\n"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.notes
+                    |> Expect.equal (Ok "some notes\nmore notes\n- [ ]invalid subtask")
+        ]
+
+
 originalText : Test
 originalText =
     describe "originalText"
@@ -394,7 +421,7 @@ subtasks =
     describe "subtasks"
         [ test "parses subtasks" <|
             \() ->
-                "- [ ] foo\n  - [ ] bar"
+                "- [ ] foo\n - [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.subtasks
                     |> Result.map (List.map TaskItem.title)

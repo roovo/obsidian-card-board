@@ -14,6 +14,7 @@ module TaskItem exposing
     , isDated
     , isFromFile
     , lineNumber
+    , notes
     , originalText
     , parser
     , subtasks
@@ -46,6 +47,7 @@ type alias TaskItemFields =
     , dueTag : Maybe Date
     , tags : List String
     , title : String
+    , notes : String
     }
 
 
@@ -75,6 +77,7 @@ type Content
 
 type IndentedItem
     = Subtask TaskItemFields
+    | Note String
 
 
 
@@ -160,6 +163,11 @@ isFromFile pathToFile (TaskItem fields _) =
 lineNumber : TaskItem -> Int
 lineNumber (TaskItem fields _) =
     fields.lineNumber
+
+
+notes : TaskItem -> String
+notes (TaskItem fields _) =
+    fields.notes
 
 
 originalText : TaskItem -> String
@@ -324,7 +332,7 @@ parser pathToFile fileDate =
         |= P.getSource
     )
         |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasks pathToFile fileDate)
+        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate)
 
 
 taskItemFieldsBuilder : Int -> Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
@@ -422,6 +430,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     , dueTag = tagDueDate
     , tags = obsidianTags
     , title = parsedTitle
+    , notes = ""
     }
         |> addCompletionDate
 
@@ -482,12 +491,12 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-addAnySubtasks : String -> Maybe String -> TaskItemFields -> Parser TaskItem
-addAnySubtasks pathToFile fileDate fields =
+addAnySubtasksAndNotes : String -> Maybe String -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes pathToFile fileDate fields =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
         buildTaskItem indentedItems =
-            P.succeed (TaskItem fields <| parsedSubtasks indentedItems)
+            P.succeed (TaskItem { fields | notes = parsedNotes indentedItems } <| parsedSubtasks indentedItems)
 
         parsedSubtasks : List IndentedItem -> List TaskItemFields
         parsedSubtasks indentedItems =
@@ -497,7 +506,24 @@ addAnySubtasks pathToFile fileDate fields =
                         case i of
                             Subtask taskItemFields ->
                                 Just taskItemFields
+
+                            _ ->
+                                Nothing
                     )
+
+        parsedNotes : List IndentedItem -> String
+        parsedNotes indentedItems =
+            indentedItems
+                |> List.filterMap
+                    (\i ->
+                        case i of
+                            Note notes_ ->
+                                Just notes_
+
+                            _ ->
+                                Nothing
+                    )
+                |> String.join "\n"
     in
     P.succeed identity
         |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate)
@@ -506,11 +532,19 @@ addAnySubtasks pathToFile fileDate fields =
 
 indentedItemParser : String -> Maybe String -> Parser IndentedItem
 indentedItemParser pathToFile fileDate =
-    P.succeed Subtask
-        |= subTaskParser pathToFile fileDate
+    P.oneOf
+        [ subTaskParser pathToFile fileDate
+        , notesParser
+        ]
 
 
-subTaskParser : String -> Maybe String -> Parser TaskItemFields
+notesParser : Parser IndentedItem
+notesParser =
+    P.succeed Note
+        |= ParserHelper.anyLineParser
+
+
+subTaskParser : String -> Maybe String -> Parser IndentedItem
 subTaskParser pathToFile fileDate =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
@@ -524,6 +558,7 @@ subTaskParser pathToFile fileDate =
         |= P.getOffset
         |. lineEndOrEnd
         |= P.getSource
+        |> P.andThen (\f -> P.succeed (Subtask f))
 
 
 rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
