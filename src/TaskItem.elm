@@ -73,6 +73,10 @@ type Content
     | Word String
 
 
+type IndentedItem
+    = Subtask TaskItemFields
+
+
 
 -- INFO
 
@@ -480,8 +484,30 @@ fileDateParser fileDate =
 
 addAnySubtasks : String -> Maybe String -> TaskItemFields -> Parser TaskItem
 addAnySubtasks pathToFile fileDate fields =
-    P.succeed (TaskItem fields)
-        |= ParserHelper.indentParser (subTaskParser pathToFile fileDate)
+    let
+        buildTaskItem : List IndentedItem -> Parser TaskItem
+        buildTaskItem indentedItems =
+            P.succeed (TaskItem fields <| parsedSubtasks indentedItems)
+
+        parsedSubtasks : List IndentedItem -> List TaskItemFields
+        parsedSubtasks indentedItems =
+            indentedItems
+                |> List.filterMap
+                    (\i ->
+                        case i of
+                            Subtask taskItemFields ->
+                                Just taskItemFields
+                    )
+    in
+    P.succeed identity
+        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate)
+        |> P.andThen buildTaskItem
+
+
+indentedItemParser : String -> Maybe String -> Parser IndentedItem
+indentedItemParser pathToFile fileDate =
+    P.succeed Subtask
+        |= subTaskParser pathToFile fileDate
 
 
 subTaskParser : String -> Maybe String -> Parser TaskItemFields
