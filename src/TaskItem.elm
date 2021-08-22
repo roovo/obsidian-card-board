@@ -7,6 +7,7 @@ module TaskItem exposing
     , containsId
     , due
     , filePath
+    , hasNotes
     , hasSubtasks
     , hasTags
     , id
@@ -118,6 +119,11 @@ due (TaskItem fields _) =
 filePath : TaskItem -> String
 filePath (TaskItem fields _) =
     fields.filePath
+
+
+hasNotes : TaskItem -> Bool
+hasNotes (TaskItem fields _) =
+    not <| String.isEmpty fields.notes
 
 
 hasTags : TaskItem -> Bool

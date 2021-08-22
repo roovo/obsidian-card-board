@@ -1,7 +1,7 @@
 port module Ports exposing
     ( MarkdownFile
     , deleteTodo
-    , displayTaskTitles
+    , displayTaskMarkdown
     , editTodo
     , fileAdded
     , fileDeleted
@@ -29,20 +29,32 @@ type alias MarkdownFile =
 -- HELPERS
 
 
-displayTaskTitles : String -> TaskList -> Cmd msg
-displayTaskTitles filePath taskList =
+displayTaskMarkdown : String -> TaskList -> Cmd msg
+displayTaskMarkdown filePath taskList =
     let
-        titleWithId t =
+        markdownWithId t =
             { id = TaskItem.id t
-            , titleMarkdown = TaskItem.title t
+            , markdown = TaskItem.title t
             }
 
-        titlesWithIds =
+        notesMarkdownWithId t =
+            { id = TaskItem.id t ++ ":notes"
+            , markdown = TaskItem.notes t
+            }
+
+        notesWithIds =
             taskList
                 |> TaskList.tasks
-                |> List.map titleWithId
+                |> List.filter (\t -> TaskItem.hasNotes t)
+                |> List.map notesMarkdownWithId
+
+        markdownWithIds =
+            taskList
+                |> TaskList.tasks
+                |> List.map markdownWithId
+                |> List.append notesWithIds
     in
-    displayTitles { filePath = filePath, titles = titlesWithIds }
+    displayTodoMarkdown { filePath = filePath, todoMarkdown = markdownWithIds }
 
 
 rewriteTodos : Maybe Date -> String -> List TaskItem -> Cmd msg
@@ -64,7 +76,7 @@ rewriteTodos today filePath taskItems =
 port deleteTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 
 
-port displayTitles : { filePath : String, titles : List { id : String, titleMarkdown : String } } -> Cmd msg
+port displayTodoMarkdown : { filePath : String, todoMarkdown : List { id : String, markdown : String } } -> Cmd msg
 
 
 port editTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg

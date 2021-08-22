@@ -72,6 +72,7 @@ ul.card-board-column-list > li.card-board-card::before {
 .card-board-card-subtask-area {
   font-size: var(--font-adaptive-small);
   padding-left: 1em;
+  margin-top: 10px;
 }
 
 .card-board-card-subtask-area > ul > li {
@@ -97,6 +98,10 @@ ul.card-board-column-list > li.card-board-card::before {
   width: 15px;
   height: 15px;
   top: 0px;
+}
+
+.card-board-card-notes-area {
+  font-size: var(--font-adaptive-small);
 }
 
 .card-board-card-tag-area {

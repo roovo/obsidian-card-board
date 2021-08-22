@@ -1,13 +1,13 @@
-- indented text as markdown task notes
-  - including invalid/incomplete subtasks
-  - including blank lines
+- bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
 - what to do about due dates for subtasks
 - what about support for non-x characters in the checkbox
 - plugin settings
   - max title lines
   - allow/deny directories/files
+- keyboard navigation
 - sort order for columns?
 - search for card by title/content
+- undo buffer for toggling completion
 - why don't links in card titles work? (and why don't they show a linked card on hover)
 - is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
 - where to use fuzz testing
@@ -61,6 +61,9 @@
 
 # Done
 
+- indented text as markdown task notes
+  - including invalid/incomplete subtasks
+  - including blank lines
 - include any subtask tags in the card tag list
 - bug - tags aren't written on re-write of a TaskItem (after toggling)
 - support @autodone(bool) taskpaper tag

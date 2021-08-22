@@ -160,7 +160,7 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( addTaskItems model newTaskItems
-            , Ports.displayTaskTitles markdownFile.filePath newTaskItems
+            , Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -172,7 +172,7 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( updateTaskItems model markdownFile.filePath newTaskItems
-            , Ports.displayTaskTitles markdownFile.filePath newTaskItems
+            , Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
             )
 
 
@@ -287,6 +287,8 @@ card columnTitle taskItem =
                             []
                         , subtasksView taskItem
                             |> when (TaskItem.hasSubtasks taskItem)
+                        , notesView taskItem
+                            |> when (TaskItem.hasNotes taskItem)
                         , cardTagsView taskItem
                             |> when (TaskItem.hasTags taskItem)
                         ]
@@ -300,6 +302,16 @@ card columnTitle taskItem =
             ]
         ]
         |> Tuple.pair uniqueId
+
+
+notesView : TaskItem -> Html Msg
+notesView taskItem =
+    let
+        uniqueId =
+            TaskItem.id taskItem ++ ":notes"
+    in
+    Html.div [ class "card-board-card-notes-area", id uniqueId ]
+        []
 
 
 subtasksView : TaskItem -> Html Msg

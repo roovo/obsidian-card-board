@@ -9,8 +9,8 @@ export namespace Elm {
         deleteTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
         }
-        displayTitles: {
-          subscribe(callback: (data: { filePath: string; titles: { id: string; titleMarkdown: string }[] }) => void): void
+        displayTodoMarkdown: {
+          subscribe(callback: (data: { filePath: string; todoMarkdown: { id: string; markdown: string }[] }) => void): void
         }
         editTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
