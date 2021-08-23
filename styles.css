@@ -42,12 +42,14 @@ ul.card-board-column-list > li.card-board-card::before {
   border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   background-color: white;
+  padding-right: 10px;
 }
 
 .card-board-card-content-area {
   display: grid;
   grid-gap: 10px;
   grid-auto-flow: row;
+  overflow-wrap: anywhere;
 }
 
 .card-board-card-display-items {

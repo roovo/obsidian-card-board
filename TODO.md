@@ -1,6 +1,4 @@
-- bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
 - what to do about due dates for subtasks
-- what about support for non-x characters in the checkbox
 - plugin settings
   - max title lines
   - allow/deny directories/files
@@ -61,6 +59,7 @@
 
 # Done
 
+- bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
 - indented text as markdown task notes
   - including invalid/incomplete subtasks
   - including blank lines
