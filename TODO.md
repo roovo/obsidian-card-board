@@ -1,19 +1,22 @@
-- what to do about due dates for subtasks
 - plugin settings
-  - max title lines
   - allow/deny directories/files
+  - max title lines
+- why don't links in card titles work? (and why don't they show a linked card on hover)
+- don't display all completed tasks - could get quite long!
+- elm review
+- define boards by #tags and/or #tags/subtags
+- make README.md a proper readme (and have a separate contributing/dev page?)
+
+- what to do about due dates for subtasks
 - keyboard navigation
 - sort order for columns?
 - search for card by title/content
 - undo buffer for toggling completion
-- why don't links in card titles work? (and why don't they show a linked card on hover)
-- is it slower cause of the vault or the code - sometime before MarkdownTitle checkins...
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
 - look into issue fixed in commit bca367 : TODO - why does this work....
   - can I get parser to always work when there is no "\n" on the end of the input
-- don't display all completed tasks - could get quite long!
 - better parsing errors? - https://discourse.elm-lang.org/t/newline-and-indentation-issues-in-elm-parser/4869
 - when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
 - confirm deletion
@@ -26,7 +29,6 @@
 - specify directories/files to ignore (allow and deny lists?)
 - light/dark/user installed themes
   - look at css to see how to use standard variables for themes
-- make sure there can only be one Kanban window no matter how many times the icon is clicked
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
 - review awful typescript code!
@@ -42,12 +44,10 @@
 
     taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
 
-- define boards by #tags
 - support multiple kanban boards
 
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
-- elm review
 - elm debugger
 
 # Need help

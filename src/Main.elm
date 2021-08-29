@@ -271,37 +271,35 @@ card columnTitle taskItem =
         uniqueId =
             TaskItem.id taskItem
     in
-    Html.li [ class "card-board-card" ]
-        [ Html.div [ class "card-board-card-content-area markdown-preview-view" ]
-            [ Html.ul [ class "contains-task-list" ]
-                [ Html.li [ class "task-list-item" ]
-                    [ Html.input
-                        [ type_ "checkbox"
-                        , class "task-list-item-checkbox"
-                        , onClick <| TaskItemToggled <| TaskItem.id taskItem
-                        , checked <| TaskItem.isCompleted taskItem
-                        ]
-                        []
-                    , Html.div [ class "card-board-card-display-items" ]
-                        [ Html.div [ class "card-board-card-title", id uniqueId ]
-                            []
-                        , subtasksView taskItem
-                            |> when (TaskItem.hasSubtasks taskItem)
-                        , notesView taskItem
-                            |> when (TaskItem.hasNotes taskItem)
-                        , cardTagsView taskItem
-                            |> when (TaskItem.hasTags taskItem)
-                        ]
-                    ]
-                ]
-            , Html.div [ class "card-board-card-action-area" ]
-                [ cardDueDate taskItem
-                    |> when (TaskItem.isDated taskItem)
-                , cardActionButtons taskItem
-                ]
+    Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
+        [ Html.input
+            [ type_ "checkbox"
+            , class "task-list-item-checkbox"
+            , onClick <| TaskItemToggled <| TaskItem.id taskItem
+            , checked <| TaskItem.isCompleted taskItem
+            ]
+            []
+        , Html.div [ class "card-board-card-title", id uniqueId ]
+            []
+        , cardTagsView taskItem
+            |> when (TaskItem.hasTags taskItem)
+        , subtasksView taskItem
+            |> when (TaskItem.hasSubtasks taskItem)
+        , notesView taskItem
+            |> when (TaskItem.hasNotes taskItem)
+        , Html.div [ class "card-board-card-footer-area" ]
+            [ cardDueDate taskItem
+                |> when (TaskItem.isDated taskItem)
+            , cardActionButtons taskItem
             ]
         ]
         |> Tuple.pair uniqueId
+
+
+cardTagsView : TaskItem -> Html Msg
+cardTagsView taskItem =
+    Html.div [ class "card-board-card-tag-area" ]
+        (List.map cardTagView (TaskItem.tags taskItem))
 
 
 notesView : TaskItem -> Html Msg
@@ -316,7 +314,7 @@ notesView taskItem =
 
 subtasksView : TaskItem -> Html Msg
 subtasksView taskItem =
-    Html.div [ class "card-board-card-subtask-area" ]
+    Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
             (List.map subtaskView (TaskItem.subtasks taskItem))
         ]
@@ -328,7 +326,7 @@ subtaskView subtask =
         uniqueId =
             TaskItem.id subtask
     in
-    Html.li [ class "task-list-item" ]
+    Html.li [ class "card-board-card-subtask task-list-item" ]
         [ Html.input
             [ type_ "checkbox"
             , class "task-list-item-checkbox"
@@ -336,15 +334,9 @@ subtaskView subtask =
             , checked <| TaskItem.isCompleted subtask
             ]
             []
-        , Html.div [ class "card-board-card-subtask-title", id uniqueId ]
+        , Html.div [ class "card-board-card-title", id uniqueId ]
             []
         ]
-
-
-cardTagsView : TaskItem -> Html Msg
-cardTagsView taskItem =
-    Html.div [ class "card-board-card-tag-area" ]
-        (List.map cardTagView (TaskItem.tags taskItem))
 
 
 cardTagView : String -> Html Msg
@@ -352,8 +344,10 @@ cardTagView tagText =
     Html.div [ class "card-board-card-tag" ]
         [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
             [ Html.text "#" ]
-        , Html.span [ class "cm-hashtag cm-hashtag-end" ]
+        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
             [ Html.text tagText ]
+        , Html.span [ class "cm-list-1" ]
+            [ Html.text " " ]
         ]
 
 
@@ -377,9 +371,9 @@ dueDateString taskItem =
 cardActionButtons : TaskItem -> Html Msg
 cardActionButtons taskItem =
     Html.div [ class "card-board-card-action-area-buttons" ]
-        [ Html.button [ onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
+        [ Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
             [ FaRegular.edit |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
-        , Html.button [ onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
+        , Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
             [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
         ]
 
