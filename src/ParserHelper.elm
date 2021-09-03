@@ -162,7 +162,7 @@ indented next =
     in
     P.succeed (\a b -> ( a, b ))
         |= P.getIndent
-        |. P.spaces
+        |. spacesOrLineEnd
         |= P.getCol
         |> P.andThen proceed
 
@@ -170,6 +170,11 @@ indented next =
 spaces : Parser ()
 spaces =
     P.chompWhile isSpaceOrTab
+
+
+spacesOrLineEnd : Parser ()
+spacesOrLineEnd =
+    P.chompWhile isSpaceTabOrLineEnd
 
 
 anyLineParser : Parser String

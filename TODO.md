@@ -1,11 +1,15 @@
+- bugs
+  - why is the checkbox smaller for the main task than subtasks in the test vault?
+- define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
   - max title lines
 - don't display all completed tasks - could get quite long!
 - elm review
-- define boards by #tags and/or #tags/subtags
 - make README.md a proper readme (and have a separate contributing/dev page?)
 
+- right click on interal link
+- right click on external link
 - what to do about due dates for subtasks
 - keyboard navigation
 - sort order for columns?
@@ -58,6 +62,9 @@
 
 # Done
 
+- bugs
+  - Q: why is the task in the test vault not parsing?
+    A: cause it is using tabs not spaces
 - why don't links in card titles work? (and why don't they show a linked card on hover) - now implemented
 - bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
 - indented text as markdown task notes

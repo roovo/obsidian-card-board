@@ -163,6 +163,11 @@ indentParserTests =
 """
                     |> P.run (ParserHelper.indentParser P.int)
                     |> Expect.equal (Ok [ 1, 2, 3 ])
+        , test "parses an indented list of integers with a tab as the indent character" <|
+            \() ->
+                "\t1\n\t2\n\t3"
+                    |> P.run (ParserHelper.indentParser P.int)
+                    |> Expect.equal (Ok [ 1, 2, 3 ])
         , test "flattens all levels of indent" <|
             \() ->
                 """ 1
