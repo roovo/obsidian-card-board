@@ -1,5 +1,6 @@
-- bugs
-  - why is the checkbox smaller for the main task than subtasks in the test vault?
+- bring up preview of the card when hovering over the edit icon
+  - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a link to the end of the todoline so it can be
+    the thing brought up in the preview
 - define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
@@ -63,6 +64,7 @@
 # Done
 
 - bugs
+  - why is the checkbox smaller for the main task than subtasks in the test vault?
   - Q: why is the task in the test vault not parsing?
     A: cause it is using tabs not spaces
 - why don't links in card titles work? (and why don't they show a linked card on hover) - now implemented
