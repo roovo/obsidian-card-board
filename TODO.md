@@ -1,7 +1,6 @@
 - plugin settings
   - allow/deny directories/files
   - max title lines
-- why don't links in card titles work? (and why don't they show a linked card on hover)
 - don't display all completed tasks - could get quite long!
 - elm review
 - define boards by #tags and/or #tags/subtags
@@ -59,6 +58,7 @@
 
 # Done
 
+- why don't links in card titles work? (and why don't they show a linked card on hover) - now implemented
 - bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
 - indented text as markdown task notes
   - including invalid/incomplete subtasks

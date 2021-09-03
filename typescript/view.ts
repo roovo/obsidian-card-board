@@ -18,7 +18,7 @@ export class CardBoardView extends ItemView {
   async onOpen() {
     // @ts-ignore
     const dailyNotesSettings = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
-    dailyNotesSettings.folder = dailyNotesSettings.folder || null
+    dailyNotesSettings.folder = dailyNotesSettings.folder || ""
     dailyNotesSettings.format = dailyNotesSettings.format || "YYYY-MM-DD"
     delete dailyNotesSettings.template
 
@@ -129,12 +129,38 @@ export class CardBoardView extends ItemView {
   }
 
   async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
+    const that = this;
     requestAnimationFrame(function () {
       for (const item of data.todoMarkdown) {
         const element = document.getElementById(item.id);
         if (element instanceof HTMLElement) {
           element.innerHTML = "";
           MarkdownRenderer.renderMarkdown(item.markdown, element, data.filePath, this);
+
+          const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
+
+          for (const internalLink of internalLinks) {
+            if (internalLink instanceof HTMLElement) {
+              internalLink.addEventListener('mouseover', (event: MouseEvent) => {
+                that.app.workspace.trigger('hover-link', {
+                  event,
+                  source: "card-board",
+                  hoverParent: element,
+                  targetEl: internalLink,
+                  linktext: internalLink.innerText,
+                  sourcePath: data.filePath
+                });
+              });
+
+              internalLink.addEventListener("click", (event: MouseEvent) => {
+                  event.preventDefault();
+                  // var i = wn.isModifier(event, "Mod");
+                  that.app.workspace.openLinkText(internalLink.innerText, data.filePath, true, {
+                      active: !0
+                  });
+              });
+            }
+          }
         }
       }
     })
