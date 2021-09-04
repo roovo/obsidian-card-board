@@ -1,6 +1,7 @@
 - when click on edit link on card go to the right place on the page
   - use openLinkText call in ts to open file when edit link clicked
   - parse block links on todo lines & save in model
+  - write back any block link when todo updated
   - pass block link to ts when clicking on edit link
   - in ts
     - if given a block link then

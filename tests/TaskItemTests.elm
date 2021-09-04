@@ -669,6 +669,12 @@ toString =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar")
+        , test "outputs a blockLink at the end of the TaskList if in the original" <|
+            \() ->
+                "- [X] foo @autodone(false) bar ^1234"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [x] foo bar @autodone(false) ^1234")
         , test "removes excess whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"

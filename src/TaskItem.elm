@@ -296,8 +296,16 @@ toString (TaskItem fields _) =
 
                 TrueSpecified ->
                     " @autodone(true)"
+
+        blockLinkText =
+            case fields.blockLink of
+                Just blockLink_ ->
+                    " " ++ blockLink_
+
+                _ ->
+                    ""
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
+    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag ++ blockLinkText
 
 
 
