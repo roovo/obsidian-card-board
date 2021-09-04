@@ -85,7 +85,11 @@ export class CardBoardView extends ItemView {
   }
 
   async handleEditTodo(data: { filePath: string, blockLink: (string | null) }) {
-    this.app.workspace.openLinkText(data.filePath, data.filePath, true, { active: !0 });
+    var linkText = ""
+    if (!(data.blockLink == null)) {
+      linkText = data.filePath + "#" + data.blockLink
+    }
+    this.app.workspace.openLinkText(linkText, data.filePath, true, { active: !0 });
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
