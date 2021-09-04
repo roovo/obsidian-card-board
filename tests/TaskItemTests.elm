@@ -13,6 +13,7 @@ suite : Test
 suite =
     concat
         [ autoComplete
+        , blockLink
         , containsId
         , done
         , due
@@ -66,6 +67,42 @@ autoComplete =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @autodone(falsey)")
+        ]
+
+
+blockLink : Test
+blockLink =
+    describe "blockLink"
+        [ test "returns Nothing if there is no ^blockLink at the end of the line" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.blockLink
+                    |> Expect.equal (Ok Nothing)
+        , test "returns the ^blockLink text if it is at the end of the line" <|
+            \() ->
+                "- [ ] foo ^bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.blockLink
+                    |> Expect.equal (Ok <| Just "^bar")
+        , test "does not returns the ^blockLink text if it is NOT at the end of the line" <|
+            \() ->
+                "- [ ] foo ^bar baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.blockLink
+                    |> Expect.equal (Ok Nothing)
+        , test "does not include the ^blockLink text in the title" <|
+            \() ->
+                "- [ ] foo ^bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo")
+        , test "includes the ^blockLink text in the title if it is NOT at the end of the line" <|
+            \() ->
+                "- [ ] foo ^bar baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo ^bar baz")
         ]
 
 

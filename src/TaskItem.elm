@@ -3,6 +3,7 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , autoComplete
+    , blockLink
     , completion
     , containsId
     , due
@@ -39,16 +40,17 @@ import TaskPaperTag
 
 
 type alias TaskItemFields =
-    { originalText : String
-    , filePath : String
-    , lineNumber : Int
-    , autoComplete : AutoCompletion
+    { autoComplete : AutoCompletion
+    , blockLink : Maybe String
     , completion : Completion
     , dueFile : Maybe Date
     , dueTag : Maybe Date
+    , filePath : String
+    , lineNumber : Int
+    , notes : String
+    , originalText : String
     , tags : List String
     , title : String
-    , notes : String
     }
 
 
@@ -90,9 +92,9 @@ autoComplete (TaskItem fields _) =
     fields.autoComplete
 
 
-title : TaskItem -> String
-title (TaskItem fields _) =
-    fields.title
+blockLink : TaskItem -> Maybe String
+blockLink (TaskItem fields _) =
+    fields.blockLink
 
 
 completion : TaskItem -> Completion
@@ -234,6 +236,11 @@ tasksToToggle id_ taskItem =
 
     else
         matchingTaskItem
+
+
+title : TaskItem -> String
+title (TaskItem fields _) =
+    fields.title
 
 
 toString : TaskItem -> String
@@ -423,20 +430,48 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
 
         parsedTitle : String
         parsedTitle =
-            contents
+            let
+                wordsWithoutBlockLink : List Content
+                wordsWithoutBlockLink =
+                    case List.reverse contents of
+                        (Word endWord) :: cs ->
+                            if String.startsWith "^" endWord then
+                                List.reverse cs
+
+                            else
+                                contents
+
+                        _ ->
+                            contents
+            in
+            wordsWithoutBlockLink
                 |> List.foldr extractWords []
                 |> String.join " "
+
+        parsedBlockLink : Maybe String
+        parsedBlockLink =
+            case List.reverse contents of
+                (Word endWord) :: cs ->
+                    if String.startsWith "^" endWord then
+                        Just endWord
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
     in
-    { originalText = sourceText
-    , filePath = path
-    , lineNumber = row
-    , autoComplete = autoCompletefromTag
+    { autoComplete = autoCompletefromTag
+    , blockLink = parsedBlockLink
     , completion = completion_
     , dueFile = dueFromFile
     , dueTag = tagDueDate
+    , filePath = path
+    , lineNumber = row
+    , notes = ""
+    , originalText = sourceText
     , tags = obsidianTags
     , title = parsedTitle
-    , notes = ""
     }
         |> addCompletionDate
 
