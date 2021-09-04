@@ -114,8 +114,6 @@ update msg model =
                             ( model
                             , Ports.editTodo
                                 { filePath = TaskItem.filePath matchingItem
-                                , lineNumber = TaskItem.lineNumber matchingItem
-                                , originalText = TaskItem.originalText matchingItem
                                 }
                             )
 

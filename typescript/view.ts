@@ -41,7 +41,7 @@ export class CardBoardView extends ItemView {
       that.handleDeleteTodo(data);
     })
 
-    elm.ports.editTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
+    elm.ports.editTodo.subscribe(function(data: { filePath: string }) {
       that.handleEditTodo(data);
     })
 
@@ -84,7 +84,7 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleEditTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
+  async handleEditTodo(data: { filePath: string }) {
     this.app.workspace.openLinkText(data.filePath, data.filePath, true, { active: !0 });
   }
 

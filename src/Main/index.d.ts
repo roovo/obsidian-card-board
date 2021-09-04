@@ -13,7 +13,7 @@ export namespace Elm {
           subscribe(callback: (data: { filePath: string; todoMarkdown: { id: string; markdown: string }[] }) => void): void
         }
         editTodo: {
-          subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
+          subscribe(callback: (data: { filePath: string }) => void): void
         }
         updateTodos: {
           subscribe(callback: (data: { filePath: string; todos: { lineNumber: number; originalText: string; newText: string }[] }) => void): void
