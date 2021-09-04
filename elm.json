@@ -6,6 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "1602/elm-feather": "2.3.5",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",
@@ -14,8 +15,7 @@
             "elm-community/list-extra": "8.3.0",
             "elm-community/maybe-extra": "5.2.0",
             "elm-explorations/test": "1.2.2",
-            "justinmimbs/date": "3.2.1",
-            "lattyware/elm-fontawesome": "5.0.0"
+            "justinmimbs/date": "3.2.1"
         },
         "indirect": {
             "elm/json": "1.1.3",

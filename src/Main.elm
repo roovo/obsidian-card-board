@@ -2,11 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Date exposing (Date)
-import FontAwesome.Attributes as FaAttributes
-import FontAwesome.Icon as FaIcon
-import FontAwesome.Regular as FaRegular
-import FontAwesome.Styles as FaStyles
-import FontAwesome.Svg as FaSvg
+import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (checked, class, id, type_)
 import Html.Events exposing (onClick)
@@ -229,8 +225,7 @@ view model =
     case ( model.taskList, model.today ) of
         ( Loaded taskList, Just today ) ->
             Html.div [ class "card-board" ]
-                [ FaStyles.css
-                , Html.div [ class "card-board-container" ]
+                [ Html.div [ class "card-board-container" ]
                     [ column
                         "Undated"
                         (TaskList.undatedItems taskList)
@@ -372,9 +367,17 @@ cardActionButtons : TaskItem -> Html Msg
 cardActionButtons taskItem =
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
-            [ FaRegular.edit |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
+            [ FeatherIcons.edit
+                |> FeatherIcons.withSize 1
+                |> FeatherIcons.withSizeUnit "em"
+                |> FeatherIcons.toHtml []
+            ]
         , Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
-            [ FaRegular.trashAlt |> FaIcon.present |> FaIcon.styled [ FaAttributes.sm ] |> FaIcon.view ]
+            [ FeatherIcons.trash
+                |> FeatherIcons.withSize 1
+                |> FeatherIcons.withSizeUnit "em"
+                |> FeatherIcons.toHtml []
+            ]
         ]
 
 

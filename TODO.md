@@ -1,6 +1,7 @@
+- when click on edit link on card go to the right place on the page
+  - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a block link
+    to the end of the todo line
 - bring up preview of the card when hovering over the edit icon
-  - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a link to the end of the todoline so it can be
-    the thing brought up in the preview
 - define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
