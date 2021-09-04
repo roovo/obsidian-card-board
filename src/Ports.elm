@@ -79,7 +79,7 @@ port deleteTodo : { filePath : String, lineNumber : Int, originalText : String }
 port displayTodoMarkdown : { filePath : String, todoMarkdown : List { id : String, markdown : String } } -> Cmd msg
 
 
-port editTodo : { filePath : String } -> Cmd msg
+port editTodo : { filePath : String, blockLink : Maybe String } -> Cmd msg
 
 
 port updateTodos : { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } } -> Cmd msg

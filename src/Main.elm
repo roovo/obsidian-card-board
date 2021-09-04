@@ -114,6 +114,7 @@ update msg model =
                             ( model
                             , Ports.editTodo
                                 { filePath = TaskItem.filePath matchingItem
+                                , blockLink = TaskItem.blockLink matchingItem
                                 }
                             )
 
