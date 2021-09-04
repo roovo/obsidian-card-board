@@ -85,33 +85,7 @@ export class CardBoardView extends ItemView {
   }
 
   async handleEditTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
-    const leaves = this.app.workspace.getLeavesOfType("markdown")
-
-    let fileLeaf = null;
-
-    for (const leaf of leaves) {
-      const view = leaf.view
-      if (view instanceof FileView) {
-        if (data.filePath == view.file.path) {
-          fileLeaf = leaf
-        }
-
-      }
-    }
-
-    if (fileLeaf == null) {
-      const leaf = this.app.workspace.splitActiveLeaf();
-      const file = this.app.vault.getAbstractFileByPath(data.filePath)
-      if (file instanceof TFile) {
-        await leaf.openFile(file);
-      }
-      fileLeaf = leaf
-    }
-
-    if (fileLeaf) {
-      this.app.workspace.setActiveLeaf(fileLeaf, true, true)
-      this.codeMirror.setCursor(data.lineNumber - 1, 0)
-    }
+    this.app.workspace.openLinkText(data.filePath, data.filePath, true, { active: !0 });
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
@@ -154,7 +128,6 @@ export class CardBoardView extends ItemView {
 
               internalLink.addEventListener("click", (event: MouseEvent) => {
                   event.preventDefault();
-                  // var i = wn.isModifier(event, "Mod");
                   that.app.workspace.openLinkText(internalLink.innerText, data.filePath, true, {
                       active: !0
                   });

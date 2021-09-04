@@ -1,7 +1,13 @@
 - when click on edit link on card go to the right place on the page
+  - use openLinkText call in ts to open file when edit link clicked
+  - parse block links on todo lines & save in model
+  - pass block link to ts when clicking on edit link
+  - in ts
+    - if given a block link then
+    - if not, then generate one, save to target file, then use it in openLinkText call
+- bring up preview of the card when hovering over the edit icon
   - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a block link
     to the end of the todo line
-- bring up preview of the card when hovering over the edit icon
 - define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
