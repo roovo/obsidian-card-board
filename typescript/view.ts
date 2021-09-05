@@ -1,5 +1,16 @@
-import { App, FileView, ItemView, MarkdownRenderer, TAbstractFile, TFile, Vault, WorkspaceLeaf} from 'obsidian';
+import {
+  App,
+  FileView,
+  ItemView,
+  MarkdownRenderer,
+  TAbstractFile,
+  TFile,
+  Vault,
+  WorkspaceLeaf
+} from 'obsidian';
+
 import { Elm } from '../src/Main';
+
 import CardBoardPlugin from './main';
 
 const moment = require('moment');
@@ -41,8 +52,8 @@ export class CardBoardView extends ItemView {
       that.handleDeleteTodo(data);
     })
 
-    elm.ports.editTodo.subscribe(function(data: { filePath: string, blockLink: (string | null) }) {
-      that.handleEditTodo(data);
+    elm.ports.openTodoSourceFile.subscribe(function(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
+      that.handleOpenTodoSourceFile(data);
     })
 
     elm.ports.displayTodoMarkdown.subscribe(function(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
@@ -84,12 +95,34 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleEditTodo(data: { filePath: string, blockLink: (string | null) }) {
+  async handleOpenTodoSourceFile(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
     var linkText = ""
-    if (!(data.blockLink == null)) {
+    if (data.blockLink == null) {
+      const blockLink = "^" + this.generateId();
+      const newText   = data.originalText + " " + blockLink;
+
+      await this.handleUpdateTodos({
+        filePath: data.filePath,
+        todos: [ {
+          lineNumber: data.lineNumber,
+          originalText: data.originalText,
+          newText: newText
+        } ]
+      });
+
+      // TODO: this is an icky hack to ensure that the cache
+      // has caught up before I call openLinkText
+      await this.delay(300);
+
+      linkText = data.filePath + "#" + blockLink
+    } else {
       linkText = data.filePath + "#" + data.blockLink
     }
     this.app.workspace.openLinkText(linkText, data.filePath, true, { active: !0 });
+  }
+
+  delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
@@ -186,6 +219,10 @@ export class CardBoardView extends ItemView {
 
   getViewType(): string {
     return 'CardBoard';
+  }
+
+  generateId(): string {
+    return Math.random().toString(36).substr(2, 6);
   }
 
   getFileDate(dailyNotesFolder: string, dailyNotesNameFormat: string, file: any): string | null {

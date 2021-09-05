@@ -112,9 +112,11 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.editTodo
+                            , Ports.openTodoSourceFile
                                 { filePath = TaskItem.filePath matchingItem
                                 , blockLink = TaskItem.blockLink matchingItem
+                                , lineNumber = TaskItem.lineNumber matchingItem
+                                , originalText = TaskItem.originalText matchingItem
                                 }
                             )
 

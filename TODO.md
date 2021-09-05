@@ -1,11 +1,3 @@
-- when click on edit link on card go to the right place on the page
-  - use openLinkText call in ts to open file when edit link clicked
-  - parse block links on todo lines & save in model
-  - write back any block link when todo updated
-  - pass block link to ts when clicking on edit link
-  - in ts
-    - if given a block link then
-    - if not, then generate one, save to target file, then use it in openLinkText call
 - bring up preview of the card when hovering over the edit icon
   - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a block link
     to the end of the todo line
@@ -71,6 +63,7 @@
 
 # Done
 
+- when click on edit link on card go to the right place on the page
 - bugs
   - why is the checkbox smaller for the main task than subtasks in the test vault?
   - Q: why is the task in the test vault not parsing?

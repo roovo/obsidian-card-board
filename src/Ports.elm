@@ -2,10 +2,10 @@ port module Ports exposing
     ( MarkdownFile
     , deleteTodo
     , displayTaskMarkdown
-    , editTodo
     , fileAdded
     , fileDeleted
     , fileUpdated
+    , openTodoSourceFile
     , rewriteTodos
     )
 
@@ -79,7 +79,7 @@ port deleteTodo : { filePath : String, lineNumber : Int, originalText : String }
 port displayTodoMarkdown : { filePath : String, todoMarkdown : List { id : String, markdown : String } } -> Cmd msg
 
 
-port editTodo : { filePath : String, blockLink : Maybe String } -> Cmd msg
+port openTodoSourceFile : { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String } -> Cmd msg
 
 
 port updateTodos : { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } } -> Cmd msg
