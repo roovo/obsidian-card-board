@@ -1,4 +1,4 @@
-- make it so the board actually fits vertically in the display view without needing scrollbars
+- ensure it still works if there is no daily notes plugin installed (just uses @due tags)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
 - plugin settings
@@ -65,6 +65,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- make it so the board actually fits vertically in the display view without needing scrollbars
 - use elm review
 - bring up preview of the card when hovering over the edit icon
 - when click on edit link on card go to the right place on the page

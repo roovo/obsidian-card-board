@@ -9,6 +9,7 @@
 }
 
 .card-board {
+  height: 100%;
 }
 
 .card-board-container {
@@ -17,12 +18,12 @@
   grid-auto-flow: column;
   grid-gap: 1em;
   overflow-x: scroll;
-  height: 100vh;
-  padding: 1em 0;
+  height: 100%;
+  padding: 1em;
 }
 
 .card-board-column {
-  max-height: 100vh;
+  max-height: 100%;
   padding: 10px;
   background-color: var(--background-secondary);
   border-radius: 3px;
