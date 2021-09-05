@@ -1,6 +1,5 @@
-- use trello icon from feather icons for the sidebar
-- make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
+- make README.md a proper readme (and have a separate contributing/dev page?)
 - plugin settings
   - allow/deny directories/files
   - max title lines
@@ -65,6 +64,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- use a kanban icon for the sidebar
 - add a timestamp to done for better ordering
   ensure that just a date is valid too
   update the time every second
