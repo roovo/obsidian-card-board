@@ -31,7 +31,7 @@ import Date exposing (Date)
 import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
-import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd, nonEmptyStringParser)
+import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
 
 
@@ -184,7 +184,7 @@ originalText (TaskItem fields _) =
 
 
 subtasks : TaskItem -> List TaskItem
-subtasks (TaskItem fields subtasks_) =
+subtasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
@@ -328,11 +328,6 @@ toggleCompletion completionDate (TaskItem fields subtasks_) =
             TaskItem { fields | completion = CompletedOn date } subtasks_
 
 
-markCompleted : TaskItem -> Date -> TaskItem
-markCompleted (TaskItem fields subtasks_) completionDate =
-    TaskItem { fields | completion = CompletedOn completionDate } subtasks_
-
-
 
 -- SERIALIZATION
 
@@ -459,7 +454,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
         parsedBlockLink : Maybe String
         parsedBlockLink =
             case List.reverse contents of
-                (Word endWord) :: cs ->
+                (Word endWord) :: _ ->
                     if String.startsWith "^" endWord then
                         Just endWord
 

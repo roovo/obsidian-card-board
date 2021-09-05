@@ -1,4 +1,3 @@
-- use elm review
 - make it so the board actually fits vertically in the display view without needing scrollbars
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
@@ -6,6 +5,7 @@
   - allow/deny directories/files
   - max title lines
 - don't display all completed tasks - could get quite long!
+- run elm review
 
 - when clicking the edit button place the cursor at the line of the todo
 - might be cleaner when generating markdown for display on a card to remove the wrapping <p> tag
@@ -65,6 +65,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- use elm review
 - bring up preview of the card when hovering over the edit icon
 - when click on edit link on card go to the right place on the page
 - bugs

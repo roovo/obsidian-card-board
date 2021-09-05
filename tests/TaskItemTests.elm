@@ -1,10 +1,9 @@
 module TaskItemTests exposing (suite)
 
 import Date exposing (Date)
-import Expect exposing (Expectation)
+import Expect
 import Parser exposing ((|=))
-import TaskItem exposing (AutoCompletion(..), Completion(..), TaskItem)
-import TaskList exposing (TaskList)
+import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
 import Time exposing (Month(..))
 

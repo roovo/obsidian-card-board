@@ -215,11 +215,6 @@ completedItems (TaskList taskItems) =
 -- PRIVATE
 
 
-itemsFromFile : String -> List TaskItem -> List TaskItem
-itemsFromFile pathToFile =
-    List.filter <| TaskItem.isFromFile pathToFile
-
-
 itemsNotFromFile : String -> List TaskItem -> List TaskItem
 itemsNotFromFile pathToFile taskItems =
     taskItems

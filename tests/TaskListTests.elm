@@ -1,9 +1,9 @@
 module TaskListTests exposing (suite)
 
 import Date
-import Expect exposing (Expectation)
+import Expect
 import Parser
-import TaskItem exposing (Completion(..), TaskItem)
+import TaskItem
 import TaskList exposing (TaskList)
 import Test exposing (..)
 

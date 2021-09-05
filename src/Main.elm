@@ -7,9 +7,8 @@ import Html exposing (Html)
 import Html.Attributes exposing (checked, class, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
-import Parser
 import Ports exposing (MarkdownFile)
-import Task exposing (Task)
+import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
@@ -214,7 +213,7 @@ updateTaskItems model filePath updatedList =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ Ports.fileAdded VaultFileAdded
         , Ports.fileUpdated VaultFileUpdated
@@ -251,7 +250,7 @@ view model =
                     ]
                 ]
 
-        ( _, _ ) ->
+        _ ->
             Html.text ""
 
 
@@ -268,7 +267,7 @@ column title taskItems =
 
 
 card : String -> TaskItem -> ( String, Html Msg )
-card columnTitle taskItem =
+card _ taskItem =
     let
         uniqueId =
             TaskItem.id taskItem

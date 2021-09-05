@@ -1,8 +1,8 @@
 module TaskPaperTagTests exposing (suite)
 
-import Expect exposing (Expectation)
-import Parser exposing ((|.), (|=))
-import TaskPaperTag exposing (parser)
+import Expect
+import Parser
+import TaskPaperTag
 import Test exposing (..)
 
 

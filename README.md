@@ -22,3 +22,7 @@ So your elm code is nicely formatted, use elm-format
 ```
 npm i -g elm-format
 ```
+
+### Find/remove dead elm code
+npx elm-review --template jfmengels/elm-review-unused/example
+npx elm-review --template jfmengels/elm-review-unused/example --fix-all

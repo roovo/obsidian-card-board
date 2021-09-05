@@ -1,10 +1,9 @@
 module ParserHelperTests exposing (suite)
 
 import Date
-import Expect exposing (Expectation)
+import Expect
 import Parser as P exposing ((|.), (|=))
 import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, wordParser)
-import TaskItem
 import Test exposing (..)
 import Time exposing (Month(..))
 

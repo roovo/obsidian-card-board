@@ -4,11 +4,9 @@ module ParserHelper exposing
     , checkWhitespaceFollows
     , dateParser
     , indentParser
-    , isLineEnd
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
-    , spaces
     , wordParser
     )
 
@@ -252,29 +250,6 @@ checkEnding (ParseResult p isBadEnding) =
 
 
 -- HELPERS
-
-
-consumeSeparator : Char -> String -> Parser String
-consumeSeparator separator parsedString =
-    let
-        checkIfAtEndOfInput : Int -> Int -> Parser String
-        checkIfAtEndOfInput preSeparatorOffset postSeparatorOffset =
-            if preSeparatorOffset == postSeparatorOffset && String.length parsedString == 0 then
-                P.problem "Reached end of input"
-
-            else
-                P.succeed parsedString
-    in
-    (P.succeed checkIfAtEndOfInput
-        |= P.getOffset
-        |. P.oneOf
-            [ P.end
-            , P.chompIf (\c -> c == separator)
-            , P.succeed ()
-            ]
-        |= P.getOffset
-    )
-        |> P.andThen identity
 
 
 chompToEndOfLine : Parser ()
