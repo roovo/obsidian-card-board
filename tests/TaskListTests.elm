@@ -67,20 +67,20 @@ filtering =
                     |> TaskList.futureItems todayAsDate
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete" ]
-        , test "completedItems are sorted by filePath ascending" <|
+        , test "completedItems are sorted by completion date desc (then filePath asc)" <|
             \() ->
                 parsedFiles
                     |> TaskList.completedItems
                     |> List.map TaskItem.title
                     |> Expect.equal
-                        [ "yesterday complete"
-                        , "today complete"
-                        , "tomorrow complete"
-                        , "far future complete"
-                        , "future complete"
-                        , "invalid date complete"
-                        , "undated complete"
+                        [ "undated complete"
+                        , "yesterday complete"
                         , "chosen file complete"
+                        , "invalid date complete"
+                        , "future complete"
+                        , "far future complete"
+                        , "tomorrow complete"
+                        , "today complete"
                         ]
         ]
 
@@ -411,7 +411,7 @@ undatedTasks : ( String, Maybe String, String )
 undatedTasks =
     ( "g", Nothing, """
 - [ ] undated incomplete
-- [x] undated complete
+- [x] undated complete @done(2020-06-02)
 """ )
 
 
@@ -419,7 +419,7 @@ yesterdaysTasks : ( String, Maybe String, String )
 yesterdaysTasks =
     ( "a", Just yesterday, """
 - [ ] yesterday incomplete
-- [x] yesterday complete
+- [x] yesterday complete @done(2020-06-01)
 """ )
 
 

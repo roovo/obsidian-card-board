@@ -1,5 +1,6 @@
-- order done tasks by done date
-- why does the "and another task" item appear under today when it has no due date?
+- add a timestamp to done for better ordering
+  ensure that just a date is valid too
+- use trello icon from feather icons for the sidebar
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
 - plugin settings
@@ -15,6 +16,8 @@
 - handle renames - make sure I cope with both directory and file renames
 - when clicking the edit button place the cursor at the line of the todo
   have tried to do this using setCursor and not go it to work so far
+- do I want to always display tags as tag pills?
+  if I do, I could allow them to be colored via settings
 - run elm review
 - might be cleaner when generating markdown for display on a card to remove the wrapping <p> tag
   intesad of trying to style it's effect away using css
@@ -64,6 +67,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- order done tasks by done date
 - order future tasks by due date
 - script to generate some files containing example/test todos
 - ensure it still works if there is no daily notes plugin installed (just uses @due tags)

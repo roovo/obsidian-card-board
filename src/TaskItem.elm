@@ -4,6 +4,7 @@ module TaskItem exposing
     , TaskItem
     , autoComplete
     , blockLink
+    , completedRataDie
     , completion
     , containsId
     , due
@@ -96,6 +97,16 @@ autoComplete (TaskItem fields _) =
 blockLink : TaskItem -> Maybe String
 blockLink (TaskItem fields _) =
     fields.blockLink
+
+
+completedRataDie : TaskItem -> Int
+completedRataDie taskItem =
+    case completion taskItem of
+        CompletedOn date_ ->
+            Date.toRataDie date_
+
+        _ ->
+            0
 
 
 completion : TaskItem -> Completion
