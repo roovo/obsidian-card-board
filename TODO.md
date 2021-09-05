@@ -1,21 +1,31 @@
-- ensure it still works if there is no daily notes plugin installed (just uses @due tags)
+- order future tasks by due date
+- why does the "and another task" item appear under today when it has no due date?
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
   - max title lines
-- don't display all completed tasks - could get quite long!
-- run elm review
 
+- does openLinkText use setSelection to highlight the selected todo?
+  if so, I can do better as by default obsidian doesn't include all
+  indented stuff under a todo item as being in the block
+- define boards by headings on a page
+- confirm dialog before task deletion
+- don't display all completed tasks - can get quite long!
+- handle renames - make sure I cope with both directory and file renames
 - when clicking the edit button place the cursor at the line of the todo
+  have tried to do this using setCursor and not go it to work so far
+- run elm review
 - might be cleaner when generating markdown for display on a card to remove the wrapping <p> tag
   intesad of trying to style it's effect away using css
 - right click on interal link
 - right click on external link
 - what to do about due dates for subtasks
 - keyboard navigation
-- sort order for columns?
+- sort order for columns? (perhaps store the order information in front matter)
+- drag and drop -> into today, tomorrow, and done columns
 - search for card by title/content
+- filter cards on board (e.g. by tag)
 - undo buffer for toggling completion
 - where to use fuzz testing
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
@@ -23,17 +33,9 @@
 - look into issue fixed in commit bca367 : TODO - why does this work....
   - can I get parser to always work when there is no "\n" on the end of the input
 - better parsing errors? - https://discourse.elm-lang.org/t/newline-and-indentation-issues-in-elm-parser/4869
-- when showing completed tasks, ensure that @done(date) is removed if marking as uncompleted
-- confirm deletion
-- scrolling across the board
 - resizing columns
 - display on card - done date
-- handle renames - make sure I cope with both directory and file renames
 - edit in place via popup
-- drag and drop -> into today, tomorrow, and done columns
-- specify directories/files to ignore (allow and deny lists?)
-- light/dark/user installed themes
-  - look at css to see how to use standard variables for themes
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
 - review awful typescript code!
@@ -49,11 +51,8 @@
 
     taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
 
-- support multiple kanban boards
-
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
-- elm debugger
 
 # Need help
 api option for preview view so when given a block reference is still shows the whole document
@@ -65,6 +64,9 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- script to generate some files containing example/test todos
+- ensure it still works if there is no daily notes plugin installed (just uses @due tags)
+  - it does!
 - make it so the board actually fits vertically in the display view without needing scrollbars
 - use elm review
 - bring up preview of the card when hovering over the edit icon

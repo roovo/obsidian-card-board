@@ -26,3 +26,13 @@ npm i -g elm-format
 ### Find/remove dead elm code
 npx elm-review --template jfmengels/elm-review-unused/example
 npx elm-review --template jfmengels/elm-review-unused/example --fix-all
+
+### Generate example tasks
+
+```
+ruby ./scripts/generate_exapmle_tasks.rb path_to_vault
+```
+
+This will creat an `example_tasks` directory in the vault and put some
+example/test files inside it.  If it's already there it will delete
+anything already in the directory and put the test files inside.
