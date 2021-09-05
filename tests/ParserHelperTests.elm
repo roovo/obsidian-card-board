@@ -3,7 +3,7 @@ module ParserHelperTests exposing (suite)
 import Date
 import Expect
 import Parser as P exposing ((|.), (|=))
-import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, wordParser)
+import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, timeParser, wordParser)
 import Test exposing (..)
 import Time exposing (Month(..))
 
@@ -17,6 +17,7 @@ suite =
         , dateParserTests
         , indentParserTests
         , nonEmptyStringParserTest
+        , timeParserTests
         , wordParserTest
         ]
 
@@ -240,6 +241,28 @@ baz
                     |> P.run nonEmptyStringParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
+        ]
+
+
+timeParserTests : Test
+timeParserTests =
+    describe "parsing times"
+        [ test "parses valid time string containing only a date" <|
+            \() ->
+                "2020-01-02"
+                    |> P.run timeParser
+                    |> Expect.equal (Ok <| Time.millisToPosix 1577923200000)
+        , test "parses valid time string with hh:mm:ss included" <|
+            \() ->
+                "2020-01-02T01:30:23"
+                    |> P.run timeParser
+                    |> Expect.equal (Ok <| Time.millisToPosix 1577928623000)
+        , test "fails with an invalid time string" <|
+            \() ->
+                "2020-41-02"
+                    |> P.run timeParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 

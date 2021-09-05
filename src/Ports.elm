@@ -13,6 +13,7 @@ port module Ports exposing
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import Time
 
 
 
@@ -69,13 +70,13 @@ displayTaskMarkdown filePath taskList =
     displayTodoMarkdown { filePath = filePath, todoMarkdown = markdownWithIds }
 
 
-rewriteTodos : Maybe Date -> String -> List TaskItem -> Cmd msg
-rewriteTodos today filePath taskItems =
+rewriteTodos : Maybe Time.Posix -> String -> List TaskItem -> Cmd msg
+rewriteTodos now filePath taskItems =
     let
         buildFoo taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = taskItem |> TaskItem.toggleCompletion today |> TaskItem.toString
+            , newText = taskItem |> TaskItem.toggleCompletion now |> TaskItem.toString
             }
     in
     updateTodos { filePath = filePath, todos = List.map buildFoo taskItems }

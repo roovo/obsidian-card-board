@@ -7,11 +7,14 @@ module ParserHelper exposing
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
+    , timeParser
     , wordParser
     )
 
 import Date exposing (Date)
+import Iso8601
 import Parser as P exposing ((|.), (|=), Parser)
+import Time
 
 
 
@@ -205,6 +208,19 @@ dateParser =
     in
     P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-')
         |> P.andThen convertToDate
+
+
+timeParser : Parser Time.Posix
+timeParser =
+    let
+        convertToTime timeString =
+            timeString
+                |> Iso8601.toTime
+                |> Result.map P.succeed
+                |> Result.withDefault (P.problem "not a valid date")
+    in
+    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-' || c == 'T' || c == ':')
+        |> P.andThen convertToTime
 
 
 lineEndOrEnd : Parser ()

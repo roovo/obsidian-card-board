@@ -34,7 +34,7 @@ File.open(todays_tasks, "w") do |file|
   - [ ] watch tv
   - [ ] go to bed
 
-- [x] already got out of bed this morning @done(#{(Date.today).strftime("%Y-%m-%d")})
+- [x] already got out of bed this morning  @due(#{Date.today.strftime("%Y-%m-%d")}) @done(#{(Date.today).strftime("%Y-%m-%d")})
 """
 end
 

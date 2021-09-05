@@ -4,7 +4,7 @@ module TaskItem exposing
     , TaskItem
     , autoComplete
     , blockLink
-    , completedRataDie
+    , completedPosix
     , completion
     , containsId
     , due
@@ -30,11 +30,13 @@ module TaskItem exposing
     )
 
 import Date exposing (Date)
+import Iso8601
 import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
+import Time
 
 
 
@@ -69,12 +71,12 @@ type AutoCompletion
 type Completion
     = Incomplete
     | Completed
-    | CompletedOn Date
+    | CompletedAt Time.Posix
 
 
 type Content
     = AutoCompleteTag Bool
-    | DoneTag Date
+    | DoneTag Time.Posix
     | DueTag Date
     | ObsidianTag String
     | Word String
@@ -99,11 +101,11 @@ blockLink (TaskItem fields _) =
     fields.blockLink
 
 
-completedRataDie : TaskItem -> Int
-completedRataDie taskItem =
+completedPosix : TaskItem -> Int
+completedPosix taskItem =
     case completion taskItem of
-        CompletedOn date_ ->
-            Date.toRataDie date_
+        CompletedAt time_ ->
+            Time.posixToMillis time_
 
         _ ->
             0
@@ -181,7 +183,7 @@ isCompleted (TaskItem fields _) =
         Completed ->
             True
 
-        CompletedOn _ ->
+        CompletedAt _ ->
             True
 
 
@@ -302,8 +304,14 @@ toString (TaskItem fields _) =
 
         completionTag =
             case fields.completion of
-                CompletedOn completionDate ->
-                    " @done(" ++ Date.toIsoString completionDate ++ ")"
+                CompletedAt completionTime ->
+                    let
+                        completionString =
+                            completionTime
+                                |> Iso8601.fromTime
+                                |> String.left 19
+                    in
+                    " @done(" ++ completionString ++ ")"
 
                 _ ->
                     ""
@@ -334,20 +342,20 @@ toString (TaskItem fields _) =
 -- MODIFICATION
 
 
-toggleCompletion : Maybe Date -> TaskItem -> TaskItem
-toggleCompletion completionDate (TaskItem fields subtasks_) =
-    case ( fields.completion, completionDate ) of
+toggleCompletion : Maybe Time.Posix -> TaskItem -> TaskItem
+toggleCompletion timeNow (TaskItem fields subtasks_) =
+    case ( fields.completion, timeNow ) of
         ( Completed, _ ) ->
             TaskItem { fields | completion = Incomplete } subtasks_
 
-        ( CompletedOn _, _ ) ->
+        ( CompletedAt _, _ ) ->
             TaskItem { fields | completion = Incomplete } subtasks_
 
         ( Incomplete, Nothing ) ->
             TaskItem { fields | completion = Completed } subtasks_
 
-        ( Incomplete, Just date ) ->
-            TaskItem { fields | completion = CompletedOn date } subtasks_
+        ( Incomplete, Just timeNow_ ) ->
+            TaskItem { fields | completion = CompletedAt timeNow_ } subtasks_
 
 
 
@@ -417,14 +425,14 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
                 _ ->
                     date
 
-        extractCompletionDate : Content -> Maybe Date -> Maybe Date
-        extractCompletionDate content date =
+        extractCompletionTime : Content -> Maybe Time.Posix -> Maybe Time.Posix
+        extractCompletionTime content time =
             case content of
-                DoneTag completionDate ->
-                    Just completionDate
+                DoneTag completionTime ->
+                    Just completionTime
 
                 _ ->
-                    date
+                    time
 
         extractAutoComplete : Content -> AutoCompletion -> AutoCompletion
         extractAutoComplete content autoComplete_ =
@@ -442,12 +450,12 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
         autoCompletefromTag =
             List.foldr extractAutoComplete NotSpecifed contents
 
-        addCompletionDate : TaskItemFields -> TaskItemFields
-        addCompletionDate fields =
+        addCompletionTime : TaskItemFields -> TaskItemFields
+        addCompletionTime fields =
             if isCompleted (TaskItem fields []) then
                 contents
-                    |> List.foldr extractCompletionDate Nothing
-                    |> Maybe.map (\completionDate_ -> { fields | completion = CompletedOn completionDate_ })
+                    |> List.foldr extractCompletionTime Nothing
+                    |> Maybe.map (\completionDate_ -> { fields | completion = CompletedAt completionDate_ })
                     |> Maybe.withDefault fields
 
             else
@@ -498,7 +506,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     , tags = obsidianTags
     , title = parsedTitle
     }
-        |> addCompletionDate
+        |> addCompletionTime
 
 
 contentParser : Parser (List Content)

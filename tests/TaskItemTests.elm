@@ -13,8 +13,8 @@ suite =
     concat
         [ autoComplete
         , blockLink
+        , completion
         , containsId
-        , done
         , due
         , filePath
         , id
@@ -105,6 +105,54 @@ blockLink =
         ]
 
 
+completion : Test
+completion =
+    describe "completion"
+        [ test "returns Incomplete for an incomplete task" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
+        , test "returns Complete for a completed task with no @done() date" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
+        , test "returns Incomplete for an incomplete task with a @done() date" <|
+            \() ->
+                "- [ ] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
+        , test "returns CompletedAt for an completed task with a @done() date" <|
+            \() ->
+                "- [x] foo @done(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns Completed for an completed task with an invalid @done() date" <|
+            \() ->
+                "- [x] foo @done(2020-01-51)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
+        , test "the @done() date is not included in the title" <|
+            \() ->
+                "- [x] foo @done(2020-01-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
+        , test "the @done() date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo @done(2020-51-01) bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo @done(2020-51-01) bar")
+        ]
+
+
 containsId : Test
 containsId =
     describe "containsId"
@@ -126,54 +174,6 @@ containsId =
                     |> Parser.run (TaskItem.parser "fileA" Nothing)
                     |> Result.map (TaskItem.containsId "fileA:2")
                     |> Expect.equal (Ok True)
-        ]
-
-
-done : Test
-done =
-    describe "completion"
-        [ test "returns Incomplete for an incomplete task" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok Incomplete)
-        , test "returns Complete for a completed task with no @done() date" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok Completed)
-        , test "returns Incomplete for an incomplete task with a @done() date" <|
-            \() ->
-                "- [ ] foo @done(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok Incomplete)
-        , test "returns CompletedOn for an completed task with a @done() date" <|
-            \() ->
-                "- [x] foo @done(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedOn <| Date.fromCalendarDate 2020 Jan 1)
-        , test "returns Completed for an completed task with an invalid @done() date" <|
-            \() ->
-                "- [x] foo @done(2020-01-51)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok Completed)
-        , test "the @done() date is not included in the title" <|
-            \() ->
-                "- [x] foo @done(2020-01-01) bar"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo bar")
-        , test "the @done() date is included in the title if it is not valid" <|
-            \() ->
-                "- [x] foo @done(2020-51-01) bar"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo @done(2020-51-01) bar")
         ]
 
 
@@ -637,7 +637,7 @@ toString =
                 "- [X] foo @done(2020-03-22) bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @done(2020-03-22)")
+                    |> Expect.equal (Ok "- [x] foo bar @done(2020-03-22T00:00:00)")
         , test "outputs a @due(<iso-date>) TaskList item if the original had a @due tag" <|
             \() ->
                 "- [X] foo @due(2020-03-22) bar"
@@ -725,16 +725,16 @@ transformation =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion (Just today))
+                    |> Result.map (TaskItem.toggleCompletion (Just now))
                     |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedOn today)
+                    |> Expect.equal (Ok <| CompletedAt now)
         , test "toggling a incomplete task with a @done date updates the @done date" <|
             \() ->
                 "- [ ] foo @done(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion (Just today))
+                    |> Result.map (TaskItem.toggleCompletion (Just now))
                     |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedOn today)
+                    |> Expect.equal (Ok <| CompletedAt now)
         ]
 
 
@@ -742,6 +742,6 @@ transformation =
 -- HELPERS
 
 
-today : Date
-today =
-    Date.fromCalendarDate 2000 Oct 20
+now : Time.Posix
+now =
+    Time.millisToPosix 1577836800000

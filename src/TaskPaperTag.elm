@@ -3,6 +3,7 @@ module TaskPaperTag exposing (autodoneTagParser, doneTagParser, dueTagParser, pa
 import Date exposing (Date)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
+import Time
 
 
 
@@ -14,9 +15,9 @@ autodoneTagParser =
     parser "autodone" ParserHelper.booleanParser
 
 
-doneTagParser : (Date -> a) -> Parser a
+doneTagParser : (Time.Posix -> a) -> Parser a
 doneTagParser =
-    parser "done" ParserHelper.dateParser
+    parser "done" ParserHelper.timeParser
 
 
 dueTagParser : (Date -> a) -> Parser a

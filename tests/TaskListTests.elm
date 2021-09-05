@@ -74,8 +74,8 @@ filtering =
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "undated complete"
-                        , "yesterday complete"
                         , "chosen file complete"
+                        , "yesterday complete"
                         , "invalid date complete"
                         , "future complete"
                         , "far future complete"
@@ -427,7 +427,7 @@ tasksFromFile : String -> ( String, Maybe String, String )
 tasksFromFile path =
     ( path, Nothing, """
 - [ ] chosen file incomplete
-- [x] chosen file complete
+- [x] chosen file complete @done(2020-06-01T00:01:00)
 """ )
 
 

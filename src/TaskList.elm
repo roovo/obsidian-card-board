@@ -209,7 +209,7 @@ completedItems (TaskList taskItems) =
     taskItems
         |> List.filter TaskItem.isCompleted
         |> List.sortBy TaskItem.filePath
-        |> List.sortBy TaskItem.completedRataDie
+        |> List.sortBy TaskItem.completedPosix
         |> List.reverse
 
 

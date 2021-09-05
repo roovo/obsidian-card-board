@@ -31,7 +31,7 @@ main =
 type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
-    , today : Maybe Date
+    , now : Maybe Time.Posix
     , zone : Maybe Time.Zone
     , taskList : State TaskList
     }
@@ -52,7 +52,7 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { dailyNotesFolder = flags.folder
       , dailyNotesFormat = flags.format
-      , today = Nothing
+      , now = Nothing
       , zone = Nothing
       , taskList = Loading
       }
@@ -81,7 +81,7 @@ update msg model =
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
                 | zone = Just zone
-                , today = Just (Date.fromPosix zone posix)
+                , now = Just posix
               }
             , Cmd.none
             )
@@ -132,7 +132,7 @@ update msg model =
                         Just matchingItem ->
                             ( model
                             , Ports.rewriteTodos
-                                model.today
+                                model.now
                                 (TaskItem.filePath matchingItem)
                                 (TaskItem.tasksToToggle id matchingItem)
                             )
@@ -144,9 +144,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ( Tick time, _ ) ->
-            ( { model
-                | today = Just <| Date.fromPosix (Maybe.withDefault Time.utc model.zone) time
-              }
+            ( { model | now = Just time }
             , Cmd.none
             )
 
@@ -218,7 +216,7 @@ subscriptions _ =
         [ Ports.fileAdded VaultFileAdded
         , Ports.fileUpdated VaultFileUpdated
         , Ports.fileDeleted VaultFileDeleted
-        , Time.every (1000 * 60) Tick
+        , Time.every 1000 Tick
         ]
 
 
@@ -228,8 +226,8 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    case ( model.taskList, model.today ) of
-        ( Loaded taskList, Just today ) ->
+    case ( model.taskList, model.now, model.zone ) of
+        ( Loaded taskList, Just now, Just zone ) ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ column
@@ -237,13 +235,13 @@ view model =
                         (TaskList.undatedItems taskList)
                     , column
                         "Today"
-                        (TaskList.todaysItems today taskList)
+                        (TaskList.todaysItems (Date.fromPosix zone now) taskList)
                     , column
                         "Tomorrow"
-                        (TaskList.tomorrowsItems today taskList)
+                        (TaskList.tomorrowsItems (Date.fromPosix zone now) taskList)
                     , column
                         "Future"
-                        (TaskList.futureItems today taskList)
+                        (TaskList.futureItems (Date.fromPosix zone now) taskList)
                     , column
                         "Done"
                         (TaskList.completedItems taskList)

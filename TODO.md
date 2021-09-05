@@ -1,5 +1,3 @@
-- add a timestamp to done for better ordering
-  ensure that just a date is valid too
 - use trello icon from feather icons for the sidebar
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
@@ -67,6 +65,10 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- add a timestamp to done for better ordering
+  ensure that just a date is valid too
+  update the time every second
+  add a test for ParserHelper.timeParser as it will not parse a valid time string
 - order done tasks by done date
 - order future tasks by due date
 - script to generate some files containing example/test todos
