@@ -158,14 +158,14 @@ export class CardBoardView extends ItemView {
                   source: "card-board",
                   hoverParent: element,
                   targetEl: internalLink,
-                  linktext: internalLink.innerText,
+                  linktext: internalLink.getAttribute("href"),
                   sourcePath: data.filePath
                 });
               });
 
               internalLink.addEventListener("click", (event: MouseEvent) => {
                   event.preventDefault();
-                  that.app.workspace.openLinkText(internalLink.innerText, data.filePath, true, {
+                  that.app.workspace.openLinkText(internalLink.getAttribute("href"), data.filePath, true, {
                       active: !0
                   });
               });
