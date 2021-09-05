@@ -7,6 +7,7 @@ module TaskItem exposing
     , completion
     , containsId
     , due
+    , dueRataDie
     , filePath
     , hasNotes
     , hasSubtasks
@@ -116,6 +117,16 @@ due (TaskItem fields _) =
 
         Nothing ->
             fields.dueFile
+
+
+dueRataDie : TaskItem -> Int
+dueRataDie taskItem =
+    case due taskItem of
+        Just dueDate ->
+            Date.toRataDie dueDate
+
+        Nothing ->
+            0
 
 
 filePath : TaskItem -> String

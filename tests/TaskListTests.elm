@@ -40,6 +40,51 @@ combine =
         ]
 
 
+filtering : Test
+filtering =
+    describe "filtering"
+        [ test "undatedItems are sorted by filePath ascending" <|
+            \() ->
+                parsedFiles
+                    |> TaskList.undatedItems
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "invalid date incomplete", "undated incomplete", "chosen file incomplete" ]
+        , test "todaysItems are sorted by filePath ascending" <|
+            \() ->
+                parsedFiles
+                    |> TaskList.todaysItems todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "yesterday incomplete", "today incomplete" ]
+        , test "tommorrowsItems" <|
+            \() ->
+                parsedFiles
+                    |> TaskList.tomorrowsItems todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "tomorrow incomplete" ]
+        , test "futureItems are sorted by due date ascending" <|
+            \() ->
+                parsedFiles
+                    |> TaskList.futureItems todayAsDate
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "future incomplete", "far future incomplete" ]
+        , test "completedItems are sorted by filePath ascending" <|
+            \() ->
+                parsedFiles
+                    |> TaskList.completedItems
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "yesterday complete"
+                        , "today complete"
+                        , "tomorrow complete"
+                        , "far future complete"
+                        , "future complete"
+                        , "invalid date complete"
+                        , "undated complete"
+                        , "chosen file complete"
+                        ]
+        ]
+
+
 tasks : Test
 tasks =
     describe "tasks"
@@ -131,51 +176,6 @@ taskFromId =
                     |> TaskList.taskFromId "a:3"
                     |> Maybe.map TaskItem.title
                     |> Expect.equal (Just "subtask complete")
-        ]
-
-
-filtering : Test
-filtering =
-    describe "filtering"
-        [ test "undatedItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.undatedItems
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "invalid date incomplete", "undated incomplete", "chosen file incomplete" ]
-        , test "todaysItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.todaysItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "yesterday incomplete", "today incomplete" ]
-        , test "tommorrowsItems" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.tomorrowsItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "tomorrow incomplete" ]
-        , test "futureItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.futureItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "future incomplete", "far future incomplete" ]
-        , test "completedItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.completedItems
-                    |> List.map TaskItem.title
-                    |> Expect.equal
-                        [ "yesterday complete"
-                        , "today complete"
-                        , "tomorrow complete"
-                        , "future complete"
-                        , "far future complete"
-                        , "invalid date complete"
-                        , "undated complete"
-                        , "chosen file complete"
-                        ]
         ]
 
 
@@ -382,11 +382,11 @@ todayAsDate =
 taskFiles : List ( String, Maybe String, String )
 taskFiles =
     [ undatedTasks
-    , ( "e", Just farFuture, """
+    , ( "d", Just farFuture, """
 - [ ] far future incomplete
 - [x] far future complete
 """ )
-    , ( "d", Just future, """
+    , ( "e", Just future, """
 - [ ] future incomplete
 - [x] future complete
 """ )

@@ -1,4 +1,4 @@
-- order future tasks by due date
+- order done tasks by done date
 - why does the "and another task" item appear under today when it has no due date?
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
@@ -64,6 +64,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- order future tasks by due date
 - script to generate some files containing example/test todos
 - ensure it still works if there is no daily notes plugin installed (just uses @due tags)
   - it does!

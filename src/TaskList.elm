@@ -201,7 +201,7 @@ futureItems today (TaskList taskItems) =
     in
     taskItems
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
-        |> List.sortBy TaskItem.filePath
+        |> List.sortBy TaskItem.dueRataDie
 
 
 completedItems : TaskList -> List TaskItem
