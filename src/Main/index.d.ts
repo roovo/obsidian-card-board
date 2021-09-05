@@ -6,6 +6,9 @@ export namespace Elm {
   namespace Main {
     export interface App {
       ports: {
+        addFilePreviewHovers: {
+          subscribe(callback: (data: { filePath: string; ids: string[] }) => void): void
+        }
         deleteTodo: {
           subscribe(callback: (data: { filePath: string; lineNumber: number; originalText: string }) => void): void
         }

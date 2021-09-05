@@ -1,14 +1,15 @@
-- bring up preview of the card when hovering over the edit icon
-  - https://github.com/mgmeyers/obsidian-copy-block-link to see how to add a block link
-    to the end of the todo line
+- use elm review
+- make it so the board actually fits vertically in the display view without needing scrollbars
+- make README.md a proper readme (and have a separate contributing/dev page?)
 - define boards by #tags and/or #tags/subtags
 - plugin settings
   - allow/deny directories/files
   - max title lines
 - don't display all completed tasks - could get quite long!
-- elm review
-- make README.md a proper readme (and have a separate contributing/dev page?)
 
+- when clicking the edit button place the cursor at the line of the todo
+- might be cleaner when generating markdown for display on a card to remove the wrapping <p> tag
+  intesad of trying to style it's effect away using css
 - right click on interal link
 - right click on external link
 - what to do about due dates for subtasks
@@ -55,14 +56,16 @@
 - elm debugger
 
 # Need help
-- how to add and track highlighting the selected line in the editor
-  ideally either want it to be only visible for a defined number of seconds
-  or for it to vanish when an edit is made
-  how do I highligt the line in the correct file??
-- how to enforce edit mode when clicking on edit link...
+api option for preview view so when given a block reference is still shows the whole document
+but scrolls the block into view and highlights it.  When this is done I can use this when
+hovering over the edit button to show the details of the todo in the original doc.  At the moment
+if you do this, it will only show the single line of the todo and not any subtasks or content.
+
+https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/10232
 
 # Done
 
+- bring up preview of the card when hovering over the edit icon
 - when click on edit link on card go to the right place on the page
 - bugs
   - why is the checkbox smaller for the main task than subtasks in the test vault?

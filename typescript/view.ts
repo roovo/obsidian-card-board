@@ -44,21 +44,26 @@ export class CardBoardView extends ItemView {
 
     const that = this;
 
-    elm.ports.updateTodos.subscribe(function(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
-      that.handleUpdateTodos(data);
+    elm.ports.addFilePreviewHovers.subscribe(function(data: { filePath: string, ids: [ string ]}) {
+      that.handleAddFilePreviewHovers(data);
     })
 
     elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
       that.handleDeleteTodo(data);
     })
 
+    elm.ports.displayTodoMarkdown.subscribe(function(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
+      that.handleDisplayTodoMarkdown(data);
+    })
+
     elm.ports.openTodoSourceFile.subscribe(function(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
       that.handleOpenTodoSourceFile(data);
     })
 
-    elm.ports.displayTodoMarkdown.subscribe(function(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
-      that.handleDisplayTodoMarkdown(data);
+    elm.ports.updateTodos.subscribe(function(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
+      that.handleUpdateTodos(data);
     })
+
 
     const markdownFiles = this.vault.getMarkdownFiles();
 
@@ -83,6 +88,27 @@ export class CardBoardView extends ItemView {
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
   }
 
+  async handleAddFilePreviewHovers(data: {filePath: string, ids : [ string ] }) {
+    const that = this;
+    requestAnimationFrame(function () {
+      for (const id of data.ids) {
+        const element = document.getElementById(id);
+        if (element instanceof HTMLElement) {
+          element.addEventListener('mouseover', (event: MouseEvent) => {
+            that.app.workspace.trigger('hover-link', {
+              event,
+              source: "card-board",
+              hoverParent: element,
+              targetEl: element,
+              linktext: data.filePath,
+              sourcePath: data.filePath
+            });
+          });
+        }
+      }
+    })
+  }
+
   async handleDeleteTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
     if (file instanceof TFile) {
@@ -93,6 +119,43 @@ export class CardBoardView extends ItemView {
         this.vault.modify(file, markdownLines.join("\n"))
       }
     }
+  }
+
+  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
+    const that = this;
+    requestAnimationFrame(function () {
+      for (const item of data.todoMarkdown) {
+        const element = document.getElementById(item.id);
+        if (element instanceof HTMLElement) {
+          element.innerHTML = "";
+          MarkdownRenderer.renderMarkdown(item.markdown, element, data.filePath, this);
+
+          const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
+
+          for (const internalLink of internalLinks) {
+            if (internalLink instanceof HTMLElement) {
+              internalLink.addEventListener('mouseover', (event: MouseEvent) => {
+                that.app.workspace.trigger('hover-link', {
+                  event,
+                  source: "card-board",
+                  hoverParent: element,
+                  targetEl: internalLink,
+                  linktext: internalLink.getAttribute("href"),
+                  sourcePath: data.filePath
+                });
+              });
+
+              internalLink.addEventListener("click", (event: MouseEvent) => {
+                  event.preventDefault();
+                  that.app.workspace.openLinkText(internalLink.getAttribute("href"), data.filePath, true, {
+                      active: !0
+                  });
+              });
+            }
+          }
+        }
+      }
+    })
   }
 
   async handleOpenTodoSourceFile(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
@@ -137,43 +200,6 @@ export class CardBoardView extends ItemView {
         }
         this.vault.modify(file, markdownLines.join("\n"))
      }
-  }
-
-  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
-    const that = this;
-    requestAnimationFrame(function () {
-      for (const item of data.todoMarkdown) {
-        const element = document.getElementById(item.id);
-        if (element instanceof HTMLElement) {
-          element.innerHTML = "";
-          MarkdownRenderer.renderMarkdown(item.markdown, element, data.filePath, this);
-
-          const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
-
-          for (const internalLink of internalLinks) {
-            if (internalLink instanceof HTMLElement) {
-              internalLink.addEventListener('mouseover', (event: MouseEvent) => {
-                that.app.workspace.trigger('hover-link', {
-                  event,
-                  source: "card-board",
-                  hoverParent: element,
-                  targetEl: internalLink,
-                  linktext: internalLink.getAttribute("href"),
-                  sourcePath: data.filePath
-                });
-              });
-
-              internalLink.addEventListener("click", (event: MouseEvent) => {
-                  event.preventDefault();
-                  that.app.workspace.openLinkText(internalLink.getAttribute("href"), data.filePath, true, {
-                      active: !0
-                  });
-              });
-            }
-          }
-        }
-      }
-    })
   }
 
   async handleFileCreated(elm: any, dailyNotesSettings: any, file: TAbstractFile) {

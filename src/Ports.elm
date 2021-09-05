@@ -1,5 +1,6 @@
 port module Ports exposing
     ( MarkdownFile
+    , addHoverToCardEditButtons
     , deleteTodo
     , displayTaskMarkdown
     , fileAdded
@@ -27,6 +28,17 @@ type alias MarkdownFile =
 
 
 -- HELPERS
+
+
+addHoverToCardEditButtons : String -> TaskList -> Cmd msg
+addHoverToCardEditButtons filePath taskList =
+    let
+        editLinkIds =
+            taskList
+                |> TaskList.taskIds
+                |> List.map (\id -> id ++ ":editButton")
+    in
+    addFilePreviewHovers { filePath = filePath, ids = editLinkIds }
 
 
 displayTaskMarkdown : String -> TaskList -> Cmd msg
@@ -71,6 +83,9 @@ rewriteTodos today filePath taskItems =
 
 
 -- PORTS, OUTBOUND
+
+
+port addFilePreviewHovers : { filePath : String, ids : List String } -> Cmd msg
 
 
 port deleteTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg

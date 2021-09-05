@@ -157,7 +157,10 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( addTaskItems model newTaskItems
-            , Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
+            , Cmd.batch
+                [ Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
+                , Ports.addHoverToCardEditButtons markdownFile.filePath newTaskItems
+                ]
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -169,7 +172,10 @@ update msg model =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
             ( updateTaskItems model markdownFile.filePath newTaskItems
-            , Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
+            , Cmd.batch
+                [ Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
+                , Ports.addHoverToCardEditButtons markdownFile.filePath newTaskItems
+                ]
             )
 
 
@@ -366,14 +372,25 @@ dueDateString taskItem =
 
 cardActionButtons : TaskItem -> Html Msg
 cardActionButtons taskItem =
+    let
+        uniqueId =
+            TaskItem.id taskItem ++ ":editButton"
+    in
     Html.div [ class "card-board-card-action-area-buttons" ]
-        [ Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemEditClicked <| TaskItem.id taskItem ]
+        [ Html.div
+            [ class "card-board-card-action-area-button"
+            , onClick <| TaskItemEditClicked <| TaskItem.id taskItem
+            , id uniqueId
+            ]
             [ FeatherIcons.edit
                 |> FeatherIcons.withSize 1
                 |> FeatherIcons.withSizeUnit "em"
                 |> FeatherIcons.toHtml []
             ]
-        , Html.div [ class "card-board-card-action-area-button", onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem ]
+        , Html.div
+            [ class "card-board-card-action-area-button"
+            , onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem
+            ]
             [ FeatherIcons.trash
                 |> FeatherIcons.withSize 1
                 |> FeatherIcons.withSizeUnit "em"
