@@ -1,7 +1,9 @@
 module Main exposing (main)
 
 import Browser
+import CardBoard exposing (CardBoard(..))
 import Date exposing (Date)
+import DateBoard
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (checked, class, id, type_)
@@ -34,6 +36,7 @@ type alias Model =
     , now : Maybe Time.Posix
     , zone : Maybe Time.Zone
     , taskList : State TaskList
+    , board : CardBoard
     }
 
 
@@ -55,6 +58,7 @@ init flags =
       , now = Nothing
       , zone = Nothing
       , taskList = Loading
+      , board = Dated DateBoard.fill
       }
     , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
     )
@@ -230,22 +234,10 @@ view model =
         ( Loaded taskList, Just now, Just zone ) ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
-                    [ column
-                        "Undated"
-                        (TaskList.undatedItems taskList)
-                    , column
-                        "Today"
-                        (TaskList.todaysItems (Date.fromPosix zone now) taskList)
-                    , column
-                        "Tomorrow"
-                        (TaskList.tomorrowsItems (Date.fromPosix zone now) taskList)
-                    , column
-                        "Future"
-                        (TaskList.futureItems (Date.fromPosix zone now) taskList)
-                    , column
-                        "Done"
-                        (TaskList.completedItems taskList)
-                    ]
+                    (model.board
+                        |> CardBoard.columns now zone taskList
+                        |> List.map (\( n, ts ) -> column n ts)
+                    )
                 ]
 
         _ ->

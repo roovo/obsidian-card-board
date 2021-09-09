@@ -1,9 +1,12 @@
 - define boards by #tags and/or #tags/subtags
+  - don't store functions on the model tho (baord is stored as a function at the moment)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - plugin settings
   - allow/deny directories/files
   - max title lines
 
+- UI: style task title (color) as if it is a h1 (can I make it a h1)
+- "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?
   if so, I can do better as by default obsidian doesn't include all
   indented stuff under a todo item as being in the block
@@ -16,6 +19,9 @@
 - do I want to always display tags as tag pills?
   if I do, I could allow them to be colored via settings
 - run elm review
+- specify format for people cards
+  - if on line and they contain an image then put the pic on the card
+  - support multiple people
 - might be cleaner when generating markdown for display on a card to remove the wrapping <p> tag
   intesad of trying to style it's effect away using css
 - right click on interal link

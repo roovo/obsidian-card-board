@@ -1,11 +1,9 @@
 module TaskList exposing
     ( TaskList
     , append
-    , completedItems
     , concat
     , empty
     , fromMarkdown
-    , futureItems
     , parser
     , removeForFile
     , replaceForFile
@@ -14,9 +12,7 @@ module TaskList exposing
     , taskIds
     , taskTitles
     , tasks
-    , todaysItems
-    , tomorrowsItems
-    , undatedItems
+    , topLevelTasks
     )
 
 import Date exposing (Date)
@@ -75,20 +71,16 @@ concat =
 
 replaceForFile : String -> TaskList -> TaskList -> TaskList
 replaceForFile filePath updatedList currentList =
-    let
-        listWithTasksRemoved =
-            removeForFile filePath currentList
-    in
-    append updatedList listWithTasksRemoved
+    currentList
+        |> removeForFile filePath
+        |> append updatedList
 
 
 removeForFile : String -> TaskList -> TaskList
 removeForFile filePath (TaskList taskItems) =
-    let
-        leftOverTaskItems =
-            itemsNotFromFile filePath taskItems
-    in
-    TaskList leftOverTaskItems
+    taskItems
+        |> itemsNotFromFile filePath
+        |> TaskList
 
 
 
@@ -128,89 +120,9 @@ tasks (TaskList taskList) =
             (\t -> t :: TaskItem.subtasks t)
 
 
-
--- FILTERS
-
-
-undatedItems : TaskList -> List TaskItem
-undatedItems (TaskList taskItems) =
-    taskItems
-        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
-        |> List.sortBy TaskItem.filePath
-
-
-todaysItems : Date -> TaskList -> List TaskItem
-todaysItems today (TaskList taskItems) =
-    let
-        isToday t =
-            case TaskItem.due t of
-                Nothing ->
-                    False
-
-                Just date ->
-                    if Date.diff Date.Days today date <= 0 then
-                        True
-
-                    else
-                        False
-    in
-    taskItems
-        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
-        |> List.sortBy TaskItem.filePath
-
-
-tomorrowsItems : Date -> TaskList -> List TaskItem
-tomorrowsItems today (TaskList taskItems) =
-    let
-        tomorrow =
-            Date.add Date.Days 1 today
-
-        isTomorrow t =
-            case TaskItem.due t of
-                Nothing ->
-                    False
-
-                Just date ->
-                    if Date.diff Date.Days tomorrow date == 0 then
-                        True
-
-                    else
-                        False
-    in
-    taskItems
-        |> List.filter (\t -> isTomorrow t && (not <| TaskItem.isCompleted t))
-
-
-futureItems : Date -> TaskList -> List TaskItem
-futureItems today (TaskList taskItems) =
-    let
-        tomorrow =
-            Date.add Date.Days 1 today
-
-        isToday t =
-            case TaskItem.due t of
-                Nothing ->
-                    False
-
-                Just date ->
-                    if Date.diff Date.Days tomorrow date > 0 then
-                        True
-
-                    else
-                        False
-    in
-    taskItems
-        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
-        |> List.sortBy TaskItem.dueRataDie
-
-
-completedItems : TaskList -> List TaskItem
-completedItems (TaskList taskItems) =
-    taskItems
-        |> List.filter TaskItem.isCompleted
-        |> List.sortBy TaskItem.filePath
-        |> List.sortBy TaskItem.completedPosix
-        |> List.reverse
+topLevelTasks : TaskList -> List TaskItem
+topLevelTasks (TaskList taskList) =
+    taskList
 
 
 

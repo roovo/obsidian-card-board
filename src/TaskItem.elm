@@ -180,10 +180,7 @@ isCompleted (TaskItem fields _) =
         Incomplete ->
             False
 
-        Completed ->
-            True
-
-        CompletedAt _ ->
+        _ ->
             True
 
 

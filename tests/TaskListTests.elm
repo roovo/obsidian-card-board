@@ -12,7 +12,6 @@ suite : Test
 suite =
     concat
         [ combine
-        , filtering
         , parsing
         , replaceForFile
         , removeForFile
@@ -27,61 +26,16 @@ combine =
     describe "combine"
         [ test "append joins two TaskLists" <|
             \() ->
-                parsedTasks undatedTasks
-                    |> TaskList.append (parsedTasks yesterdaysTasks)
+                parsedTasks tasksFromFileG
+                    |> TaskList.append (parsedTasks tasksFromFileA)
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "yesterday incomplete", "yesterday complete", "undated incomplete", "undated complete" ]
+                    |> Expect.equal [ "a1", "a2", "g1", "g2" ]
         , test "concat concatinates a list of TaskLists into a single TaskList" <|
             \() ->
-                [ parsedTasks undatedTasks, parsedTasks yesterdaysTasks ]
+                [ parsedTasks tasksFromFileG, parsedTasks tasksFromFileA ]
                     |> TaskList.concat
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "undated incomplete", "undated complete", "yesterday incomplete", "yesterday complete" ]
-        ]
-
-
-filtering : Test
-filtering =
-    describe "filtering"
-        [ test "undatedItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.undatedItems
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "invalid date incomplete", "undated incomplete", "chosen file incomplete" ]
-        , test "todaysItems are sorted by filePath ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.todaysItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "yesterday incomplete", "today incomplete" ]
-        , test "tommorrowsItems" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.tomorrowsItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "tomorrow incomplete" ]
-        , test "futureItems are sorted by due date ascending" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.futureItems todayAsDate
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "future incomplete", "far future incomplete" ]
-        , test "completedItems are sorted by completion date desc (then filePath asc)" <|
-            \() ->
-                parsedFiles
-                    |> TaskList.completedItems
-                    |> List.map TaskItem.title
-                    |> Expect.equal
-                        [ "undated complete"
-                        , "chosen file complete"
-                        , "yesterday complete"
-                        , "invalid date complete"
-                        , "future complete"
-                        , "far future complete"
-                        , "tomorrow complete"
-                        , "today complete"
-                        ]
+                    |> Expect.equal [ "g1", "g2", "a1", "a2" ]
         ]
 
 
@@ -96,12 +50,12 @@ tasks =
         , test "returns a list of all tasks and subtasks" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
+- [ ] g1
   - [x] subtask complete
 """ )
                     |> TaskList.tasks
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "undated incomplete", "subtask complete" ]
+                    |> Expect.equal [ "g1", "subtask complete" ]
         ]
 
 
@@ -116,29 +70,29 @@ taskContainingId =
         , test "returns nothing if there are no tasks in the list with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete
+- [ ] g1
+- [x] g2
 """ )
                     |> TaskList.taskContainingId "a:4"
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete
+- [ ] g1
+- [x] g2
 """ )
                     |> TaskList.taskContainingId "a:3"
                     |> Maybe.map TaskItem.title
-                    |> Expect.equal (Just "undated complete")
+                    |> Expect.equal (Just "g2")
         , test "returns the task if it contains a  subtask with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
+- [ ] g1
   - [x] subtask complete
 """ )
                     |> TaskList.taskContainingId "a:3"
                     |> Maybe.map TaskItem.title
-                    |> Expect.equal (Just "undated incomplete")
+                    |> Expect.equal (Just "g1")
         ]
 
 
@@ -153,24 +107,24 @@ taskFromId =
         , test "returns nothing if there are no tasks in the list with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete
+- [ ] g1
+- [x] g2
 """ )
                     |> TaskList.taskFromId "a:4"
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete
+- [ ] g1
+- [x] g2
 """ )
                     |> TaskList.taskFromId "a:3"
                     |> Maybe.map TaskItem.title
-                    |> Expect.equal (Just "undated complete")
+                    |> Expect.equal (Just "g2")
         , test "returns a subtask if there is one in the list with the given id" <|
             \() ->
                 parsedTasks ( "a", Nothing, """
-- [ ] undated incomplete
+- [ ] g1
   - [x] subtask complete
 """ )
                     |> TaskList.taskFromId "a:3"
@@ -189,24 +143,24 @@ replaceForFile =
                         (parsedTasks <| tasksFromFile "file a")
                     |> TaskList.taskTitles
                     |> List.sort
-                    |> Expect.equal (List.sort [ "chosen file incomplete", "chosen file complete" ])
+                    |> Expect.equal (List.sort [ "c1", "c2" ])
         , test "adds the tasks if the list doesn't contain tasks from the file" <|
             \() ->
-                parsedTasks undatedTasks
+                parsedTasks tasksFromFileG
                     |> TaskList.replaceForFile "ignored"
                         (parsedTasks <| tasksFromFile "file a")
                     |> TaskList.taskTitles
                     |> List.sort
-                    |> Expect.equal (List.sort [ "undated incomplete", "undated complete", "chosen file incomplete", "chosen file complete" ])
+                    |> Expect.equal (List.sort [ "g1", "g2", "c1", "c2" ])
         , test "replaces tasks from the file" <|
             \() ->
-                parsedTasks undatedTasks
+                parsedTasks tasksFromFileG
                     |> TaskList.append (parsedTasks <| tasksFromFile "file a")
                     |> TaskList.replaceForFile "file a"
                         (parsedTasks <| tasksFromNewFile "could be another file")
                     |> TaskList.taskTitles
                     |> List.sort
-                    |> Expect.equal (List.sort [ "new file incomplete", "new file complete", "undated incomplete", "undated complete" ])
+                    |> Expect.equal (List.sort [ "n1", "n2", "g1", "g2" ])
         ]
 
 
@@ -222,12 +176,12 @@ removeForFile =
                     |> Expect.equal (List.sort [])
         , test "remove tasks from the file" <|
             \() ->
-                parsedTasks undatedTasks
+                parsedTasks tasksFromFileG
                     |> TaskList.append (parsedTasks <| tasksFromFile "file a")
                     |> TaskList.removeForFile "file a"
                     |> TaskList.taskTitles
                     |> List.sort
-                    |> Expect.equal (List.sort [ "undated incomplete", "undated complete" ])
+                    |> Expect.equal (List.sort [ "g1", "g2" ])
         ]
 
 
@@ -357,108 +311,39 @@ not a task
         ]
 
 
-parsedFiles : TaskList
-parsedFiles =
-    taskFiles
-        |> List.map parsedTasks
-        |> TaskList.concat
-
-
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
     Parser.run (TaskList.parser p d) ts
         |> Result.withDefault TaskList.empty
 
 
-todayAsDate : Date.Date
-todayAsDate =
-    today
-        |> Date.fromIsoString
-        |> Result.map Date.toRataDie
-        |> Result.withDefault 0
-        |> Date.fromRataDie
-
-
-taskFiles : List ( String, Maybe String, String )
-taskFiles =
-    [ undatedTasks
-    , ( "d", Just farFuture, """
-- [ ] far future incomplete
-- [x] far future complete
-""" )
-    , ( "e", Just future, """
-- [ ] future incomplete
-- [x] future complete
-""" )
-    , ( "c", Just tomorrow, """
-- [ ] tomorrow incomplete
-- [x] tomorrow complete
-""" )
-    , ( "b", Just today, """
-- [ ] today incomplete
-- [x] today complete
-""" )
-    , yesterdaysTasks
-    , ( "f", Just "invalid date", """
-- [ ] invalid date incomplete
-- [x] invalid date complete
-""" )
-    , tasksFromFile "path/to/file"
-    ]
-
-
-undatedTasks : ( String, Maybe String, String )
-undatedTasks =
+tasksFromFileG : ( String, Maybe String, String )
+tasksFromFileG =
     ( "g", Nothing, """
-- [ ] undated incomplete
-- [x] undated complete @done(2020-06-02)
+- [ ] g1
+- [x] g2
 """ )
 
 
-yesterdaysTasks : ( String, Maybe String, String )
-yesterdaysTasks =
-    ( "a", Just yesterday, """
-- [ ] yesterday incomplete
-- [x] yesterday complete @done(2020-06-01)
+tasksFromFileA : ( String, Maybe String, String )
+tasksFromFileA =
+    ( "a", Nothing, """
+- [ ] a1
+- [x] a2
 """ )
 
 
 tasksFromFile : String -> ( String, Maybe String, String )
 tasksFromFile path =
     ( path, Nothing, """
-- [ ] chosen file incomplete
-- [x] chosen file complete @done(2020-06-01T00:01:00)
+- [ ] c1
+- [x] c2
 """ )
 
 
 tasksFromNewFile : String -> ( String, Maybe String, String )
 tasksFromNewFile path =
     ( path, Nothing, """
-- [ ] new file incomplete
-- [x] new file complete
+- [ ] n1
+- [x] n2
 """ )
-
-
-yesterday : String
-yesterday =
-    "2020-06-19"
-
-
-today : String
-today =
-    "2020-06-20"
-
-
-tomorrow : String
-tomorrow =
-    "2020-06-21"
-
-
-future : String
-future =
-    "2020-06-22"
-
-
-farFuture : String
-farFuture =
-    "2020-06-23"
