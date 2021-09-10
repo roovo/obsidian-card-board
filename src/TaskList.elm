@@ -3,6 +3,7 @@ module TaskList exposing
     , append
     , concat
     , empty
+    , filter
     , fromMarkdown
     , parser
     , removeForFile
@@ -85,6 +86,12 @@ removeForFile filePath (TaskList taskItems) =
 
 
 -- INFO
+
+
+filter : (TaskItem -> Bool) -> TaskList -> TaskList
+filter fn (TaskList taskItems) =
+    List.filter fn taskItems
+        |> TaskList
 
 
 taskTitles : TaskList -> List String

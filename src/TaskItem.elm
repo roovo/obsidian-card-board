@@ -12,6 +12,7 @@ module TaskItem exposing
     , filePath
     , hasNotes
     , hasSubtasks
+    , hasTag
     , hasTags
     , id
     , isCompleted
@@ -155,6 +156,11 @@ hasNotes (TaskItem fields _) =
 hasTags : TaskItem -> Bool
 hasTags (TaskItem fields _) =
     not <| List.isEmpty fields.tags
+
+
+hasTag : String -> TaskItem -> Bool
+hasTag tag (TaskItem fields _) =
+    List.member tag fields.tags
 
 
 hasSubtasks : TaskItem -> Bool

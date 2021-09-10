@@ -17,6 +17,7 @@ suite =
         , containsId
         , due
         , filePath
+        , hasTag
         , id
         , isCompleted
         , isFromFile
@@ -240,6 +241,30 @@ filePath =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
+        ]
+
+
+hasTag : Test
+hasTag =
+    describe "hasTag"
+        [ test "returns False if the task has no tags" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False if the task has tags but NOT the given one" <|
+            \() ->
+                "- [ ] foo #baz #barrrrr #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns True if the task has tags INCLUDING the given one" <|
+            \() ->
+                "- [ ] foo #baz #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Expect.equal (Ok True)
         ]
 
 

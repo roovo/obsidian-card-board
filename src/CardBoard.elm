@@ -4,6 +4,7 @@ module CardBoard exposing
     )
 
 import DateBoard exposing (DateBoard)
+import TagBoard exposing (TagBoard)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
@@ -15,6 +16,7 @@ import Time
 
 type CardBoard
     = Dated (TaskList -> DateBoard)
+    | Tagged (TaskList -> TagBoard)
 
 
 
@@ -26,3 +28,6 @@ columns now zone taskList cardBoard =
     case cardBoard of
         Dated dateBoard ->
             DateBoard.columns now zone (dateBoard taskList)
+
+        Tagged tagBoard ->
+            TagBoard.columns (tagBoard taskList)

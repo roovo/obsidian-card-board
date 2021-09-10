@@ -1,10 +1,21 @@
-- define boards by #tags and/or #tags/subtags
-  - don't store functions on the model tho (baord is stored as a function at the moment)
+- define boards by #tags
+  - specify "tag/" to match the tag and all subtags
+  - option to show other incomplete tasks
+  - option to show completed tasks (only those with one of the specified tags)
+  - sort tagboards by due date
+  - allow column heading alias text to be specified too
+    (as you might want a space in it and this isn't allowed in a tag)
+- have a subtag board that uses a root tag then sbb-tags to define columns
+- use settings or inline ```cardboard block to specify kanban
+- don't store functions on the model tho (baord is stored as a function at the moment)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - plugin settings
   - allow/deny directories/files
   - max title lines
 
+- highlight overdue tasks, flagged tasks and those due today
+- should I have an option to set colors for tags?
+- context menu to set due date to today
 - UI: style task title (color) as if it is a h1 (can I make it a h1)
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?
