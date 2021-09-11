@@ -42,6 +42,18 @@ columns =
                     |> TagBoard.columns
                     |> List.length
                     |> Expect.equal 3
+        , test "ensures only uses columns with unique names" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar #bar
+- [ ] baz #baz
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { columns = [ "foo", "foo", "bar", "baz", "bar" ] }
+                    |> TagBoard.columns
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         , test "returns empty columns if there are no tasks with the given tags" <|
             \() ->
                 """- [ ] foo #foo

@@ -5,6 +5,7 @@ module TagBoard exposing
     )
 
 import Date exposing (Date)
+import List.Extra as LE
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
@@ -34,7 +35,9 @@ fill config taskList =
 
 columns : TagBoard -> List ( String, List TaskItem )
 columns (TagBoard config taskList) =
-    List.foldl (fillColumn taskList) [] config.columns
+    config.columns
+        |> LE.unique
+        |> List.foldl (fillColumn taskList) []
 
 
 
