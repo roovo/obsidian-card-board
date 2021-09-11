@@ -1,4 +1,4 @@
-- bugfix: if parent taks has no tags then the child tags aren't picked up
+- bugfix: markdown contents only printed in one of the cards if it appears in multiple columns
 - define boards by #tags
   - specify "tag/" to match the tag and all subtags
   - ensure that tags are case insensative
@@ -88,6 +88,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- bugfix: if parent taks has no tags then the child tags aren't picked up
 - use a kanban icon for the sidebar
 - add a timestamp to done for better ordering
   ensure that just a date is valid too

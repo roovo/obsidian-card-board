@@ -59,9 +59,9 @@ init flags =
       , now = Nothing
       , zone = Nothing
       , taskList = Loading
-      , board = Dated DateBoard.fill
 
-      -- , board = Tagged <| TagBoard.fill { columns = [ "home", "home/", "town" ] }
+      -- , board = Dated DateBoard.fill
+      , board = Tagged <| TagBoard.fill { columns = [ "home", "home/", "town", "wellbeing" ] }
       }
     , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
     )

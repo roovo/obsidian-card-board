@@ -17,6 +17,7 @@ suite =
         , containsId
         , due
         , filePath
+        , hasTags
         , hasTagBasic
         , hasTagWithSubtag
         , hasTagWithSubtagWildcard
@@ -246,12 +247,42 @@ filePath =
         ]
 
 
+hasTags : Test
+hasTags =
+    describe "hasTags"
+        [ test "returns True if the task has tags" <|
+            \() ->
+                "- [ ] foo #baz #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.hasTags
+                    |> Expect.equal (Ok True)
+        , test "returns True if the task has subtasks with tags" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar #baz #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.hasTags
+                    |> Expect.equal (Ok True)
+        , test "returns False if the task and subtasks have no tags" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.hasTags
+                    |> Expect.equal (Ok False)
+        ]
+
+
 hasTagBasic : Test
 hasTagBasic =
     describe "hasTag - basic operation"
         [ test "returns True if the task has tags INCLUDING the given one" <|
             \() ->
                 "- [ ] foo #baz #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Expect.equal (Ok True)
+        , test "returns True if the task has a subtask with the given tag" <|
+            \() ->
+                "- [ ] foo \n  - [ ] bar #bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar")
                     |> Expect.equal (Ok True)

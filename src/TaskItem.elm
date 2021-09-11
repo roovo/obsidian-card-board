@@ -155,12 +155,12 @@ hasNotes (TaskItem fields _) =
 
 
 hasTags : TaskItem -> Bool
-hasTags (TaskItem fields _) =
-    not <| List.isEmpty fields.tags
+hasTags taskItem =
+    not <| List.isEmpty <| tags taskItem
 
 
 hasTag : String -> TaskItem -> Bool
-hasTag tagToMatch (TaskItem fields _) =
+hasTag tagToMatch taskItem =
     let
         regex : String -> Regex
         regex tagToMatch_ =
@@ -176,7 +176,7 @@ hasTag tagToMatch (TaskItem fields _) =
             else
                 itemTag == tagToMatch
     in
-    List.any matches fields.tags
+    List.any matches <| tags taskItem
 
 
 hasSubtasks : TaskItem -> Bool
