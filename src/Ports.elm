@@ -70,7 +70,7 @@ displayTaskMarkdown filePath taskList =
     displayTodoMarkdown { filePath = filePath, todoMarkdown = markdownWithIds }
 
 
-rewriteTodos : Maybe Time.Posix -> String -> List TaskItem -> Cmd msg
+rewriteTodos : Time.Posix -> String -> List TaskItem -> Cmd msg
 rewriteTodos now filePath taskItems =
     let
         buildFoo taskItem =

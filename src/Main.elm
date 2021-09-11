@@ -34,8 +34,8 @@ main =
 type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
-    , now : Maybe Time.Posix
-    , zone : Maybe Time.Zone
+    , now : Time.Posix
+    , zone : Time.Zone
     , taskList : State TaskList
     , board : CardBoard
     }
@@ -49,6 +49,8 @@ type State a
 type alias Flags =
     { folder : String
     , format : String
+    , now : Int
+    , zone : Int
     }
 
 
@@ -56,8 +58,8 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     ( { dailyNotesFolder = flags.folder
       , dailyNotesFormat = flags.format
-      , now = Nothing
-      , zone = Nothing
+      , now = Time.millisToPosix flags.now
+      , zone = Time.customZone flags.zone []
       , taskList = Loading
 
       -- , board = Dated DateBoard.fill
@@ -87,8 +89,8 @@ update msg model =
     case ( msg, model ) of
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
-                | zone = Just zone
-                , now = Just posix
+                | zone = zone
+                , now = posix
               }
             , Cmd.none
             )
@@ -141,7 +143,7 @@ update msg model =
                             , Ports.rewriteTodos
                                 model.now
                                 (TaskItem.filePath matchingItem)
-                                (TaskItem.tasksToToggle id matchingItem)
+                                (TaskItem.tasksToToggle id model.now matchingItem)
                             )
 
                         Nothing ->
@@ -151,7 +153,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ( Tick time, _ ) ->
-            ( { model | now = Just time }
+            ( { model | now = time }
             , Cmd.none
             )
 
@@ -233,12 +235,12 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    case ( model.taskList, model.now, model.zone ) of
-        ( Loaded taskList, Just now, Just zone ) ->
+    case model.taskList of
+        Loaded taskList ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     (model.board
-                        |> CardBoard.columns now zone taskList
+                        |> CardBoard.columns model.now model.zone taskList
                         |> List.map (\( n, ts ) -> column n ts)
                     )
                 ]

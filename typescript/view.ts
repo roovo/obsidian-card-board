@@ -28,9 +28,11 @@ export class CardBoardView extends ItemView {
 
   async onOpen() {
     // @ts-ignore
-    const dailyNotesSettings = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
+    const dailyNotesSettings  = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
     dailyNotesSettings.folder = dailyNotesSettings.folder || ""
     dailyNotesSettings.format = dailyNotesSettings.format || "YYYY-MM-DD"
+    dailyNotesSettings.now    = Date.now()
+    dailyNotesSettings.zone   = new Date().getTimezoneOffset()
     delete dailyNotesSettings.template
 
     const elmDiv = document.createElement('div');

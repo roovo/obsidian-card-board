@@ -34,7 +34,7 @@ export namespace Elm {
     }
     export function init(options: {
       node?: HTMLElement | null;
-      flags: { folder: string; format: string };
+      flags: { folder: string; format: string; now: number; zone: number };
     }): Elm.Main.App;
   }
 }

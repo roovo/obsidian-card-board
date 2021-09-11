@@ -650,62 +650,62 @@ tasksToToggle =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":3")
+                    |> Result.map (TaskItem.tasksToToggle ":3" <| Time.millisToPosix 0)
                     |> Expect.equal (Ok [])
         , test "returns the TaskItem if it matches the id" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (TaskItem.tasksToToggle ":1" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the sub-TaskItem if it matches the id and @autodone is not set" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (TaskItem.tasksToToggle ":2" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autodone is true and all other subtasks are complete" <|
             \() ->
                 "- [ ] foo @autodone(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (TaskItem.tasksToToggle ":2" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autodone is false and all other subtasks are complete" <|
             \() ->
                 "- [ ] foo @autodone(false)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (TaskItem.tasksToToggle ":2" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id and @autodone is set but there are other incomplete subtasks" <|
             \() ->
                 "- [ ] foo @autodone(true)\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (TaskItem.tasksToToggle ":2" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id, @autodone is set and the top level task is already completed" <|
             \() ->
                 "- [x] foo @autodone(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2")
+                    |> Result.map (TaskItem.tasksToToggle ":2" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem if it is complete, matches and all subtasks are already complete" <|
             \() ->
                 "- [x] foo @autodone(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (TaskItem.tasksToToggle ":1" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the TaskItem if it is incomplete, matches and all subtasks are already complete" <|
             \() ->
                 "- [ ] foo @autodone(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1")
+                    |> Result.map (TaskItem.tasksToToggle ":1" <| Time.millisToPosix 0)
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         ]
@@ -834,35 +834,28 @@ transformation =
             \() ->
                 "- [x] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion Nothing)
+                    |> Result.map (TaskItem.toggleCompletion <| Time.millisToPosix 0)
                     |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok False)
         , test "toggling a task completed on a given date produces one marked as incomplete" <|
             \() ->
                 "- [x] foo @done(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion Nothing)
+                    |> Result.map (TaskItem.toggleCompletion <| Time.millisToPosix 0)
                     |> Result.map TaskItem.isCompleted
                     |> Expect.equal (Ok False)
-        , test "giving no date when toggling an incomplete task produces one marked as complete" <|
+        , test "toggling an incomplete task produces one marked as complete on the given date" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion Nothing)
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok Completed)
-        , test "giving date when toggling an incomplete task produces one marked as complete on that date" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion (Just now))
+                    |> Result.map (TaskItem.toggleCompletion now)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt now)
         , test "toggling a incomplete task with a @done date updates the @done date" <|
             \() ->
                 "- [ ] foo @done(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion (Just now))
+                    |> Result.map (TaskItem.toggleCompletion now)
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt now)
         ]
