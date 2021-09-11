@@ -1,5 +1,7 @@
+- bugfix: if parent taks has no tags then the child tags aren't picked up
 - define boards by #tags
   - specify "tag/" to match the tag and all subtags
+  - ensure that tags are case insensative
   - option to show other incomplete tasks
   - option to show completed tasks (only those with one of the specified tags)
   - sort tagboards by due date
@@ -12,6 +14,11 @@
 - plugin settings
   - allow/deny directories/files
   - max title lines
+  - per note settings (for card ordering on each board perhaps)
+    - kanban keeps stuff in front matter
+    - spaced repetition pludin keeps stuff in the plugin data
+    - look at dictionary plugin too
+    - leaflet keeps a bunch of data in the config folder
 
 - highlight overdue tasks, flagged tasks and those due today
 - should I have an option to set colors for tags?

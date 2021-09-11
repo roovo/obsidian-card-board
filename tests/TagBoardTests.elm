@@ -81,6 +81,45 @@ columns =
                     |> tasksInColumn "bar"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
+        , test "does not include tasks with tags with a trailing slash if not in the config" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar/
+- [ ] bar2 #bar
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { columns = [ "bar" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "bar"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "bar2" ]
+        , test "includes tasks with tags with a trailing slash if in the config" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar/
+- [ ] bar2 #bar
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "bar/"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "bar1", "bar2" ]
+        , test "includes tasks with a subtag if there is a trailing slash in the config" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar/one
+- [ ] bar2 #bar
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "bar/"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "bar1", "bar2" ]
         ]
 
 

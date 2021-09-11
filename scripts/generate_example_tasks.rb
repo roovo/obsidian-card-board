@@ -24,14 +24,14 @@ File.open(todays_tasks, "w") do |file|
 # Tasks For Today
 
 - [ ] run erands @due(#{Date.today.strftime("%Y-%m-%d")})
-  - [x] do shopping
-  - [ ] wash car
-  - [ ] cook dinner
+  - [x] do shopping #town
+  - [ ] wash car #home/outside
+  - [ ] cook dinner #home
 
   perhaps I should look up some [[example_tasks/recipes|recipes]] first
 
   - [ ] do something with a long title that will truncate when displayed
-  - [ ] watch tv
+  - [ ] watch tv #home
   - [ ] go to bed
 
 - [x] already got out of bed this morning  @due(#{Date.today.strftime("%Y-%m-%d")}) @done(#{(Date.today).strftime("%Y-%m-%d")})
@@ -45,7 +45,7 @@ File.open(tomorrows_tasks, "w") do |file|
 # Tasks For Tomorrow
 
 - [ ] book meal at fancy restaurant @due(#{(Date.today + 1).strftime("%Y-%m-%d")})
-- [ ] meditate @due(#{(Date.today + 1).strftime("%Y-%m-%d")})
+- [ ] meditate @due(#{(Date.today + 1).strftime("%Y-%m-%d")}) #wellbeing
 """
 end
 

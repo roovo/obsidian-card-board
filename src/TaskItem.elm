@@ -36,6 +36,7 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import Regex exposing (Regex)
 import TaskPaperTag
 import Time
 
@@ -159,8 +160,23 @@ hasTags (TaskItem fields _) =
 
 
 hasTag : String -> TaskItem -> Bool
-hasTag tag (TaskItem fields _) =
-    List.member tag fields.tags
+hasTag tagToMatch (TaskItem fields _) =
+    let
+        regex : String -> Regex
+        regex tagToMatch_ =
+            (tagToMatch_ ++ "(?:/.*)*")
+                |> Regex.fromString
+                |> Maybe.withDefault Regex.never
+
+        matches : String -> Bool
+        matches itemTag =
+            if String.endsWith "/" tagToMatch then
+                Regex.contains (regex <| String.dropRight 1 tagToMatch) itemTag
+
+            else
+                itemTag == tagToMatch
+    in
+    List.any matches fields.tags
 
 
 hasSubtasks : TaskItem -> Bool
