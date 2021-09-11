@@ -120,6 +120,19 @@ columns =
                     |> tasksInColumn "bar/"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
+        , test "prefixes the taskItem.inColumnId's with the title of the column" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar/one
+- [ ] bar2 #bar
+"""
+                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "bar/"
+                    |> List.map TaskItem.inColumnId
+                    |> Expect.equal [ "bar/:file_a:2", "bar/:file_a:3" ]
         ]
 
 

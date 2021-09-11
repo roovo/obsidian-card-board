@@ -1,14 +1,13 @@
-- bugfix: markdown contents only printed in one of the cards if it appears in multiple columns
 - define boards by #tags
-  - specify "tag/" to match the tag and all subtags
   - ensure that tags are case insensative
   - option to show other incomplete tasks
   - option to show completed tasks (only those with one of the specified tags)
   - sort tagboards by due date
   - allow column heading alias text to be specified too
     (as you might want a space in it and this isn't allowed in a tag)
-- have a subtag board that uses a root tag then sbb-tags to define columns
-- use settings or inline ```cardboard block to specify kanban
+- always show tags as tag pills whatever the theme
+- have a subtag board that uses a root tag then subtags to define columns
+- use settings or inline ```cardboard block to specify kanban?
 - don't store functions on the model tho (baord is stored as a function at the moment)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - plugin settings
@@ -20,6 +19,9 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
+- get working with tabbed view plugin
+- on a tagboard when drag-dropping allow alt-drag to duplicate the card
+  - so maintaining the tag in the column being dragged from as well as getting the new
 - highlight overdue tasks, flagged tasks and those due today
 - should I have an option to set colors for tags?
 - context menu to set due date to today

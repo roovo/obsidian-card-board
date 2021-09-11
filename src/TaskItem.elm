@@ -15,6 +15,7 @@ module TaskItem exposing
     , hasTag
     , hasTags
     , id
+    , inColumnId
     , isCompleted
     , isDated
     , isFromFile
@@ -22,6 +23,7 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
+    , placeInColumn
     , subtasks
     , tags
     , tasksToToggle
@@ -49,6 +51,7 @@ type alias TaskItemFields =
     { autoComplete : AutoCompletion
     , blockLink : Maybe String
     , completion : Completion
+    , containingColumnTitle : String
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
@@ -187,6 +190,15 @@ hasSubtasks (TaskItem _ subtasks_) =
 id : TaskItem -> String
 id (TaskItem fields _) =
     fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
+
+
+inColumnId : TaskItem -> String
+inColumnId (TaskItem fields _) =
+    if String.isEmpty fields.containingColumnTitle then
+        fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
+
+    else
+        fields.containingColumnTitle ++ ":" ++ fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
 
 
 isDated : TaskItem -> Bool
@@ -361,6 +373,17 @@ toString (TaskItem fields _) =
 -- MODIFICATION
 
 
+placeInColumn : String -> TaskItem -> TaskItem
+placeInColumn columnTitle (TaskItem fields subtasks_) =
+    let
+        placeFieldsInColum fields_ =
+            { fields_ | containingColumnTitle = columnTitle }
+    in
+    TaskItem
+        (placeFieldsInColum fields)
+        (List.map placeFieldsInColum subtasks_)
+
+
 toggleCompletion : Time.Posix -> TaskItem -> TaskItem
 toggleCompletion timeNow (TaskItem fields subtasks_) =
     case fields.completion of
@@ -513,6 +536,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     { autoComplete = autoCompletefromTag
     , blockLink = parsedBlockLink
     , completion = completion_
+    , containingColumnTitle = ""
     , dueFile = dueFromFile
     , dueTag = tagDueDate
     , filePath = path

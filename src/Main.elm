@@ -164,8 +164,8 @@ update msg model =
             in
             ( addTaskItems model newTaskItems
             , Cmd.batch
-                [ Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
-                , Ports.addHoverToCardEditButtons markdownFile.filePath newTaskItems
+                [ Ports.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
+                , Ports.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
                 ]
             )
 
@@ -179,8 +179,8 @@ update msg model =
             in
             ( updateTaskItems model markdownFile.filePath newTaskItems
             , Cmd.batch
-                [ Ports.displayTaskMarkdown markdownFile.filePath newTaskItems
-                , Ports.addHoverToCardEditButtons markdownFile.filePath newTaskItems
+                [ Ports.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
+                , Ports.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
                 ]
             )
 
@@ -265,7 +265,7 @@ card : String -> TaskItem -> ( String, Html Msg )
 card _ taskItem =
     let
         uniqueId =
-            TaskItem.id taskItem
+            TaskItem.inColumnId taskItem
     in
     Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
         [ Html.input
@@ -302,7 +302,7 @@ notesView : TaskItem -> Html Msg
 notesView taskItem =
     let
         uniqueId =
-            TaskItem.id taskItem ++ ":notes"
+            TaskItem.inColumnId taskItem ++ ":notes"
     in
     Html.div [ class "card-board-card-notes-area", id uniqueId ]
         []
@@ -320,13 +320,13 @@ subtaskView : TaskItem -> Html Msg
 subtaskView subtask =
     let
         uniqueId =
-            TaskItem.id subtask
+            TaskItem.inColumnId subtask
     in
     Html.li [ class "card-board-card-subtask task-list-item" ]
         [ Html.input
             [ type_ "checkbox"
             , class "task-list-item-checkbox"
-            , onClick <| TaskItemToggled uniqueId
+            , onClick <| TaskItemToggled <| TaskItem.id subtask
             , checked <| TaskItem.isCompleted subtask
             ]
             []
@@ -368,7 +368,7 @@ cardActionButtons : TaskItem -> Html Msg
 cardActionButtons taskItem =
     let
         uniqueId =
-            TaskItem.id taskItem ++ ":editButton"
+            TaskItem.inColumnId taskItem ++ ":editButton"
     in
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div

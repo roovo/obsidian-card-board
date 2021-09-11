@@ -10,6 +10,7 @@ port module Ports exposing
     , rewriteTodos
     )
 
+import CardBoard exposing (CardBoard)
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -31,41 +32,50 @@ type alias MarkdownFile =
 -- HELPERS
 
 
-addHoverToCardEditButtons : String -> TaskList -> Cmd msg
-addHoverToCardEditButtons filePath taskList =
+addHoverToCardEditButtons : String -> CardBoard -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
+addHoverToCardEditButtons filePath cardBoard now zone taskList =
     let
-        editLinkIds =
-            taskList
-                |> TaskList.taskIds
+        inColumnLinkIds : List String
+        inColumnLinkIds =
+            cardBoard
+                |> CardBoard.columns now zone taskList
+                |> List.concatMap Tuple.second
+                |> List.concatMap (\i -> i :: TaskItem.subtasks i)
+                |> List.map TaskItem.inColumnId
                 |> List.map (\id -> id ++ ":editButton")
     in
-    addFilePreviewHovers { filePath = filePath, ids = editLinkIds }
+    addFilePreviewHovers { filePath = filePath, ids = inColumnLinkIds }
 
 
-displayTaskMarkdown : String -> TaskList -> Cmd msg
-displayTaskMarkdown filePath taskList =
+displayTaskMarkdown : String -> CardBoard -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
+displayTaskMarkdown filePath cardBoard now zone taskList =
     let
+        taskItems : List TaskItem
+        taskItems =
+            cardBoard
+                |> CardBoard.columns now zone taskList
+                |> List.concatMap Tuple.second
+                |> List.concatMap (\i -> i :: TaskItem.subtasks i)
+
+        markdownWithIds =
+            taskItems
+                |> List.map markdownWithId
+                |> List.append notesWithIds
+
         markdownWithId t =
-            { id = TaskItem.id t
+            { id = TaskItem.inColumnId t
             , markdown = TaskItem.title t
             }
 
         notesMarkdownWithId t =
-            { id = TaskItem.id t ++ ":notes"
+            { id = TaskItem.inColumnId t ++ ":notes"
             , markdown = TaskItem.notes t
             }
 
         notesWithIds =
-            taskList
-                |> TaskList.tasks
+            taskItems
                 |> List.filter (\t -> TaskItem.hasNotes t)
                 |> List.map notesMarkdownWithId
-
-        markdownWithIds =
-            taskList
-                |> TaskList.tasks
-                |> List.map markdownWithId
-                |> List.append notesWithIds
     in
     displayTodoMarkdown { filePath = filePath, todoMarkdown = markdownWithIds }
 

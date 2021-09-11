@@ -14,6 +14,7 @@ suite =
         [ combine
         , filter
         , parsing
+        , placeInColumn
         , replaceForFile
         , removeForFile
         , taskContainingId
@@ -176,6 +177,19 @@ not a task
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskIds
                     |> Expect.equal [ "file_a:1", "file_a:4", "file_a:6" ]
+        ]
+
+
+placeInColumn : Test
+placeInColumn =
+    describe "placing all tasks in the list in a colum (affects their inColumnId)"
+        [ test "adds the tasks if the TaskList is empty" <|
+            \() ->
+                parsedTasks tasksFromFileG
+                    |> TaskList.placeInColumn "a"
+                    |> TaskList.topLevelTasks
+                    |> List.map TaskItem.inColumnId
+                    |> Expect.equal [ "a:g:2", "a:g:3" ]
         ]
 
 

@@ -22,12 +22,14 @@ suite =
         , hasTagWithSubtag
         , hasTagWithSubtagWildcard
         , id
+        , inColumnId
         , isCompleted
         , isFromFile
         , isDated
         , notes
         , originalText
         , parsing
+        , placeInColumn
         , subtasks
         , tags
         , tasksToToggle
@@ -385,6 +387,25 @@ id =
         ]
 
 
+inColumnId : Test
+inColumnId =
+    describe "inColumnId"
+        [ test "returns filePath:row if the task has not been placed in a column" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map TaskItem.inColumnId
+                    |> Expect.equal (Ok "File A:1")
+        , test "returns columnName:filePath:row if the task has been placed in a column" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "File A" Nothing)
+                    |> Result.map (TaskItem.placeInColumn "c1")
+                    |> Result.map TaskItem.inColumnId
+                    |> Expect.equal (Ok "c1:File A:1")
+        ]
+
+
 isCompleted : Test
 isCompleted =
     describe "isCompleted"
@@ -579,6 +600,26 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
+        ]
+
+
+placeInColumn : Test
+placeInColumn =
+    describe "placeInColumn"
+        [ test "does not add the column title to the start of the id" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "fa" Nothing)
+                    |> Result.map (TaskItem.placeInColumn "c1")
+                    |> Result.map TaskItem.id
+                    |> Expect.equal (Ok "fa:1")
+        , test "adds the column title to the start of the inColumnId" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "fa" Nothing)
+                    |> Result.map (TaskItem.placeInColumn "c1")
+                    |> Result.map TaskItem.inColumnId
+                    |> Expect.equal (Ok "c1:fa:1")
         ]
 
 

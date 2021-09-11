@@ -49,6 +49,7 @@ fillColumn taskList column acc =
             not (TaskItem.isCompleted item) && TaskItem.hasTag tag item
     in
     TaskList.filter (isIncompleteWithTag column) taskList
+        |> TaskList.placeInColumn column
         |> TaskList.topLevelTasks
         |> Tuple.pair column
         |> List.singleton
