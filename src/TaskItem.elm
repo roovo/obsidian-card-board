@@ -168,7 +168,7 @@ hasTag tagToMatch taskItem =
         regex : String -> Regex
         regex tagToMatch_ =
             (tagToMatch_ ++ "(?:/.*)*")
-                |> Regex.fromString
+                |> Regex.fromStringWith { caseInsensitive = True, multiline = False }
                 |> Maybe.withDefault Regex.never
 
         matches : String -> Bool
@@ -177,7 +177,7 @@ hasTag tagToMatch taskItem =
                 Regex.contains (regex <| String.dropRight 1 tagToMatch) itemTag
 
             else
-                itemTag == tagToMatch
+                String.toLower itemTag == String.toLower tagToMatch
     in
     List.any matches <| tags taskItem
 

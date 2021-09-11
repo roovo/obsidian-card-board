@@ -1,5 +1,5 @@
 - define boards by #tags
-  - ensure that tags are case insensative
+  - ensure column titles are unique
   - option to show other incomplete tasks
   - option to show completed tasks (only those with one of the specified tags)
   - sort tagboards by due date

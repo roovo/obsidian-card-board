@@ -282,6 +282,12 @@ hasTagBasic =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar")
                     |> Expect.equal (Ok True)
+        , test "is case insensative" <|
+            \() ->
+                "- [ ] foo #baz #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "BAR")
+                    |> Expect.equal (Ok True)
         , test "returns True if the task has a subtask with the given tag" <|
             \() ->
                 "- [ ] foo \n  - [ ] bar #bar"
@@ -330,6 +336,12 @@ hasTagWithSubtag =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar/baz")
                     |> Expect.equal (Ok True)
+        , test "is case insensative" <|
+            \() ->
+                "- [ ] foo #bar/Baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "BAR/BAZ")
+                    |> Expect.equal (Ok True)
         , test "returns False if the task has the subtag but it is followed by a slash" <|
             \() ->
                 "- [ ] foo #bar/baz/"
@@ -351,6 +363,12 @@ hasTagWithSubtagWildcard =
         [ test "returns True if the task has a / on the end" <|
             \() ->
                 "- [ ] foo #bar/"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Expect.equal (Ok True)
+        , test "is case insensative" <|
+            \() ->
+                "- [ ] foo #bAr/"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar/")
                     |> Expect.equal (Ok True)
