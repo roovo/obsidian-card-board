@@ -169,6 +169,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0.5em;
 }
 
+.card-board-card-subtasks-area > ul::before {
+  border-style: none;
+}
+
 .card-board-card-subtask {
   display: grid;
   grid: "checkbox    title"
@@ -187,6 +191,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .card-board-card-notes-area {
   grid-area: notes;
   font-size: var(--font-small);
+}
+
+.card-board-card-notes-area > ul::before {
+  border-style: none;
 }
 
 .card-board-card-footer-area {
