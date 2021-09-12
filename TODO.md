@@ -1,5 +1,7 @@
 - option to include done and undated for DateBoard
 - highlight overdue tasks, flagged tasks and those due today
+- do I want to make @autodone @autocomplete and make all done's completed's?
+
 - have a subtag board that uses a root tag then subtags to define columns
 - use settings or inline ```cardboard block to specify kanban?
 - don't store functions on the model tho (baord is stored as a function at the moment)
@@ -13,9 +15,7 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
-- do I want to make @autodone @autocomplete and make all done's completed's?
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
-- eisenhower matrix view
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
   - so maintaining the tag in the column being dragged from as well as getting the new
@@ -26,6 +26,7 @@
 - does openLinkText use setSelection to highlight the selected todo?
   if so, I can do better as by default obsidian doesn't include all
   indented stuff under a todo item as being in the block
+- eisenhower matrix view
 - define boards by headings on a page
 - confirm dialog before task deletion
 - don't display all completed tasks - can get quite long!

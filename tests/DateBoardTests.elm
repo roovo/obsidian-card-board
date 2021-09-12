@@ -14,24 +14,24 @@ suite : Test
 suite =
     concat
         [ columns
+        , columnUndated
         ]
 
 
 columns : Test
 columns =
     describe "columns"
-        [ test "undatedItems are sorted by filePath ascending" <|
+        [ test "default columns are just today tomorrow and future" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill
+                    |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
-                    |> tasksInColumn "Undated"
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "invalid date incomplete", "undated incomplete" ]
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "Today", "Tomorrow", "Future", "Done" ]
         , test "todaysItems are sorted by filePath ascending" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill
+                    |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
                     |> tasksInColumn "Today"
                     |> List.map TaskItem.title
@@ -39,7 +39,7 @@ columns =
         , test "tommorrowsItems" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill
+                    |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
                     |> tasksInColumn "Tomorrow"
                     |> List.map TaskItem.title
@@ -47,7 +47,7 @@ columns =
         , test "futureItems are sorted by due date ascending" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill
+                    |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
                     |> tasksInColumn "Future"
                     |> List.map TaskItem.title
@@ -55,7 +55,7 @@ columns =
         , test "completedItems are sorted by completion date desc (then filePath asc)" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill
+                    |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
                     |> tasksInColumn "Done"
                     |> List.map TaskItem.title
@@ -69,6 +69,37 @@ columns =
                         , "today complete"
                         ]
         ]
+
+
+columnUndated : Test
+columnUndated =
+    describe "columnUndated"
+        [ test "an Undated column is prepended if config sets includeUndated" <|
+            \() ->
+                parsedFiles
+                    |> DateBoard.fill { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns now zone
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Done" ]
+        , test "undatedItems are sorted by filePath ascending" <|
+            \() ->
+                parsedFiles
+                    |> DateBoard.fill { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns now zone
+                    |> tasksInColumn "Undated"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "invalid date incomplete", "undated incomplete" ]
+        ]
+
+
+
+-- HELPERS
+
+
+defaultConfig : DateBoard.Config
+defaultConfig =
+    { includeUndated = False
+    }
 
 
 tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem

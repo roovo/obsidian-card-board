@@ -1,5 +1,6 @@
 module DateBoard exposing
-    ( DateBoard
+    ( Config
+    , DateBoard
     , columns
     , fill
     )
@@ -15,12 +16,17 @@ import Time
 
 
 type DateBoard
-    = DateBoard TaskList
+    = DateBoard Config TaskList
 
 
-fill : TaskList -> DateBoard
-fill taskList =
-    DateBoard taskList
+type alias Config =
+    { includeUndated : Bool
+    }
+
+
+fill : Config -> TaskList -> DateBoard
+fill config taskList =
+    DateBoard config taskList
 
 
 
@@ -29,10 +35,7 @@ fill taskList =
 
 columns : Time.Posix -> Time.Zone -> DateBoard -> List ( String, List TaskItem )
 columns now zone dateBoard =
-    [ ( "Undated"
-      , undatedItems dateBoard
-      )
-    , ( "Today"
+    [ ( "Today"
       , todaysItems (Date.fromPosix zone now) dateBoard
       )
     , ( "Tomorrow"
@@ -45,17 +48,26 @@ columns now zone dateBoard =
       , completedItems dateBoard
       )
     ]
+        |> prependUndated dateBoard
 
 
-undatedItems : DateBoard -> List TaskItem
-undatedItems (DateBoard taskList) =
-    TaskList.topLevelTasks taskList
-        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
-        |> List.sortBy TaskItem.filePath
+prependUndated : DateBoard -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUndated (DateBoard config taskList) columnList =
+    let
+        undatedtasks =
+            TaskList.topLevelTasks taskList
+                |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
+                |> List.sortBy TaskItem.filePath
+    in
+    if config.includeUndated then
+        ( "Undated", undatedtasks ) :: columnList
+
+    else
+        columnList
 
 
 todaysItems : Date -> DateBoard -> List TaskItem
-todaysItems today (DateBoard taskList) =
+todaysItems today (DateBoard config taskList) =
     let
         isToday t =
             case TaskItem.due t of
@@ -75,7 +87,7 @@ todaysItems today (DateBoard taskList) =
 
 
 tomorrowsItems : Date -> DateBoard -> List TaskItem
-tomorrowsItems today (DateBoard taskList) =
+tomorrowsItems today (DateBoard config taskList) =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -97,7 +109,7 @@ tomorrowsItems today (DateBoard taskList) =
 
 
 futureItems : Date -> DateBoard -> List TaskItem
-futureItems today (DateBoard taskList) =
+futureItems today (DateBoard config taskList) =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -120,7 +132,7 @@ futureItems today (DateBoard taskList) =
 
 
 completedItems : DateBoard -> List TaskItem
-completedItems (DateBoard taskList) =
+completedItems (DateBoard config taskList) =
     TaskList.topLevelTasks taskList
         |> List.filter TaskItem.isCompleted
         |> List.sortBy TaskItem.filePath

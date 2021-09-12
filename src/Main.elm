@@ -61,20 +61,24 @@ init flags =
       , now = Time.millisToPosix flags.now
       , zone = Time.customZone flags.zone []
       , taskList = Loading
-
-      -- , board = Dated DateBoard.fill
       , board =
-            Tagged <|
-                TagBoard.fill
-                    { columns =
-                        [ { tag = "home", displayTitle = "Home Alone" }
-                        , { tag = "home/", displayTitle = "All Home" }
-                        , { tag = "town", displayTitle = "Town" }
-                        , { tag = "wellbeing", displayTitle = "Wellbeing" }
-                        ]
-                    , includeOthers = True
-                    , includeCompleted = True
+            Dated <|
+                DateBoard.fill
+                    { includeUndated = True
                     }
+
+      -- , board =
+      --       Tagged <|
+      --           TagBoard.fill
+      --               { columns =
+      --                   [ { tag = "home", displayTitle = "Home Alone" }
+      --                   , { tag = "home/", displayTitle = "All Home" }
+      --                   , { tag = "town", displayTitle = "Town" }
+      --                   , { tag = "wellbeing", displayTitle = "Wellbeing" }
+      --                   ]
+      --               , includeOthers = True
+      --               , includeCompleted = True
+      --               }
       }
     , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
     )
@@ -309,6 +313,18 @@ cardTagsView taskItem =
         (List.map cardTagView (TaskItem.tags taskItem))
 
 
+cardTagView : String -> Html Msg
+cardTagView tagText =
+    Html.div [ class "card-board-card-tag" ]
+        [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
+            [ Html.text "#" ]
+        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
+            [ Html.text tagText ]
+        , Html.span [ class "cm-list-1" ]
+            [ Html.text " " ]
+        ]
+
+
 notesView : TaskItem -> Html Msg
 notesView taskItem =
     let
@@ -343,18 +359,6 @@ subtaskView subtask =
             []
         , Html.div [ class "card-board-card-title", id uniqueId ]
             []
-        ]
-
-
-cardTagView : String -> Html Msg
-cardTagView tagText =
-    Html.div [ class "card-board-card-tag" ]
-        [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
-            [ Html.text "#" ]
-        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
-            [ Html.text tagText ]
-        , Html.span [ class "cm-list-1" ]
-            [ Html.text " " ]
         ]
 
 
