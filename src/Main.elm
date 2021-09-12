@@ -65,6 +65,7 @@ init flags =
             Dated <|
                 DateBoard.fill
                     { includeUndated = True
+                    , includeCompleted = True
                     }
 
       -- , board =

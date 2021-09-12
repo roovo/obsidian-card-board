@@ -14,6 +14,7 @@ suite : Test
 suite =
     concat
         [ columns
+        , columnCompleted
         , columnUndated
         ]
 
@@ -27,7 +28,7 @@ columns =
                     |> DateBoard.fill defaultConfig
                     |> DateBoard.columns now zone
                     |> List.map Tuple.first
-                    |> Expect.equal [ "Today", "Tomorrow", "Future", "Done" ]
+                    |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "todaysItems are sorted by filePath ascending" <|
             \() ->
                 parsedFiles
@@ -52,21 +53,34 @@ columns =
                     |> tasksInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete" ]
-        , test "completedItems are sorted by completion date desc (then filePath asc)" <|
+        ]
+
+
+columnCompleted : Test
+columnCompleted =
+    describe "columnCompleted"
+        [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.fill defaultConfig
+                    |> DateBoard.fill { defaultConfig | includeCompleted = True }
+                    |> DateBoard.columns now zone
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "Today", "Tomorrow", "Future", "Done" ]
+        , test "completedItems are sorted by completion date desc (then task title asc)" <|
+            \() ->
+                parsedFiles
+                    |> DateBoard.fill { defaultConfig | includeCompleted = True }
                     |> DateBoard.columns now zone
                     |> tasksInColumn "Done"
                     |> List.map TaskItem.title
                     |> Expect.equal
-                        [ "undated complete"
-                        , "yesterday complete"
-                        , "invalid date complete"
-                        , "future complete"
-                        , "far future complete"
-                        , "tomorrow complete"
+                        [ "future complete"
                         , "today complete"
+                        , "tomorrow complete"
+                        , "undated complete"
+                        , "yesterday complete"
+                        , "far future complete"
+                        , "invalid date complete"
                         ]
         ]
 
@@ -80,7 +94,7 @@ columnUndated =
                     |> DateBoard.fill { defaultConfig | includeUndated = True }
                     |> DateBoard.columns now zone
                     |> List.map Tuple.first
-                    |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Done" ]
+                    |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by filePath ascending" <|
             \() ->
                 parsedFiles
@@ -98,7 +112,8 @@ columnUndated =
 
 defaultConfig : DateBoard.Config
 defaultConfig =
-    { includeUndated = False
+    { includeCompleted = False
+    , includeUndated = False
     }
 
 
@@ -170,15 +185,15 @@ taskFiles =
 """ )
     , ( "e", Just future, """
 - [ ] future incomplete
-- [x] future complete
+- [x] future complete @done(2020-06-02)
 """ )
     , ( "c", Just tomorrow, """
 - [ ] tomorrow incomplete
-- [x] tomorrow complete
+- [x] tomorrow complete @done(2020-06-02)
 """ )
     , ( "b", Just today, """
 - [ ] today incomplete
-- [x] today complete
+- [x] today complete @done(2020-06-02)
 """ )
     , yesterdaysTasks
     , ( "f", Just "invalid date", """

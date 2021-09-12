@@ -20,7 +20,8 @@ type DateBoard
 
 
 type alias Config =
-    { includeUndated : Bool
+    { includeCompleted : Bool
+    , includeUndated : Bool
     }
 
 
@@ -44,11 +45,9 @@ columns now zone dateBoard =
     , ( "Future"
       , futureItems (Date.fromPosix zone now) dateBoard
       )
-    , ( "Done"
-      , completedItems dateBoard
-      )
     ]
         |> prependUndated dateBoard
+        |> appendCompleted dateBoard
 
 
 prependUndated : DateBoard -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
@@ -131,10 +130,19 @@ futureItems today (DateBoard config taskList) =
         |> List.sortBy TaskItem.dueRataDie
 
 
-completedItems : DateBoard -> List TaskItem
-completedItems (DateBoard config taskList) =
-    TaskList.topLevelTasks taskList
-        |> List.filter TaskItem.isCompleted
-        |> List.sortBy TaskItem.filePath
-        |> List.sortBy TaskItem.completedPosix
-        |> List.reverse
+appendCompleted : DateBoard -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted (DateBoard config taskList) columnList =
+    let
+        completedTasks =
+            TaskList.topLevelTasks taskList
+                |> List.filter TaskItem.isCompleted
+                |> List.sortBy TaskItem.title
+                |> List.reverse
+                |> List.sortBy TaskItem.completedPosix
+                |> List.reverse
+    in
+    if config.includeCompleted then
+        List.append columnList [ ( "Done", completedTasks ) ]
+
+    else
+        columnList
