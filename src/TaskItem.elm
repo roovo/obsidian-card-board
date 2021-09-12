@@ -173,11 +173,8 @@ hasTags taskItem =
 
 highlight : Time.Posix -> Time.Zone -> TaskItem -> Highlight
 highlight now zone taskItem =
-    case due taskItem of
-        Nothing ->
-            HighlightNone
-
-        Just dueDate ->
+    case ( isCompleted taskItem, due taskItem ) of
+        ( False, Just dueDate ) ->
             if Date.fromPosix zone now == dueDate then
                 HighlightImportant
 
@@ -186,6 +183,9 @@ highlight now zone taskItem =
 
             else
                 HighlightNone
+
+        ( _, _ ) ->
+            HighlightNone
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool

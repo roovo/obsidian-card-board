@@ -422,6 +422,18 @@ highlight =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.highlight now Time.utc)
                     |> Expect.equal (Ok HighlightNone)
+        , test "returns HighlightNone for a completed task that is due today" <|
+            \() ->
+                "- [x] foo @due(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.highlight now Time.utc)
+                    |> Expect.equal (Ok HighlightNone)
+        , test "returns HighlightNone for a completed task that is overdue" <|
+            \() ->
+                "- [x] foo @due(2019-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.highlight now Time.utc)
+                    |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightImportant for a task that is due today" <|
             \() ->
                 "- [ ] foo @due(2020-01-01)"
