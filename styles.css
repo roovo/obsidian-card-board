@@ -6,6 +6,8 @@
   --bold-weight:600;     /* Switch to 700 if you want thicker bold text */
 
   --border-width:1px;
+
+  --text-title-h1: var(--text-normal);
 }
 
 .card-board {
@@ -150,6 +152,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   font-weight: var(--bold-weight);
   font-size: var(--font-normal);
   display: -webkit-box;
+  color: var(--text-title-h1);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;

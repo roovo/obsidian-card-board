@@ -12,6 +12,7 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
+- do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
 - do I want a way of flagging cards?
 - I'm often passing Time.Posix and Time.Zone around together -> make a type
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
@@ -20,7 +21,6 @@
   - so maintaining the tag in the column being dragged from as well as getting the new
 - should I have an option to set colors for tags?
 - context menu to set due date to today
-- UI: style task title (color) as if it is a h1 (can I make it a h1)
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?
   if so, I can do better as by default obsidian doesn't include all
@@ -84,6 +84,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- UI: style task title (color) as if it is a h1 (can I make it a h1)
 - make @autodone @autocomplete and make all done's completed's?
 - do I want to use text-muted for the due date?
 - highlight overdue tasks, (flagged tasks - not implemented yet) and those due today
