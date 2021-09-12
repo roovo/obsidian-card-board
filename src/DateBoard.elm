@@ -145,7 +145,7 @@ appendCompleted (DateBoard config taskList) columnList =
                 |> List.reverse
     in
     if config.includeCompleted then
-        List.append columnList [ ( "Done", completedTasks ) ]
+        List.append columnList [ ( "Completed", completedTasks ) ]
 
     else
         columnList

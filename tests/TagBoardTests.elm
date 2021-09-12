@@ -209,7 +209,7 @@ columnsBasic =
 columnCompleted : Test
 columnCompleted =
     describe "columns - including completed tasks"
-        [ test "adds a 'Done' column " <|
+        [ test "adds a 'Completed' column " <|
             \() ->
                 ""
                     |> Parser.run (TaskList.parser "" Nothing)
@@ -221,8 +221,8 @@ columnCompleted =
                         }
                     |> TagBoard.columns
                     |> List.map Tuple.first
-                    |> Expect.equal [ "foo", "Done" ]
-        , test "puts completed tasks with at least one of the tags in the 'Done' column " <|
+                    |> Expect.equal [ "foo", "Completed" ]
+        , test "puts completed tasks with at least one of the tags in the 'Completed' column " <|
             \() ->
                 """- [ ] foo1 #foo
 - [x] foo2 #foo/
@@ -245,14 +245,14 @@ columnCompleted =
                                 ]
                         }
                     |> TagBoard.columns
-                    |> tasksInColumn "Done"
+                    |> tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar3", "foo4" ]
         , test "sorts cards by title & completion time" <|
             \() ->
-                """- [x] c #foo @done(2019-01-01)
-- [x] a #foo @done(2020-01-01)
-- [x] b #foo @done(2020-01-01)
+                """- [x] c #foo @completed(2019-01-01)
+- [x] a #foo @completed(2020-01-01)
+- [x] b #foo @completed(2020-01-01)
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
@@ -262,7 +262,7 @@ columnCompleted =
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
                     |> TagBoard.columns
-                    |> tasksInColumn "Done"
+                    |> tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "b", "c" ]
         ]

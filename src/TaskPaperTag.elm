@@ -1,4 +1,4 @@
-module TaskPaperTag exposing (autodoneTagParser, doneTagParser, dueTagParser, parser)
+module TaskPaperTag exposing (autocompleteTagParser, completedTagParser, dueTagParser, parser)
 
 import Date exposing (Date)
 import Parser as P exposing ((|.), (|=), Parser)
@@ -10,14 +10,14 @@ import Time
 -- PARSER
 
 
-autodoneTagParser : (Bool -> a) -> Parser a
-autodoneTagParser =
-    parser "autodone" ParserHelper.booleanParser
+autocompleteTagParser : (Bool -> a) -> Parser a
+autocompleteTagParser =
+    parser "autocomplete" ParserHelper.booleanParser
 
 
-doneTagParser : (Time.Posix -> a) -> Parser a
-doneTagParser =
-    parser "done" ParserHelper.timeParser
+completedTagParser : (Time.Posix -> a) -> Parser a
+completedTagParser =
+    parser "completed" ParserHelper.timeParser
 
 
 dueTagParser : (Date -> a) -> Parser a

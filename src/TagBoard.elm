@@ -78,7 +78,7 @@ appendCompleted config taskList columnList =
                 |> List.map .tag
     in
     if config.includeCompleted then
-        List.append columnList [ ( "Done", completedTasks ) ]
+        List.append columnList [ ( "Completed", completedTasks ) ]
 
     else
         columnList

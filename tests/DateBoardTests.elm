@@ -65,13 +65,13 @@ columnCompleted =
                     |> DateBoard.fill { defaultConfig | includeCompleted = True }
                     |> DateBoard.columns now zone
                     |> List.map Tuple.first
-                    |> Expect.equal [ "Today", "Tomorrow", "Future", "Done" ]
+                    |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
                 parsedFiles
                     |> DateBoard.fill { defaultConfig | includeCompleted = True }
                     |> DateBoard.columns now zone
-                    |> tasksInColumn "Done"
+                    |> tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "future complete"
@@ -186,16 +186,16 @@ taskFiles =
 """ )
     , ( "e", Just future, """
 - [ ] future incomplete
-- [x] future complete @done(2020-06-02)
+- [x] future complete @completed(2020-06-02)
 """ )
     , ( "c", Just tomorrow, """
 - [ ] tomorrow incomplete
 - [ ] a task for tomorrow
-- [x] tomorrow complete @done(2020-06-02)
+- [x] tomorrow complete @completed(2020-06-02)
 """ )
     , ( "b", Just today, """
 - [ ] today incomplete
-- [x] today complete @done(2020-06-02)
+- [x] today complete @completed(2020-06-02)
 """ )
     , yesterdaysTasks
     , ( "f", Just "invalid date", """
@@ -209,7 +209,7 @@ undatedTasks : ( String, Maybe String, String )
 undatedTasks =
     ( "g", Nothing, """
 - [ ] an undated incomplete
-- [x] undated complete @done(2020-06-02)
+- [x] undated complete @completed(2020-06-02)
 """ )
 
 
@@ -218,5 +218,5 @@ yesterdaysTasks =
     ( "a", Just yesterday, """
 - [ ] yesterday incomplete
 - [ ] another yesterday incomplete
-- [x] yesterday complete @done(2020-06-01)
+- [x] yesterday complete @completed(2020-06-01)
 """ )

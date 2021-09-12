@@ -84,7 +84,7 @@ type Completion
 
 type Content
     = AutoCompleteTag Bool
-    | DoneTag Time.Posix
+    | CompletedTag Time.Posix
     | DueTag Date
     | ObsidianTag String
     | Word String
@@ -373,7 +373,7 @@ toString (TaskItem fields _) =
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
-                    " @done(" ++ completionString ++ ")"
+                    " @completed(" ++ completionString ++ ")"
 
                 _ ->
                     ""
@@ -384,10 +384,10 @@ toString (TaskItem fields _) =
                     ""
 
                 FalseSpecified ->
-                    " @autodone(false)"
+                    " @autocomplete(false)"
 
                 TrueSpecified ->
-                    " @autodone(true)"
+                    " @autocomplete(true)"
 
         blockLinkText =
             case fields.blockLink of
@@ -498,7 +498,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
         extractCompletionTime : Content -> Maybe Time.Posix -> Maybe Time.Posix
         extractCompletionTime content time =
             case content of
-                DoneTag completionTime ->
+                CompletedTag completionTime ->
                     Just completionTime
 
                 _ ->
@@ -599,9 +599,9 @@ contentHelp revContents =
 tokenParser : Parser Content
 tokenParser =
     P.oneOf
-        [ P.backtrackable <| TaskPaperTag.doneTagParser DoneTag
+        [ P.backtrackable <| TaskPaperTag.completedTagParser CompletedTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
-        , P.backtrackable <| TaskPaperTag.autodoneTagParser AutoCompleteTag
+        , P.backtrackable <| TaskPaperTag.autocompleteTagParser AutoCompleteTag
         , P.backtrackable <| obsidianTagParser
         , P.succeed Word
             |= ParserHelper.wordParser
