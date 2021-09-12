@@ -193,6 +193,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .card-board-card-action-area-due {
   grid-area: due;
+  color: var(--text-faint);
 }
 
 .card-board-card-action-area-buttons {

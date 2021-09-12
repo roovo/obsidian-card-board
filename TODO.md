@@ -1,4 +1,3 @@
-- do I want to use text-muted for the due date?
 - do I want to make @autodone @autocomplete and make all done's completed's?
 
 - have a subtag board that uses a root tag then subtags to define columns
@@ -86,6 +85,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- do I want to use text-muted for the due date?
 - highlight overdue tasks, (flagged tasks - not implemented yet) and those due today
 - dateboard: secondary sort should be card title
 - option to include done and undated for DateBoard
