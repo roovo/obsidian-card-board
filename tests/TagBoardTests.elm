@@ -28,7 +28,10 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = []
+                        }
                     |> TagBoard.columns
                     |> List.length
                     |> Expect.equal 0
@@ -40,11 +43,18 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "foo", "bar", "baz" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns =
+                                [ { tag = "foo", displayTitle = "" }
+                                , { tag = "bar", displayTitle = "" }
+                                , { tag = "baz", displayTitle = "" }
+                                ]
+                        }
                     |> TagBoard.columns
                     |> List.length
                     |> Expect.equal 3
-        , test "ensures only uses columns with unique names" <|
+        , test "ensures only uses columns with unique tags" <|
             \() ->
                 """- [ ] foo #foo
 - [ ] bar #bar
@@ -52,7 +62,16 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "foo", "foo", "bar", "baz", "bar" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns =
+                                [ { tag = "foo", displayTitle = "foo" }
+                                , { tag = "foo", displayTitle = "foo" }
+                                , { tag = "bar", displayTitle = "bar" }
+                                , { tag = "baz", displayTitle = "baz" }
+                                , { tag = "bar", displayTitle = "bar" }
+                                ]
+                        }
                     |> TagBoard.columns
                     |> List.map Tuple.first
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -64,7 +83,10 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "hello" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "hello", displayTitle = "" } ]
+                        }
                     |> TagBoard.columns
                     |> List.concatMap Tuple.second
                     |> List.length
@@ -77,9 +99,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar"
+                    |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags that start with the given tag" <|
@@ -90,9 +115,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar"
+                    |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags with a trailing slash if not in the config" <|
@@ -103,9 +131,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar"
+                    |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "includes tasks with tags with a trailing slash if in the config" <|
@@ -116,9 +147,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar/"
+                    |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "includes tasks with a subtag if there is a trailing slash in the config" <|
@@ -129,9 +163,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar/"
+                    |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "prefixes the taskItem.inColumnId's with the title of the column" <|
@@ -142,9 +179,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "file_a" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "bar/", displayTitle = "All Bar" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "bar/"
+                    |> tasksInColumn "All Bar"
                     |> List.map TaskItem.inColumnId
                     |> Expect.equal [ "bar/:file_a:2", "bar/:file_a:3" ]
         , test "sorts cards by title & due date" <|
@@ -155,9 +195,12 @@ columnsBasic =
 """
                     |> Parser.run (TaskList.parser "file_a" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | columns = [ "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | columns = [ { tag = "foo", displayTitle = "Foo tasks" } ]
+                        }
                     |> TagBoard.columns
-                    |> tasksInColumn "foo"
+                    |> tasksInColumn "Foo tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -171,7 +214,11 @@ columnCompleted =
                 ""
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeCompleted = True
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
                     |> TagBoard.columns
                     |> List.map Tuple.first
                     |> Expect.equal [ "foo", "Done" ]
@@ -189,7 +236,14 @@ columnCompleted =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "bar/", "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeCompleted = True
+                            , columns =
+                                [ { tag = "bar/", displayTitle = "" }
+                                , { tag = "foo", displayTitle = "" }
+                                ]
+                        }
                     |> TagBoard.columns
                     |> tasksInColumn "Done"
                     |> List.map TaskItem.title
@@ -202,7 +256,11 @@ columnCompleted =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeCompleted = True
+                            , columns = [ { tag = "foo", displayTitle = "" } ]
+                        }
                     |> TagBoard.columns
                     |> tasksInColumn "Done"
                     |> List.map TaskItem.title
@@ -218,7 +276,11 @@ columnOthers =
                 ""
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeOthers = True
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
                     |> TagBoard.columns
                     |> List.map Tuple.first
                     |> Expect.equal [ "Others", "foo" ]
@@ -235,7 +297,14 @@ columnOthers =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "bar/", "foo" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeOthers = True
+                            , columns =
+                                [ { tag = "bar/", displayTitle = "" }
+                                , { tag = "foo", displayTitle = "" }
+                                ]
+                        }
                     |> TagBoard.columns
                     |> tasksInColumn "Others"
                     |> List.map TaskItem.title
@@ -248,7 +317,11 @@ columnOthers =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "bar" ] }
+                    |> TagBoard.fill
+                        { defaultConfig
+                            | includeOthers = True
+                            , columns = [ { tag = "bar", displayTitle = "" } ]
+                        }
                     |> TagBoard.columns
                     |> tasksInColumn "Others"
                     |> List.map TaskItem.title

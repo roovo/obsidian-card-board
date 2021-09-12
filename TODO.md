@@ -1,6 +1,3 @@
-- define boards by #tags
-  - allow column heading alias text to be specified too
-    (as you might want a space in it and this isn't allowed in a tag)
 - always show tags as tag pills whatever the theme
 - have a subtag board that uses a root tag then subtags to define columns
 - use settings or inline ```cardboard block to specify kanban?
@@ -15,6 +12,7 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
+- do I want to make @autodone @autocomplete and make all done's completed's?
 - could make coumn ordering more efficient (e.g. TagBoard completed tasks)
 - option to include done and undated for DateBoard
 - eisenhower matrix view
@@ -89,6 +87,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- define boards by #tags
 - bugfix: if parent taks has no tags then the child tags aren't picked up
 - use a kanban icon for the sidebar
 - add a timestamp to done for better ordering

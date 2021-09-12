@@ -78,6 +78,7 @@ File.open(undated_tasks, "w") do |file|
 - [ ] #important and this is a task tagged as important
 
 - [x] a completed task with no @done
+- [x] thought a bit about yoga #wellbeing
 - [ ] this task has a pretty long title so it won't all fit in the task title on the card
   it also has a nice long block of task notes underneath it
 

@@ -66,7 +66,12 @@ init flags =
       , board =
             Tagged <|
                 TagBoard.fill
-                    { columns = [ "Home", "Home/", "Town", "Wellbeing" ]
+                    { columns =
+                        [ { tag = "home", displayTitle = "Home Alone" }
+                        , { tag = "home/", displayTitle = "All Home" }
+                        , { tag = "town", displayTitle = "Town" }
+                        , { tag = "wellbeing", displayTitle = "Wellbeing" }
+                        ]
                     , includeOthers = True
                     , includeCompleted = True
                     }

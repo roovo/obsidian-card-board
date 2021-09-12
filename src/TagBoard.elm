@@ -21,9 +21,15 @@ type TagBoard
 
 
 type alias Config =
-    { columns : List String
+    { columns : List ColumnConfig
     , includeOthers : Bool
     , includeCompleted : Bool
+    }
+
+
+type alias ColumnConfig =
+    { tag : String
+    , displayTitle : String
     }
 
 
@@ -39,7 +45,7 @@ fill config taskList =
 columns : TagBoard -> List ( String, List TaskItem )
 columns (TagBoard config taskList) =
     config.columns
-        |> LE.unique
+        |> LE.uniqueBy .tag
         |> List.foldl (fillColumn taskList) []
         |> prependOthers config taskList
         |> appendCompleted config taskList
@@ -55,7 +61,7 @@ appendCompleted config taskList columnList =
         completedTasks =
             taskList
                 |> TaskList.filter isCompleteWithTags
-                |> TaskList.placeInColumn "Done"
+                |> TaskList.placeInColumn "__ completed __"
                 |> TaskList.topLevelTasks
                 |> List.sortBy TaskItem.title
                 |> List.reverse
@@ -64,11 +70,12 @@ appendCompleted config taskList columnList =
 
         isCompleteWithTags : TaskItem -> Bool
         isCompleteWithTags item =
-            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumns item
+            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
 
-        uniqueColumns =
+        uniqueColumnTags =
             config.columns
-                |> LE.unique
+                |> LE.uniqueBy .tag
+                |> List.map .tag
     in
     if config.includeCompleted then
         List.append columnList [ ( "Done", completedTasks ) ]
@@ -83,18 +90,19 @@ prependOthers config taskList columnList =
         otherTasks =
             taskList
                 |> TaskList.filter isIncompleteWithoutTags
-                |> TaskList.placeInColumn "Others"
+                |> TaskList.placeInColumn "__ others __"
                 |> TaskList.topLevelTasks
                 |> List.sortBy TaskItem.title
                 |> List.sortBy TaskItem.dueRataDie
 
         isIncompleteWithoutTags : TaskItem -> Bool
         isIncompleteWithoutTags item =
-            not (TaskItem.isCompleted item) && not (TaskItem.hasOneOfTheTags uniqueColumns item)
+            not (TaskItem.isCompleted item) && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
 
-        uniqueColumns =
+        uniqueColumnTags =
             config.columns
-                |> LE.unique
+                |> LE.uniqueBy .tag
+                |> List.map .tag
     in
     if config.includeOthers then
         ( "Others", otherTasks ) :: columnList
@@ -103,18 +111,18 @@ prependOthers config taskList columnList =
         columnList
 
 
-fillColumn : TaskList -> String -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-fillColumn taskList column acc =
+fillColumn : TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+fillColumn taskList columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
         isIncompleteWithTag tag item =
             not (TaskItem.isCompleted item) && TaskItem.hasTag tag item
     in
-    TaskList.filter (isIncompleteWithTag column) taskList
-        |> TaskList.placeInColumn column
+    TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
+        |> TaskList.placeInColumn columnConfig.tag
         |> TaskList.topLevelTasks
         |> List.sortBy TaskItem.title
         |> List.sortBy TaskItem.dueRataDie
-        |> Tuple.pair column
+        |> Tuple.pair columnConfig.displayTitle
         |> List.singleton
         |> List.append acc
