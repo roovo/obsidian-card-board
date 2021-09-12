@@ -12,7 +12,8 @@ suite : Test
 suite =
     concat
         [ columnsBasic
-        , columnsOthers
+        , columnCompleted
+        , columnOthers
         ]
 
 
@@ -149,8 +150,42 @@ columnsBasic =
         ]
 
 
-columnsOthers : Test
-columnsOthers =
+columnCompleted : Test
+columnCompleted =
+    describe "columns - including completed tasks"
+        [ test "adds a 'Done' column " <|
+            \() ->
+                ""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "foo" ] }
+                    |> TagBoard.columns
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "foo", "Done" ]
+        , test "puts completed tasks with at least one of the tags in the 'Done' column " <|
+            \() ->
+                """- [ ] foo1 #foo
+- [x] foo2 #foo/
+- [x] foo3 #foo/one
+- [x] foo4 #foo/one #foo
+- [x] bar1 #bar
+- [ ] bar2 #bar/
+- [x] bar3 #bar/one
+- [ ] baz1
+- [x] baz2
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "bar/", "foo" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "Done"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo4", "bar1", "bar3" ]
+        ]
+
+
+columnOthers : Test
+columnOthers =
     describe "columns - including other tasks"
         [ test "adds an 'Other' column " <|
             \() ->
@@ -189,6 +224,7 @@ columnsOthers =
 defaultConfig : TagBoard.Config
 defaultConfig =
     { columns = []
+    , includeCompleted = False
     , includeOthers = False
     }
 

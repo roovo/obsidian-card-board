@@ -23,6 +23,7 @@ type TagBoard
 type alias Config =
     { columns : List String
     , includeOthers : Bool
+    , includeCompleted : Bool
     }
 
 
@@ -41,10 +42,35 @@ columns (TagBoard config taskList) =
         |> LE.unique
         |> List.foldl (fillColumn taskList) []
         |> prependOthers config taskList
+        |> appendCompleted config taskList
 
 
 
 -- PRIVATE
+
+
+appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted config taskList columnList =
+    let
+        completedTasks =
+            taskList
+                |> TaskList.filter isCompleteWithTags
+                |> TaskList.placeInColumn "Done"
+                |> TaskList.topLevelTasks
+
+        isCompleteWithTags : TaskItem -> Bool
+        isCompleteWithTags item =
+            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumns item
+
+        uniqueColumns =
+            config.columns
+                |> LE.unique
+    in
+    if config.includeCompleted then
+        List.append columnList [ ( "Done", completedTasks ) ]
+
+    else
+        columnList
 
 
 prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )

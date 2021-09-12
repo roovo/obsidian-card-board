@@ -1,5 +1,4 @@
 - define boards by #tags
-  - option to show completed tasks (only those with one of the specified tags)
   - sort tagboards by due date (alphbetical by title for others & secondary for tag columns)
   - allow column heading alias text to be specified too
     (as you might want a space in it and this isn't allowed in a tag)
@@ -17,6 +16,7 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
+- option to include done and undated for DateBoard
 - eisenhower matrix view
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card

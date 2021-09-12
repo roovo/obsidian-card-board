@@ -68,6 +68,7 @@ init flags =
                 TagBoard.fill
                     { columns = [ "Home", "Home/", "Town", "Wellbeing" ]
                     , includeOthers = True
+                    , includeCompleted = True
                     }
       }
     , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
