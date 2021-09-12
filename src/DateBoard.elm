@@ -56,7 +56,7 @@ prependUndated (DateBoard config taskList) columnList =
         undatedtasks =
             TaskList.topLevelTasks taskList
                 |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
-                |> List.sortBy TaskItem.filePath
+                |> List.sortBy (String.toLower << TaskItem.title)
     in
     if config.includeUndated then
         ( "Undated", undatedtasks ) :: columnList
@@ -82,7 +82,8 @@ todaysItems today (DateBoard config taskList) =
     in
     TaskList.topLevelTasks taskList
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
-        |> List.sortBy TaskItem.filePath
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
 
 
 tomorrowsItems : Date -> DateBoard -> List TaskItem
@@ -105,6 +106,7 @@ tomorrowsItems today (DateBoard config taskList) =
     in
     TaskList.topLevelTasks taskList
         |> List.filter (\t -> isTomorrow t && (not <| TaskItem.isCompleted t))
+        |> List.sortBy (String.toLower << TaskItem.title)
 
 
 futureItems : Date -> DateBoard -> List TaskItem
@@ -127,6 +129,7 @@ futureItems today (DateBoard config taskList) =
     in
     TaskList.topLevelTasks taskList
         |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+        |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
 
 
@@ -136,7 +139,7 @@ appendCompleted (DateBoard config taskList) columnList =
         completedTasks =
             TaskList.topLevelTasks taskList
                 |> List.filter TaskItem.isCompleted
-                |> List.sortBy TaskItem.title
+                |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.reverse
                 |> List.sortBy TaskItem.completedPosix
                 |> List.reverse

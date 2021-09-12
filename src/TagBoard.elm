@@ -63,7 +63,7 @@ appendCompleted config taskList columnList =
                 |> TaskList.filter isCompleteWithTags
                 |> TaskList.placeInColumn "__ completed __"
                 |> TaskList.topLevelTasks
-                |> List.sortBy TaskItem.title
+                |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.reverse
                 |> List.sortBy TaskItem.completedPosix
                 |> List.reverse
@@ -92,7 +92,7 @@ prependOthers config taskList columnList =
                 |> TaskList.filter isIncompleteWithoutTags
                 |> TaskList.placeInColumn "__ others __"
                 |> TaskList.topLevelTasks
-                |> List.sortBy TaskItem.title
+                |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.sortBy TaskItem.dueRataDie
 
         isIncompleteWithoutTags : TaskItem -> Bool
@@ -121,7 +121,7 @@ fillColumn taskList columnConfig acc =
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
         |> TaskList.placeInColumn columnConfig.tag
         |> TaskList.topLevelTasks
-        |> List.sortBy TaskItem.title
+        |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
         |> Tuple.pair columnConfig.displayTitle
         |> List.singleton

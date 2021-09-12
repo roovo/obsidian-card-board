@@ -1,4 +1,3 @@
-- dateboard: secondary sort should be card title
 - highlight overdue tasks, flagged tasks and those due today
 - do I want to make @autodone @autocomplete and make all done's completed's?
 
@@ -85,6 +84,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- dateboard: secondary sort should be card title
 - option to include done and undated for DateBoard
 - always show tags as tag pills whatever the theme
 - define boards by #tags
