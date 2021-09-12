@@ -57,6 +57,10 @@ appendCompleted config taskList columnList =
                 |> TaskList.filter isCompleteWithTags
                 |> TaskList.placeInColumn "Done"
                 |> TaskList.topLevelTasks
+                |> List.sortBy TaskItem.title
+                |> List.reverse
+                |> List.sortBy TaskItem.completedPosix
+                |> List.reverse
 
         isCompleteWithTags : TaskItem -> Bool
         isCompleteWithTags item =
@@ -81,6 +85,8 @@ prependOthers config taskList columnList =
                 |> TaskList.filter isIncompleteWithoutTags
                 |> TaskList.placeInColumn "Others"
                 |> TaskList.topLevelTasks
+                |> List.sortBy TaskItem.title
+                |> List.sortBy TaskItem.dueRataDie
 
         isIncompleteWithoutTags : TaskItem -> Bool
         isIncompleteWithoutTags item =
@@ -107,6 +113,8 @@ fillColumn taskList column acc =
     TaskList.filter (isIncompleteWithTag column) taskList
         |> TaskList.placeInColumn column
         |> TaskList.topLevelTasks
+        |> List.sortBy TaskItem.title
+        |> List.sortBy TaskItem.dueRataDie
         |> Tuple.pair column
         |> List.singleton
         |> List.append acc

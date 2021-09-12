@@ -147,6 +147,19 @@ columnsBasic =
                     |> tasksInColumn "bar/"
                     |> List.map TaskItem.inColumnId
                     |> Expect.equal [ "bar/:file_a:2", "bar/:file_a:3" ]
+        , test "sorts cards by title & due date" <|
+            \() ->
+                """- [ ] b #foo @due(2020-01-01)
+- [ ] a #foo @due(2020-01-01)
+- [ ] c #foo @due(2019-01-01)
+"""
+                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | columns = [ "foo" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "foo"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "c", "a", "b" ]
         ]
 
 
@@ -180,7 +193,20 @@ columnCompleted =
                     |> TagBoard.columns
                     |> tasksInColumn "Done"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "foo4", "bar1", "bar3" ]
+                    |> Expect.equal [ "bar1", "bar3", "foo4" ]
+        , test "sorts cards by title & completion time" <|
+            \() ->
+                """- [x] c #foo @done(2019-01-01)
+- [x] a #foo @done(2020-01-01)
+- [x] b #foo @done(2020-01-01)
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeCompleted = True, columns = [ "foo" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "Done"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "a", "b", "c" ]
         ]
 
 
@@ -213,7 +239,20 @@ columnOthers =
                     |> TagBoard.columns
                     |> tasksInColumn "Others"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "foo2", "foo3", "baz1" ]
+                    |> Expect.equal [ "baz1", "foo2", "foo3" ]
+        , test "sorts cards by title & due date" <|
+            \() ->
+                """- [ ] b #foo @due(2020-01-01)
+- [ ] a #foo @due(2020-01-01)
+- [ ] c #foo @due(2019-01-01)
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "bar" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "Others"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "c", "a", "b" ]
         ]
 
 
