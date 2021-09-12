@@ -285,14 +285,17 @@ card now zone taskItem =
 
         highlightAreaClass =
             case TaskItem.highlight now zone taskItem of
-                TaskItem.HighlightNone ->
-                    ""
+                TaskItem.HighlightCritical ->
+                    "critical"
+
+                TaskItem.HighlightGood ->
+                    "good"
 
                 TaskItem.HighlightImportant ->
                     "important"
 
-                TaskItem.HighlightCritical ->
-                    "critical"
+                TaskItem.HighlightNone ->
+                    ""
     in
     Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]

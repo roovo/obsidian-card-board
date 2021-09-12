@@ -65,12 +65,16 @@ ul.card-board-column-list > li.card-board-card::before {
   grid-area: mark;
 }
 
-.card-board-card-highlight-area.important {
-  background-color: var(--text-accent);
-}
-
 .card-board-card-highlight-area.critical {
   background-color: var(--text-error);
+}
+
+.card-board-card-highlight-area.good {
+  background-color: var(--interactive-success);
+}
+
+.card-board-card-highlight-area.important {
+  background-color: var(--text-accent);
 }
 
 .card-board-card-content-area {
@@ -84,7 +88,6 @@ ul.card-board-column-list > li.card-board-card::before {
         "footer      footer"
         / auto       minmax(0, 1fr);
 }
-
 
 .card-board-card-tag-area {
   grid-area: tags;

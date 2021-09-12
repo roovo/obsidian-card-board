@@ -1,7 +1,7 @@
 - have a subtag board that uses a root tag then subtags to define columns
 - how to switch between boards
 - use settings or inline ```cardboard block to specify kanban?
-- don't store functions on the model tho (baord is stored as a function at the moment)
+- don't store functions on the model tho (board is stored as a function at the moment)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - plugin settings
   - allow/deny directories/files

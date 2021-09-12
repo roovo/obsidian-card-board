@@ -92,8 +92,9 @@ type Content
 
 type Highlight
     = HighlightNone
-    | HighlightImportant
     | HighlightCritical
+    | HighlightGood
+    | HighlightImportant
 
 
 type IndentedItem
@@ -180,6 +181,9 @@ highlight now zone taskItem =
 
             else if Date.toRataDie (Date.fromPosix zone now) > Date.toRataDie dueDate then
                 HighlightCritical
+
+            else if Date.toRataDie (Date.fromPosix zone now) < Date.toRataDie dueDate then
+                HighlightGood
 
             else
                 HighlightNone
