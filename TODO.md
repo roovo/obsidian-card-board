@@ -1,4 +1,5 @@
-- always show tags as tag pills whatever the theme
+- option to include done and undated for DateBoard
+- highlight overdue tasks, flagged tasks and those due today
 - have a subtag board that uses a root tag then subtags to define columns
 - use settings or inline ```cardboard block to specify kanban?
 - don't store functions on the model tho (baord is stored as a function at the moment)
@@ -13,13 +14,11 @@
     - leaflet keeps a bunch of data in the config folder
 
 - do I want to make @autodone @autocomplete and make all done's completed's?
-- could make coumn ordering more efficient (e.g. TagBoard completed tasks)
-- option to include done and undated for DateBoard
+- could make column ordering more efficient (e.g. TagBoard completed tasks)
 - eisenhower matrix view
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
   - so maintaining the tag in the column being dragged from as well as getting the new
-- highlight overdue tasks, flagged tasks and those due today
 - should I have an option to set colors for tags?
 - context menu to set due date to today
 - UI: style task title (color) as if it is a h1 (can I make it a h1)
@@ -33,8 +32,6 @@
 - handle renames - make sure I cope with both directory and file renames
 - when clicking the edit button place the cursor at the line of the todo
   have tried to do this using setCursor and not go it to work so far
-- do I want to always display tags as tag pills?
-  if I do, I could allow them to be colored via settings
 - run elm review
 - specify format for people cards
   - if on line and they contain an image then put the pic on the card
@@ -87,6 +84,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- always show tags as tag pills whatever the theme
 - define boards by #tags
 - bugfix: if parent taks has no tags then the child tags aren't picked up
 - use a kanban icon for the sidebar
