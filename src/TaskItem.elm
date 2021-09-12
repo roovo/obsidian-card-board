@@ -11,6 +11,7 @@ module TaskItem exposing
     , dueRataDie
     , filePath
     , hasNotes
+    , hasOneOfTheTags
     , hasSubtasks
     , hasTag
     , hasTags
@@ -160,6 +161,11 @@ hasNotes (TaskItem fields _) =
 hasTags : TaskItem -> Bool
 hasTags taskItem =
     not <| List.isEmpty <| tags taskItem
+
+
+hasOneOfTheTags : List String -> TaskItem -> Bool
+hasOneOfTheTags tagsToMatch taskItem =
+    List.any (\t -> hasTag t taskItem) tagsToMatch
 
 
 hasTag : String -> TaskItem -> Bool

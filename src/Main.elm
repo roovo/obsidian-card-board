@@ -63,7 +63,12 @@ init flags =
       , taskList = Loading
 
       -- , board = Dated DateBoard.fill
-      , board = Tagged <| TagBoard.fill { columns = [ "Home", "Home/", "Town", "Wellbeing" ] }
+      , board =
+            Tagged <|
+                TagBoard.fill
+                    { columns = [ "Home", "Home/", "Town", "Wellbeing" ]
+                    , includeOthers = True
+                    }
       }
     , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
     )

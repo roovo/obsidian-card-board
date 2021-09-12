@@ -11,13 +11,14 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ columns
+        [ columnsBasic
+        , columnsOthers
         ]
 
 
-columns : Test
-columns =
-    describe "columns"
+columnsBasic : Test
+columnsBasic =
+    describe "columns - basic"
         [ test "returns no columns if none are defined in the config" <|
             \() ->
                 """- [ ] foo #foo
@@ -26,7 +27,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [] }
+                    |> TagBoard.fill { defaultConfig | columns = [] }
                     |> TagBoard.columns
                     |> List.length
                     |> Expect.equal 0
@@ -38,7 +39,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "foo", "bar", "baz" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "foo", "bar", "baz" ] }
                     |> TagBoard.columns
                     |> List.length
                     |> Expect.equal 3
@@ -50,7 +51,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "foo", "foo", "bar", "baz", "bar" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "foo", "foo", "bar", "baz", "bar" ] }
                     |> TagBoard.columns
                     |> List.map Tuple.first
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -62,7 +63,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "hello" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "hello" ] }
                     |> TagBoard.columns
                     |> List.concatMap Tuple.second
                     |> List.length
@@ -75,7 +76,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar"
                     |> List.map TaskItem.title
@@ -88,7 +89,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar"
                     |> List.map TaskItem.title
@@ -101,7 +102,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar"
                     |> List.map TaskItem.title
@@ -114,7 +115,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar/"
                     |> List.map TaskItem.title
@@ -127,7 +128,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar/"
                     |> List.map TaskItem.title
@@ -140,7 +141,7 @@ columns =
 """
                     |> Parser.run (TaskList.parser "file_a" Nothing)
                     |> Result.withDefault TaskList.empty
-                    |> TagBoard.fill { columns = [ "bar/" ] }
+                    |> TagBoard.fill { defaultConfig | columns = [ "bar/" ] }
                     |> TagBoard.columns
                     |> tasksInColumn "bar/"
                     |> List.map TaskItem.inColumnId
@@ -148,8 +149,48 @@ columns =
         ]
 
 
+columnsOthers : Test
+columnsOthers =
+    describe "columns - including other tasks"
+        [ test "adds an 'Other' column " <|
+            \() ->
+                ""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "foo" ] }
+                    |> TagBoard.columns
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "Others", "foo" ]
+        , test "puts tasks with no tags or none of the current tags in the  'Other' column " <|
+            \() ->
+                """- [ ] foo1 #foo
+- [ ] foo2 #foo/
+- [ ] foo3 #foo/one
+- [ ] bar1 #bar
+- [ ] bar2 #bar/
+- [ ] bar3 #bar/one
+- [ ] baz1
+- [x] baz2
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.fill { defaultConfig | includeOthers = True, columns = [ "bar/", "foo" ] }
+                    |> TagBoard.columns
+                    |> tasksInColumn "Others"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo2", "foo3", "baz1" ]
+        ]
+
+
 
 -- HELPERS
+
+
+defaultConfig : TagBoard.Config
+defaultConfig =
+    { columns = []
+    , includeOthers = False
+    }
 
 
 tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem

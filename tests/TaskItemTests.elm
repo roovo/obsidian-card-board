@@ -17,6 +17,7 @@ suite =
         , containsId
         , due
         , filePath
+        , hasOneOfTheTags
         , hasTags
         , hasTagBasic
         , hasTagWithSubtag
@@ -246,6 +247,24 @@ filePath =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
+        ]
+
+
+hasOneOfTheTags : Test
+hasOneOfTheTags =
+    describe "hasOneOfTheTags - basic operation"
+        [ test "returns True if the task has one of the tags" <|
+            \() ->
+                "- [ ] foo #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasOneOfTheTags [ "bar", "baz" ])
+                    |> Expect.equal (Ok True)
+        , test "returns False if the task has none of the tags" <|
+            \() ->
+                "- [ ] foo #bar #foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasOneOfTheTags [ "qux", "baz" ])
+                    |> Expect.equal (Ok False)
         ]
 
 

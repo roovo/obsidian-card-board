@@ -1,5 +1,6 @@
 module TagBoard exposing
-    ( TagBoard
+    ( Config
+    , TagBoard
     , columns
     , fill
     )
@@ -21,6 +22,7 @@ type TagBoard
 
 type alias Config =
     { columns : List String
+    , includeOthers : Bool
     }
 
 
@@ -38,10 +40,35 @@ columns (TagBoard config taskList) =
     config.columns
         |> LE.unique
         |> List.foldl (fillColumn taskList) []
+        |> prependOthers config taskList
 
 
 
 -- PRIVATE
+
+
+prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependOthers config taskList columnList =
+    let
+        otherTasks =
+            taskList
+                |> TaskList.filter isIncompleteWithoutTags
+                |> TaskList.placeInColumn "Others"
+                |> TaskList.topLevelTasks
+
+        isIncompleteWithoutTags : TaskItem -> Bool
+        isIncompleteWithoutTags item =
+            not (TaskItem.isCompleted item) && not (TaskItem.hasOneOfTheTags uniqueColumns item)
+
+        uniqueColumns =
+            config.columns
+                |> LE.unique
+    in
+    if config.includeOthers then
+        ( "Others", otherTasks ) :: columnList
+
+    else
+        columnList
 
 
 fillColumn : TaskList -> String -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
