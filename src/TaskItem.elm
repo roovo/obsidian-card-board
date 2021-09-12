@@ -1,6 +1,7 @@
 module TaskItem exposing
     ( AutoCompletion(..)
     , Completion(..)
+    , Highlight(..)
     , TaskItem
     , autoComplete
     , blockLink
@@ -15,6 +16,7 @@ module TaskItem exposing
     , hasSubtasks
     , hasTag
     , hasTags
+    , highlight
     , id
     , inColumnId
     , isCompleted
@@ -86,6 +88,12 @@ type Content
     | DueTag Date
     | ObsidianTag String
     | Word String
+
+
+type Highlight
+    = HighlightNone
+    | HighlightImportant
+    | HighlightCritical
 
 
 type IndentedItem
@@ -161,6 +169,23 @@ hasNotes (TaskItem fields _) =
 hasTags : TaskItem -> Bool
 hasTags taskItem =
     not <| List.isEmpty <| tags taskItem
+
+
+highlight : Time.Posix -> Time.Zone -> TaskItem -> Highlight
+highlight now zone taskItem =
+    case due taskItem of
+        Nothing ->
+            HighlightNone
+
+        Just dueDate ->
+            if Date.fromPosix zone now == dueDate then
+                HighlightImportant
+
+            else if Date.toRataDie (Date.fromPosix zone now) > Date.toRataDie dueDate then
+                HighlightCritical
+
+            else
+                HighlightNone
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool

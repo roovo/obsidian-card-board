@@ -54,8 +54,29 @@ ul.card-board-column-list > li.card-board-card::before {
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
   background-color: var(--background-primary);
-  padding: 0.5em;
+  padding: 0;
+  grid-column-gap: 0.25em;
   display: grid;
+  grid: "mark contents"
+        / 5px auto;
+}
+
+.card-board-card-highlight-area {
+  grid-area: mark;
+}
+
+.card-board-card-highlight-area.important {
+  background-color: var(--text-accent);
+}
+
+.card-board-card-highlight-area.critical {
+  background-color: var(--text-error);
+}
+
+.card-board-card-content-area {
+  grid-area: contents;
+  display: grid;
+  padding: 0.5em;
   grid: "tags        tags"
         "checkbox    title"
         "subtasks    subtasks"
@@ -64,8 +85,6 @@ ul.card-board-column-list > li.card-board-card::before {
         / auto       minmax(0, 1fr);
 }
 
-.card-board-card-content {
-}
 
 .card-board-card-tag-area {
   grid-area: tags;

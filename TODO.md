@@ -1,4 +1,4 @@
-- highlight overdue tasks, flagged tasks and those due today
+- do I want to use text-muted for the due date?
 - do I want to make @autodone @autocomplete and make all done's completed's?
 
 - have a subtag board that uses a root tag then subtags to define columns
@@ -14,6 +14,8 @@
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
 
+- do I want a way of flagging cards?
+- I'm often passing Time.Posix and Time.Zone around together -> make a type
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
@@ -84,6 +86,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- highlight overdue tasks, (flagged tasks - not implemented yet) and those due today
 - dateboard: secondary sort should be card title
 - option to include done and undated for DateBoard
 - always show tags as tag pills whatever the theme

@@ -3,7 +3,7 @@ module TaskItemTests exposing (suite)
 import Date exposing (Date)
 import Expect
 import Parser exposing ((|=))
-import TaskItem exposing (AutoCompletion(..), Completion(..))
+import TaskItem exposing (AutoCompletion(..), Completion(..), Highlight(..))
 import Test exposing (..)
 import Time exposing (Month(..))
 
@@ -22,6 +22,7 @@ suite =
         , hasTagBasic
         , hasTagWithSubtag
         , hasTagWithSubtagWildcard
+        , highlight
         , id
         , inColumnId
         , isCompleted
@@ -409,6 +410,30 @@ hasTagWithSubtagWildcard =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar/")
                     |> Expect.equal (Ok True)
+        ]
+
+
+highlight : Test
+highlight =
+    describe "highlight"
+        [ test "returns HighlightNone for a task with no due date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.highlight now Time.utc)
+                    |> Expect.equal (Ok HighlightNone)
+        , test "returns HighlightImportant for a task that is due today" <|
+            \() ->
+                "- [ ] foo @due(2020-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.highlight now Time.utc)
+                    |> Expect.equal (Ok HighlightImportant)
+        , test "returns HighlightCritical for a task that is overdue" <|
+            \() ->
+                "- [ ] foo @due(2019-01-01)"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.highlight now Time.utc)
+                    |> Expect.equal (Ok HighlightCritical)
         ]
 
 
@@ -945,4 +970,5 @@ transformation =
 
 now : Time.Posix
 now =
+    -- 2020-01-01
     Time.millisToPosix 1577836800000

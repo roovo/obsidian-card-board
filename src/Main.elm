@@ -257,7 +257,7 @@ view model =
                 [ Html.div [ class "card-board-container" ]
                     (model.board
                         |> CardBoard.columns model.now model.zone taskList
-                        |> List.map (\( n, ts ) -> column n ts)
+                        |> List.map (\( n, ts ) -> column model.now model.zone n ts)
                     )
                 ]
 
@@ -265,44 +265,59 @@ view model =
             Html.text ""
 
 
-column : String -> List TaskItem -> Html Msg
-column title taskItems =
+column : Time.Posix -> Time.Zone -> String -> List TaskItem -> Html Msg
+column now zone title taskItems =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text title ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
             (taskItems
-                |> List.map (card title)
+                |> List.map (card now zone)
             )
         ]
 
 
-card : String -> TaskItem -> ( String, Html Msg )
-card _ taskItem =
+card : Time.Posix -> Time.Zone -> TaskItem -> ( String, Html Msg )
+card now zone taskItem =
     let
         uniqueId =
             TaskItem.inColumnId taskItem
+
+        highlightAreaClass =
+            case TaskItem.highlight now zone taskItem of
+                TaskItem.HighlightNone ->
+                    ""
+
+                TaskItem.HighlightImportant ->
+                    "important"
+
+                TaskItem.HighlightCritical ->
+                    "critical"
     in
     Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
-        [ Html.input
-            [ type_ "checkbox"
-            , class "task-list-item-checkbox"
-            , onClick <| TaskItemToggled <| TaskItem.id taskItem
-            , checked <| TaskItem.isCompleted taskItem
-            ]
+        [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []
-        , Html.div [ class "card-board-card-title", id uniqueId ]
-            []
-        , cardTagsView taskItem
-            |> when (TaskItem.hasTags taskItem)
-        , subtasksView taskItem
-            |> when (TaskItem.hasSubtasks taskItem)
-        , notesView taskItem
-            |> when (TaskItem.hasNotes taskItem)
-        , Html.div [ class "card-board-card-footer-area" ]
-            [ cardDueDate taskItem
-                |> when (TaskItem.isDated taskItem)
-            , cardActionButtons taskItem
+        , Html.div [ class "card-board-card-content-area" ]
+            [ Html.input
+                [ type_ "checkbox"
+                , class "task-list-item-checkbox"
+                , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                , checked <| TaskItem.isCompleted taskItem
+                ]
+                []
+            , Html.div [ class "card-board-card-title", id uniqueId ]
+                []
+            , cardTagsView taskItem
+                |> when (TaskItem.hasTags taskItem)
+            , subtasksView taskItem
+                |> when (TaskItem.hasSubtasks taskItem)
+            , notesView taskItem
+                |> when (TaskItem.hasNotes taskItem)
+            , Html.div [ class "card-board-card-footer-area" ]
+                [ cardDueDate taskItem
+                    |> when (TaskItem.isDated taskItem)
+                , cardActionButtons taskItem
+                ]
             ]
         ]
         |> Tuple.pair uniqueId
