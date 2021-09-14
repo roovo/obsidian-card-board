@@ -147,6 +147,12 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   width: 1em;
 }
 
+
+/* fixes alignment of checkbox ticks on california coast theme */
+.card-board-card-content-area > input[type="checkbox"]:checked:before {
+  position:static;
+}
+
 .card-board-card-title {
   grid-area: title;
   font-weight: var(--bold-weight);
@@ -169,6 +175,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0.5em;
 }
 
+/* fixes an issue with themes showing border on the left of lists */
 .card-board-card-subtasks-area > ul::before {
   border-style: none;
 }

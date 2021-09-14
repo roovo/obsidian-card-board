@@ -1,3 +1,6 @@
+- "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
+- Firefly Theme: why is the text so big?
+- leave column title at the top when scrolling cards
 - have a subtag board that uses a root tag then subtags to define columns
 - how to switch between boards
 - use settings or inline ```cardboard block to specify kanban?
@@ -19,9 +22,9 @@
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
   - so maintaining the tag in the column being dragged from as well as getting the new
+_multiselect - for drag/drop and context menu operations
 - should I have an option to set colors for tags?
 - context menu to set due date to today
-- "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?
   if so, I can do better as by default obsidian doesn't include all
   indented stuff under a todo item as being in the block
@@ -84,6 +87,8 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- California Coast Theme: why are the ticks in checboxes
+  (in the Completed column) not in the checkboxes?
 - UI: style task title (color) as if it is a h1 (can I make it a h1)
 - make @autodone @autocomplete and make all done's completed's?
 - do I want to use text-muted for the due date?
