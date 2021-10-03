@@ -16,21 +16,18 @@
 
 .card-board-container {
   display: grid;
-  grid-auto-columns: 272px;
+  grid-auto-columns: minmax(272px, 1fr);
   grid-auto-flow: column;
   grid-gap: 1em;
-  overflow-x: scroll;
-  height: 100%;
+  overflow-x: auto;
   padding: 1em;
 }
 
 .card-board-column {
-  max-height: 100%;
   padding: 10px;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
-  overflow-y: scroll;
 }
 
 
@@ -43,9 +40,11 @@
 ul.card-board-column-list {
   display: grid;
   grid-gap: 0.5em;
+  max-height: calc(100vh - 9em);
   list-style-type: none;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
 }
 
 ul.card-board-column-list > li.card-board-card::before {

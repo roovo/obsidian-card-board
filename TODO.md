@@ -1,11 +1,12 @@
+- have a subtag board that uses a root tag then subtags to define columns
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - Firefly Theme: why is the text so big?
-- leave column title at the top when scrolling cards
-- have a subtag board that uses a root tag then subtags to define columns
 - how to switch between boards
 - use settings or inline ```cardboard block to specify kanban?
 - don't store functions on the model tho (board is stored as a function at the moment)
 - make README.md a proper readme (and have a separate contributing/dev page?)
+- make the board behave better so if I open something else in the same window I can go back to it
+  - does the cross-reference plugin do this well (or the kanban one, or another)
 - plugin settings
   - allow/deny directories/files
   - max title lines
@@ -87,6 +88,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- leave column title at the top when scrolling cards
 - California Coast Theme: why are the ticks in checboxes
   (in the Completed column) not in the checkboxes?
 - UI: style task title (color) as if it is a h1 (can I make it a h1)
