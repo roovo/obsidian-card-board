@@ -9,7 +9,10 @@ import Html exposing (Html)
 import Html.Attributes exposing (checked, class, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
-import Ports exposing (MarkdownFile)
+import InteropDefinitions
+import InteropPorts
+import Json.Decode as JD
+import MarkdownFile exposing (MarkdownFile)
 import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
@@ -17,7 +20,7 @@ import TaskList exposing (TaskList)
 import Time
 
 
-main : Program Flags Model Msg
+main : Program JD.Value Model Msg
 main =
     Browser.element
         { init = init
@@ -46,43 +49,40 @@ type State a
     | Loaded a
 
 
-type alias Flags =
-    { folder : String
-    , format : String
-    , now : Int
-    , zone : Int
-    }
-
-
-init : Flags -> ( Model, Cmd Msg )
+init : JD.Value -> ( Model, Cmd Msg )
 init flags =
-    ( { dailyNotesFolder = flags.folder
-      , dailyNotesFormat = flags.format
-      , now = Time.millisToPosix flags.now
-      , zone = Time.customZone flags.zone []
-      , taskList = Loading
-      , board =
-            Dated <|
-                DateBoard.fill
-                    { includeUndated = True
-                    , includeCompleted = True
-                    }
+    case flags |> InteropPorts.decodeFlags of
+        Err error ->
+            Debug.todo <| Debug.toString error
 
-      -- , board =
-      --       Tagged <|
-      --           TagBoard.fill
-      --               { columns =
-      --                   [ { tag = "home", displayTitle = "Home Alone" }
-      --                   , { tag = "home/", displayTitle = "All Home" }
-      --                   , { tag = "town", displayTitle = "Town" }
-      --                   , { tag = "wellbeing", displayTitle = "Wellbeing" }
-      --                   ]
-      --               , includeOthers = True
-      --               , includeCompleted = True
-      --               }
-      }
-    , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
-    )
+        Ok okFlags ->
+            ( { dailyNotesFolder = okFlags.folder
+              , dailyNotesFormat = okFlags.format
+              , now = Time.millisToPosix okFlags.now
+              , zone = Time.customZone okFlags.zone []
+              , taskList = Loading
+              , board =
+                    Dated <|
+                        DateBoard.fill
+                            { includeUndated = True
+                            , includeCompleted = True
+                            }
+
+              -- , board =
+              --       Tagged <|
+              --           TagBoard.fill
+              --               { columns =
+              --                   [ { tag = "home", displayTitle = "Home Alone" }
+              --                   , { tag = "home/", displayTitle = "All Home" }
+              --                   , { tag = "town", displayTitle = "Town" }
+              --                   , { tag = "wellbeing", displayTitle = "Wellbeing" }
+              --                   ]
+              --               , includeOthers = True
+              --               , includeCompleted = True
+              --               }
+              }
+            , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+            )
 
 
 
@@ -90,7 +90,8 @@ init flags =
 
 
 type Msg
-    = ReceiveTime ( Time.Zone, Time.Posix )
+    = BadInputFromTypeScript
+    | ReceiveTime ( Time.Zone, Time.Posix )
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
@@ -103,6 +104,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( BadInputFromTypeScript, _ ) ->
+            ( model, Cmd.none )
+
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
                 | zone = zone
@@ -117,7 +121,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.deleteTodo
+                            , InteropPorts.deleteTodo
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , originalText = TaskItem.originalText matchingItem
@@ -136,7 +140,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.openTodoSourceFile
+                            , InteropPorts.openTodoSourceFile
                                 { filePath = TaskItem.filePath matchingItem
                                 , blockLink = TaskItem.blockLink matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
@@ -156,7 +160,7 @@ update msg model =
                     case TaskList.taskContainingId id taskList of
                         Just matchingItem ->
                             ( model
-                            , Ports.rewriteTodos
+                            , InteropPorts.rewriteTodos
                                 model.now
                                 (TaskItem.filePath matchingItem)
                                 (TaskItem.tasksToToggle id model.now matchingItem)
@@ -180,8 +184,8 @@ update msg model =
             in
             ( addTaskItems model newTaskItems
             , Cmd.batch
-                [ Ports.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
-                , Ports.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
                 ]
             )
 
@@ -190,13 +194,13 @@ update msg model =
 
         ( VaultFileUpdated markdownFile, _ ) ->
             let
-                newTaskItems =
+                updatedTaskItems =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
             in
-            ( updateTaskItems model markdownFile.filePath newTaskItems
+            ( updateTaskItems model markdownFile.filePath updatedTaskItems
             , Cmd.batch
-                [ Ports.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
-                , Ports.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone updatedTaskItems
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone updatedTaskItems
                 ]
             )
 
@@ -238,10 +242,25 @@ updateTaskItems model filePath updatedList =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ Ports.fileAdded VaultFileAdded
-        , Ports.fileUpdated VaultFileUpdated
-        , Ports.fileDeleted VaultFileDeleted
-        , Time.every 1000 Tick
+        [ Time.every 1000 Tick
+        , InteropPorts.toElm
+            |> Sub.map
+                (\result ->
+                    case result of
+                        Ok toElm ->
+                            case toElm of
+                                InteropDefinitions.FileAdded markdownFile ->
+                                    VaultFileAdded markdownFile
+
+                                InteropDefinitions.FileDeleted filePath ->
+                                    VaultFileDeleted filePath
+
+                                InteropDefinitions.FileUpdated markdownFile ->
+                                    VaultFileUpdated markdownFile
+
+                        Err error ->
+                            BadInputFromTypeScript
+                )
         ]
 
 

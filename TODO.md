@@ -1,12 +1,5 @@
-- have a subtag board that uses a root tag then subtags to define columns
-- "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
-- Firefly Theme: why is the text so big?
+- work out how settings will be used in the main app model to allow for multiple boards
 - how to switch between boards
-- use settings or inline ```cardboard block to specify kanban?
-- don't store functions on the model tho (board is stored as a function at the moment)
-- make README.md a proper readme (and have a separate contributing/dev page?)
-- make the board behave better so if I open something else in the same window I can go back to it
-  - does the cross-reference plugin do this well (or the kanban one, or another)
 - plugin settings
   - allow/deny directories/files
   - max title lines
@@ -15,7 +8,14 @@
     - spaced repetition pludin keeps stuff in the plugin data
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
+- make the board behave better so if I open something else in the same window I can go back to it
+  - does the cross-reference plugin do this well (or the kanban one, or another)
+- make README.md a proper readme (and have a separate contributing/dev page?)
 
+- don't store functions on the model tho (board is stored as a function at the moment)
+- "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
+- Firefly Theme: why is the text so big?
+- have a subtag board that uses a root tag then subtags to define columns
 - do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
 - do I want a way of flagging cards?
 - I'm often passing Time.Posix and Time.Zone around together -> make a type
@@ -23,7 +23,7 @@
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
   - so maintaining the tag in the column being dragged from as well as getting the new
-_multiselect - for drag/drop and context menu operations
+- multiselect - for drag/drop and context menu operations
 - should I have an option to set colors for tags?
 - context menu to set due date to today
 - does openLinkText use setSelection to highlight the selected todo?
@@ -85,9 +85,9 @@ hovering over the edit button to show the details of the todo in the original do
 if you do this, it will only show the single line of the todo and not any subtasks or content.
 
 https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/10232
-
 # Done
 
+- don't use elm-typescript-interop (as it won't install so I can't build project from new)
 - leave column title at the top when scrolling cards
 - California Coast Theme: why are the ticks in checboxes
   (in the Completed column) not in the checkboxes?

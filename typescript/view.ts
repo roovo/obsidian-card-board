@@ -46,26 +46,25 @@ export class CardBoardView extends ItemView {
 
     const that = this;
 
-    elm.ports.addFilePreviewHovers.subscribe(function(data: { filePath: string, ids: [ string ]}) {
-      that.handleAddFilePreviewHovers(data);
-    })
-
-    elm.ports.deleteTodo.subscribe(function(data: {filePath: string, lineNumber: number, originalText: string }) {
-      that.handleDeleteTodo(data);
-    })
-
-    elm.ports.displayTodoMarkdown.subscribe(function(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
-      that.handleDisplayTodoMarkdown(data);
-    })
-
-    elm.ports.openTodoSourceFile.subscribe(function(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
-      that.handleOpenTodoSourceFile(data);
-    })
-
-    elm.ports.updateTodos.subscribe(function(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
-      that.handleUpdateTodos(data);
-    })
-
+    elm.ports.interopFromElm.subscribe((fromElm) => {
+      switch (fromElm.tag) {
+        case "addFilePreviewHovers":
+          that.handleAddFilePreviewHovers(fromElm.data);
+          break;
+        case "deleteTodo":
+          that.handleDeleteTodo(fromElm.data);
+          break;
+        case "displayTodoMarkdown":
+          that.handleDisplayTodoMarkdown(fromElm.data);
+          break;
+        case "openTodoSourceFile":
+          that.handleOpenTodoSourceFile(fromElm.data);
+          break;
+        case "updateTodos":
+          that.handleUpdateTodos(fromElm.data);
+          break;
+      }
+    });
 
     const markdownFiles = this.vault.getMarkdownFiles();
 
@@ -73,10 +72,12 @@ export class CardBoardView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
 
       const fileContents = await this.vault.cachedRead(file);
-      elm.ports.fileAdded.send({
-        filePath: file.path,
-        fileDate: fileDate,
-        fileContents: fileContents
+      elm.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: { filePath: file.path,
+          fileDate: fileDate,
+          fileContents: fileContents
+        }
       });
     }
 
@@ -90,7 +91,7 @@ export class CardBoardView extends ItemView {
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
   }
 
-  async handleAddFilePreviewHovers(data: {filePath: string, ids : [ string ] }) {
+  async handleAddFilePreviewHovers(data: {filePath: string, ids : string[] }) {
     const that = this;
     requestAnimationFrame(function () {
       for (const id of data.ids) {
@@ -123,7 +124,7 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: [{id: string, markdown: string }]}) {
+  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: {id: string, markdown: string }[]}) {
     const that = this;
     requestAnimationFrame(function () {
       for (const item of data.todoMarkdown) {
@@ -190,7 +191,7 @@ export class CardBoardView extends ItemView {
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
-  async handleUpdateTodos(data: { filePath: string, todos: [ { lineNumber: number, originalText: string, newText: string } ] }) {
+  async handleUpdateTodos(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
       const file = this.app.vault.getAbstractFileByPath(data.filePath)
       if (file instanceof TFile) {
         const markdown = await this.vault.read(file)
@@ -210,11 +211,13 @@ export class CardBoardView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
       const fileContents = await this.vault.read(file);
 
-      elm.ports.fileAdded.send({
-        filePath: file.path,
-        fileDate: fileDate,
-        fileContents: fileContents
-      })
+      elm.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: { filePath: file.path,
+          fileDate: fileDate,
+          fileContents: fileContents
+        }
+      });
     }
   }
 
@@ -223,7 +226,10 @@ export class CardBoardView extends ItemView {
     if (file instanceof TFile) {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
 
-      elm.ports.fileDeleted.send(file.path)
+      elm.ports.interopToElm.send({
+        tag: "fileDeleted",
+        data: file.path
+        });
     }
   }
 
@@ -233,11 +239,13 @@ export class CardBoardView extends ItemView {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
       const fileContents = await this.vault.read(file);
 
-      elm.ports.fileUpdated.send({
-        filePath: file.path,
-        fileDate: fileDate,
-        fileContents: fileContents
-      })
+      elm.ports.interopToElm.send({
+        tag: "fileUpdated",
+        data: { filePath: file.path,
+          fileDate: fileDate,
+          fileContents: fileContents
+        }
+      });
     }
   }
 

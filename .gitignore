@@ -5,3 +5,4 @@ index.html
 main.js
 node_modules/
 package-lock.json
+src/Main/index.d.ts

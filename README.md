@@ -27,6 +27,17 @@ npm i -g elm-format
 npx elm-review --template jfmengels/elm-review-unused/example
 npx elm-review --template jfmengels/elm-review-unused/example --fix-all
 
+### Keep elm and ts in sync
+```
+npx chokidar "src/**/*.elm" -c "npm run generate"
+```
+
+### Run tests
+```
+npx elm-test
+npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
+```
+
 ### Generate example tasks
 
 ```
