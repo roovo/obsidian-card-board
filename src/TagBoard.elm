@@ -24,6 +24,7 @@ type alias Config =
     { columns : List ColumnConfig
     , includeOthers : Bool
     , includeCompleted : Bool
+    , title : String
     }
 
 

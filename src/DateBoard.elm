@@ -22,6 +22,7 @@ type DateBoard
 type alias Config =
     { includeCompleted : Bool
     , includeUndated : Bool
+    , title : String
     }
 
 

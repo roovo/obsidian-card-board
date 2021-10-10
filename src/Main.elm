@@ -66,6 +66,7 @@ init flags =
                     [ CardBoard.DateBoardConfig
                         { includeUndated = True
                         , includeCompleted = True
+                        , title = "By Date"
                         }
                     , CardBoard.TagBoardConfig
                         { columns =
@@ -76,6 +77,7 @@ init flags =
                             ]
                         , includeOthers = True
                         , includeCompleted = True
+                        , title = "By Tag"
                         }
                     ]
               , board =
@@ -83,6 +85,7 @@ init flags =
                         DateBoard.fill
                             { includeUndated = True
                             , includeCompleted = True
+                            , title = "By Date"
                             }
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
