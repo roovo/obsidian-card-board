@@ -15,16 +15,25 @@
 }
 
 .card-board-container {
+  padding: 1em;
+}
+
+.card-board-title {
+  font-weight: var(--bold-weight);
+  font-size: var(--font-normal);
+  margin-bottom: 1em;
+}
+
+.card-board-columns {
   display: grid;
   grid-auto-columns: minmax(272px, 1fr);
   grid-auto-flow: column;
   grid-gap: 1em;
   overflow-x: auto;
-  padding: 1em;
 }
 
 .card-board-column {
-  padding: 10px;
+  padding: 1em;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
@@ -40,7 +49,7 @@
 ul.card-board-column-list {
   display: grid;
   grid-gap: 0.5em;
-  max-height: calc(100vh - 9em);
+  max-height: calc(100vh - 17em);
   list-style-type: none;
   margin: 0;
   padding: 0;

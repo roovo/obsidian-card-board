@@ -281,10 +281,14 @@ view model =
         Loaded taskList ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
-                    (model.board
-                        |> CardBoard.columns model.now model.zone taskList
-                        |> List.map (\( n, ts ) -> column model.now model.zone n ts)
-                    )
+                    [ Html.div [ class "card-board-title" ]
+                        [ Html.text "Board Title" ]
+                    , Html.div [ class "card-board-columns" ]
+                        (model.board
+                            |> CardBoard.columns model.now model.zone taskList
+                            |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+                        )
+                    ]
                 ]
 
         _ ->
