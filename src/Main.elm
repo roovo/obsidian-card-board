@@ -40,6 +40,7 @@ type alias Model =
     , now : Time.Posix
     , zone : Time.Zone
     , taskList : State TaskList
+    , boardConfigs : List CardBoard.Config
     , board : CardBoard
     }
 
@@ -61,25 +62,28 @@ init flags =
               , now = Time.millisToPosix okFlags.now
               , zone = Time.customZone okFlags.zone []
               , taskList = Loading
+              , boardConfigs =
+                    [ CardBoard.DateBoardConfig
+                        { includeUndated = True
+                        , includeCompleted = True
+                        }
+                    , CardBoard.TagBoardConfig
+                        { columns =
+                            [ { tag = "home", displayTitle = "Home Alone" }
+                            , { tag = "home/", displayTitle = "All Home" }
+                            , { tag = "town", displayTitle = "Town" }
+                            , { tag = "wellbeing", displayTitle = "Wellbeing" }
+                            ]
+                        , includeOthers = True
+                        , includeCompleted = True
+                        }
+                    ]
               , board =
                     Dated <|
                         DateBoard.fill
                             { includeUndated = True
                             , includeCompleted = True
                             }
-
-              -- , board =
-              --       Tagged <|
-              --           TagBoard.fill
-              --               { columns =
-              --                   [ { tag = "home", displayTitle = "Home Alone" }
-              --                   , { tag = "home/", displayTitle = "All Home" }
-              --                   , { tag = "town", displayTitle = "Town" }
-              --                   , { tag = "wellbeing", displayTitle = "Wellbeing" }
-              --                   ]
-              --               , includeOthers = True
-              --               , includeCompleted = True
-              --               }
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )

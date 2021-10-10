@@ -1,5 +1,6 @@
 module CardBoard exposing
     ( CardBoard(..)
+    , Config(..)
     , columns
     )
 
@@ -17,6 +18,11 @@ import Time
 type CardBoard
     = Dated (TaskList -> DateBoard)
     | Tagged (TaskList -> TagBoard)
+
+
+type Config
+    = DateBoardConfig DateBoard.Config
+    | TagBoardConfig TagBoard.Config
 
 
 
