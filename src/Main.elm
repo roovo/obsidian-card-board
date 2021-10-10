@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Browser
-import CardBoard exposing (CardBoard(..))
+import CardBoard
 import Date exposing (Date)
 import DateBoard
 import FeatherIcons
@@ -41,7 +41,6 @@ type alias Model =
     , zone : Time.Zone
     , taskList : State TaskList
     , boardConfig : CardBoard.Config
-    , board : CardBoard
     }
 
 
@@ -84,7 +83,6 @@ init flags =
               , zone = Time.customZone okFlags.zone []
               , taskList = Loading
               , boardConfig = boardConfig
-              , board = CardBoard.fromConfig boardConfig
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
@@ -189,8 +187,8 @@ update msg model =
             in
             ( addTaskItems model newTaskItems
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone newTaskItems
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone newTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.now model.zone newTaskItems
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.now model.zone newTaskItems
                 ]
             )
 
@@ -204,8 +202,8 @@ update msg model =
             in
             ( updateTaskItems model markdownFile.filePath updatedTaskItems
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.board model.now model.zone updatedTaskItems
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.board model.now model.zone updatedTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.now model.zone updatedTaskItems
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.now model.zone updatedTaskItems
                 ]
             )
 
@@ -282,7 +280,7 @@ view model =
                     [ Html.div [ class "card-board-title" ]
                         [ Html.text <| CardBoard.title model.boardConfig ]
                     , Html.div [ class "card-board-columns" ]
-                        (model.board
+                        (model.boardConfig
                             |> CardBoard.columns model.now model.zone taskList
                             |> List.map (\( n, ts ) -> column model.now model.zone n ts)
                         )

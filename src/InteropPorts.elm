@@ -9,7 +9,7 @@ port module InteropPorts exposing
     , toElm
     )
 
-import CardBoard exposing (CardBoard)
+import CardBoard
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
@@ -20,15 +20,13 @@ import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
-addHoverToCardEditButtons : String -> CardBoard -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
-addHoverToCardEditButtons filePath cardBoard now zone taskList =
+addHoverToCardEditButtons : String -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
+addHoverToCardEditButtons filePath now zone taskList =
     let
         inColumnLinkIds : List String
         inColumnLinkIds =
-            cardBoard
-                |> CardBoard.columns now zone taskList
-                |> List.concatMap Tuple.second
-                |> List.concatMap (\i -> i :: TaskItem.subtasks i)
+            taskList
+                |> TaskList.tasks
                 |> List.map TaskItem.inColumnId
                 |> List.map (\id -> id ++ ":editButton")
     in
@@ -51,15 +49,12 @@ openTodoSourceFile info =
         |> interopFromElm
 
 
-displayTaskMarkdown : String -> CardBoard -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
-displayTaskMarkdown filePath cardBoard now zone taskList =
+displayTaskMarkdown : String -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
+displayTaskMarkdown filePath now zone taskList =
     let
         taskItems : List TaskItem
         taskItems =
-            cardBoard
-                |> CardBoard.columns now zone taskList
-                |> List.concatMap Tuple.second
-                |> List.concatMap (\i -> i :: TaskItem.subtasks i)
+            TaskList.tasks taskList
 
         markdownWithIds =
             taskItems

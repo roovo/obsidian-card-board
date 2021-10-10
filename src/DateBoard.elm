@@ -1,8 +1,6 @@
 module DateBoard exposing
     ( Config
-    , DateBoard
     , columns
-    , fill
     )
 
 import Date exposing (Date)
@@ -15,10 +13,6 @@ import Time
 -- TYPES
 
 
-type DateBoard
-    = DateBoard Config TaskList
-
-
 type alias Config =
     { includeCompleted : Bool
     , includeUndated : Bool
@@ -26,33 +20,28 @@ type alias Config =
     }
 
 
-fill : Config -> TaskList -> DateBoard
-fill config taskList =
-    DateBoard config taskList
-
-
 
 -- COLUMNS
 
 
-columns : Time.Posix -> Time.Zone -> DateBoard -> List ( String, List TaskItem )
-columns now zone dateBoard =
+columns : Time.Posix -> Time.Zone -> Config -> TaskList -> List ( String, List TaskItem )
+columns now zone config taskList =
     [ ( "Today"
-      , todaysItems (Date.fromPosix zone now) dateBoard
+      , todaysItems (Date.fromPosix zone now) taskList config
       )
     , ( "Tomorrow"
-      , tomorrowsItems (Date.fromPosix zone now) dateBoard
+      , tomorrowsItems (Date.fromPosix zone now) taskList config
       )
     , ( "Future"
-      , futureItems (Date.fromPosix zone now) dateBoard
+      , futureItems (Date.fromPosix zone now) taskList config
       )
     ]
-        |> prependUndated dateBoard
-        |> appendCompleted dateBoard
+        |> prependUndated taskList config
+        |> appendCompleted taskList config
 
 
-prependUndated : DateBoard -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-prependUndated (DateBoard config taskList) columnList =
+prependUndated : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUndated taskList config columnList =
     let
         undatedtasks =
             TaskList.topLevelTasks taskList
@@ -66,8 +55,8 @@ prependUndated (DateBoard config taskList) columnList =
         columnList
 
 
-todaysItems : Date -> DateBoard -> List TaskItem
-todaysItems today (DateBoard config taskList) =
+todaysItems : Date -> TaskList -> Config -> List TaskItem
+todaysItems today taskList config =
     let
         isToday t =
             case TaskItem.due t of
@@ -87,8 +76,8 @@ todaysItems today (DateBoard config taskList) =
         |> List.sortBy TaskItem.dueRataDie
 
 
-tomorrowsItems : Date -> DateBoard -> List TaskItem
-tomorrowsItems today (DateBoard config taskList) =
+tomorrowsItems : Date -> TaskList -> Config -> List TaskItem
+tomorrowsItems today taskList config =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -110,8 +99,8 @@ tomorrowsItems today (DateBoard config taskList) =
         |> List.sortBy (String.toLower << TaskItem.title)
 
 
-futureItems : Date -> DateBoard -> List TaskItem
-futureItems today (DateBoard config taskList) =
+futureItems : Date -> TaskList -> Config -> List TaskItem
+futureItems today taskList config =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -134,8 +123,8 @@ futureItems today (DateBoard config taskList) =
         |> List.sortBy TaskItem.dueRataDie
 
 
-appendCompleted : DateBoard -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-appendCompleted (DateBoard config taskList) columnList =
+appendCompleted : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted taskList config columnList =
     let
         completedTasks =
             TaskList.topLevelTasks taskList

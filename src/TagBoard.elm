@@ -1,8 +1,6 @@
 module TagBoard exposing
     ( Config
-    , TagBoard
     , columns
-    , fill
     )
 
 import Date exposing (Date)
@@ -14,10 +12,6 @@ import Time
 
 
 -- TYPES
-
-
-type TagBoard
-    = TagBoard Config TaskList
 
 
 type alias Config =
@@ -34,17 +28,12 @@ type alias ColumnConfig =
     }
 
 
-fill : Config -> TaskList -> TagBoard
-fill config taskList =
-    TagBoard config taskList
-
-
 
 -- COLUMNS
 
 
-columns : TagBoard -> List ( String, List TaskItem )
-columns (TagBoard config taskList) =
+columns : Config -> TaskList -> List ( String, List TaskItem )
+columns config taskList =
     config.columns
         |> LE.uniqueBy .tag
         |> List.foldl (fillColumn taskList) []

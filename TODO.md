@@ -1,3 +1,4 @@
+- handle the display of multiple boards (some form of tabbed view perhaps)
 - work out how settings will be used in the main app model to allow for multiple boards
 - how to switch between boards
 - plugin settings
@@ -12,7 +13,6 @@
   - does the cross-reference plugin do this well (or the kanban one, or another)
 - make README.md a proper readme (and have a separate contributing/dev page?)
 
-- don't store functions on the model tho (board is stored as a function at the moment)
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - Firefly Theme: why is the text so big?
 - have a subtag board that uses a root tag then subtags to define columns
@@ -85,8 +85,10 @@ hovering over the edit button to show the details of the todo in the original do
 if you do this, it will only show the single line of the todo and not any subtasks or content.
 
 https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/10232
+
 # Done
 
+- don't store functions on the model (board is stored as a function at the moment)
 - don't use elm-typescript-interop (as it won't install so I can't build project from new)
 - leave column title at the top when scrolling cards
 - California Coast Theme: why are the ticks in checboxes
