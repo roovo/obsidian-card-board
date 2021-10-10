@@ -2,6 +2,8 @@ module CardBoard exposing
     ( CardBoard(..)
     , Config(..)
     , columns
+    , fromConfig
+    , title
     )
 
 import DateBoard exposing (DateBoard)
@@ -26,7 +28,21 @@ type Config
 
 
 
--- COLUMNS
+-- SETUP
+
+
+fromConfig : Config -> CardBoard
+fromConfig config =
+    case config of
+        DateBoardConfig dateBoardConfig ->
+            Dated <| DateBoard.fill dateBoardConfig
+
+        TagBoardConfig tagBoardConfig ->
+            Tagged <| TagBoard.fill tagBoardConfig
+
+
+
+-- INFO
 
 
 columns : Time.Posix -> Time.Zone -> TaskList -> CardBoard -> List ( String, List TaskItem )
@@ -37,3 +53,13 @@ columns now zone taskList cardBoard =
 
         Tagged tagBoard ->
             TagBoard.columns (tagBoard taskList)
+
+
+title : Config -> String
+title config =
+    case config of
+        DateBoardConfig dateBoardConfig ->
+            dateBoardConfig.title
+
+        TagBoardConfig tagBoardConfig ->
+            tagBoardConfig.title

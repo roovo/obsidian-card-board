@@ -40,7 +40,7 @@ type alias Model =
     , now : Time.Posix
     , zone : Time.Zone
     , taskList : State TaskList
-    , boardConfigs : List CardBoard.Config
+    , boardConfig : CardBoard.Config
     , board : CardBoard
     }
 
@@ -52,6 +52,27 @@ type State a
 
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
+    let
+        boardConfig =
+            CardBoard.DateBoardConfig
+                { includeUndated = True
+                , includeCompleted = True
+                , title = "By Date"
+                }
+
+        -- , CardBoard.TagBoardConfig
+        --     { columns =
+        --         [ { tag = "home", displayTitle = "Home Alone" }
+        --         , { tag = "home/", displayTitle = "All Home" }
+        --         , { tag = "town", displayTitle = "Town" }
+        --         , { tag = "wellbeing", displayTitle = "Wellbeing" }
+        --         ]
+        --     , includeOthers = True
+        --     , includeCompleted = True
+        --     , title = "By Tag"
+        --     }
+        -- ]
+    in
     case flags |> InteropPorts.decodeFlags of
         Err error ->
             Debug.todo <| Debug.toString error
@@ -62,31 +83,8 @@ init flags =
               , now = Time.millisToPosix okFlags.now
               , zone = Time.customZone okFlags.zone []
               , taskList = Loading
-              , boardConfigs =
-                    [ CardBoard.DateBoardConfig
-                        { includeUndated = True
-                        , includeCompleted = True
-                        , title = "By Date"
-                        }
-                    , CardBoard.TagBoardConfig
-                        { columns =
-                            [ { tag = "home", displayTitle = "Home Alone" }
-                            , { tag = "home/", displayTitle = "All Home" }
-                            , { tag = "town", displayTitle = "Town" }
-                            , { tag = "wellbeing", displayTitle = "Wellbeing" }
-                            ]
-                        , includeOthers = True
-                        , includeCompleted = True
-                        , title = "By Tag"
-                        }
-                    ]
-              , board =
-                    Dated <|
-                        DateBoard.fill
-                            { includeUndated = True
-                            , includeCompleted = True
-                            , title = "By Date"
-                            }
+              , boardConfig = boardConfig
+              , board = CardBoard.fromConfig boardConfig
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
@@ -282,7 +280,7 @@ view model =
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ Html.div [ class "card-board-title" ]
-                        [ Html.text "Board Title" ]
+                        [ Html.text <| CardBoard.title model.boardConfig ]
                     , Html.div [ class "card-board-columns" ]
                         (model.board
                             |> CardBoard.columns model.now model.zone taskList
