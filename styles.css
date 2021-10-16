@@ -18,10 +18,28 @@
   padding: 1em;
 }
 
+ul.card-board-tab-list {
+  display: grid;
+  grid-gap: 0.5em;
+  grid-auto-flow: column;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 .card-board-title {
   font-weight: var(--bold-weight);
   font-size: var(--font-normal);
   margin-bottom: 1em;
+}
+
+.card-board-panels {
+  display: grid;
+}
+
+.card-board-panel {
+  grid-column-start: 1;
+  grid-row-start: 1;
 }
 
 .card-board-columns {

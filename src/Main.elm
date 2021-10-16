@@ -6,13 +6,14 @@ import Date exposing (Date)
 import DateBoard
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, id, type_)
+import Html.Attributes exposing (checked, class, hidden, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
+import SafeZipper exposing (SafeZipper)
 import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
@@ -40,7 +41,7 @@ type alias Model =
     , now : Time.Posix
     , zone : Time.Zone
     , taskList : State TaskList
-    , boardConfig : CardBoard.Config
+    , boardConfigs : SafeZipper CardBoard.Config
     }
 
 
@@ -52,25 +53,24 @@ type State a
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     let
-        boardConfig =
-            CardBoard.DateBoardConfig
+        boardConfigs =
+            [ CardBoard.DateBoardConfig
                 { includeUndated = True
                 , includeCompleted = True
                 , title = "By Date"
                 }
-
-        -- , CardBoard.TagBoardConfig
-        --     { columns =
-        --         [ { tag = "home", displayTitle = "Home Alone" }
-        --         , { tag = "home/", displayTitle = "All Home" }
-        --         , { tag = "town", displayTitle = "Town" }
-        --         , { tag = "wellbeing", displayTitle = "Wellbeing" }
-        --         ]
-        --     , includeOthers = True
-        --     , includeCompleted = True
-        --     , title = "By Tag"
-        --     }
-        -- ]
+            , CardBoard.TagBoardConfig
+                { columns =
+                    [ { tag = "home", displayTitle = "Home Alone" }
+                    , { tag = "home/", displayTitle = "All Home" }
+                    , { tag = "town", displayTitle = "Town" }
+                    , { tag = "wellbeing", displayTitle = "Wellbeing" }
+                    ]
+                , includeOthers = True
+                , includeCompleted = True
+                , title = "By Tag"
+                }
+            ]
     in
     case flags |> InteropPorts.decodeFlags of
         Err error ->
@@ -82,7 +82,7 @@ init flags =
               , now = Time.millisToPosix okFlags.now
               , zone = Time.customZone okFlags.zone []
               , taskList = Loading
-              , boardConfig = boardConfig
+              , boardConfigs = SafeZipper.fromList boardConfigs
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
@@ -95,6 +95,7 @@ init flags =
 type Msg
     = BadInputFromTypeScript
     | ReceiveTime ( Time.Zone, Time.Posix )
+    | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
@@ -117,6 +118,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ( TabSelected tabIndex, _ ) ->
+            ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
 
         ( TaskItemDeleteClicked id, _ ) ->
             case model.taskList of
@@ -277,18 +281,61 @@ view model =
         Loaded taskList ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
-                    [ Html.div [ class "card-board-title" ]
-                        [ Html.text <| CardBoard.title model.boardConfig ]
-                    , Html.div [ class "card-board-columns" ]
-                        (model.boardConfig
-                            |> CardBoard.columns model.now model.zone taskList
-                            |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+                    [ Html.ul
+                        [ class "card-board-tab-list"
+                        ]
+                        (model.boardConfigs
+                            |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader tabHeader
+                        )
+                    , Html.div [ class "card-board-panels" ]
+                        (model.boardConfigs
+                            |> SafeZipper.indexedMapSelectedAndRest (selectedPanel model taskList) (panel model taskList)
                         )
                     ]
                 ]
 
         _ ->
             Html.text ""
+
+
+tabHeader : Int -> CardBoard.Config -> Html Msg
+tabHeader index config =
+    Html.li
+        [ class "card-board-title"
+        , onClick <| TabSelected index
+        ]
+        [ Html.text <| CardBoard.title config ]
+
+
+selectedTabHeader : Int -> CardBoard.Config -> Html Msg
+selectedTabHeader index config =
+    Html.li [ class "card-board-title" ]
+        [ Html.text <| CardBoard.title config ++ " *" ]
+
+
+panel : Model -> TaskList -> Int -> CardBoard.Config -> Html Msg
+panel model taskList index config =
+    Html.div
+        [ class "card-board-panel"
+        , hidden True
+        ]
+        [ Html.div [ class "card-board-columns" ]
+            (config
+                |> CardBoard.columns model.now model.zone taskList
+                |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+            )
+        ]
+
+
+selectedPanel : Model -> TaskList -> Int -> CardBoard.Config -> Html Msg
+selectedPanel model taskList index config =
+    Html.div [ class "card-board-panel" ]
+        [ Html.div [ class "card-board-columns" ]
+            (config
+                |> CardBoard.columns model.now model.zone taskList
+                |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+            )
+        ]
 
 
 column : Time.Posix -> Time.Zone -> String -> List TaskItem -> Html Msg
