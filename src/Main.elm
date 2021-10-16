@@ -1,9 +1,12 @@
 module Main exposing (main)
 
+-- import DateBoard
+-- import TagBoard
+
 import Browser
+import Card exposing (Card)
 import CardBoard
 import Date exposing (Date)
-import DateBoard
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (checked, class, hidden, id, type_)
@@ -13,8 +16,9 @@ import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
+import Panel exposing (Panel)
+import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
-import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -279,17 +283,21 @@ view : Model -> Html Msg
 view model =
     case model.taskList of
         Loaded taskList ->
+            let
+                panels =
+                    Panels.init model.boardConfigs taskList
+            in
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
-                    [ Html.ul
-                        [ class "card-board-tab-list"
-                        ]
-                        (model.boardConfigs
+                    [ Html.ul [ class "card-board-tab-list" ]
+                        (Panels.tabTitles panels
                             |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader tabHeader
+                            |> SafeZipper.toList
                         )
                     , Html.div [ class "card-board-panels" ]
-                        (model.boardConfigs
-                            |> SafeZipper.indexedMapSelectedAndRest (selectedPanel model taskList) (panel model taskList)
+                        (Panels.panels panels
+                            |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView model) (panelView model)
+                            |> SafeZipper.toList
                         )
                     ]
                 ]
@@ -298,76 +306,77 @@ view model =
             Html.text ""
 
 
-tabHeader : Int -> CardBoard.Config -> Html Msg
-tabHeader index config =
+selectedTabHeader : Int -> String -> Html Msg
+selectedTabHeader index title =
+    Html.li [ class "card-board-title" ]
+        [ Html.text <| title ++ " *" ]
+
+
+tabHeader : Int -> String -> Html Msg
+tabHeader index title =
     Html.li
         [ class "card-board-title"
         , onClick <| TabSelected index
         ]
-        [ Html.text <| CardBoard.title config ]
+        [ Html.text <| title ]
 
 
-selectedTabHeader : Int -> CardBoard.Config -> Html Msg
-selectedTabHeader index config =
-    Html.li [ class "card-board-title" ]
-        [ Html.text <| CardBoard.title config ++ " *" ]
-
-
-panel : Model -> TaskList -> Int -> CardBoard.Config -> Html Msg
-panel model taskList index config =
+panelView : Model -> Int -> Panel -> Html Msg
+panelView model index panel =
     Html.div
         [ class "card-board-panel"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
-            (config
-                |> CardBoard.columns model.now model.zone taskList
-                |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+            (panel
+                |> Panel.columns model.now model.zone index
+                |> List.map (\( n, cs ) -> column model.now model.zone n cs)
             )
         ]
 
 
-selectedPanel : Model -> TaskList -> Int -> CardBoard.Config -> Html Msg
-selectedPanel model taskList index config =
+selectedPanelView : Model -> Int -> Panel -> Html Msg
+selectedPanelView model index panel =
     Html.div [ class "card-board-panel" ]
         [ Html.div [ class "card-board-columns" ]
-            (config
-                |> CardBoard.columns model.now model.zone taskList
-                |> List.map (\( n, ts ) -> column model.now model.zone n ts)
+            (panel
+                |> Panel.columns model.now model.zone index
+                |> List.map (\( n, cs ) -> column model.now model.zone n cs)
             )
         ]
 
 
-column : Time.Posix -> Time.Zone -> String -> List TaskItem -> Html Msg
-column now zone title taskItems =
+column : Time.Posix -> Time.Zone -> String -> List Card -> Html Msg
+column now zone title cards =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text title ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (taskItems
-                |> List.map (card now zone)
-            )
+            (List.map (cardView now zone) cards)
         ]
 
 
-card : Time.Posix -> Time.Zone -> TaskItem -> ( String, Html Msg )
-card now zone taskItem =
+cardView : Time.Posix -> Time.Zone -> Card -> ( String, Html Msg )
+cardView now zone card =
     let
         uniqueId =
-            TaskItem.inColumnId taskItem
+            Card.id card
+
+        taskItem =
+            Card.taskItem card
 
         highlightAreaClass =
-            case TaskItem.highlight now zone taskItem of
-                TaskItem.HighlightCritical ->
+            case Card.highlight now zone card of
+                Card.HighlightCritical ->
                     "critical"
 
-                TaskItem.HighlightGood ->
+                Card.HighlightGood ->
                     "good"
 
-                TaskItem.HighlightImportant ->
+                Card.HighlightImportant ->
                     "important"
 
-                TaskItem.HighlightNone ->
+                Card.HighlightNone ->
                     ""
     in
     Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
@@ -385,14 +394,14 @@ card now zone taskItem =
                 []
             , cardTagsView taskItem
                 |> when (TaskItem.hasTags taskItem)
-            , subtasksView taskItem
+            , subtasksView card
                 |> when (TaskItem.hasSubtasks taskItem)
-            , notesView taskItem
+            , notesView card
                 |> when (TaskItem.hasNotes taskItem)
             , Html.div [ class "card-board-card-footer-area" ]
                 [ cardDueDate taskItem
                     |> when (TaskItem.isDated taskItem)
-                , cardActionButtons taskItem
+                , cardActionButtons card
                 ]
             ]
         ]
@@ -417,30 +426,26 @@ cardTagView tagText =
         ]
 
 
-notesView : TaskItem -> Html Msg
-notesView taskItem =
+notesView : Card -> Html Msg
+notesView card =
     let
         uniqueId =
-            TaskItem.inColumnId taskItem ++ ":notes"
+            Card.id card ++ ":notes"
     in
     Html.div [ class "card-board-card-notes-area", id uniqueId ]
         []
 
 
-subtasksView : TaskItem -> Html Msg
-subtasksView taskItem =
+subtasksView : Card -> Html Msg
+subtasksView card =
     Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
-            (List.map subtaskView (TaskItem.subtasks taskItem))
+            (List.map subtaskView (Card.subtasks card))
         ]
 
 
-subtaskView : TaskItem -> Html Msg
-subtaskView subtask =
-    let
-        uniqueId =
-            TaskItem.inColumnId subtask
-    in
+subtaskView : ( String, TaskItem ) -> Html Msg
+subtaskView ( uniqueId, subtask ) =
     Html.li [ class "card-board-card-subtask task-list-item" ]
         [ Html.input
             [ type_ "checkbox"
@@ -471,11 +476,14 @@ dueDateString taskItem =
             "n/a"
 
 
-cardActionButtons : TaskItem -> Html Msg
-cardActionButtons taskItem =
+cardActionButtons : Card -> Html Msg
+cardActionButtons card =
     let
         uniqueId =
-            TaskItem.inColumnId taskItem ++ ":editButton"
+            Card.id card ++ ":editButton"
+
+        taskItem =
+            Card.taskItem card
     in
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
@@ -500,12 +508,12 @@ cardActionButtons taskItem =
         ]
 
 
-empty : Html msg
+empty : Html Msg
 empty =
     Html.text ""
 
 
-when : Bool -> Html msg -> Html msg
+when : Bool -> Html Msg -> Html Msg
 when shouldRender html =
     if shouldRender then
         html

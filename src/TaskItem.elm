@@ -1,7 +1,6 @@
 module TaskItem exposing
     ( AutoCompletion(..)
     , Completion(..)
-    , Highlight(..)
     , TaskItem
     , autoComplete
     , blockLink
@@ -16,9 +15,7 @@ module TaskItem exposing
     , hasSubtasks
     , hasTag
     , hasTags
-    , highlight
     , id
-    , inColumnId
     , isCompleted
     , isDated
     , isFromFile
@@ -26,7 +23,6 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
-    , placeInColumn
     , subtasks
     , tags
     , tasksToToggle
@@ -54,7 +50,6 @@ type alias TaskItemFields =
     { autoComplete : AutoCompletion
     , blockLink : Maybe String
     , completion : Completion
-    , containingColumnTitle : String
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
@@ -88,13 +83,6 @@ type Content
     | DueTag Date
     | ObsidianTag String
     | Word String
-
-
-type Highlight
-    = HighlightNone
-    | HighlightCritical
-    | HighlightGood
-    | HighlightImportant
 
 
 type IndentedItem
@@ -172,26 +160,6 @@ hasTags taskItem =
     not <| List.isEmpty <| tags taskItem
 
 
-highlight : Time.Posix -> Time.Zone -> TaskItem -> Highlight
-highlight now zone taskItem =
-    case ( isCompleted taskItem, due taskItem ) of
-        ( False, Just dueDate ) ->
-            if Date.fromPosix zone now == dueDate then
-                HighlightImportant
-
-            else if Date.toRataDie (Date.fromPosix zone now) > Date.toRataDie dueDate then
-                HighlightCritical
-
-            else if Date.toRataDie (Date.fromPosix zone now) < Date.toRataDie dueDate then
-                HighlightGood
-
-            else
-                HighlightNone
-
-        ( _, _ ) ->
-            HighlightNone
-
-
 hasOneOfTheTags : List String -> TaskItem -> Bool
 hasOneOfTheTags tagsToMatch taskItem =
     List.any (\t -> hasTag t taskItem) tagsToMatch
@@ -225,15 +193,6 @@ hasSubtasks (TaskItem _ subtasks_) =
 id : TaskItem -> String
 id (TaskItem fields _) =
     fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
-
-
-inColumnId : TaskItem -> String
-inColumnId (TaskItem fields _) =
-    if String.isEmpty fields.containingColumnTitle then
-        fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
-
-    else
-        fields.containingColumnTitle ++ ":" ++ fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
 
 
 isDated : TaskItem -> Bool
@@ -408,17 +367,6 @@ toString (TaskItem fields _) =
 -- MODIFICATION
 
 
-placeInColumn : String -> TaskItem -> TaskItem
-placeInColumn columnTitle (TaskItem fields subtasks_) =
-    let
-        placeFieldsInColum fields_ =
-            { fields_ | containingColumnTitle = columnTitle }
-    in
-    TaskItem
-        (placeFieldsInColum fields)
-        (List.map placeFieldsInColum subtasks_)
-
-
 toggleCompletion : Time.Posix -> TaskItem -> TaskItem
 toggleCompletion timeNow (TaskItem fields subtasks_) =
     case fields.completion of
@@ -571,7 +519,6 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     { autoComplete = autoCompletefromTag
     , blockLink = parsedBlockLink
     , completion = completion_
-    , containingColumnTitle = ""
     , dueFile = dueFromFile
     , dueTag = tagDueDate
     , filePath = path

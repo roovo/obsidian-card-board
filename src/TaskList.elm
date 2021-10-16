@@ -6,7 +6,6 @@ module TaskList exposing
     , filter
     , fromMarkdown
     , parser
-    , placeInColumn
     , removeForFile
     , replaceForFile
     , taskContainingId
@@ -69,13 +68,6 @@ concat =
 
 
 -- MANIPULATE
-
-
-placeInColumn : String -> TaskList -> TaskList
-placeInColumn columnTitle (TaskList taskItems) =
-    taskItems
-        |> List.map (TaskItem.placeInColumn columnTitle)
-        |> TaskList
 
 
 replaceForFile : String -> TaskList -> TaskList -> TaskList

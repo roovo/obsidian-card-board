@@ -108,11 +108,11 @@ next zipper =
 -- MAPPING
 
 
-indexedMapSelectedAndRest : (Int -> a -> b) -> (Int -> a -> b) -> SafeZipper a -> List b
+indexedMapSelectedAndRest : (Int -> a -> b) -> (Int -> a -> b) -> SafeZipper a -> SafeZipper b
 indexedMapSelectedAndRest selectedFn restFn zipper =
     case zipper of
         EmptyZipper ->
-            []
+            EmptyZipper
 
         SafeZipper b c a ->
             let
@@ -128,7 +128,7 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
                 mappedAfter =
                     List.indexedMap (\i item -> restFn (beforeLength + 1 + i) item) a
             in
-            List.append mappedBefore (mappedCurrent :: mappedAfter)
+            SafeZipper mappedBefore mappedCurrent mappedAfter
 
 
 

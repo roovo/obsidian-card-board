@@ -32,26 +32,25 @@ type alias ColumnConfig =
 -- COLUMNS
 
 
-columns : Config -> TaskList -> List ( String, List TaskItem )
-columns config taskList =
+columns : Config -> Int -> TaskList -> List ( String, List TaskItem )
+columns config panelIndex taskList =
     config.columns
         |> LE.uniqueBy .tag
-        |> List.foldl (fillColumn taskList) []
-        |> prependOthers config taskList
-        |> appendCompleted config taskList
+        |> List.foldl (fillColumn panelIndex taskList) []
+        |> prependOthers config panelIndex taskList
+        |> appendCompleted config panelIndex taskList
 
 
 
 -- PRIVATE
 
 
-appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-appendCompleted config taskList columnList =
+appendCompleted : Config -> Int -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted config panelIndex taskList columnList =
     let
         completedTasks =
             taskList
                 |> TaskList.filter isCompleteWithTags
-                |> TaskList.placeInColumn "__ completed __"
                 |> TaskList.topLevelTasks
                 |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.reverse
@@ -74,13 +73,12 @@ appendCompleted config taskList columnList =
         columnList
 
 
-prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-prependOthers config taskList columnList =
+prependOthers : Config -> Int -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependOthers config panelIndex taskList columnList =
     let
-        otherTasks =
+        cards =
             taskList
                 |> TaskList.filter isIncompleteWithoutTags
-                |> TaskList.placeInColumn "__ others __"
                 |> TaskList.topLevelTasks
                 |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.sortBy TaskItem.dueRataDie
@@ -95,21 +93,20 @@ prependOthers config taskList columnList =
                 |> List.map .tag
     in
     if config.includeOthers then
-        ( "Others", otherTasks ) :: columnList
+        ( "Others", cards ) :: columnList
 
     else
         columnList
 
 
-fillColumn : TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-fillColumn taskList columnConfig acc =
+fillColumn : Int -> TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+fillColumn panelIndex taskList columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
         isIncompleteWithTag tag item =
             not (TaskItem.isCompleted item) && TaskItem.hasTag tag item
     in
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
-        |> TaskList.placeInColumn columnConfig.tag
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie

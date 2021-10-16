@@ -22,17 +22,18 @@ import TsJson.Encode as TsEncode
 
 addHoverToCardEditButtons : String -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
 addHoverToCardEditButtons filePath now zone taskList =
-    let
-        inColumnLinkIds : List String
-        inColumnLinkIds =
-            taskList
-                |> TaskList.tasks
-                |> List.map TaskItem.inColumnId
-                |> List.map (\id -> id ++ ":editButton")
-    in
-    { filePath = filePath, ids = inColumnLinkIds }
-        |> encodeProVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
-        |> interopFromElm
+    -- let
+    --     inColumnLinkIds : List String
+    --     inColumnLinkIds =
+    --         taskList
+    --             |> TaskList.tasks
+    --             |> List.map TaskItem.inColumnId
+    --             |> List.map (\id -> id ++ ":editButton")
+    -- in
+    -- { filePath = filePath, ids = inColumnLinkIds }
+    --     |> encodeProVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
+    --     |> interopFromElm
+    Cmd.none
 
 
 deleteTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
@@ -51,34 +52,31 @@ openTodoSourceFile info =
 
 displayTaskMarkdown : String -> Time.Posix -> Time.Zone -> TaskList -> Cmd msg
 displayTaskMarkdown filePath now zone taskList =
-    let
-        taskItems : List TaskItem
-        taskItems =
-            TaskList.tasks taskList
-
-        markdownWithIds =
-            taskItems
-                |> List.map markdownWithId
-                |> List.append notesWithIds
-
-        markdownWithId t =
-            { id = TaskItem.inColumnId t
-            , markdown = TaskItem.title t
-            }
-
-        notesMarkdownWithId t =
-            { id = TaskItem.inColumnId t ++ ":notes"
-            , markdown = TaskItem.notes t
-            }
-
-        notesWithIds =
-            taskItems
-                |> List.filter (\t -> TaskItem.hasNotes t)
-                |> List.map notesMarkdownWithId
-    in
-    { filePath = filePath, todoMarkdown = markdownWithIds }
-        |> encodeProVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
-        |> interopFromElm
+    -- let
+    --     taskItems : List TaskItem
+    --     taskItems =
+    --         TaskList.tasks taskList
+    --     markdownWithIds =
+    --         taskItems
+    --             |> List.map markdownWithId
+    --             |> List.append notesWithIds
+    --     markdownWithId t =
+    --         { id = TaskItem.inColumnId t
+    --         , markdown = TaskItem.title t
+    --         }
+    --     notesMarkdownWithId t =
+    --         { id = TaskItem.inColumnId t ++ ":notes"
+    --         , markdown = TaskItem.notes t
+    --         }
+    --     notesWithIds =
+    --         taskItems
+    --             |> List.filter (\t -> TaskItem.hasNotes t)
+    --             |> List.map notesMarkdownWithId
+    -- in
+    -- { filePath = filePath, todoMarkdown = markdownWithIds }
+    --     |> encodeProVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
+    --     |> interopFromElm
+    Cmd.none
 
 
 rewriteTodos : Time.Posix -> String -> List TaskItem -> Cmd msg

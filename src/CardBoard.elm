@@ -24,14 +24,14 @@ type Config
 -- INFO
 
 
-columns : Time.Posix -> Time.Zone -> TaskList -> Config -> List ( String, List TaskItem )
-columns now zone taskList config =
+columns : Time.Posix -> Time.Zone -> Int -> TaskList -> Config -> List ( String, List TaskItem )
+columns now zone panelIndex taskList config =
     case config of
         DateBoardConfig dateBoardConfig ->
-            DateBoard.columns now zone dateBoardConfig taskList
+            DateBoard.columns now zone dateBoardConfig panelIndex taskList
 
         TagBoardConfig tagBoardConfig ->
-            TagBoard.columns tagBoardConfig taskList
+            TagBoard.columns tagBoardConfig panelIndex taskList
 
 
 title : Config -> String
