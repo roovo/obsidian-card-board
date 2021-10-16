@@ -1,14 +1,17 @@
 module Panels exposing
     ( Panels
+    , cards
     , init
     , panels
     , tabTitles
     )
 
+import Card exposing (Card)
 import CardBoard
 import Panel exposing (Panel)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
+import Time
 
 
 
@@ -40,6 +43,17 @@ panels (Panels configs taskList) =
 tabTitles : Panels -> SafeZipper String
 tabTitles (Panels configs _) =
     SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
+
+
+cards : Time.Posix -> Time.Zone -> Panels -> List Card
+cards now zone ps =
+    ps
+        |> panels
+        |> SafeZipper.toList
+        |> List.indexedMap (Panel.columns now zone)
+        |> List.concat
+        |> List.map Tuple.second
+        |> List.concat
 
 
 

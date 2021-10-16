@@ -192,11 +192,16 @@ update msg model =
             let
                 newTaskItems =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+
+                cards =
+                    newTaskItems
+                        |> Panels.init model.boardConfigs
+                        |> Panels.cards model.now model.zone
             in
             ( addTaskItems model newTaskItems
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.now model.zone newTaskItems
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.now model.zone newTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath cards
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath cards
                 ]
             )
 
@@ -207,11 +212,16 @@ update msg model =
             let
                 updatedTaskItems =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+
+                cards =
+                    updatedTaskItems
+                        |> Panels.init model.boardConfigs
+                        |> Panels.cards model.now model.zone
             in
             ( updateTaskItems model markdownFile.filePath updatedTaskItems
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath model.now model.zone updatedTaskItems
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath model.now model.zone updatedTaskItems
+                [ InteropPorts.displayTaskMarkdown markdownFile.filePath cards
+                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath cards
                 ]
             )
 

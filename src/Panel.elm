@@ -30,6 +30,10 @@ init config taskList =
     Panel config taskList
 
 
+
+-- INFO
+
+
 columns : Time.Posix -> Time.Zone -> Int -> Panel -> List ( String, List Card )
 columns now zone panelIndex (Panel config taskList) =
     case config of
@@ -40,6 +44,10 @@ columns now zone panelIndex (Panel config taskList) =
         CardBoard.TagBoardConfig tagBoardConfig ->
             TagBoard.columns tagBoardConfig panelIndex taskList
                 |> cardsInColumns panelIndex
+
+
+
+-- PRIVATE
 
 
 cardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )

@@ -69,7 +69,7 @@ id (Card idPrefix item) =
 subtasks : Card -> List ( String, TaskItem )
 subtasks (Card idPrefix item) =
     TaskItem.subtasks item
-        |> List.map (\sub -> ( idPrefix ++ TaskItem.id sub, item ))
+        |> List.map (\sub -> ( idPrefix ++ TaskItem.id sub, sub ))
 
 
 taskItem : Card -> TaskItem
