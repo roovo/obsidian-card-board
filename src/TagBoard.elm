@@ -32,21 +32,21 @@ type alias ColumnConfig =
 -- COLUMNS
 
 
-columns : Config -> Int -> TaskList -> List ( String, List TaskItem )
-columns config panelIndex taskList =
+columns : Config -> TaskList -> List ( String, List TaskItem )
+columns config taskList =
     config.columns
         |> LE.uniqueBy .tag
-        |> List.foldl (fillColumn panelIndex taskList) []
-        |> prependOthers config panelIndex taskList
-        |> appendCompleted config panelIndex taskList
+        |> List.foldl (fillColumn taskList) []
+        |> prependOthers config taskList
+        |> appendCompleted config taskList
 
 
 
 -- PRIVATE
 
 
-appendCompleted : Config -> Int -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-appendCompleted config panelIndex taskList columnList =
+appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted config taskList columnList =
     let
         completedTasks =
             taskList
@@ -73,8 +73,8 @@ appendCompleted config panelIndex taskList columnList =
         columnList
 
 
-prependOthers : Config -> Int -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-prependOthers config panelIndex taskList columnList =
+prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependOthers config taskList columnList =
     let
         cards =
             taskList
@@ -99,8 +99,8 @@ prependOthers config panelIndex taskList columnList =
         columnList
 
 
-fillColumn : Int -> TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-fillColumn panelIndex taskList columnConfig acc =
+fillColumn : TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+fillColumn taskList columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
         isIncompleteWithTag tag item =

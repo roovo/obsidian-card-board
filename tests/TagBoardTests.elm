@@ -162,21 +162,6 @@ columnsBasic =
                     |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
-        , test "prefixes the taskItem.inColumnId's with the title of the column" <|
-            \() ->
-                """- [ ] foo #foo
-- [ ] bar1 #bar/one
-- [ ] bar2 #bar
-"""
-                    |> Parser.run (TaskList.parser "file_a" Nothing)
-                    |> Result.withDefault TaskList.empty
-                    |> TagBoard.columns
-                        { defaultConfig
-                            | columns = [ { tag = "bar/", displayTitle = "All Bar" } ]
-                        }
-                    |> tasksInColumn "All Bar"
-                    |> List.map TaskItem.inColumnId
-                    |> Expect.equal [ "bar/:file_a:2", "bar/:file_a:3" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)

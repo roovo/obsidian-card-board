@@ -111,6 +111,7 @@ indexedMapSelectedAndRest =
                     |> SafeZipper.fromList
                     |> SafeZipper.atIndex 2
                     |> SafeZipper.indexedMapSelectedAndRest (\_ x -> ( 9, x )) Tuple.pair
+                    |> SafeZipper.toList
                     |> Expect.equal [ ( 0, 6 ), ( 1, 6 ), ( 9, 6 ), ( 3, 6 ), ( 4, 6 ) ]
         ]
 

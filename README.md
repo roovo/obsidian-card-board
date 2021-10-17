@@ -41,7 +41,7 @@ npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
 ### Generate example tasks
 
 ```
-ruby ./scripts/generate_exapmle_tasks.rb path_to_vault
+ruby ./scripts/generate_example_tasks.rb path_to_vault
 ```
 
 This will creat an `example_tasks` directory in the vault and put some

@@ -3,7 +3,7 @@ module TaskItemTests exposing (suite)
 import Date exposing (Date)
 import Expect
 import Parser exposing ((|=))
-import TaskItem exposing (AutoCompletion(..), Completion(..), Highlight(..))
+import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
 import Time exposing (Month(..))
 
@@ -22,16 +22,13 @@ suite =
         , hasTagBasic
         , hasTagWithSubtag
         , hasTagWithSubtagWildcard
-        , highlight
         , id
-        , inColumnId
         , isCompleted
         , isFromFile
         , isDated
         , notes
         , originalText
         , parsing
-        , placeInColumn
         , subtasks
         , tags
         , tasksToToggle
@@ -413,54 +410,6 @@ hasTagWithSubtagWildcard =
         ]
 
 
-highlight : Test
-highlight =
-    describe "highlight"
-        [ test "returns HighlightNone for a task with no due date" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightNone)
-        , test "returns HighlightImportant for a task that is due today" <|
-            \() ->
-                "- [ ] foo @due(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightImportant)
-        , test "returns HighlightNone for a completed task that is due today" <|
-            \() ->
-                "- [x] foo @due(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightNone)
-        , test "returns HighlightCritical for a task that is overdue" <|
-            \() ->
-                "- [ ] foo @due(2019-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightCritical)
-        , test "returns HighlightNone for a completed task that is overdue" <|
-            \() ->
-                "- [x] foo @due(2019-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightNone)
-        , test "returns HighlightGood for a task that is due in the future" <|
-            \() ->
-                "- [ ] foo @due(2020-01-02)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightGood)
-        , test "returns HighlightNone for a completed task that is due in the future" <|
-            \() ->
-                "- [x] foo @due(2020-01-02)"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.highlight now Time.utc)
-                    |> Expect.equal (Ok HighlightNone)
-        ]
-
-
 id : Test
 id =
     describe "id"
@@ -470,25 +419,6 @@ id =
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map TaskItem.id
                     |> Expect.equal (Ok "File A:1")
-        ]
-
-
-inColumnId : Test
-inColumnId =
-    describe "inColumnId"
-        [ test "returns filePath:row if the task has not been placed in a column" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map TaskItem.inColumnId
-                    |> Expect.equal (Ok "File A:1")
-        , test "returns columnName:filePath:row if the task has been placed in a column" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing)
-                    |> Result.map (TaskItem.placeInColumn "c1")
-                    |> Result.map TaskItem.inColumnId
-                    |> Expect.equal (Ok "c1:File A:1")
         ]
 
 
@@ -686,26 +616,6 @@ parsing =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
-        ]
-
-
-placeInColumn : Test
-placeInColumn =
-    describe "placeInColumn"
-        [ test "does not add the column title to the start of the id" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "fa" Nothing)
-                    |> Result.map (TaskItem.placeInColumn "c1")
-                    |> Result.map TaskItem.id
-                    |> Expect.equal (Ok "fa:1")
-        , test "adds the column title to the start of the inColumnId" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "fa" Nothing)
-                    |> Result.map (TaskItem.placeInColumn "c1")
-                    |> Result.map TaskItem.inColumnId
-                    |> Expect.equal (Ok "c1:fa:1")
         ]
 
 

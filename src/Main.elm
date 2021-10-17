@@ -65,13 +65,13 @@ init flags =
                 }
             , CardBoard.TagBoardConfig
                 { columns =
-                    [ { tag = "home", displayTitle = "Home Alone" }
-                    , { tag = "home/", displayTitle = "All Home" }
-                    , { tag = "town", displayTitle = "Town" }
-                    , { tag = "wellbeing", displayTitle = "Wellbeing" }
+                    [ { tag = "people/", displayTitle = "People" }
+                    , { tag = "hydra/", displayTitle = "Hydra" }
+                    , { tag = "finance/", displayTitle = "Finance" }
+                    , { tag = "POC/", displayTitle = "ITT POC" }
                     ]
-                , includeOthers = True
-                , includeCompleted = True
+                , includeOthers = False
+                , includeCompleted = False
                 , title = "By Tag"
                 }
             ]

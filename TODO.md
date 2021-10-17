@@ -1,5 +1,4 @@
 - handle the display of multiple boards (some form of tabbed view perhaps)
-  - tests - fix existing
   - tests - add for new stuff
   - tab styling
 - plugin settings

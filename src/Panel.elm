@@ -38,11 +38,11 @@ columns : Time.Posix -> Time.Zone -> Int -> Panel -> List ( String, List Card )
 columns now zone panelIndex (Panel config taskList) =
     case config of
         CardBoard.DateBoardConfig dateBoardConfig ->
-            DateBoard.columns now zone dateBoardConfig panelIndex taskList
+            DateBoard.columns now zone dateBoardConfig taskList
                 |> cardsInColumns panelIndex
 
         CardBoard.TagBoardConfig tagBoardConfig ->
-            TagBoard.columns tagBoardConfig panelIndex taskList
+            TagBoard.columns tagBoardConfig taskList
                 |> cardsInColumns panelIndex
 
 

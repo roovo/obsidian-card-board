@@ -24,24 +24,24 @@ type alias Config =
 -- COLUMNS
 
 
-columns : Time.Posix -> Time.Zone -> Config -> Int -> TaskList -> List ( String, List TaskItem )
-columns now zone config panelIndex taskList =
+columns : Time.Posix -> Time.Zone -> Config -> TaskList -> List ( String, List TaskItem )
+columns now zone config taskList =
     [ ( "Today"
-      , todaysItems (Date.fromPosix zone now) panelIndex taskList config
+      , todaysItems (Date.fromPosix zone now) taskList config
       )
     , ( "Tomorrow"
-      , tomorrowsItems (Date.fromPosix zone now) panelIndex taskList config
+      , tomorrowsItems (Date.fromPosix zone now) taskList config
       )
     , ( "Future"
-      , futureItems (Date.fromPosix zone now) panelIndex taskList config
+      , futureItems (Date.fromPosix zone now) taskList config
       )
     ]
-        |> prependUndated panelIndex taskList config
-        |> appendCompleted panelIndex taskList config
+        |> prependUndated taskList config
+        |> appendCompleted taskList config
 
 
-prependUndated : Int -> TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-prependUndated panelIndex taskList config columnList =
+prependUndated : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUndated taskList config columnList =
     let
         undatedtasks =
             TaskList.topLevelTasks taskList
@@ -55,8 +55,8 @@ prependUndated panelIndex taskList config columnList =
         columnList
 
 
-todaysItems : Date -> Int -> TaskList -> Config -> List TaskItem
-todaysItems today panelIndex taskList config =
+todaysItems : Date -> TaskList -> Config -> List TaskItem
+todaysItems today taskList config =
     let
         isToday t =
             case TaskItem.due t of
@@ -76,8 +76,8 @@ todaysItems today panelIndex taskList config =
         |> List.sortBy TaskItem.dueRataDie
 
 
-tomorrowsItems : Date -> Int -> TaskList -> Config -> List TaskItem
-tomorrowsItems today panelIndex taskList config =
+tomorrowsItems : Date -> TaskList -> Config -> List TaskItem
+tomorrowsItems today taskList config =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -99,8 +99,8 @@ tomorrowsItems today panelIndex taskList config =
         |> List.sortBy (String.toLower << TaskItem.title)
 
 
-futureItems : Date -> Int -> TaskList -> Config -> List TaskItem
-futureItems today panelIndex taskList config =
+futureItems : Date -> TaskList -> Config -> List TaskItem
+futureItems today taskList config =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -123,8 +123,8 @@ futureItems today panelIndex taskList config =
         |> List.sortBy TaskItem.dueRataDie
 
 
-appendCompleted : Int -> TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
-appendCompleted panelIndex taskList config columnList =
+appendCompleted : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted taskList config columnList =
     let
         completedTasks =
             TaskList.topLevelTasks taskList
