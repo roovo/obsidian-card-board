@@ -307,7 +307,7 @@ view model =
                         )
                     , Html.div [ class "card-board-panels" ]
                         (Panels.panels panels
-                            |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView model) (panelView model)
+                            |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView model.timeWithZone) (panelView model.timeWithZone)
                             |> SafeZipper.toList
                         )
                     ]
@@ -332,27 +332,27 @@ tabHeader index title =
         [ Html.text <| title ]
 
 
-panelView : Model -> Int -> Panel -> Html Msg
-panelView model index panel =
+panelView : TimeWithZone -> Int -> Panel -> Html Msg
+panelView timeWithZone index panel =
     Html.div
         [ class "card-board-panel"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (panel
-                |> Panel.columns model.timeWithZone index
-                |> List.map (\( n, cs ) -> column model.timeWithZone n cs)
+                |> Panel.columns timeWithZone index
+                |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
 
 
-selectedPanelView : Model -> Int -> Panel -> Html Msg
-selectedPanelView model index panel =
+selectedPanelView : TimeWithZone -> Int -> Panel -> Html Msg
+selectedPanelView timeWithZone index panel =
     Html.div [ class "card-board-panel" ]
         [ Html.div [ class "card-board-columns" ]
             (panel
-                |> Panel.columns model.timeWithZone index
-                |> List.map (\( n, cs ) -> column model.timeWithZone n cs)
+                |> Panel.columns timeWithZone index
+                |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
 
@@ -406,26 +406,26 @@ cardView timeWithZone card =
                 []
             , Html.div [ class "card-board-card-title", id cardId ]
                 []
-            , cardTagsView taskItem
+            , cardTagsView (TaskItem.tags taskItem)
                 |> when (TaskItem.hasTags taskItem)
-            , subtasksView card
+            , subtasksView (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
-            , notesView card
+            , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
             , Html.div [ class "card-board-card-footer-area" ]
-                [ cardDueDate taskItem
+                [ taskDueDate (TaskItem.due taskItem)
                     |> when (TaskItem.isDated taskItem)
-                , cardActionButtons card
+                , cardActionButtons taskItemId (Card.editButtonId card)
                 ]
             ]
         ]
         |> Tuple.pair cardId
 
 
-cardTagsView : TaskItem -> Html Msg
-cardTagsView taskItem =
+cardTagsView : List String -> Html Msg
+cardTagsView tags =
     Html.div [ class "card-board-card-tag-area" ]
-        (List.map cardTagView (TaskItem.tags taskItem))
+        (List.map cardTagView tags)
 
 
 cardTagView : String -> Html Msg
@@ -440,17 +440,17 @@ cardTagView tagText =
         ]
 
 
-notesView : Card -> Html Msg
-notesView card =
-    Html.div [ class "card-board-card-notes-area", id <| Card.notesId card ]
+notesView : String -> Html Msg
+notesView notesId =
+    Html.div [ class "card-board-card-notes-area", id notesId ]
         []
 
 
-subtasksView : Card -> Html Msg
-subtasksView card =
+subtasksView : List ( String, TaskItem ) -> Html Msg
+subtasksView subtasks =
     Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
-            (List.map subtaskView (Card.subtasks card))
+            (List.map subtaskView subtasks)
         ]
 
 
@@ -469,30 +469,30 @@ subtaskView ( uniqueId, subtask ) =
         ]
 
 
-cardDueDate : TaskItem -> Html Msg
-cardDueDate taskItem =
+taskDueDate : Maybe Date -> Html Msg
+taskDueDate dueDate =
     Html.div [ class "card-board-card-action-area-due" ]
-        [ Html.text ("Due: " ++ dueDateString taskItem)
+        [ Html.text ("Due: " ++ dueDateString dueDate)
         ]
 
 
-dueDateString : TaskItem -> String
-dueDateString taskItem =
-    case TaskItem.due taskItem of
-        Just dueDate ->
-            Date.format "E, MMM ddd" dueDate
+dueDateString : Maybe Date -> String
+dueDateString dueDate =
+    case dueDate of
+        Just date ->
+            Date.format "E, MMM ddd" date
 
         Nothing ->
             "n/a"
 
 
-cardActionButtons : Card -> Html Msg
-cardActionButtons card =
+cardActionButtons : String -> String -> Html Msg
+cardActionButtons taskItemId editButtonId =
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemEditClicked <| Card.taskItemId card
-            , id <| Card.editButtonId card
+            , onClick <| TaskItemEditClicked taskItemId
+            , id editButtonId
             ]
             [ FeatherIcons.edit
                 |> FeatherIcons.withSize 1
@@ -501,7 +501,7 @@ cardActionButtons card =
             ]
         , Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemDeleteClicked <| Card.taskItemId card
+            , onClick <| TaskItemDeleteClicked taskItemId
             ]
             [ FeatherIcons.trash
                 |> FeatherIcons.withSize 1

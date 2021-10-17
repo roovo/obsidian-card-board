@@ -1,5 +1,5 @@
-- handle the display of multiple boards (some form of tabbed view perhaps)
-  - tests - add for new stuff
+Up Next
+- display multiple boards
   - tab styling
 - plugin settings
   - allow/deny directories/files
@@ -14,31 +14,43 @@
 - handle renames - make sure I cope with both directory and file renames
 - run elm review
 - make README.md a proper readme (and have a separate contributing/dev page?)
+- put the target in dist
+  - put the static sources in an assets dir and copy them into dist on build too
 
+UI Improvements
 - do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
-- Tagboard: have separate Other and Untagged columns
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
-- Firefly Theme: why is the text so big?
-- have a subtag board that uses a root tag then subtags to define columns
-- do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
-- do I want a way of flagging cards?
-- could make column ordering more efficient (e.g. TagBoard completed tasks)
-- get working with tabbed view plugin
-- on a tagboard when drag-dropping allow alt-drag to duplicate the card
-  - so maintaining the tag in the column being dragged from as well as getting the new
-- multiselect - for drag/drop and context menu operations
-- should I have an option to set colors for tags?
-- context menu to set due date to today
 - does openLinkText use setSelection to highlight the selected todo?
   if so, I can do better as by default obsidian doesn't include all
   indented stuff under a todo item as being in the block
-- eisenhower matrix view
-- define boards by headings on a page
 - confirm dialog before task deletion
+- keyboard navigation
+- search for card by title/content
+- resizing columns
+- what to do about due dates for subtasks
+- undo buffer for toggling completion
+- could/should I use some taskpaper tags:
+    @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
+    @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
+    @flagged - present when an item is flagged
+    @parallel(bool) - whether children are parallel (true) or sequential (false)
+    @repeat-method(method) - the repeat method: fixed, start-after-completion, or due-after-completion
+    @repeat-rule(rule) - an ICS repeat rule (see RFC244557), e.g. FREQ=WEEKLY;INTERVAL=1
+    taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
+- edit in place via popup
+
+Board Improvements
+- Tagboard: have separate Other and Untagged columns
+- do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
+- do I want a way of flagging cards?
+- could make column ordering more efficient (e.g. TagBoard completed tasks)
+- should I have an option to set colors for tags?
+- context menu to set due date to today
 - don't display all completed tasks - can get quite long!
-- when clicking the edit button place the cursor at the line of the todo
-  have tried to do this using setCursor and not go it to work so far
-- run elm review
+- filter cards on board (e.g. by tag)
+- sort order for columns?
+
+Card Improvements
 - specify format for people cards
   - if on line and they contain an image then put the pic on the card
   - support multiple people
@@ -46,43 +58,39 @@
   intesad of trying to style it's effect away using css
 - right click on interal link
 - right click on external link
-- what to do about due dates for subtasks
-- keyboard navigation
-- sort order for columns? (perhaps store the order information in front matter)
+- when clicking the edit button place the cursor at the line of the todo
+  have tried to do this using setCursor and not go it to work so far
+- display on card - done date
+
+Theme Compatibility
+- Firefly Theme: why is the text so big?
+- get working with tabbed view plugin
+
+Board Types
+- have a subtag board that uses a root tag then subtags to define columns
+- eisenhower matrix view
+- define boards by headings on a page
+
+Drag n Drop
+- on a tagboard when drag-dropping allow alt-drag to duplicate the card
+  - so maintaining the tag in the column being dragged from as well as getting the new
+- multiselect - for drag/drop and context menu operations
 - drag and drop
   - into today, tomorrow, and done columns
   - within column to change ordering
-- search for card by title/content
-- filter cards on board (e.g. by tag)
-- undo buffer for toggling completion
+
+Misc
+- run elm review
 - where to use fuzz testing
+- review awful typescript code!
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
   let the user know why nothing has happened
+- better parsing errors? - https://discourse.elm-lang.org/t/newline-and-indentation-issues-in-elm-parser/4869
 - look into issue fixed in commit bca367 : TODO - why does this work....
   - can I get parser to always work when there is no "\n" on the end of the input
-- better parsing errors? - https://discourse.elm-lang.org/t/newline-and-indentation-issues-in-elm-parser/4869
-- resizing columns
-- display on card - done date
-- edit in place via popup
 - if it is slow parsing vaults then see if I can speed it up by
   dropping backtrackable in the TaskItems parser.
-- review awful typescript code!
 
-- could/should I use some taskpaper tags:
-
-    @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
-    @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
-    @flagged - present when an item is flagged
-    @parallel(bool) - whether children are parallel (true) or sequential (false)
-    @repeat-method(method) - the repeat method: fixed, start-after-completion, or due-after-completion
-    @repeat-rule(rule) - an ICS repeat rule (see RFC244557), e.g. FREQ=WEEKLY;INTERVAL=1
-
-    taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
-
-- put the target in dist
-  - put the static sources in an assets dir and copy them into dist on build too
-
-# Need help
 api option for preview view so when given a block reference is still shows the whole document
 but scrolls the block into view and highlights it.  When this is done I can use this when
 hovering over the edit button to show the details of the todo in the original doc.  At the moment
