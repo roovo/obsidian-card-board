@@ -26,13 +26,7 @@ import TsJson.Encode as TsEncode
 
 addHoverToCardEditButtons : String -> List Card -> Cmd msg
 addHoverToCardEditButtons filePath cards =
-    let
-        ids =
-            cards
-                |> List.map Card.id
-                |> List.map (\i -> i ++ ":editButton")
-    in
-    { filePath = filePath, ids = ids }
+    { filePath = filePath, ids = List.map Card.editButtonId cards }
         |> encodeVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
         |> interopFromElm
 
@@ -53,39 +47,7 @@ openTodoSourceFile info =
 
 displayTaskMarkdown : String -> List Card -> Cmd msg
 displayTaskMarkdown filePath cards =
-    let
-        subtaskMarkdownWithId ( id, subtask ) =
-            { id = id
-            , markdown = TaskItem.title subtask
-            }
-
-        subtasksWithIds =
-            cards
-                |> List.concatMap Card.subtasks
-                |> List.map subtaskMarkdownWithId
-
-        notesMarkdownWithId c =
-            { id = Card.id c ++ ":notes"
-            , markdown = TaskItem.notes (Card.taskItem c)
-            }
-
-        notesWithIds =
-            cards
-                |> List.filter (\c -> TaskItem.hasNotes (Card.taskItem c))
-                |> List.map notesMarkdownWithId
-
-        markdownWithId c =
-            { id = Card.id c
-            , markdown = TaskItem.title (Card.taskItem c)
-            }
-
-        markdownWithIds =
-            cards
-                |> List.map markdownWithId
-                |> List.append subtasksWithIds
-                |> List.append notesWithIds
-    in
-    { filePath = filePath, todoMarkdown = markdownWithIds }
+    { filePath = filePath, todoMarkdown = List.concatMap Card.markdownWithIds cards }
         |> encodeVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
         |> interopFromElm
 
@@ -93,26 +55,15 @@ displayTaskMarkdown filePath cards =
 rewriteTodos : Time.Posix -> String -> List TaskItem -> Cmd msg
 rewriteTodos now filePath taskItems =
     let
-        buildFoo taskItem =
+        rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
             , newText = taskItem |> TaskItem.toggleCompletion now |> TaskItem.toString
             }
     in
-    { filePath = filePath, todos = List.map buildFoo taskItems }
+    { filePath = filePath, todos = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTodos" InteropDefinitions.updateTodosEncoder
         |> interopFromElm
-
-
-encodeVariant : String -> TsEncode.Encoder arg1 -> arg1 -> Json.Encode.Value
-encodeVariant variantName encoder_ arg1 =
-    arg1
-        |> (TsEncode.object
-                [ TsEncode.required "tag" identity (TsEncode.literal (Json.Encode.string variantName))
-                , TsEncode.required "data" identity encoder_
-                ]
-                |> TsEncode.encoder
-           )
 
 
 fromElm : InteropDefinitions.FromElm -> Cmd msg
@@ -127,6 +78,21 @@ toElm =
     (InteropDefinitions.interop.toElm |> TsDecode.decoder)
         |> Json.Decode.decodeValue
         |> interopToElm
+
+
+
+-- PRIVATE
+
+
+encodeVariant : String -> TsEncode.Encoder arg1 -> arg1 -> Json.Encode.Value
+encodeVariant variantName encoder_ arg1 =
+    arg1
+        |> (TsEncode.object
+                [ TsEncode.required "tag" identity (TsEncode.literal (Json.Encode.string variantName))
+                , TsEncode.required "data" identity encoder_
+                ]
+                |> TsEncode.encoder
+           )
 
 
 decodeFlags : Json.Decode.Value -> Result Json.Decode.Error InteropDefinitions.Flags

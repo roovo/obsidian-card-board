@@ -1,6 +1,5 @@
 - handle the display of multiple boards (some form of tabbed view perhaps)
-  - move knowlege of how hover button ids (etc) are built into Card (from InteropPorts & Main)
-  - mouse to had pointer over tab bar
+  - mouse to hand pointer over tab bar
   - do I need Cardboard?
   - tests - fix existing
   - tests - add for new stuff

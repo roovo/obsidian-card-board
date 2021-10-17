@@ -369,11 +369,14 @@ column now zone title cards =
 cardView : Time.Posix -> Time.Zone -> Card -> ( String, Html Msg )
 cardView now zone card =
     let
-        uniqueId =
+        cardId =
             Card.id card
 
         taskItem =
             Card.taskItem card
+
+        taskItemId =
+            Card.taskItemId card
 
         highlightAreaClass =
             case Card.highlight now zone card of
@@ -396,11 +399,11 @@ cardView now zone card =
             [ Html.input
                 [ type_ "checkbox"
                 , class "task-list-item-checkbox"
-                , onClick <| TaskItemToggled <| TaskItem.id taskItem
+                , onClick <| TaskItemToggled taskItemId
                 , checked <| TaskItem.isCompleted taskItem
                 ]
                 []
-            , Html.div [ class "card-board-card-title", id uniqueId ]
+            , Html.div [ class "card-board-card-title", id cardId ]
                 []
             , cardTagsView taskItem
                 |> when (TaskItem.hasTags taskItem)
@@ -415,7 +418,7 @@ cardView now zone card =
                 ]
             ]
         ]
-        |> Tuple.pair uniqueId
+        |> Tuple.pair cardId
 
 
 cardTagsView : TaskItem -> Html Msg
@@ -438,11 +441,7 @@ cardTagView tagText =
 
 notesView : Card -> Html Msg
 notesView card =
-    let
-        uniqueId =
-            Card.id card ++ ":notes"
-    in
-    Html.div [ class "card-board-card-notes-area", id uniqueId ]
+    Html.div [ class "card-board-card-notes-area", id <| Card.notesId card ]
         []
 
 
@@ -488,18 +487,11 @@ dueDateString taskItem =
 
 cardActionButtons : Card -> Html Msg
 cardActionButtons card =
-    let
-        uniqueId =
-            Card.id card ++ ":editButton"
-
-        taskItem =
-            Card.taskItem card
-    in
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemEditClicked <| TaskItem.id taskItem
-            , id uniqueId
+            , onClick <| TaskItemEditClicked <| Card.taskItemId card
+            , id <| Card.editButtonId card
             ]
             [ FeatherIcons.edit
                 |> FeatherIcons.withSize 1
@@ -508,7 +500,7 @@ cardActionButtons card =
             ]
         , Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemDeleteClicked <| TaskItem.id taskItem
+            , onClick <| TaskItemDeleteClicked <| Card.taskItemId card
             ]
             [ FeatherIcons.trash
                 |> FeatherIcons.withSize 1
