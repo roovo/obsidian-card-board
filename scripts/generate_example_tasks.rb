@@ -65,7 +65,7 @@ File.open(undated_tasks, "w") do |file|
   file.write """
 # Undated things to do
 
-- [ ] this is a task with @autodone set @autodone(true)
+- [ ] this is a task with @autocomplete set @autocomplete(true)
   - [ ] subtask1
   - [ ] subtask 2
 

@@ -2,11 +2,10 @@
   - tests - fix existing
   - tests - add for new stuff
   - tab styling
-- work out how settings will be used in the main app model to allow for multiple boards
 - plugin settings
   - allow/deny directories/files
   - max title lines
-  - per note settings (for card ordering on each board perhaps)
+  - board definitions
     - kanban keeps stuff in front matter
     - spaced repetition pludin keeps stuff in the plugin data
     - look at dictionary plugin too
@@ -17,6 +16,8 @@
 - run elm review
 - make README.md a proper readme (and have a separate contributing/dev page?)
 
+- do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
+- Tagboard: have separate Other and Untagged columns
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - Firefly Theme: why is the text so big?
 - have a subtag board that uses a root tag then subtags to define columns
@@ -50,7 +51,9 @@
 - what to do about due dates for subtasks
 - keyboard navigation
 - sort order for columns? (perhaps store the order information in front matter)
-- drag and drop -> into today, tomorrow, and done columns
+- drag and drop
+  - into today, tomorrow, and done columns
+  - within column to change ordering
 - search for card by title/content
 - filter cards on board (e.g. by tag)
 - undo buffer for toggling completion
