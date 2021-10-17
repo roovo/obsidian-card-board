@@ -1,8 +1,5 @@
 module Main exposing (main)
 
--- import DateBoard
--- import TagBoard
-
 import Browser
 import Card exposing (Card)
 import CardBoard
@@ -23,6 +20,7 @@ import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 main : Program JD.Value Model Msg
@@ -42,8 +40,7 @@ main =
 type alias Model =
     { dailyNotesFolder : String
     , dailyNotesFormat : String
-    , now : Time.Posix
-    , zone : Time.Zone
+    , timeWithZone : TimeWithZone
     , taskList : State TaskList
     , boardConfigs : SafeZipper CardBoard.Config
     }
@@ -83,8 +80,10 @@ init flags =
         Ok okFlags ->
             ( { dailyNotesFolder = okFlags.folder
               , dailyNotesFormat = okFlags.format
-              , now = Time.millisToPosix okFlags.now
-              , zone = Time.customZone okFlags.zone []
+              , timeWithZone =
+                    { now = Time.millisToPosix okFlags.now
+                    , zone = Time.customZone okFlags.zone []
+                    }
               , taskList = Loading
               , boardConfigs = SafeZipper.fromList boardConfigs
               }
@@ -117,8 +116,10 @@ update msg model =
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
-                | zone = zone
-                , now = posix
+                | timeWithZone =
+                    { zone = zone
+                    , now = posix
+                    }
               }
             , Cmd.none
             )
@@ -172,9 +173,9 @@ update msg model =
                         Just matchingItem ->
                             ( model
                             , InteropPorts.rewriteTodos
-                                model.now
+                                model.timeWithZone
                                 (TaskItem.filePath matchingItem)
-                                (TaskItem.tasksToToggle id model.now matchingItem)
+                                (TaskItem.tasksToToggle id model.timeWithZone matchingItem)
                             )
 
                         Nothing ->
@@ -184,7 +185,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ( Tick time, _ ) ->
-            ( { model | now = time }
+            ( { model | timeWithZone = TimeWithZone.now time model.timeWithZone }
             , Cmd.none
             )
 
@@ -196,7 +197,7 @@ update msg model =
                 cards =
                     newTaskItems
                         |> Panels.init model.boardConfigs
-                        |> Panels.cards model.now model.zone
+                        |> Panels.cards model.timeWithZone
             in
             ( addTaskItems model newTaskItems
             , Cmd.batch
@@ -216,7 +217,7 @@ update msg model =
                 cards =
                     updatedTaskItems
                         |> Panels.init model.boardConfigs
-                        |> Panels.cards model.now model.zone
+                        |> Panels.cards model.timeWithZone
             in
             ( updateTaskItems model markdownFile.filePath updatedTaskItems
             , Cmd.batch
@@ -339,8 +340,8 @@ panelView model index panel =
         ]
         [ Html.div [ class "card-board-columns" ]
             (panel
-                |> Panel.columns model.now model.zone index
-                |> List.map (\( n, cs ) -> column model.now model.zone n cs)
+                |> Panel.columns model.timeWithZone index
+                |> List.map (\( n, cs ) -> column model.timeWithZone n cs)
             )
         ]
 
@@ -350,24 +351,24 @@ selectedPanelView model index panel =
     Html.div [ class "card-board-panel" ]
         [ Html.div [ class "card-board-columns" ]
             (panel
-                |> Panel.columns model.now model.zone index
-                |> List.map (\( n, cs ) -> column model.now model.zone n cs)
+                |> Panel.columns model.timeWithZone index
+                |> List.map (\( n, cs ) -> column model.timeWithZone n cs)
             )
         ]
 
 
-column : Time.Posix -> Time.Zone -> String -> List Card -> Html Msg
-column now zone title cards =
+column : TimeWithZone -> String -> List Card -> Html Msg
+column timeWithZone title cards =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text title ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView now zone) cards)
+            (List.map (cardView timeWithZone) cards)
         ]
 
 
-cardView : Time.Posix -> Time.Zone -> Card -> ( String, Html Msg )
-cardView now zone card =
+cardView : TimeWithZone -> Card -> ( String, Html Msg )
+cardView timeWithZone card =
     let
         cardId =
             Card.id card
@@ -379,7 +380,7 @@ cardView now zone card =
             Card.taskItemId card
 
         highlightAreaClass =
-            case Card.highlight now zone card of
+            case Card.highlight timeWithZone card of
                 Card.HighlightCritical ->
                     "critical"
 

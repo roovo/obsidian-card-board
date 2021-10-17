@@ -22,7 +22,6 @@
 - have a subtag board that uses a root tag then subtags to define columns
 - do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
 - do I want a way of flagging cards?
-- I'm often passing Time.Posix and Time.Zone around together -> make a type
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
 - get working with tabbed view plugin
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
@@ -93,6 +92,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- I'm often passing Time.Posix and Time.Zone around together -> make a type
 - don't store functions on the model (board is stored as a function at the moment)
 - don't use elm-typescript-interop (as it won't install so I can't build project from new)
 - leave column title at the top when scrolling cards

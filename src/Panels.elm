@@ -12,6 +12,7 @@ import Panel exposing (Panel)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -45,12 +46,12 @@ tabTitles (Panels configs _) =
     SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
 
 
-cards : Time.Posix -> Time.Zone -> Panels -> List Card
-cards now zone ps =
+cards : TimeWithZone -> Panels -> List Card
+cards timeWithZone ps =
     ps
         |> panels
         |> SafeZipper.toList
-        |> List.indexedMap (Panel.columns now zone)
+        |> List.indexedMap (Panel.columns timeWithZone)
         |> List.concat
         |> List.map Tuple.second
         |> List.concat

@@ -244,8 +244,8 @@ tags ((TaskItem fields _) as taskItem) =
         |> List.append fields.tags
 
 
-tasksToToggle : String -> Time.Posix -> TaskItem -> List TaskItem
-tasksToToggle id_ now taskItem =
+tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
+tasksToToggle id_ timeWithZone taskItem =
     let
         idBelongsToSubtask =
             taskItem
@@ -258,7 +258,7 @@ tasksToToggle id_ now taskItem =
                 |> List.map
                     (\t ->
                         if id t == id_ then
-                            toggleCompletion now t
+                            toggleCompletion timeWithZone t
 
                         else
                             t
@@ -367,8 +367,8 @@ toString (TaskItem fields _) =
 -- MODIFICATION
 
 
-toggleCompletion : Time.Posix -> TaskItem -> TaskItem
-toggleCompletion timeNow (TaskItem fields subtasks_) =
+toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
+toggleCompletion timeWithZone (TaskItem fields subtasks_) =
     case fields.completion of
         Completed ->
             TaskItem { fields | completion = Incomplete } subtasks_
@@ -377,7 +377,7 @@ toggleCompletion timeNow (TaskItem fields subtasks_) =
             TaskItem { fields | completion = Incomplete } subtasks_
 
         Incomplete ->
-            TaskItem { fields | completion = CompletedAt timeNow } subtasks_
+            TaskItem { fields | completion = CompletedAt timeWithZone.now } subtasks_
 
 
 

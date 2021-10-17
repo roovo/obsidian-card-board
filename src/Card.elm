@@ -15,6 +15,7 @@ module Card exposing
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -45,17 +46,21 @@ fromTaskItem =
 -- INFO
 
 
-highlight : Time.Posix -> Time.Zone -> Card -> Highlight
-highlight now zone (Card _ item) =
+highlight : TimeWithZone -> Card -> Highlight
+highlight timeWithZone (Card _ item) =
+    let
+        datestamp =
+            TimeWithZone.toDate timeWithZone
+    in
     case ( TaskItem.isCompleted item, TaskItem.due item ) of
         ( False, Just dueDate ) ->
-            if Date.fromPosix zone now == dueDate then
+            if datestamp == dueDate then
                 HighlightImportant
 
-            else if Date.toRataDie (Date.fromPosix zone now) > Date.toRataDie dueDate then
+            else if Date.toRataDie datestamp > Date.toRataDie dueDate then
                 HighlightCritical
 
-            else if Date.toRataDie (Date.fromPosix zone now) < Date.toRataDie dueDate then
+            else if Date.toRataDie datestamp < Date.toRataDie dueDate then
                 HighlightGood
 
             else

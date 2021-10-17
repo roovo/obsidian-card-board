@@ -8,6 +8,7 @@ import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Test exposing (..)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 suite : Test
@@ -25,27 +26,27 @@ columns =
         [ test "default columns are just today tomorrow and future" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone defaultConfig
+                    |> DateBoard.columns timeWithZone defaultConfig
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "todaysItems are sorted by due date (then task title ascending)" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone defaultConfig
+                    |> DateBoard.columns timeWithZone defaultConfig
                     |> tasksInColumn "Today"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "another yesterday incomplete", "yesterday incomplete", "today incomplete" ]
         , test "tommorrowsItems are sorted by task title ascending" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone defaultConfig
+                    |> DateBoard.columns timeWithZone defaultConfig
                     |> tasksInColumn "Tomorrow"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a task for tomorrow", "tomorrow incomplete" ]
         , test "futureItems are sorted by due date ascending (then task title)" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone defaultConfig
+                    |> DateBoard.columns timeWithZone defaultConfig
                     |> tasksInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete", "zapping into the future" ]
@@ -58,13 +59,13 @@ columnCompleted =
         [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone { defaultConfig | includeCompleted = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | includeCompleted = True }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone { defaultConfig | includeCompleted = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | includeCompleted = True }
                     |> tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -85,13 +86,13 @@ columnUndated =
         [ test "an Undated column is prepended if config sets includeUndated" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | includeUndated = True }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by title ascending" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns now zone { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | includeUndated = True }
                     |> tasksInColumn "Undated"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
@@ -140,6 +141,13 @@ future =
 farFuture : String
 farFuture =
     "2020-06-23"
+
+
+timeWithZone : TimeWithZone
+timeWithZone =
+    { now = now
+    , zone = zone
+    }
 
 
 now : Time.Posix

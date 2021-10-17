@@ -11,6 +11,7 @@ import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -34,11 +35,11 @@ init config taskList =
 -- INFO
 
 
-columns : Time.Posix -> Time.Zone -> Int -> Panel -> List ( String, List Card )
-columns now zone panelIndex (Panel config taskList) =
+columns : TimeWithZone -> Int -> Panel -> List ( String, List Card )
+columns timeWithZone panelIndex (Panel config taskList) =
     case config of
         CardBoard.DateBoardConfig dateBoardConfig ->
-            DateBoard.columns now zone dateBoardConfig taskList
+            DateBoard.columns timeWithZone dateBoardConfig taskList
                 |> placeCardsInColumns panelIndex
 
         CardBoard.TagBoardConfig tagBoardConfig ->
@@ -63,7 +64,3 @@ placeCardsInColumns panelIndex columnList =
     in
     columnList
         |> List.map placeCardsInColumn
-
-
-
--- Card (String.fromInt panelIndex ++ ":" ++ columnId ++ ":") item

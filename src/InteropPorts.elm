@@ -20,6 +20,7 @@ import SafeZipper
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -52,13 +53,13 @@ displayTaskMarkdown filePath cards =
         |> interopFromElm
 
 
-rewriteTodos : Time.Posix -> String -> List TaskItem -> Cmd msg
-rewriteTodos now filePath taskItems =
+rewriteTodos : TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTodos timeWithZone filePath taskItems =
     let
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = taskItem |> TaskItem.toggleCompletion now |> TaskItem.toString
+            , newText = taskItem |> TaskItem.toggleCompletion timeWithZone |> TaskItem.toString
             }
     in
     { filePath = filePath, todos = List.map rewriteDetails taskItems }

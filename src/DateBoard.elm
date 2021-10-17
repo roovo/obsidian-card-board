@@ -7,6 +7,7 @@ import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -24,16 +25,20 @@ type alias Config =
 -- COLUMNS
 
 
-columns : Time.Posix -> Time.Zone -> Config -> TaskList -> List ( String, List TaskItem )
-columns now zone config taskList =
+columns : TimeWithZone -> Config -> TaskList -> List ( String, List TaskItem )
+columns timeWithZone config taskList =
+    let
+        datestamp =
+            TimeWithZone.toDate timeWithZone
+    in
     [ ( "Today"
-      , todaysItems (Date.fromPosix zone now) taskList config
+      , todaysItems datestamp taskList config
       )
     , ( "Tomorrow"
-      , tomorrowsItems (Date.fromPosix zone now) taskList config
+      , tomorrowsItems datestamp taskList config
       )
     , ( "Future"
-      , futureItems (Date.fromPosix zone now) taskList config
+      , futureItems datestamp taskList config
       )
     ]
         |> prependUndated taskList config
