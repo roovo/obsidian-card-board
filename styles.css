@@ -27,6 +27,10 @@ ul.card-board-tab-list {
   padding: 0;
 }
 
+ul.card-board-tab-list li {
+  cursor: pointer;
+}
+
 .card-board-title {
   font-weight: var(--bold-weight);
   font-size: var(--font-normal);

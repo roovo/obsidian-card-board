@@ -1,5 +1,4 @@
 - handle the display of multiple boards (some form of tabbed view perhaps)
-  - mouse to hand pointer over tab bar
   - do I need Cardboard?
   - tests - fix existing
   - tests - add for new stuff
