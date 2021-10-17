@@ -36,9 +36,9 @@ type Highlight
 -- CONSTRUCTION
 
 
-fromTaskItem : Int -> String -> TaskItem -> Card
-fromTaskItem panelIndex columnId item =
-    Card (String.fromInt panelIndex ++ ":" ++ columnId ++ ":") item
+fromTaskItem : String -> TaskItem -> Card
+fromTaskItem =
+    Card
 
 
 

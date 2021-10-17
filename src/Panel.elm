@@ -39,18 +39,31 @@ columns now zone panelIndex (Panel config taskList) =
     case config of
         CardBoard.DateBoardConfig dateBoardConfig ->
             DateBoard.columns now zone dateBoardConfig taskList
-                |> cardsInColumns panelIndex
+                |> placeCardsInColumns panelIndex
 
         CardBoard.TagBoardConfig tagBoardConfig ->
             TagBoard.columns tagBoardConfig taskList
-                |> cardsInColumns panelIndex
+                |> placeCardsInColumns panelIndex
 
 
 
 -- PRIVATE
 
 
-cardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )
-cardsInColumns panelIndex columnList =
+placeCardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )
+placeCardsInColumns panelIndex columnList =
+    let
+        cardIdPrefix columnTitle =
+            String.fromInt panelIndex ++ ":" ++ columnTitle ++ ":"
+
+        placeCardsInColumn ( columnTitle, taskItems ) =
+            taskItems
+                |> List.map (Card.fromTaskItem <| cardIdPrefix columnTitle)
+                |> Tuple.pair columnTitle
+    in
     columnList
-        |> List.map (\( columnTitle, taskItems ) -> ( columnTitle, List.map (Card.fromTaskItem panelIndex columnTitle) taskItems ))
+        |> List.map placeCardsInColumn
+
+
+
+-- Card (String.fromInt panelIndex ++ ":" ++ columnId ++ ":") item
