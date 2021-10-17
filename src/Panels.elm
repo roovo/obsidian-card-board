@@ -62,7 +62,12 @@ cards now zone ps =
 
 tabTitle : Int -> CardBoard.Config -> String
 tabTitle _ config =
-    CardBoard.title config
+    case config of
+        CardBoard.DateBoardConfig dateBoardConfig ->
+            dateBoardConfig.title
+
+        CardBoard.TagBoardConfig tagBoardConfig ->
+            tagBoardConfig.title
 
 
 panel : TaskList -> Int -> CardBoard.Config -> Panel

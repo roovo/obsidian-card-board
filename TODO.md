@@ -1,10 +1,8 @@
 - handle the display of multiple boards (some form of tabbed view perhaps)
-  - do I need Cardboard?
   - tests - fix existing
   - tests - add for new stuff
   - tab styling
 - work out how settings will be used in the main app model to allow for multiple boards
-- how to switch between boards
 - plugin settings
   - allow/deny directories/files
   - max title lines
@@ -15,6 +13,8 @@
     - leaflet keeps a bunch of data in the config folder
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
+- handle renames - make sure I cope with both directory and file renames
+- run elm review
 - make README.md a proper readme (and have a separate contributing/dev page?)
 
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
@@ -37,7 +37,6 @@
 - define boards by headings on a page
 - confirm dialog before task deletion
 - don't display all completed tasks - can get quite long!
-- handle renames - make sure I cope with both directory and file renames
 - when clicking the edit button place the cursor at the line of the todo
   have tried to do this using setCursor and not go it to work so far
 - run elm review
