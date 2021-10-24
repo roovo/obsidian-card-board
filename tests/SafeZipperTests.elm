@@ -15,6 +15,7 @@ suite =
         , indexedMapSelectedAndRest
         , length
         , next
+        , selectedIndex
         ]
 
 
@@ -116,6 +117,17 @@ indexedMapSelectedAndRest =
         ]
 
 
+length : Test
+length =
+    describe "length"
+        [ fuzz (Fuzz.list Fuzz.string) "is correct for various sized zippers" <|
+            \randomList ->
+                SafeZipper.fromList randomList
+                    |> SafeZipper.length
+                    |> Expect.equal (List.length randomList)
+        ]
+
+
 next : Test
 next =
     describe "next"
@@ -144,12 +156,23 @@ next =
         ]
 
 
-length : Test
-length =
-    describe "length"
-        [ fuzz (Fuzz.list Fuzz.string) "is correct for various sized zippers" <|
+selectedIndex : Test
+selectedIndex =
+    describe "selectedIndex"
+        [ test "is Nothing for an empty zipper" <|
             \randomList ->
-                SafeZipper.fromList randomList
-                    |> SafeZipper.length
-                    |> Expect.equal (List.length randomList)
+                SafeZipper.fromList []
+                    |> SafeZipper.selectedIndex
+                    |> Expect.equal Nothing
+        , test "is Just 0 for a newly built zipper with stuff in it" <|
+            \randomList ->
+                SafeZipper.fromList [ 1, 2 ]
+                    |> SafeZipper.selectedIndex
+                    |> Expect.equal (Just 0)
+        , test "is Just 1 for a zipper pointing at the second item" <|
+            \randomList ->
+                SafeZipper.fromList [ 1, 2, 3, 4 ]
+                    |> SafeZipper.next
+                    |> SafeZipper.selectedIndex
+                    |> Expect.equal (Just 1)
         ]

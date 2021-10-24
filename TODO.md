@@ -1,8 +1,7 @@
-Up Next
-- display multiple boards
-  - tab styling
+# Up Next
 - plugin settings
   - allow/deny directories/files
+  - max number of completed cards
   - max title lines
   - board definitions
     - kanban keeps stuff in front matter
@@ -17,7 +16,7 @@ Up Next
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 
-UI Improvements
+# UI Improvements
 - do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?
@@ -39,7 +38,7 @@ UI Improvements
     taskpaper grammer: https://support.hogbaysoftware.com/t/taskpaper-bnf-grammar/4002/3
 - edit in place via popup
 
-Board Improvements
+# Board Improvements
 - Tagboard: have separate Other and Untagged columns
 - do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
 - do I want a way of flagging cards?
@@ -50,7 +49,7 @@ Board Improvements
 - filter cards on board (e.g. by tag)
 - sort order for columns?
 
-Card Improvements
+# Card Improvements
 - specify format for people cards
   - if on line and they contain an image then put the pic on the card
   - support multiple people
@@ -62,16 +61,16 @@ Card Improvements
   have tried to do this using setCursor and not go it to work so far
 - display on card - done date
 
-Theme Compatibility
+# Theme Compatibility
 - Firefly Theme: why is the text so big?
 - get working with tabbed view plugin
 
-Board Types
+# Board Types
 - have a subtag board that uses a root tag then subtags to define columns
 - eisenhower matrix view
 - define boards by headings on a page
 
-Drag n Drop
+# Drag n Drop
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
   - so maintaining the tag in the column being dragged from as well as getting the new
 - multiselect - for drag/drop and context menu operations
@@ -79,7 +78,7 @@ Drag n Drop
   - into today, tomorrow, and done columns
   - within column to change ordering
 
-Misc
+# Misc
 - run elm review
 - where to use fuzz testing
 - review awful typescript code!
@@ -100,6 +99,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- display multiple boards
 - I'm often passing Time.Posix and Time.Zone around together -> make a type
 - don't store functions on the model (board is stored as a function at the moment)
 - don't use elm-typescript-interop (as it won't install so I can't build project from new)

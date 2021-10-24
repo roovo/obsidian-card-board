@@ -6,6 +6,7 @@ module SafeZipper exposing
     , indexedMapSelectedAndRest
     , length
     , next
+    , selectedIndex
     , toList
     )
 
@@ -143,3 +144,13 @@ length zipper =
 
         SafeZipper b c a ->
             List.length b + 1 + List.length a
+
+
+selectedIndex : SafeZipper a -> Maybe Int
+selectedIndex zipper =
+    case zipper of
+        EmptyZipper ->
+            Nothing
+
+        SafeZipper b _ _ ->
+            Just <| List.length b

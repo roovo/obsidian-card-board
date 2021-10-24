@@ -1,7 +1,9 @@
 module Panels exposing
     ( Panels
     , cards
+    , currentIndex
     , init
+    , length
     , panels
     , tabTitles
     )
@@ -55,6 +57,16 @@ cards timeWithZone ps =
         |> List.concat
         |> List.map Tuple.second
         |> List.concat
+
+
+currentIndex : Panels -> Maybe Int
+currentIndex (Panels config _) =
+    SafeZipper.selectedIndex config
+
+
+length : Panels -> Int
+length (Panels config _) =
+    SafeZipper.length config
 
 
 

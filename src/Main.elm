@@ -297,14 +297,14 @@ view model =
             let
                 panels =
                     Panels.init model.boardConfigs taskList
+
+                currentIndex =
+                    Panels.currentIndex panels
             in
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
                     [ Html.ul [ class "card-board-tab-list" ]
-                        (Panels.tabTitles panels
-                            |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader tabHeader
-                            |> SafeZipper.toList
-                        )
+                        (tabHeaders currentIndex panels)
                     , Html.div [ class "card-board-panels" ]
                         (Panels.panels panels
                             |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView model.timeWithZone) (panelView model.timeWithZone)
@@ -317,19 +317,73 @@ view model =
             Html.text ""
 
 
+tabHeaders : Maybe Int -> Panels -> List (Html Msg)
+tabHeaders currentIndex panels =
+    let
+        beforeHeaderClass =
+            tabHeaderClass currentIndex -1
+
+        beforeFirst =
+            Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
+                [ Html.div [ class "card-board-tabs-inner" ]
+                    [ Html.text "" ]
+                ]
+
+        afterHeaderClass =
+            tabHeaderClass currentIndex (Panels.length panels)
+
+        afterLast =
+            Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
+                [ Html.div [ class "card-board-tabs-inner" ]
+                    [ Html.text "" ]
+                ]
+
+        tabs =
+            Panels.tabTitles panels
+                |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentIndex)
+                |> SafeZipper.toList
+    in
+    beforeFirst :: List.append tabs [ afterLast ]
+
+
 selectedTabHeader : Int -> String -> Html Msg
 selectedTabHeader index title =
-    Html.li [ class "card-board-title" ]
-        [ Html.text <| title ++ " *" ]
+    Html.li [ class "card-board-tab-title is-active" ]
+        [ Html.div [ class "card-board-tabs-inner" ]
+            [ Html.text <| title ]
+        ]
 
 
-tabHeader : Int -> String -> Html Msg
-tabHeader index title =
+tabHeader : Maybe Int -> Int -> String -> Html Msg
+tabHeader currentIndex index title =
+    let
+        headerClass =
+            tabHeaderClass currentIndex index
+    in
     Html.li
-        [ class "card-board-title"
+        [ class ("card-board-tab-title" ++ headerClass)
         , onClick <| TabSelected index
         ]
-        [ Html.text <| title ]
+        [ Html.div [ class "card-board-tabs-inner" ]
+            [ Html.text <| title ]
+        ]
+
+
+tabHeaderClass : Maybe Int -> Int -> String
+tabHeaderClass currentIndex index =
+    case currentIndex of
+        Just i ->
+            if index == i - 1 then
+                " is-before-active"
+
+            else if index == i + 1 then
+                " is-after-active"
+
+            else
+                ""
+
+        Nothing ->
+            ""
 
 
 panelView : TimeWithZone -> Int -> Panel -> Html Msg
