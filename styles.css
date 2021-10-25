@@ -45,6 +45,11 @@ li.card-board-tab-title .card-board-tabs-inner {
   background-color: var(--background-primary);
 }
 
+li.card-board-pre-tabs .card-board-tabs-inner {
+  padding: 3px 7px;
+  width: 30px;
+}
+
 .card-board-tabs-inner {
   padding: 3px 1em;
 }

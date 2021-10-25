@@ -326,7 +326,11 @@ tabHeaders currentIndex panels =
         beforeFirst =
             Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
                 [ Html.div [ class "card-board-tabs-inner" ]
-                    [ Html.text "" ]
+                    [ FeatherIcons.settings
+                        |> FeatherIcons.withSize 1
+                        |> FeatherIcons.withSizeUnit "em"
+                        |> FeatherIcons.toHtml []
+                    ]
                 ]
 
         afterHeaderClass =
