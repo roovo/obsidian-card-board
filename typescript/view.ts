@@ -81,6 +81,11 @@ export class CardBoardView extends ItemView {
       });
     }
 
+    elm.ports.interopToElm.send({
+      tag: "initCompleted",
+      data: { }
+    });
+
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
 
@@ -91,11 +96,11 @@ export class CardBoardView extends ItemView {
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
   }
 
-  async handleAddFilePreviewHovers(data: {filePath: string, ids : string[] }) {
+  async handleAddFilePreviewHovers(data: {filePath: string, id : string }[]) {
     const that = this;
     requestAnimationFrame(function () {
-      for (const id of data.ids) {
-        const element = document.getElementById(id);
+      for (const card of data) {
+        const element = document.getElementById(card.id);
         if (element instanceof HTMLElement) {
           element.addEventListener('mouseover', (event: MouseEvent) => {
             that.app.workspace.trigger('hover-link', {
@@ -103,8 +108,8 @@ export class CardBoardView extends ItemView {
               source: "card-board",
               hoverParent: element,
               targetEl: element,
-              linktext: data.filePath,
-              sourcePath: data.filePath
+              linktext: card.filePath,
+              sourcePath: card.filePath
             });
           });
         }
@@ -124,36 +129,38 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: {id: string, markdown: string }[]}) {
+  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: {id: string, markdown: string }[]}[]) {
     const that = this;
     requestAnimationFrame(function () {
-      for (const item of data.todoMarkdown) {
-        const element = document.getElementById(item.id);
-        if (element instanceof HTMLElement) {
-          element.innerHTML = "";
-          MarkdownRenderer.renderMarkdown(item.markdown, element, data.filePath, this);
+      for (const card of data) {
+        for (const item of card.todoMarkdown) {
+          const element = document.getElementById(item.id);
+          if (element instanceof HTMLElement) {
+            element.innerHTML = "";
+            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, this);
 
-          const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
+            const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
 
-          for (const internalLink of internalLinks) {
-            if (internalLink instanceof HTMLElement) {
-              internalLink.addEventListener('mouseover', (event: MouseEvent) => {
-                that.app.workspace.trigger('hover-link', {
-                  event,
-                  source: "card-board",
-                  hoverParent: element,
-                  targetEl: internalLink,
-                  linktext: internalLink.getAttribute("href"),
-                  sourcePath: data.filePath
-                });
-              });
-
-              internalLink.addEventListener("click", (event: MouseEvent) => {
-                  event.preventDefault();
-                  that.app.workspace.openLinkText(internalLink.getAttribute("href"), data.filePath, true, {
-                      active: !0
+            for (const internalLink of internalLinks) {
+              if (internalLink instanceof HTMLElement) {
+                internalLink.addEventListener('mouseover', (event: MouseEvent) => {
+                  that.app.workspace.trigger('hover-link', {
+                    event,
+                    source: "card-board",
+                    hoverParent: element,
+                    targetEl: internalLink,
+                    linktext: internalLink.getAttribute("href"),
+                    sourcePath: card.filePath
                   });
-              });
+                });
+
+                internalLink.addEventListener("click", (event: MouseEvent) => {
+                    event.preventDefault();
+                    that.app.workspace.openLinkText(internalLink.getAttribute("href"), card.filePath, true, {
+                        active: !0
+                    });
+                });
+              }
             }
           }
         }

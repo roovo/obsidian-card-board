@@ -18,9 +18,9 @@ import TsJson.Encode as TsEncode exposing (optional, required)
 
 
 type FromElm
-    = AddFilePreviewHovers { filePath : String, ids : List String }
+    = AddFilePreviewHovers (List { filePath : String, id : String })
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
-    | DisplayTodoMarkdown { filePath : String, todoMarkdown : List { id : String, markdown : String } }
+    | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
     | OpenTodoSourceFile { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
     | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 
@@ -29,6 +29,7 @@ type ToElm
     = FileAdded MarkdownFile
     | FileDeleted String
     | FileUpdated MarkdownFile
+    | InitCompleted ()
 
 
 type alias Flags =
@@ -51,12 +52,14 @@ interop =
 -- ENCODERS
 
 
-addFilePreviewHoversEncoder : TsEncode.Encoder { filePath : String, ids : List String }
+addFilePreviewHoversEncoder : TsEncode.Encoder (List { filePath : String, id : String })
 addFilePreviewHoversEncoder =
-    TsEncode.object
-        [ required "filePath" .filePath TsEncode.string
-        , required "ids" .ids (TsEncode.list TsEncode.string)
-        ]
+    TsEncode.list
+        (TsEncode.object
+            [ required "filePath" .filePath TsEncode.string
+            , required "id" .id TsEncode.string
+            ]
+        )
 
 
 deleteTodoEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
@@ -68,12 +71,14 @@ deleteTodoEncoder =
         ]
 
 
-displayTodoMarkdownEncoder : TsEncode.Encoder { filePath : String, todoMarkdown : List { id : String, markdown : String } }
+displayTodoMarkdownEncoder : TsEncode.Encoder (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
 displayTodoMarkdownEncoder =
-    TsEncode.object
-        [ required "filePath" .filePath TsEncode.string
-        , required "todoMarkdown" .todoMarkdown (TsEncode.list markdownListEncoder)
-        ]
+    TsEncode.list
+        (TsEncode.object
+            [ required "filePath" .filePath TsEncode.string
+            , required "todoMarkdown" .todoMarkdown (TsEncode.list markdownListEncoder)
+            ]
+        )
 
 
 openTodoSourceFileEncoder : TsEncode.Encoder { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
@@ -113,6 +118,7 @@ toElm =
         [ toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
+        , toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
         ]
 
 

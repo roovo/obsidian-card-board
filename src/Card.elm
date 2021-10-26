@@ -2,6 +2,7 @@ module Card exposing
     ( Card
     , Highlight(..)
     , editButtonId
+    , filePath
     , fromTaskItem
     , highlight
     , id
@@ -78,6 +79,11 @@ id ((Card idPrefix _) as card) =
 editButtonId : Card -> String
 editButtonId card =
     id card ++ ":editButton"
+
+
+filePath : Card -> String
+filePath (Card _ item) =
+    TaskItem.filePath item
 
 
 markdownWithIds : Card -> List { id : String, markdown : String }

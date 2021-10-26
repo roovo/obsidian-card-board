@@ -46,11 +46,11 @@ fromElmTests =
     describe "interop.fromElm (encoding)"
         [ test "encodes AddFilePreviewHovers data" <|
             \() ->
-                { filePath = "a path", ids = [ "an id" ] }
+                [ { filePath = "a path", id = "an id" } ]
                     |> InteropDefinitions.AddFilePreviewHovers
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"addFilePreviewHovers","data":{"filePath":"a path","ids":["an id"]}}"""
+                    |> Expect.equal """{"tag":"addFilePreviewHovers","data":[{"filePath":"a path","id":"an id"}]}"""
         , test "encodes DeleteTodo data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
@@ -60,11 +60,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"deleteTodo","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
         , test "encodes DisplayTodoMarkdown data" <|
             \() ->
-                { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] }
+                [ { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
                     |> InteropDefinitions.DisplayTodoMarkdown
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"displayTodoMarkdown","data":{"filePath":"a path","todoMarkdown":[{"id":"an id","markdown":"some markdown"}]}}"""
+                    |> Expect.equal """{"tag":"displayTodoMarkdown","data":[{"filePath":"a path","todoMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
         , test "encodes OpenTodoSourceFile data" <|
             \() ->
                 { filePath = "a path", blockLink = Just "a link", lineNumber = 33, originalText = "the text" }
@@ -81,16 +81,16 @@ fromElmTests =
                     |> Expect.equal """{"tag":"updateTodos","data":{"filePath":"a path","todos":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
         , test "encodes the correct tsType" <|
             \() ->
-                { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] }
+                [ { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
                     |> InteropDefinitions.DisplayTodoMarkdown
                     |> TsEncode.runExample interop.fromElm
                     |> .tsType
                     |> Expect.equal
                         ("""{ data : { filePath : string; todos : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTodos" }"""
                             ++ """ | { data : { blockLink : string | null; filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
-                            ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }; tag : "displayTodoMarkdown" }"""
+                            ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""
-                            ++ """ | { data : { filePath : string; ids : string[] }; tag : "addFilePreviewHovers" }"""
+                            ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
                         )
         ]
 
@@ -132,6 +132,7 @@ toElmTests =
                         ("{ data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
                             ++ " | { data : string; tag : \"fileDeleted\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
+                            ++ " | { data : JsonValue; tag : \"initCompleted\" }"
                         )
         ]
 

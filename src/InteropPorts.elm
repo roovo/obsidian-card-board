@@ -25,9 +25,10 @@ import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
-addHoverToCardEditButtons : String -> List Card -> Cmd msg
-addHoverToCardEditButtons filePath cards =
-    { filePath = filePath, ids = List.map Card.editButtonId cards }
+addHoverToCardEditButtons : List Card -> Cmd msg
+addHoverToCardEditButtons cards =
+    cards
+        |> List.map (\c -> { filePath = Card.filePath c, id = Card.editButtonId c })
         |> encodeVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
         |> interopFromElm
 
@@ -46,9 +47,10 @@ openTodoSourceFile info =
         |> interopFromElm
 
 
-displayTaskMarkdown : String -> List Card -> Cmd msg
-displayTaskMarkdown filePath cards =
-    { filePath = filePath, todoMarkdown = List.concatMap Card.markdownWithIds cards }
+displayTaskMarkdown : List Card -> Cmd msg
+displayTaskMarkdown cards =
+    cards
+        |> List.map (\c -> { filePath = Card.filePath c, todoMarkdown = Card.markdownWithIds c })
         |> encodeVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
         |> interopFromElm
 

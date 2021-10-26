@@ -47,7 +47,8 @@ type alias Model =
 
 
 type State a
-    = Loading
+    = Waiting
+    | Loading a
     | Loaded a
 
 
@@ -84,11 +85,21 @@ init flags =
                     { now = Time.millisToPosix okFlags.now
                     , zone = Time.customZone okFlags.zone []
                     }
-              , taskList = Loading
+              , taskList = Waiting
               , boardConfigs = SafeZipper.fromList boardConfigs
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
+
+
+hasLoaded : State TaskList -> Bool
+hasLoaded taskList =
+    case taskList of
+        Loaded _ ->
+            True
+
+        _ ->
+            False
 
 
 
@@ -97,6 +108,7 @@ init flags =
 
 type Msg
     = BadInputFromTypeScript
+    | InitCompleted
     | ReceiveTime ( Time.Zone, Time.Posix )
     | TabSelected Int
     | TaskItemEditClicked String
@@ -113,6 +125,28 @@ update msg model =
     case ( msg, model ) of
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
+
+        ( InitCompleted, _ ) ->
+            case model.taskList of
+                Waiting ->
+                    ( { model | taskList = Loaded TaskList.empty }, Cmd.none )
+
+                Loading taskList ->
+                    let
+                        cards =
+                            taskList
+                                |> Panels.init model.boardConfigs
+                                |> Panels.cards model.timeWithZone
+                    in
+                    ( { model | taskList = Loaded taskList }
+                    , Cmd.batch
+                        [ InteropPorts.displayTaskMarkdown cards
+                        , InteropPorts.addHoverToCardEditButtons cards
+                        ]
+                    )
+
+                Loaded taskList ->
+                    ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
@@ -143,7 +177,7 @@ update msg model =
                         Nothing ->
                             ( model, Cmd.none )
 
-                Loading ->
+                _ ->
                     ( model, Cmd.none )
 
         ( TaskItemEditClicked id, _ ) ->
@@ -163,7 +197,7 @@ update msg model =
                         Nothing ->
                             ( model, Cmd.none )
 
-                Loading ->
+                _ ->
                     ( model, Cmd.none )
 
         ( TaskItemToggled id, _ ) ->
@@ -181,7 +215,7 @@ update msg model =
                         Nothing ->
                             ( model, Cmd.none )
 
-                Loading ->
+                _ ->
                     ( model, Cmd.none )
 
         ( Tick time, _ ) ->
@@ -200,10 +234,14 @@ update msg model =
                         |> Panels.cards model.timeWithZone
             in
             ( addTaskItems model newTaskItems
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath cards
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath cards
-                ]
+            , if hasLoaded model.taskList then
+                Cmd.batch
+                    [ InteropPorts.displayTaskMarkdown cards
+                    , InteropPorts.addHoverToCardEditButtons cards
+                    ]
+
+              else
+                Cmd.none
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -220,18 +258,25 @@ update msg model =
                         |> Panels.cards model.timeWithZone
             in
             ( updateTaskItems model markdownFile.filePath updatedTaskItems
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown markdownFile.filePath cards
-                , InteropPorts.addHoverToCardEditButtons markdownFile.filePath cards
-                ]
+            , if hasLoaded model.taskList then
+                Cmd.batch
+                    [ InteropPorts.displayTaskMarkdown cards
+                    , InteropPorts.addHoverToCardEditButtons cards
+                    ]
+
+              else
+                Cmd.none
             )
 
 
 deleteItemsFromFile : Model -> String -> Model
 deleteItemsFromFile model filePath =
     case model.taskList of
-        Loading ->
+        Waiting ->
             model
+
+        Loading currentList ->
+            { model | taskList = Loading (TaskList.removeForFile filePath currentList) }
 
         Loaded currentList ->
             { model | taskList = Loaded (TaskList.removeForFile filePath currentList) }
@@ -240,8 +285,11 @@ deleteItemsFromFile model filePath =
 addTaskItems : Model -> TaskList -> Model
 addTaskItems model taskList =
     case model.taskList of
-        Loading ->
-            { model | taskList = Loaded taskList }
+        Waiting ->
+            { model | taskList = Loading taskList }
+
+        Loading currentList ->
+            { model | taskList = Loading (TaskList.append currentList taskList) }
 
         Loaded currentList ->
             { model | taskList = Loaded (TaskList.append currentList taskList) }
@@ -250,8 +298,11 @@ addTaskItems model taskList =
 updateTaskItems : Model -> String -> TaskList -> Model
 updateTaskItems model filePath updatedList =
     case model.taskList of
-        Loading ->
-            { model | taskList = Loaded updatedList }
+        Waiting ->
+            { model | taskList = Loading updatedList }
+
+        Loading currentList ->
+            { model | taskList = Loading (TaskList.replaceForFile filePath updatedList currentList) }
 
         Loaded currentList ->
             { model | taskList = Loaded (TaskList.replaceForFile filePath updatedList currentList) }
@@ -279,6 +330,9 @@ subscriptions _ =
 
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile
+
+                                InteropDefinitions.InitCompleted _ ->
+                                    InitCompleted
 
                         Err error ->
                             BadInputFromTypeScript
@@ -314,7 +368,7 @@ view model =
                 ]
 
         _ ->
-            Html.text ""
+            Html.text "Loading tasks...."
 
 
 tabHeaders : Maybe Int -> Panels -> List (Html Msg)

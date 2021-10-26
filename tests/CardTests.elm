@@ -12,6 +12,7 @@ suite : Test
 suite =
     concat
         [ editButtonId
+        , filePath
         , fromTaskItem
         , highlight
         , markdownWithIds
@@ -29,7 +30,19 @@ editButtonId =
                 taskItem
                     |> Maybe.map (Card.fromTaskItem "")
                     |> Maybe.map Card.editButtonId
-                    |> Expect.equal (Just ":1:editButton")
+                    |> Expect.equal (Just "taskItemPath:1:editButton")
+        ]
+
+
+filePath : Test
+filePath =
+    describe "filePath"
+        [ test "returns the filePath of the taskItem" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "")
+                    |> Maybe.map Card.filePath
+                    |> Expect.equal (Just <| "taskItemPath")
         ]
 
 
@@ -39,9 +52,9 @@ fromTaskItem =
         [ test "prefixes the Card.id with the given prefix" <|
             \() ->
                 taskItem
-                    |> Maybe.map (Card.fromTaskItem "foo")
+                    |> Maybe.map (Card.fromTaskItem "foo:")
                     |> Maybe.map Card.id
-                    |> Expect.equal (Just "foo:1")
+                    |> Expect.equal (Just "foo:taskItemPath:1")
         ]
 
 
@@ -132,7 +145,7 @@ notesId =
                 taskItem
                     |> Maybe.map (Card.fromTaskItem "")
                     |> Maybe.map Card.notesId
-                    |> Expect.equal (Just ":1:notes")
+                    |> Expect.equal (Just "taskItemPath:1:notes")
         ]
 
 
@@ -167,7 +180,7 @@ taskItemId =
                 taskItem
                     |> Maybe.map (Card.fromTaskItem "foo")
                     |> Maybe.map Card.taskItemId
-                    |> Expect.equal (Just ":1")
+                    |> Expect.equal (Just "taskItemPath:1")
         ]
 
 
@@ -184,5 +197,5 @@ now =
 taskItem : Maybe TaskItem
 taskItem =
     "- [ ] foo"
-        |> Parser.run (TaskItem.parser "" Nothing)
+        |> Parser.run (TaskItem.parser "taskItemPath" Nothing)
         |> Result.toMaybe
