@@ -4,7 +4,7 @@
   "description": "Card based view for your obsidian TODOs",
   "main": "main.js",
   "scripts": {
-    "build": "webpack --progress --color",
+    "build": "webpack --progress --color --mode=production",
     "dev": "webpack --mode=development --watch --progress --color",
     "generate": "elm-ts-interop --definition-module InteropDefinitions --output src/Main/index.d.ts",
     "test": "elm-test tests"
