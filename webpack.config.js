@@ -2,6 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: './typescript/main.ts',
+  devtool: false,
   output: {
     path: path.resolve(__dirname, '.'),
     libraryTarget: 'commonjs',
@@ -20,7 +21,13 @@ module.exports = {
             { loader: "elm-hot-webpack-loader" },
             {
               loader: "elm-webpack-loader",
-              options: {}
+              options: {
+                optimize: false,
+                files: [
+                  path.resolve(__dirname, "src/Main.elm"),
+                  path.resolve(__dirname, "src/Worker.elm")
+                ]
+              }
             }
           ]
       },
