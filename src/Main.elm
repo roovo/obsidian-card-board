@@ -38,11 +38,12 @@ main =
 
 
 type alias Model =
-    { dailyNotesFolder : String
+    { boardConfigs : SafeZipper CardBoard.Config
+    , dailyNotesFolder : String
     , dailyNotesFormat : String
-    , timeWithZone : TimeWithZone
+    , editingSettings : Bool
     , taskList : State TaskList
-    , boardConfigs : SafeZipper CardBoard.Config
+    , timeWithZone : TimeWithZone
     }
 
 
@@ -79,14 +80,15 @@ init flags =
             Debug.todo <| Debug.toString error
 
         Ok okFlags ->
-            ( { dailyNotesFolder = okFlags.folder
+            ( { boardConfigs = SafeZipper.fromList boardConfigs
+              , dailyNotesFolder = okFlags.folder
               , dailyNotesFormat = okFlags.format
+              , editingSettings = False
+              , taskList = Waiting
               , timeWithZone =
                     { now = Time.millisToPosix okFlags.now
                     , zone = Time.customZone okFlags.zone []
                     }
-              , taskList = Waiting
-              , boardConfigs = SafeZipper.fromList boardConfigs
               }
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
@@ -109,7 +111,9 @@ hasLoaded taskList =
 type Msg
     = BadInputFromTypeScript
     | InitCompleted
+    | ModalCloseClicked
     | ReceiveTime ( Time.Zone, Time.Posix )
+    | SettingsClicked
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -148,6 +152,9 @@ update msg model =
                 Loaded taskList ->
                     ( model, Cmd.none )
 
+        ( ModalCloseClicked, _ ) ->
+            ( { model | editingSettings = False }, Cmd.none )
+
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
                 | timeWithZone =
@@ -157,6 +164,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ( SettingsClicked, _ ) ->
+            ( { model | editingSettings = True }, Cmd.none )
 
         ( TabSelected tabIndex, _ ) ->
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
@@ -365,10 +375,28 @@ view model =
                             |> SafeZipper.toList
                         )
                     ]
+                , modalView model.boardConfigs
+                    |> when model.editingSettings
                 ]
 
         _ ->
             Html.text "Loading tasks...."
+
+
+modalView : SafeZipper CardBoard.Config -> Html Msg
+modalView boardConfigs =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-content" ]
+                []
+            ]
+        ]
 
 
 tabHeaders : Maybe Int -> Panels -> List (Html Msg)
@@ -379,7 +407,10 @@ tabHeaders currentIndex panels =
 
         beforeFirst =
             Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
-                [ Html.div [ class "card-board-tabs-inner" ]
+                [ Html.div
+                    [ class "card-board-tabs-inner"
+                    , onClick SettingsClicked
+                    ]
                     [ FeatherIcons.settings
                         |> FeatherIcons.withSize 1
                         |> FeatherIcons.withSizeUnit "em"
