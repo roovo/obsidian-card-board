@@ -5,6 +5,7 @@ module SafeZipper exposing
     , fromList
     , indexedMapSelectedAndRest
     , length
+    , mapCurrent
     , next
     , selectedIndex
     , toList
@@ -130,6 +131,16 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
                     List.indexedMap (\i item -> restFn (beforeLength + 1 + i) item) a
             in
             SafeZipper mappedBefore mappedCurrent mappedAfter
+
+
+mapCurrent : (a -> a) -> SafeZipper a -> SafeZipper a
+mapCurrent fn zipper =
+    case zipper of
+        EmptyZipper ->
+            zipper
+
+        SafeZipper b c a ->
+            SafeZipper b (fn c) a
 
 
 

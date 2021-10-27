@@ -14,6 +14,7 @@ suite =
         , fromList
         , indexedMapSelectedAndRest
         , length
+        , mapCurrent
         , next
         , selectedIndex
         ]
@@ -125,6 +126,19 @@ length =
                 SafeZipper.fromList randomList
                     |> SafeZipper.length
                     |> Expect.equal (List.length randomList)
+        ]
+
+
+mapCurrent : Test
+mapCurrent =
+    describe "mapCurrent"
+        [ test "applies the map function to the current item only" <|
+            \() ->
+                SafeZipper.fromList [ 1, 2, 3 ]
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.mapCurrent ((+) 10)
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 12, 3 ]
         ]
 
 

@@ -33,7 +33,6 @@ export class CardBoardView extends ItemView {
     dailyNotesSettings.format = dailyNotesSettings.format || "YYYY-MM-DD"
     dailyNotesSettings.now    = Date.now()
     dailyNotesSettings.zone   = new Date().getTimezoneOffset()
-    delete dailyNotesSettings.template
 
     const elmDiv = document.createElement('div');
     elmDiv.id = "elm-node";

@@ -15,7 +15,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type alias Config =
-    { includeCompleted : Bool
+    { completedCount : Int
     , includeUndated : Bool
     , title : String
     }
@@ -130,17 +130,17 @@ futureItems today taskList config =
 
 appendCompleted : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 appendCompleted taskList config columnList =
-    let
-        completedTasks =
-            TaskList.topLevelTasks taskList
-                |> List.filter TaskItem.isCompleted
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.reverse
-                |> List.sortBy TaskItem.completedPosix
-                |> List.reverse
-    in
-    if config.includeCompleted then
-        List.append columnList [ ( "Completed", completedTasks ) ]
+    if config.completedCount > 0 then
+        TaskList.topLevelTasks taskList
+            |> List.filter TaskItem.isCompleted
+            |> List.sortBy (String.toLower << TaskItem.title)
+            |> List.reverse
+            |> List.sortBy TaskItem.completedPosix
+            |> List.reverse
+            |> List.take config.completedCount
+            |> Tuple.pair "Completed"
+            |> List.singleton
+            |> List.append columnList
 
     else
         columnList

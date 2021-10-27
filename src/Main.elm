@@ -6,8 +6,8 @@ import CardBoard
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, type_)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (checked, class, hidden, id, type_, value)
+import Html.Events exposing (onClick, onInput)
 import Html.Keyed
 import InteropDefinitions
 import InteropPorts
@@ -41,7 +41,7 @@ type alias Model =
     { boardConfigs : SafeZipper CardBoard.Config
     , dailyNotesFolder : String
     , dailyNotesFormat : String
-    , editingSettings : Bool
+    , configBeingEdited : Maybe (SafeZipper CardBoard.Config)
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
     }
@@ -58,8 +58,8 @@ init flags =
     let
         boardConfigs =
             [ CardBoard.DateBoardConfig
-                { includeUndated = True
-                , includeCompleted = True
+                { completedCount = 10
+                , includeUndated = True
                 , title = "By Date"
                 }
             , CardBoard.TagBoardConfig
@@ -77,13 +77,25 @@ init flags =
     in
     case flags |> InteropPorts.decodeFlags of
         Err error ->
+            -- ( { boardConfigs = SafeZipper.fromList boardConfigs
+            --   , dailyNotesFolder = ""
+            --   , dailyNotesFormat = ""
+            --   , configBeingEdited = Nothing
+            --   , taskList = Waiting
+            --   , timeWithZone =
+            --         { now = Time.millisToPosix 0
+            --         , zone = Time.customZone 0 []
+            --         }
+            --   }
+            -- , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+            -- )
             Debug.todo <| Debug.toString error
 
         Ok okFlags ->
             ( { boardConfigs = SafeZipper.fromList boardConfigs
               , dailyNotesFolder = okFlags.folder
               , dailyNotesFormat = okFlags.format
-              , editingSettings = False
+              , configBeingEdited = Nothing
               , taskList = Waiting
               , timeWithZone =
                     { now = Time.millisToPosix okFlags.now
@@ -110,6 +122,8 @@ hasLoaded taskList =
 
 type Msg
     = BadInputFromTypeScript
+    | EnteredCompletedCount String
+    | EnteredTitle String
     | InitCompleted
     | ModalCloseClicked
     | ReceiveTime ( Time.Zone, Time.Posix )
@@ -119,6 +133,7 @@ type Msg
     | TaskItemDeleteClicked String
     | TaskItemToggled String
     | Tick Time.Posix
+    | ToggleIncludeUndated
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileUpdated MarkdownFile
@@ -129,6 +144,50 @@ update msg model =
     case ( msg, model ) of
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
+
+        ( EnteredCompletedCount value, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent updateCompletedCount c)
+
+                        Nothing ->
+                            Nothing
+
+                updateCompletedCount : CardBoard.Config -> CardBoard.Config
+                updateCompletedCount config =
+                    case ( config, String.toInt value ) of
+                        ( CardBoard.DateBoardConfig dateBoardConfig, Just newCount ) ->
+                            CardBoard.DateBoardConfig { dateBoardConfig | completedCount = newCount }
+
+                        _ ->
+                            config
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( EnteredTitle title, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent updateTitle c)
+
+                        Nothing ->
+                            Nothing
+
+                updateTitle : CardBoard.Config -> CardBoard.Config
+                updateTitle config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            CardBoard.DateBoardConfig { dateBoardConfig | title = title }
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            CardBoard.TagBoardConfig { tagBoardConfig | title = title }
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ( InitCompleted, _ ) ->
             case model.taskList of
@@ -153,7 +212,7 @@ update msg model =
                     ( model, Cmd.none )
 
         ( ModalCloseClicked, _ ) ->
-            ( { model | editingSettings = False }, Cmd.none )
+            ( { model | configBeingEdited = Nothing }, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
@@ -166,7 +225,7 @@ update msg model =
             )
 
         ( SettingsClicked, _ ) ->
-            ( { model | editingSettings = True }, Cmd.none )
+            ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
 
         ( TabSelected tabIndex, _ ) ->
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
@@ -232,6 +291,28 @@ update msg model =
             ( { model | timeWithZone = TimeWithZone.now time model.timeWithZone }
             , Cmd.none
             )
+
+        ( ToggleIncludeUndated, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent toggleIncludeUndated c)
+
+                        Nothing ->
+                            Nothing
+
+                toggleIncludeUndated : CardBoard.Config -> CardBoard.Config
+                toggleIncludeUndated config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            CardBoard.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            config
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ( VaultFileAdded markdownFile, _ ) ->
             let
@@ -375,28 +456,119 @@ view model =
                             |> SafeZipper.toList
                         )
                     ]
-                , modalView model.boardConfigs
-                    |> when model.editingSettings
+                , modalView model.configBeingEdited
                 ]
 
         _ ->
             Html.text "Loading tasks...."
 
 
-modalView : SafeZipper CardBoard.Config -> Html Msg
-modalView boardConfigs =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
+modalView : Maybe (SafeZipper CardBoard.Config) -> Html Msg
+modalView configsBeingEdited =
+    case configsBeingEdited of
+        Just configs ->
+            Html.div [ class "modal-container" ]
+                [ Html.div [ class "modal-bg" ] []
+                , Html.div [ class "modal" ]
+                    [ Html.div
+                        [ class "modal-close-button"
+                        , onClick ModalCloseClicked
+                        ]
+                        []
+                    , Html.div [ class "modal-content" ]
+                        [ Html.div [ class "settings-menu" ]
+                            (configs
+                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
+                                |> SafeZipper.toList
+                            )
+                        , settingsFormView <| SafeZipper.current configs
+                        ]
+                    ]
                 ]
-                []
-            , Html.div [ class "modal-content" ]
-                []
-            ]
-        ]
+
+        Nothing ->
+            Html.text ""
+
+
+settingsFormView : Maybe CardBoard.Config -> Html Msg
+settingsFormView boardConfig =
+    case boardConfig of
+        Just (CardBoard.DateBoardConfig config) ->
+            let
+                includeUndatedStyle =
+                    if config.includeUndated then
+                        " is-enabled"
+
+                    else
+                        ""
+            in
+            Html.div [ class "settings-form" ]
+                [ Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Title" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "The name of this board" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value config.title
+                            , onInput EnteredTitle
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include Undated" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Whether to include a colum for tasks with no due date" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ includeUndatedStyle
+                            , onClick ToggleIncludeUndated
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include Completed" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| String.fromInt config.completedCount
+                            , onInput EnteredCompletedCount
+                            ]
+                            []
+                        ]
+                    ]
+                ]
+
+        Just (CardBoard.TagBoardConfig config) ->
+            Html.text "tag form"
+
+        Nothing ->
+            Html.text "nowt here"
+
+
+settingTitleSelectedView : Int -> CardBoard.Config -> Html Msg
+settingTitleSelectedView index boardConfig =
+    Html.div [ class "settings-menu-title" ]
+        [ Html.text <| CardBoard.title boardConfig ++ " *" ]
+
+
+settingTitleView : Int -> CardBoard.Config -> Html Msg
+settingTitleView index boardConfig =
+    Html.div [ class "modal-menu-title" ]
+        [ Html.text <| CardBoard.title boardConfig ]
 
 
 tabHeaders : Maybe Int -> Panels -> List (Html Msg)

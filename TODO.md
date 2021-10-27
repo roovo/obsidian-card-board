@@ -11,10 +11,18 @@
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
 - handle renames - make sure I cope with both directory and file renames
+- do I want it to open settings automatically if there are no boards defined?
+- check it works in a virgin vault with no plugins
+- check it works with the default setup for the daily notes plugin
+- how can I ensure that there is only one kanban page open?
+  If I can't do this, then I need to create unique ids across pages so markdown displays
 - run elm review
+- add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
+
+- how to release?
 
 # UI Improvements
 - do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
@@ -79,6 +87,7 @@
   - within column to change ordering
 
 # Misc
+- can I use github runners to build?
 - run elm review
 - where to use fuzz testing
 - review awful typescript code!
