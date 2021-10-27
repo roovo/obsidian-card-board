@@ -8,8 +8,14 @@
     - spaced repetition pludin keeps stuff in the plugin data
     - look at dictionary plugin too
     - leaflet keeps a bunch of data in the config folder
+  - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
+  - can I put the CardBoard.Config type into InteropDefinitions so a type will be generated in
+    typescript?
+  - version the config
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
+- check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
+  for guidance on creating views
 - handle renames - make sure I cope with both directory and file renames
 - do I want it to open settings automatically if there are no boards defined?
 - check it works in a virgin vault with no plugins

@@ -1,5 +1,6 @@
 .tool-versions
 *.LICENSE.txt
+data.json
 elm-stuff/
 index.html
 main.js

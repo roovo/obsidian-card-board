@@ -17,13 +17,13 @@ const moment = require('moment');
 
 export class CardBoardView extends ItemView {
   private vault: Vault;
-  private codeMirror: CodeMirror.Editor;
+  private plugin: CardBoardPlugin;
 
-  constructor(codeMirror: CodeMirror.Editor, app: App, leaf: WorkspaceLeaf) {
+  constructor(plugin: CardBoardPlugin, leaf: WorkspaceLeaf) {
     super(leaf);
-    this.app = app;
-    this.vault = app.vault;
-    this.codeMirror = codeMirror;
+    this.plugin = plugin;
+    this.app = plugin.app;
+    this.vault = plugin.app.vault;
   }
 
   async onOpen() {
@@ -202,7 +202,7 @@ export class CardBoardView extends ItemView {
 
   // async handleUpdateConfig(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
   async handleUpdateConfig(data: any ) {
-    console.log("Data: " + data);
+    this.plugin.saveSettings(data);
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
