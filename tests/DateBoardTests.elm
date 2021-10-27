@@ -59,13 +59,13 @@ columnCompleted =
         [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | includeCompleted = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | completedCount = 1 }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
                 parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | includeCompleted = True }
+                    |> DateBoard.columns timeWithZone { defaultConfig | completedCount = 99 }
                     |> tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -105,7 +105,7 @@ columnUndated =
 
 defaultConfig : DateBoard.Config
 defaultConfig =
-    { includeCompleted = False
+    { completedCount = 0
     , includeUndated = False
     , title = "Date Board Title"
     }

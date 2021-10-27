@@ -7,6 +7,7 @@ port module InteropPorts exposing
     , openTodoSourceFile
     , rewriteTodos
     , toElm
+    , updateConfig
     )
 
 import Card exposing (Card)
@@ -16,7 +17,7 @@ import Json.Decode
 import Json.Encode
 import Panel exposing (Panel)
 import Panels exposing (Panels)
-import SafeZipper
+import SafeZipper exposing (SafeZipper)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
@@ -66,6 +67,14 @@ rewriteTodos timeWithZone filePath taskItems =
     in
     { filePath = filePath, todos = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTodos" InteropDefinitions.updateTodosEncoder
+        |> interopFromElm
+
+
+updateConfig : SafeZipper CardBoard.Config -> Cmd msg
+updateConfig configs =
+    configs
+        |> SafeZipper.toList
+        |> encodeVariant "updateConfig" InteropDefinitions.updateConfigEncoder
         |> interopFromElm
 
 

@@ -58,19 +58,20 @@ init flags =
     let
         boardConfigs =
             [ CardBoard.DateBoardConfig
-                { completedCount = 10
+                { completedCount = 5
                 , includeUndated = True
                 , title = "By Date"
                 }
             , CardBoard.TagBoardConfig
                 { columns =
-                    [ { tag = "people/", displayTitle = "People" }
-                    , { tag = "hydra/", displayTitle = "Hydra" }
-                    , { tag = "finance/", displayTitle = "Finance" }
-                    , { tag = "POC/", displayTitle = "ITT POC" }
+                    [ { tag = "home", displayTitle = "Home Alone" }
+                    , { tag = "home/", displayTitle = "All Home" }
+                    , { tag = "town", displayTitle = "Town" }
+                    , { tag = "wellbeing", displayTitle = "Wellbeing" }
                     ]
-                , includeOthers = False
-                , includeCompleted = False
+                , completedCount = 3
+                , includeOthers = True
+                , includeUntagged = True
                 , title = "By Tag"
                 }
             ]
@@ -212,7 +213,16 @@ update msg model =
                     ( model, Cmd.none )
 
         ( ModalCloseClicked, _ ) ->
-            ( { model | configBeingEdited = Nothing }, Cmd.none )
+            case model.configBeingEdited of
+                Just config ->
+                    ( { model | configBeingEdited = Nothing }
+                    , InteropPorts.updateConfig config
+                    )
+
+                Nothing ->
+                    ( { model | configBeingEdited = Nothing }
+                    , Cmd.none
+                    )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model

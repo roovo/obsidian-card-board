@@ -59,6 +59,9 @@ export class CardBoardView extends ItemView {
         case "openTodoSourceFile":
           that.handleOpenTodoSourceFile(fromElm.data);
           break;
+        case "updateConfig":
+          that.handleUpdateConfig(fromElm.data);
+          break;
         case "updateTodos":
           that.handleUpdateTodos(fromElm.data);
           break;
@@ -195,6 +198,11 @@ export class CardBoardView extends ItemView {
 
   delay(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
+  }
+
+  // async handleUpdateConfig(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
+  async handleUpdateConfig(data: any ) {
+    console.log("Data: " + data);
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {

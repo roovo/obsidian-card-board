@@ -14,6 +14,7 @@ suite =
         [ columnsBasic
         , columnCompleted
         , columnOthers
+        , columnUntagged
         ]
 
 
@@ -190,7 +191,7 @@ columnCompleted =
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
-                            | includeCompleted = True
+                            | completedCount = 1
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
                     |> List.map Tuple.first
@@ -211,7 +212,7 @@ columnCompleted =
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
-                            | includeCompleted = True
+                            | completedCount = 99
                             , columns =
                                 [ { tag = "bar/", displayTitle = "" }
                                 , { tag = "foo", displayTitle = "" }
@@ -230,7 +231,7 @@ columnCompleted =
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
-                            | includeCompleted = True
+                            | completedCount = 99
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
                     |> tasksInColumn "Completed"
@@ -241,7 +242,7 @@ columnCompleted =
 
 columnOthers : Test
 columnOthers =
-    describe "columns - including other tasks"
+    describe "'Other' column"
         [ test "adds an 'Other' column " <|
             \() ->
                 ""
@@ -254,7 +255,7 @@ columnOthers =
                         }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Others", "foo" ]
-        , test "puts tasks with no tags or none of the current tags in the  'Other' column " <|
+        , test "puts tagged tasks with none of the current tags in the  'Other' column " <|
             \() ->
                 """- [ ] foo1 #foo
 - [ ] foo2 #foo/
@@ -277,7 +278,7 @@ columnOthers =
                         }
                     |> tasksInColumn "Others"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "baz1", "foo2", "foo3" ]
+                    |> Expect.equal [ "foo2", "foo3" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
@@ -297,6 +298,64 @@ columnOthers =
         ]
 
 
+columnUntagged : Test
+columnUntagged =
+    describe "Untagged column"
+        [ test "adds an 'Untagged' column " <|
+            \() ->
+                ""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | includeUntagged = True
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
+                    |> List.map Tuple.first
+                    |> Expect.equal [ "Untagged", "foo" ]
+        , test "puts tasks with NO tags in the  'Untagged' column " <|
+            \() ->
+                """- [ ] foo1 #foo
+- [ ] foo2 #foo/
+- [ ] foo3 #foo/one
+- [ ] bar1 #bar
+- [ ] bar2 #bar/
+- [ ] bar3 #bar/one
+- [ ] baz1
+- [x] baz2
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | includeUntagged = True
+                            , columns =
+                                [ { tag = "bar/", displayTitle = "" }
+                                , { tag = "foo", displayTitle = "" }
+                                ]
+                        }
+                    |> tasksInColumn "Untagged"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "baz1" ]
+        , test "sorts cards by title & due date" <|
+            \() ->
+                """- [ ] b @due(2020-01-01)
+- [ ] a @due(2020-01-01)
+- [ ] c @due(2019-01-01)
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | includeUntagged = True
+                            , columns = [ { tag = "bar", displayTitle = "" } ]
+                        }
+                    |> tasksInColumn "Untagged"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "c", "a", "b" ]
+        ]
+
+
 
 -- HELPERS
 
@@ -304,8 +363,9 @@ columnOthers =
 defaultConfig : TagBoard.Config
 defaultConfig =
     { columns = []
-    , includeCompleted = False
+    , completedCount = 0
     , includeOthers = False
+    , includeUntagged = False
     , title = "Tag Board Title"
     }
 

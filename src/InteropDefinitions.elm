@@ -7,12 +7,16 @@ module InteropDefinitions exposing
     , displayTodoMarkdownEncoder
     , interop
     , openTodoSourceFileEncoder
+    , updateConfigEncoder
     , updateTodosEncoder
     )
 
+import CardBoard
+import DateBoard
 import Json.Decode as JD
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
+import TagBoard
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (optional, required)
 
@@ -22,6 +26,7 @@ type FromElm
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
     | OpenTodoSourceFile { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
+    | UpdateConfig (List CardBoard.Config)
     | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -91,6 +96,56 @@ openTodoSourceFileEncoder =
         ]
 
 
+updateConfigEncoder : TsEncode.Encoder (List CardBoard.Config)
+updateConfigEncoder =
+    TsEncode.list
+        cardBoardConfigEncoder
+
+
+cardBoardConfigEncoder : TsEncode.Encoder CardBoard.Config
+cardBoardConfigEncoder =
+    TsEncode.union
+        (\vDateBoardConfig vTagBoardConfig value ->
+            case value of
+                CardBoard.DateBoardConfig config ->
+                    vDateBoardConfig config
+
+                CardBoard.TagBoardConfig config ->
+                    vTagBoardConfig config
+        )
+        |> TsEncode.variantTagged "dateBoardConfig" dateBoardConfigEncoder
+        |> TsEncode.variantTagged "tagBoardConfig" tagBoardConfigEncoder
+        |> TsEncode.buildUnion
+
+
+dateBoardConfigEncoder : TsEncode.Encoder DateBoard.Config
+dateBoardConfigEncoder =
+    TsEncode.object
+        [ required "completedCount" .completedCount TsEncode.int
+        , required "includeUndated" .includeUndated TsEncode.bool
+        , required "title" .title TsEncode.string
+        ]
+
+
+tagBoardConfigEncoder : TsEncode.Encoder TagBoard.Config
+tagBoardConfigEncoder =
+    TsEncode.object
+        [ required "columns" .columns <| TsEncode.list tagBoardColumnConfigEncoder
+        , required "completedCount" .completedCount TsEncode.int
+        , required "includeOthers" .includeOthers TsEncode.bool
+        , required "includeUntagged" .includeUntagged TsEncode.bool
+        , required "title" .title TsEncode.string
+        ]
+
+
+tagBoardColumnConfigEncoder : TsEncode.Encoder TagBoard.ColumnConfig
+tagBoardColumnConfigEncoder =
+    TsEncode.object
+        [ required "tag" .tag TsEncode.string
+        , required "displayTitle" .displayTitle TsEncode.string
+        ]
+
+
 updateTodosEncoder : TsEncode.Encoder { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 updateTodosEncoder =
     TsEncode.object
@@ -125,7 +180,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vDeleteTodo vDisplayTodoMarkdown vOpenTodoSourceFile vUpdateTodos value ->
+        (\vAddFilePreviewHovers vDeleteTodo vDisplayTodoMarkdown vOpenTodoSourceFile vUpdateConfig vUpdateTodos value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -139,6 +194,9 @@ fromElm =
                 OpenTodoSourceFile info ->
                     vOpenTodoSourceFile info
 
+                UpdateConfig info ->
+                    vUpdateConfig info
+
                 UpdateTodos info ->
                     vUpdateTodos info
         )
@@ -146,6 +204,7 @@ fromElm =
         |> TsEncode.variantTagged "deleteTodo" deleteTodoEncoder
         |> TsEncode.variantTagged "displayTodoMarkdown" displayTodoMarkdownEncoder
         |> TsEncode.variantTagged "openTodoSourceFile" openTodoSourceFileEncoder
+        |> TsEncode.variantTagged "updateConfig" updateConfigEncoder
         |> TsEncode.variantTagged "updateTodos" updateTodosEncoder
         |> TsEncode.buildUnion
 

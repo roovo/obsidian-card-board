@@ -1,5 +1,6 @@
 module InteropDefinitionsTests exposing (suite)
 
+import CardBoard
 import Expect
 import InteropDefinitions exposing (interop)
 import Test exposing (..)
@@ -72,6 +73,18 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTodoSourceFile","data":{"filePath":"a path","blockLink":"a link","lineNumber":33,"originalText":"the text"}}"""
+        , test "encodes UpdateConfig with DateBoardConfig data" <|
+            \() ->
+                [ CardBoard.DateBoardConfig
+                    { completedCount = 3
+                    , includeUndated = True
+                    , title = "A Date Board"
+                    }
+                ]
+                    |> InteropDefinitions.UpdateConfig
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"updateConfig","data":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}"""
         , test "encodes UpdateTodos data" <|
             \() ->
                 { filePath = "a path", todos = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -87,6 +100,7 @@ fromElmTests =
                     |> .tsType
                     |> Expect.equal
                         ("""{ data : { filePath : string; todos : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTodos" }"""
+                            ++ """ | { data : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[]; tag : "updateConfig" }"""
                             ++ """ | { data : { blockLink : string | null; filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
                             ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""

@@ -1,5 +1,6 @@
 module TagBoard exposing
-    ( Config
+    ( ColumnConfig
+    , Config
     , columns
     )
 
@@ -16,8 +17,9 @@ import Time
 
 type alias Config =
     { columns : List ColumnConfig
+    , completedCount : Int
     , includeOthers : Bool
-    , includeCompleted : Bool
+    , includeUntagged : Bool
     , title : String
     }
 
@@ -38,6 +40,7 @@ columns config taskList =
         |> LE.uniqueBy .tag
         |> List.foldl (fillColumn taskList) []
         |> prependOthers config taskList
+        |> prependUntagged config taskList
         |> appendCompleted config taskList
 
 
@@ -66,7 +69,7 @@ appendCompleted config taskList columnList =
                 |> LE.uniqueBy .tag
                 |> List.map .tag
     in
-    if config.includeCompleted then
+    if config.completedCount > 0 then
         List.append columnList [ ( "Completed", completedTasks ) ]
 
     else
@@ -85,7 +88,7 @@ prependOthers config taskList columnList =
 
         isIncompleteWithoutTags : TaskItem -> Bool
         isIncompleteWithoutTags item =
-            not (TaskItem.isCompleted item) && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
+            not (TaskItem.isCompleted item) && TaskItem.hasTags item && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
 
         uniqueColumnTags =
             config.columns
@@ -94,6 +97,32 @@ prependOthers config taskList columnList =
     in
     if config.includeOthers then
         ( "Others", cards ) :: columnList
+
+    else
+        columnList
+
+
+prependUntagged : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUntagged config taskList columnList =
+    let
+        cards =
+            taskList
+                |> TaskList.filter isIncompleteWithNoTags
+                |> TaskList.topLevelTasks
+                |> List.sortBy (String.toLower << TaskItem.title)
+                |> List.sortBy TaskItem.dueRataDie
+
+        isIncompleteWithNoTags : TaskItem -> Bool
+        isIncompleteWithNoTags item =
+            not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
+
+        uniqueColumnTags =
+            config.columns
+                |> LE.uniqueBy .tag
+                |> List.map .tag
+    in
+    if config.includeUntagged then
+        ( "Untagged", cards ) :: columnList
 
     else
         columnList
