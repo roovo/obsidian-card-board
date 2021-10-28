@@ -1,24 +1,20 @@
 # Up Next
 - plugin settings
-  - allow/deny directories/files
-  - max number of completed cards
-  - max title lines
-  - board definitions
-    - kanban keeps stuff in front matter
-    - spaced repetition pludin keeps stuff in the plugin data
-    - look at dictionary plugin too
-    - leaflet keeps a bunch of data in the config folder
-  - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
-  - can I put the CardBoard.Config type into InteropDefinitions so a type will be generated in
-    typescript?
   - version the config
+  - add tagboard config
+  - cleanup settings dialog
+  - allow switching between board settings in dialog
+  - open settings automatically if there are no boards defined?
+  - delete board
+  - allow/deny directories/files
+  - max title lines
+  - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
   - test the reading and writing of board configs as a round trip elm - encode - decode - elm?
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
 - handle renames - make sure I cope with both directory and file renames
-- do I want it to open settings automatically if there are no boards defined?
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
 - how can I ensure that there is only one kanban page open?
@@ -99,6 +95,9 @@
 # Misc
 - I see that elm-ts-json now has a pipleline decoder - should switch to this as
   it makes decoders easier to read
+- in the update for SettingsUpdated I am re-writing all markdown content and updating
+  the hover for all edit buttons.  Can I be smarter?  Only matters really if performance
+  issues.
 - can I use github runners to build?
 - run elm review
 - where to use fuzz testing

@@ -35,6 +35,7 @@ type ToElm
     | FileDeleted String
     | FileUpdated MarkdownFile
     | InitCompleted ()
+    | SettingsUpdated (List CardBoard.Config)
 
 
 type alias Flags =
@@ -165,45 +166,13 @@ flags =
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 
 
-boardConfigDecoder : TsDecode.Decoder CardBoard.Config
-boardConfigDecoder =
-    TsDecode.oneOf
-        [ toElmVariant "dateBoardConfig" CardBoard.DateBoardConfig dateBoardConfigDecoder
-        , toElmVariant "tagBoardConfig" CardBoard.TagBoardConfig tagBoardConfigDecoder
-        ]
-
-
-dateBoardConfigDecoder : TsDecode.Decoder DateBoard.Config
-dateBoardConfigDecoder =
-    TsDecode.succeed DateBoard.Config
-        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
-        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-
-
-tagBoardConfigDecoder : TsDecode.Decoder TagBoard.Config
-tagBoardConfigDecoder =
-    TsDecode.succeed TagBoard.Config
-        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list tagBoardColumnConfigDecoder))
-        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
-        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-
-
-tagBoardColumnConfigDecoder : TsDecode.Decoder TagBoard.ColumnConfig
-tagBoardColumnConfigDecoder =
-    TsDecode.succeed TagBoard.ColumnConfig
-        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
-
-
 toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
+        , toElmVariant "settingsUpdated" SettingsUpdated (TsDecode.list boardConfigDecoder)
         , toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
         ]
 
@@ -238,6 +207,39 @@ fromElm =
         |> TsEncode.variantTagged "updateConfig" updateConfigEncoder
         |> TsEncode.variantTagged "updateTodos" updateTodosEncoder
         |> TsEncode.buildUnion
+
+
+boardConfigDecoder : TsDecode.Decoder CardBoard.Config
+boardConfigDecoder =
+    TsDecode.oneOf
+        [ toElmVariant "dateBoardConfig" CardBoard.DateBoardConfig dateBoardConfigDecoder
+        , toElmVariant "tagBoardConfig" CardBoard.TagBoardConfig tagBoardConfigDecoder
+        ]
+
+
+dateBoardConfigDecoder : TsDecode.Decoder DateBoard.Config
+dateBoardConfigDecoder =
+    TsDecode.succeed DateBoard.Config
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+tagBoardConfigDecoder : TsDecode.Decoder TagBoard.Config
+tagBoardConfigDecoder =
+    TsDecode.succeed TagBoard.Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list tagBoardColumnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+tagBoardColumnConfigDecoder : TsDecode.Decoder TagBoard.ColumnConfig
+tagBoardColumnConfigDecoder =
+    TsDecode.succeed TagBoard.ColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
 
 
 

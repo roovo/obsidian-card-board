@@ -169,6 +169,7 @@ toElmTests =
                         ("{ data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
                             ++ " | { data : string; tag : \"fileDeleted\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
+                            ++ " | { data : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; tag : \"settingsUpdated\" }"
                             ++ " | { data : JsonValue; tag : \"initCompleted\" }"
                         )
         ]

@@ -62,7 +62,7 @@ export class CardBoardView extends ItemView {
           that.handleOpenTodoSourceFile(fromElm.data);
           break;
         case "updateConfig":
-          that.handleUpdateConfig(fromElm.data);
+          that.handleUpdateConfig(elm, fromElm.data);
           break;
         case "updateTodos":
           that.handleUpdateTodos(fromElm.data);
@@ -202,9 +202,12 @@ export class CardBoardView extends ItemView {
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
-  // async handleUpdateConfig(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
-  async handleUpdateConfig(data: any ) {
-    this.plugin.saveSettings(data);
+  async handleUpdateConfig(elm: ElmApp, data: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[]) {
+    await this.plugin.saveSettings(data);
+    elm.ports.interopToElm.send({
+      tag: "settingsUpdated",
+      data: data
+    });
   }
 
   async handleUpdateTodos(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
@@ -221,7 +224,7 @@ export class CardBoardView extends ItemView {
      }
   }
 
-  async handleFileCreated(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
+  async handleFileCreated(elm: ElmApp, dailyNotesSettings: any, file: TAbstractFile) {
 
     if (file instanceof TFile) {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);

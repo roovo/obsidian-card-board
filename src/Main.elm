@@ -102,6 +102,7 @@ type Msg
     | ModalCloseClicked
     | ReceiveTime ( Time.Zone, Time.Posix )
     | SettingsClicked
+    | SettingsUpdated (List CardBoard.Config)
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -209,6 +210,31 @@ update msg model =
 
         ( SettingsClicked, _ ) ->
             ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
+
+        ( SettingsUpdated newSettings, _ ) ->
+            case model.taskList of
+                Waiting ->
+                    ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
+
+                Loading taskList ->
+                    ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
+
+                Loaded taskList ->
+                    let
+                        newConfigs =
+                            SafeZipper.fromList newSettings
+
+                        cards =
+                            taskList
+                                |> Panels.init newConfigs
+                                |> Panels.cards model.timeWithZone
+                    in
+                    ( { model | boardConfigs = newConfigs }
+                    , Cmd.batch
+                        [ InteropPorts.displayTaskMarkdown cards
+                        , InteropPorts.addHoverToCardEditButtons cards
+                        ]
+                    )
 
         ( TabSelected tabIndex, _ ) ->
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
@@ -407,6 +433,9 @@ subscriptions _ =
 
                                 InteropDefinitions.InitCompleted _ ->
                                     InitCompleted
+
+                                InteropDefinitions.SettingsUpdated newSettings ->
+                                    SettingsUpdated newSettings
 
                         Err error ->
                             BadInputFromTypeScript
