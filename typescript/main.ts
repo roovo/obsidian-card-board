@@ -1,10 +1,10 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from 'obsidian';
 import { CardBoardView } from './view';
 
-const DEFAULT_SETTINGS: any = [];
+const DEFAULT_SETTINGS: ({ completedCount : number; includeUndated : boolean; tag : "dateBoardConfig"; title : string } | { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; tag : "tagBoardConfig"; title : string })[] = [];
 
 export default class CardBoardPlugin extends Plugin {
-  settings: any;
+  settings: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[];
 
   async onload() {
     console.log('loading CardBoard plugin');
@@ -29,10 +29,11 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign([], DEFAULT_SETTINGS, await this.loadData());
+    // this.settings = Object.assign([], DEFAULT_SETTINGS, await this.loadData());
+    this.settings = await this.loadData();
   }
 
-  async saveSettings(newSettings: any) {
+  async saveSettings(newSettings: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[]) {
     await this.saveData(newSettings);
   }
 }

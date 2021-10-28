@@ -9,7 +9,7 @@ import {
   WorkspaceLeaf
 } from 'obsidian';
 
-import { Elm } from '../src/Main';
+import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
 
@@ -29,18 +29,20 @@ export class CardBoardView extends ItemView {
   async onOpen() {
     // @ts-ignore
     const dailyNotesSettings  = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
-    dailyNotesSettings.folder = dailyNotesSettings.folder || ""
-    dailyNotesSettings.format = dailyNotesSettings.format || "YYYY-MM-DD"
-    dailyNotesSettings.now    = Date.now()
-    dailyNotesSettings.zone   = new Date().getTimezoneOffset()
+
+    const mySettings:Flags = {
+      now:          Date.now(),
+      zone:         new Date().getTimezoneOffset(),
+      boardConfigs: this.plugin.settings
+    };
 
     const elmDiv = document.createElement('div');
     elmDiv.id = "elm-node";
     this.containerEl.children[1].appendChild(elmDiv);
 
-    const elm = Elm.Main.init({
+    const elm:ElmApp = Elm.Main.init({
       node: elmDiv,
-      flags: dailyNotesSettings
+      flags: mySettings
     })
 
     const that = this;

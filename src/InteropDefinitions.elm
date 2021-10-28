@@ -38,8 +38,7 @@ type ToElm
 
 
 type alias Flags =
-    { folder : String
-    , format : String
+    { boardConfigs : List CardBoard.Config
     , now : Int
     , zone : Int
     }
@@ -161,10 +160,42 @@ updateTodosEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "folder" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "format" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
+
+
+boardConfigDecoder : TsDecode.Decoder CardBoard.Config
+boardConfigDecoder =
+    TsDecode.oneOf
+        [ toElmVariant "dateBoardConfig" CardBoard.DateBoardConfig dateBoardConfigDecoder
+        , toElmVariant "tagBoardConfig" CardBoard.TagBoardConfig tagBoardConfigDecoder
+        ]
+
+
+dateBoardConfigDecoder : TsDecode.Decoder DateBoard.Config
+dateBoardConfigDecoder =
+    TsDecode.succeed DateBoard.Config
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+tagBoardConfigDecoder : TsDecode.Decoder TagBoard.Config
+tagBoardConfigDecoder =
+    TsDecode.succeed TagBoard.Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list tagBoardColumnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+tagBoardColumnConfigDecoder : TsDecode.Decoder TagBoard.ColumnConfig
+tagBoardColumnConfigDecoder =
+    TsDecode.succeed TagBoard.ColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
 
 
 toElm : TsDecode.Decoder ToElm

@@ -39,8 +39,6 @@ main =
 
 type alias Model =
     { boardConfigs : SafeZipper CardBoard.Config
-    , dailyNotesFolder : String
-    , dailyNotesFormat : String
     , configBeingEdited : Maybe (SafeZipper CardBoard.Config)
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -55,32 +53,9 @@ type State a
 
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
-    let
-        boardConfigs =
-            [ CardBoard.DateBoardConfig
-                { completedCount = 5
-                , includeUndated = True
-                , title = "By Date"
-                }
-            , CardBoard.TagBoardConfig
-                { columns =
-                    [ { tag = "home", displayTitle = "Home Alone" }
-                    , { tag = "home/", displayTitle = "All Home" }
-                    , { tag = "town", displayTitle = "Town" }
-                    , { tag = "wellbeing", displayTitle = "Wellbeing" }
-                    ]
-                , completedCount = 3
-                , includeOthers = True
-                , includeUntagged = True
-                , title = "By Tag"
-                }
-            ]
-    in
     case flags |> InteropPorts.decodeFlags of
         Err error ->
-            -- ( { boardConfigs = SafeZipper.fromList boardConfigs
-            --   , dailyNotesFolder = ""
-            --   , dailyNotesFormat = ""
+            -- ( { boardConfigs = SafeZipper.fromList []
             --   , configBeingEdited = Nothing
             --   , taskList = Waiting
             --   , timeWithZone =
@@ -93,9 +68,7 @@ init flags =
             Debug.todo <| Debug.toString error
 
         Ok okFlags ->
-            ( { boardConfigs = SafeZipper.fromList boardConfigs
-              , dailyNotesFolder = okFlags.folder
-              , dailyNotesFormat = okFlags.format
+            ( { boardConfigs = SafeZipper.fromList okFlags.boardConfigs
               , configBeingEdited = Nothing
               , taskList = Waiting
               , timeWithZone =

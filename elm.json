@@ -7,7 +7,7 @@
     "dependencies": {
         "direct": {
             "1602/elm-feather": "2.3.5",
-            "dillonkearns/elm-ts-json": "1.1.0",
+            "dillonkearns/elm-ts-json": "2.1.0",
             "elm/browser": "1.0.2",
             "elm/core": "1.0.5",
             "elm/html": "1.0.0",

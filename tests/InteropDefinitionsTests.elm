@@ -22,10 +22,29 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags" <|
             \() ->
-                """{"folder":"a folder","format":"a format","now":11,"zone":22}"""
+                """{"now":11,"zone":22,"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}"""
                     |> runDecoder interop.flags
                     |> .decoded
-                    |> Expect.equal (Ok { folder = "a folder", format = "a format", now = 11, zone = 22 })
+                    |> Expect.equal
+                        (Ok
+                            { boardConfigs =
+                                [ CardBoard.DateBoardConfig
+                                    { completedCount = 4
+                                    , includeUndated = True
+                                    , title = "date board title"
+                                    }
+                                , CardBoard.TagBoardConfig
+                                    { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                    , completedCount = 5
+                                    , includeOthers = False
+                                    , includeUntagged = True
+                                    , title = "tag board title"
+                                    }
+                                ]
+                            , now = 11
+                            , zone = 22
+                            }
+                        )
         , test "fails to decode flags if a field is missing" <|
             \() ->
                 """{"format":"a format","now":11,"zone":22}"""
@@ -38,7 +57,11 @@ flagsTests =
                 ""
                     |> runDecoder interop.flags
                     |> .tsType
-                    |> Expect.equal "{ folder : string; format : string; now : number; zone : number }"
+                    |> Expect.equal
+                        ("{ boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; "
+                            ++ "now : number; "
+                            ++ "zone : number }"
+                        )
         ]
 
 
