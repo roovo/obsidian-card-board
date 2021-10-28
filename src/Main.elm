@@ -16,7 +16,9 @@ import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
 import Panel exposing (Panel)
 import Panels exposing (Panels)
+import Parser
 import SafeZipper exposing (SafeZipper)
+import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -131,13 +133,44 @@ update msg model =
                         ( CardBoard.DateBoardConfig dateBoardConfig, Just newCount ) ->
                             CardBoard.DateBoardConfig { dateBoardConfig | completedCount = newCount }
 
+                        ( CardBoard.TagBoardConfig tagBoardConfig, Just newCount ) ->
+                            CardBoard.TagBoardConfig { tagBoardConfig | completedCount = newCount }
+
                         _ ->
                             config
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
-        ( EnteredTags title, _ ) ->
-            ( model, Cmd.none )
+        ( EnteredTags tags, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent updateTags c)
+
+                        Nothing ->
+                            Nothing
+
+                updateTags : CardBoard.Config -> CardBoard.Config
+                updateTags config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            config
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            let
+                                columnsConfig =
+                                    Parser.run TagBoard.columnConfigsParser tags
+                            in
+                            case columnsConfig of
+                                Ok parsedConfig ->
+                                    CardBoard.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
+
+                                _ ->
+                                    config
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ( EnteredTitle title, _ ) ->
             let
@@ -209,10 +242,6 @@ update msg model =
             ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
 
         ( SettingsUpdated newSettings, _ ) ->
-            let
-                _ =
-                    Debug.log "SU" newSettings
-            in
             case model.taskList of
                 Waiting ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )

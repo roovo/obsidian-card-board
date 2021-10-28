@@ -5,8 +5,10 @@ module ParserHelper exposing
     , dateParser
     , indentParser
     , isSpaceOrTab
+    , lineEnd
     , lineEndOrEnd
     , nonEmptyStringParser
+    , spaces
     , timeParser
     , wordParser
     )

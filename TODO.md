@@ -1,37 +1,38 @@
 # Up Next
 - plugin settings
-  - add tagboard config
   - cleanup settings dialog
   - allow switching between board settings in dialog
-  - open settings automatically if there are no boards defined?
+  - don't switch board when finishing editing settings
+  - open settings automatically if there are no boards defined
   - delete board
-  - allow/deny directories/files
-  - max title lines
-  - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
-  - test the reading and writing of board configs as a round trip elm - encode - decode - elm?
-  - work out how I will handle changes to the settings file format
-  - I want to make CardBoard.boardConfigs return just the configs, not a {}
-  - ensure app doesn't crash if the settings don't parse
   - put settings type definition back into main.ts
-- make the board behave better so if I open something else in the same window I can go back to it
-  - does the cross-reference plugin do this well (or the kanban one, or another)
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
+- how can I ensure that there is only one kanban page open?
+  If I can't do this, then I need to create unique ids across pages so markdown displays
+- make the board behave better so if I open something else in the same window I can go back to it
+  - does the cross-reference plugin do this well (or the kanban one, or another)
 - handle renames - make sure I cope with both directory and file renames
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
-- how can I ensure that there is only one kanban page open?
-  If I can't do this, then I need to create unique ids across pages so markdown displays
 - run elm review
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
-
 - how to release?
+
+# Post-release
+- move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
+- test the reading and writing of board configs as a round trip elm - encode - decode - elm?
+- work out how I will handle changes to the settings file format
+- I want to make CardBoard.boardConfigs return just the configs, not a {}
+- ensure app doesn't crash if the settings don't parse
+- review code and add any tests that should be there
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
+- https://logseq.github.io/#/page/tasks%20%26%20todos
 
 # UI Improvements
 - do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
@@ -96,6 +97,9 @@
   - within column to change ordering
 
 # Misc
+- Settings to:
+  - allow/deny directories/files
+  - set max title lines
 - I see that elm-ts-json now has a pipleline decoder - should switch to this as
   it makes decoders easier to read
 - in the update for SettingsUpdated I am re-writing all markdown content and updating

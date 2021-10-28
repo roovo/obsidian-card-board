@@ -1,11 +1,15 @@
 module TagBoard exposing
     ( ColumnConfig
     , Config
+    , columnConfigsParser
     , columns
     )
 
 import Date exposing (Date)
 import List.Extra as LE
+import Parser as P exposing ((|.), (|=), Parser)
+import ParserHelper
+import String.Extra as SE
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
@@ -42,6 +46,63 @@ columns config taskList =
         |> prependOthers config taskList
         |> prependUntagged config taskList
         |> appendCompleted config taskList
+
+
+
+-- PARSING
+
+
+columnConfigsParser : Parser (List ColumnConfig)
+columnConfigsParser =
+    P.loop [] columnConfigHelp
+
+
+columnConfigHelp : List ColumnConfig -> Parser (P.Step (List ColumnConfig) (List ColumnConfig))
+columnConfigHelp revStmts =
+    P.oneOf
+        [ P.succeed (\stmt -> P.Loop (stmt :: revStmts))
+            |= columnConfigParser
+            |. P.spaces
+        , P.succeed ()
+            |> P.map (\_ -> P.Done (List.reverse revStmts))
+        ]
+
+
+columnConfigParser : Parser ColumnConfig
+columnConfigParser =
+    let
+        buildColumnConfig : ( String, Maybe String ) -> Parser ColumnConfig
+        buildColumnConfig ( tag, title ) =
+            let
+                cleanedTag =
+                    if String.startsWith "#" tag then
+                        String.dropLeft 1 tag
+
+                    else
+                        tag
+
+                displayTitle =
+                    title
+                        |> Maybe.withDefault defaultTitle
+                        |> String.words
+                        |> String.join " "
+
+                defaultTitle =
+                    cleanedTag
+                        |> String.replace "/" " "
+                        |> SE.toSentenceCase
+            in
+            P.succeed { tag = cleanedTag, displayTitle = displayTitle }
+    in
+    P.succeed Tuple.pair
+        |. ParserHelper.spaces
+        |= ParserHelper.wordParser
+        |. ParserHelper.spaces
+        |= P.oneOf
+            [ P.map Just ParserHelper.nonEmptyStringParser
+            , P.succeed Nothing
+            ]
+        |> P.andThen buildColumnConfig
 
 
 
