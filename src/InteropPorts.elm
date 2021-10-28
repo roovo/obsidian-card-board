@@ -7,7 +7,7 @@ port module InteropPorts exposing
     , openTodoSourceFile
     , rewriteTodos
     , toElm
-    , updateConfig
+    , updateSettings
     )
 
 import Card exposing (Card)
@@ -18,12 +18,18 @@ import Json.Encode
 import Panel exposing (Panel)
 import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
+import Semver
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
+
+
+currentSettingsVersion : Semver.Version
+currentSettingsVersion =
+    Semver.version 0 0 0 [ "alpha" ] []
 
 
 addHoverToCardEditButtons : List Card -> Cmd msg
@@ -70,11 +76,11 @@ rewriteTodos timeWithZone filePath taskItems =
         |> interopFromElm
 
 
-updateConfig : SafeZipper CardBoard.Config -> Cmd msg
-updateConfig configs =
-    configs
-        |> SafeZipper.toList
-        |> encodeVariant "updateConfig" InteropDefinitions.updateConfigEncoder
+updateSettings : SafeZipper CardBoard.Config -> Cmd msg
+updateSettings configs =
+    { version = currentSettingsVersion, boardConfigs = SafeZipper.toList configs }
+        -- SafeZipper.toList configs
+        |> encodeVariant "updateSettings" InteropDefinitions.updateSettingsEncoder
         |> interopFromElm
 
 

@@ -3,6 +3,7 @@ module InteropDefinitionsTests exposing (suite)
 import CardBoard
 import Expect
 import InteropDefinitions exposing (interop)
+import Semver
 import Test exposing (..)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -96,18 +97,21 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTodoSourceFile","data":{"filePath":"a path","blockLink":"a link","lineNumber":33,"originalText":"the text"}}"""
-        , test "encodes UpdateConfig with DateBoardConfig data" <|
+        , test "encodes UpdateSettings with DateBoardConfig data" <|
             \() ->
-                [ CardBoard.DateBoardConfig
-                    { completedCount = 3
-                    , includeUndated = True
-                    , title = "A Date Board"
-                    }
-                ]
-                    |> InteropDefinitions.UpdateConfig
+                { version = Semver.version 1 2 3 [] []
+                , boardConfigs =
+                    [ CardBoard.DateBoardConfig
+                        { completedCount = 3
+                        , includeUndated = True
+                        , title = "A Date Board"
+                        }
+                    ]
+                }
+                    |> InteropDefinitions.UpdateSettings
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"updateConfig","data":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}"""
+                    |> Expect.equal """{"tag":"updateSettings","data":{"version":"1.2.3","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}}}"""
         , test "encodes UpdateTodos data" <|
             \() ->
                 { filePath = "a path", todos = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -117,13 +121,13 @@ fromElmTests =
                     |> Expect.equal """{"tag":"updateTodos","data":{"filePath":"a path","todos":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
         , test "encodes the correct tsType" <|
             \() ->
-                [ { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
+                [ { filePath = "a path", todoMarkdown = [] } ]
                     |> InteropDefinitions.DisplayTodoMarkdown
                     |> TsEncode.runExample interop.fromElm
                     |> .tsType
                     |> Expect.equal
                         ("""{ data : { filePath : string; todos : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTodos" }"""
-                            ++ """ | { data : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[]; tag : "updateConfig" }"""
+                            ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
                             ++ """ | { data : { blockLink : string | null; filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
                             ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""
@@ -153,6 +157,19 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
+        , test "decodes version 0.0.0-alpha settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"0.0.0-alpha","data":{"boardConfigs":[]}}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 0 0 [ "alpha" ] [], boardConfigs = [] })
+        , test "fails to decode an unsupported version of settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         , test "fails to decode data with an unknown tag" <|
             \() ->
                 """{"tag":"xxxxx","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
@@ -169,7 +186,7 @@ toElmTests =
                         ("{ data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
                             ++ " | { data : string; tag : \"fileDeleted\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
-                            ++ " | { data : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; tag : \"settingsUpdated\" }"
+                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
                             ++ " | { data : JsonValue; tag : \"initCompleted\" }"
                         )
         ]

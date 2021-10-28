@@ -33,7 +33,7 @@ export class CardBoardView extends ItemView {
     const mySettings:Flags = {
       now:          Date.now(),
       zone:         new Date().getTimezoneOffset(),
-      boardConfigs: this.plugin.settings
+      boardConfigs: this.plugin.settings.data.boardConfigs
     };
 
     const elmDiv = document.createElement('div');
@@ -61,8 +61,8 @@ export class CardBoardView extends ItemView {
         case "openTodoSourceFile":
           that.handleOpenTodoSourceFile(fromElm.data);
           break;
-        case "updateConfig":
-          that.handleUpdateConfig(elm, fromElm.data);
+        case "updateSettings":
+          that.handleUpdateSettings(elm, fromElm.data);
           break;
         case "updateTodos":
           that.handleUpdateTodos(fromElm.data);
@@ -202,7 +202,7 @@ export class CardBoardView extends ItemView {
     return new Promise( resolve => setTimeout(resolve, ms) );
   }
 
-  async handleUpdateConfig(elm: ElmApp, data: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[]) {
+  async handleUpdateSettings(elm: ElmApp, data: { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }) {
     await this.plugin.saveSettings(data);
     elm.ports.interopToElm.send({
       tag: "settingsUpdated",

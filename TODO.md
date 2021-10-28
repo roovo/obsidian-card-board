@@ -1,6 +1,5 @@
 # Up Next
 - plugin settings
-  - version the config
   - add tagboard config
   - cleanup settings dialog
   - allow switching between board settings in dialog
@@ -10,6 +9,10 @@
   - max title lines
   - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
   - test the reading and writing of board configs as a round trip elm - encode - decode - elm?
+  - work out how I will handle changes to the settings file format
+  - I want to make CardBoard.boardConfigs return just the configs, not a {}
+  - ensure app doesn't crash if the settings don't parse
+  - put settings type definition back into main.ts
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views

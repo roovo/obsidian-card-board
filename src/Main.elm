@@ -12,6 +12,7 @@ import Html.Keyed
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
+import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
 import Panel exposing (Panel)
 import Panels exposing (Panels)
@@ -55,16 +56,6 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err error ->
-            -- ( { boardConfigs = SafeZipper.fromList []
-            --   , configBeingEdited = Nothing
-            --   , taskList = Waiting
-            --   , timeWithZone =
-            --         { now = Time.millisToPosix 0
-            --         , zone = Time.customZone 0 []
-            --         }
-            --   }
-            -- , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
-            -- )
             Debug.todo <| Debug.toString error
 
         Ok okFlags ->
@@ -95,7 +86,7 @@ hasLoaded taskList =
 
 
 type Msg
-    = BadInputFromTypeScript
+    = BadInputFromTypeScript JD.Error
     | EnteredCompletedCount String
     | EnteredTitle String
     | InitCompleted
@@ -117,8 +108,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( BadInputFromTypeScript, _ ) ->
-            ( model, Cmd.none )
+        ( BadInputFromTypeScript error, _ ) ->
+            Debug.todo <| Debug.toString error
 
         ( EnteredCompletedCount value, _ ) ->
             let
@@ -190,7 +181,7 @@ update msg model =
             case model.configBeingEdited of
                 Just config ->
                     ( { model | configBeingEdited = Nothing }
-                    , InteropPorts.updateConfig config
+                    , InteropPorts.updateSettings config
                     )
 
                 Nothing ->
@@ -212,6 +203,10 @@ update msg model =
             ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
 
         ( SettingsUpdated newSettings, _ ) ->
+            let
+                _ =
+                    Debug.log "SU" newSettings
+            in
             case model.taskList of
                 Waiting ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
@@ -435,10 +430,10 @@ subscriptions _ =
                                     InitCompleted
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
-                                    SettingsUpdated newSettings
+                                    SettingsUpdated newSettings.boardConfigs
 
                         Err error ->
-                            BadInputFromTypeScript
+                            BadInputFromTypeScript error
                 )
         ]
 

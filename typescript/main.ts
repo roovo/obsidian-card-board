@@ -1,10 +1,12 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from 'obsidian';
 import { CardBoardView } from './view';
 
-const DEFAULT_SETTINGS: ({ completedCount : number; includeUndated : boolean; tag : "dateBoardConfig"; title : string } | { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; tag : "tagBoardConfig"; title : string })[] = [];
+// const DEFAULT_SETTINGS: ({ completedCount : number; includeUndated : boolean; tag : "dateBoardConfig"; title : string } | { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; tag : "tagBoardConfig"; title : string })[] = [];
 
 export default class CardBoardPlugin extends Plugin {
-  settings: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[];
+  // settings: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[];
+  // settings: ()];
+  settings: any;
 
   async onload() {
     console.log('loading CardBoard plugin');
@@ -32,8 +34,8 @@ export default class CardBoardPlugin extends Plugin {
     // this.settings = Object.assign([], DEFAULT_SETTINGS, await this.loadData());
     this.settings = await this.loadData();
   }
-
-  async saveSettings(newSettings: ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" })[]) {
+// { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }
+  async saveSettings(newSettings: any) {
     await this.saveData(newSettings);
   }
 }

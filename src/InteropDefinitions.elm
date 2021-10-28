@@ -7,7 +7,7 @@ module InteropDefinitions exposing
     , displayTodoMarkdownEncoder
     , interop
     , openTodoSourceFileEncoder
-    , updateConfigEncoder
+    , updateSettingsEncoder
     , updateTodosEncoder
     )
 
@@ -16,6 +16,7 @@ import DateBoard
 import Json.Decode as JD
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
+import Semver
 import TagBoard
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (optional, required)
@@ -26,7 +27,7 @@ type FromElm
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
     | OpenTodoSourceFile { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
-    | UpdateConfig (List CardBoard.Config)
+    | UpdateSettings CardBoard.Settings
     | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -35,7 +36,7 @@ type ToElm
     | FileDeleted String
     | FileUpdated MarkdownFile
     | InitCompleted ()
-    | SettingsUpdated (List CardBoard.Config)
+    | SettingsUpdated CardBoard.Settings
 
 
 type alias Flags =
@@ -96,10 +97,19 @@ openTodoSourceFileEncoder =
         ]
 
 
-updateConfigEncoder : TsEncode.Encoder (List CardBoard.Config)
-updateConfigEncoder =
-    TsEncode.list
-        cardBoardConfigEncoder
+updateSettingsEncoder : TsEncode.Encoder CardBoard.Settings
+updateSettingsEncoder =
+    TsEncode.object
+        [ required "version" CardBoard.version TsEncode.string
+        , required "data" CardBoard.boardConfigs boardConfigsEncoder
+        ]
+
+
+boardConfigsEncoder : TsEncode.Encoder { boardConfigs : List CardBoard.Config }
+boardConfigsEncoder =
+    TsEncode.object
+        [ required "boardConfigs" .boardConfigs (TsEncode.list cardBoardConfigEncoder)
+        ]
 
 
 cardBoardConfigEncoder : TsEncode.Encoder CardBoard.Config
@@ -172,7 +182,7 @@ toElm =
         [ toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
-        , toElmVariant "settingsUpdated" SettingsUpdated (TsDecode.list boardConfigDecoder)
+        , toElmVariant "settingsUpdated" SettingsUpdated boardSettingsDecoder
         , toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
         ]
 
@@ -194,7 +204,7 @@ fromElm =
                 OpenTodoSourceFile info ->
                     vOpenTodoSourceFile info
 
-                UpdateConfig info ->
+                UpdateSettings info ->
                     vUpdateConfig info
 
                 UpdateTodos info ->
@@ -204,9 +214,42 @@ fromElm =
         |> TsEncode.variantTagged "deleteTodo" deleteTodoEncoder
         |> TsEncode.variantTagged "displayTodoMarkdown" displayTodoMarkdownEncoder
         |> TsEncode.variantTagged "openTodoSourceFile" openTodoSourceFileEncoder
-        |> TsEncode.variantTagged "updateConfig" updateConfigEncoder
+        |> TsEncode.variantTagged "updateSettings" updateSettingsEncoder
         |> TsEncode.variantTagged "updateTodos" updateTodosEncoder
         |> TsEncode.buildUnion
+
+
+boardSettingsDecoder : TsDecode.Decoder CardBoard.Settings
+boardSettingsDecoder =
+    TsDecode.field "version" TsDecode.string
+        |> TsDecode.andThen versionedSettingsDecoder
+
+
+versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder CardBoard.Settings)
+versionedSettingsDecoder =
+    TsDecode.andThenInit
+        (\v0Alpha unsupportedVersion version ->
+            case version of
+                "0.0.0-alpha" ->
+                    v0Alpha
+
+                _ ->
+                    unsupportedVersion
+        )
+        |> TsDecode.andThenDecoder (TsDecode.field "data" v0AlphaDecoder)
+        |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
+
+
+v0AlphaDecoder : TsDecode.Decoder CardBoard.Settings
+v0AlphaDecoder =
+    TsDecode.succeed CardBoard.Settings
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
+        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 0 0 [ "alpha" ] []))
+
+
+unsupportedVersionDecoder : TsDecode.Decoder CardBoard.Settings
+unsupportedVersionDecoder =
+    TsDecode.fail "Unsupported settings file version"
 
 
 boardConfigDecoder : TsDecode.Decoder CardBoard.Config
