@@ -88,6 +88,7 @@ hasLoaded taskList =
 type Msg
     = BadInputFromTypeScript JD.Error
     | EnteredCompletedCount String
+    | EnteredTags String
     | EnteredTitle String
     | InitCompleted
     | ModalCloseClicked
@@ -99,7 +100,9 @@ type Msg
     | TaskItemDeleteClicked String
     | TaskItemToggled String
     | Tick Time.Posix
+    | ToggleIncludeOthers
     | ToggleIncludeUndated
+    | ToggleIncludeUntagged
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileUpdated MarkdownFile
@@ -132,6 +135,9 @@ update msg model =
                             config
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( EnteredTags title, _ ) ->
+            ( model, Cmd.none )
 
         ( EnteredTitle title, _ ) ->
             let
@@ -296,6 +302,28 @@ update msg model =
             , Cmd.none
             )
 
+        ( ToggleIncludeOthers, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent toggleIncludeOthers c)
+
+                        Nothing ->
+                            Nothing
+
+                toggleIncludeOthers : CardBoard.Config -> CardBoard.Config
+                toggleIncludeOthers config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            config
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            CardBoard.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
         ( ToggleIncludeUndated, _ ) ->
             let
                 newConfig : Maybe (SafeZipper CardBoard.Config)
@@ -315,6 +343,28 @@ update msg model =
 
                         CardBoard.TagBoardConfig tagBoardConfig ->
                             config
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( ToggleIncludeUntagged, _ ) ->
+            let
+                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig =
+                    case model.configBeingEdited of
+                        Just c ->
+                            Just (SafeZipper.mapCurrent toggleIncludeUntagged c)
+
+                        Nothing ->
+                            Nothing
+
+                toggleIncludeUntagged : CardBoard.Config -> CardBoard.Config
+                toggleIncludeUntagged config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            config
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            CardBoard.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -544,7 +594,7 @@ settingsFormView boardConfig =
                 , Html.div [ class "setting-item" ]
                     [ Html.div [ class "setting-item-info" ]
                         [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include Completed" ]
+                            [ Html.text "Completed Count" ]
                         , Html.div [ class "setting-item-description" ]
                             [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
                         ]
@@ -560,7 +610,104 @@ settingsFormView boardConfig =
                 ]
 
         Just (CardBoard.TagBoardConfig config) ->
-            Html.text "tag form"
+            let
+                includeOthersStyle =
+                    if config.includeOthers then
+                        " is-enabled"
+
+                    else
+                        ""
+
+                includeUntaggedStyle =
+                    if config.includeUntagged then
+                        " is-enabled"
+
+                    else
+                        ""
+
+                tagText =
+                    config.columns
+                        |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
+                        |> String.join "\n"
+            in
+            Html.div [ class "settings-form" ]
+                [ Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Title" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "The name of this board" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value config.title
+                            , onInput EnteredTitle
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Tags" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "The tags to use to define the board columns" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.textarea
+                            [ onInput EnteredTags
+                            ]
+                            [ Html.text tagText ]
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include Others" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Whether to include a colum for tasks with tags other than those specified" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ includeOthersStyle
+                            , onClick ToggleIncludeOthers
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include Untagged" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Whether to include a colum for tasks with no tags" ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ includeUntaggedStyle
+                            , onClick ToggleIncludeUntagged
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Completed Count" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| String.fromInt config.completedCount
+                            , onInput EnteredCompletedCount
+                            ]
+                            []
+                        ]
+                    ]
+                ]
 
         Nothing ->
             Html.text "nowt here"
