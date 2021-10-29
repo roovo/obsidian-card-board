@@ -2,6 +2,9 @@ module CardBoard exposing
     ( Config(..)
     , Settings
     , boardConfigs
+    , defaultConfig
+    , isDateBoard
+    , isTagBoard
     , title
     , version
     )
@@ -24,6 +27,31 @@ type alias Settings =
     { boardConfigs : List Config
     , version : Semver.Version
     }
+
+
+isDateBoard : Config -> Bool
+isDateBoard config =
+    case config of
+        DateBoardConfig _ ->
+            True
+
+        _ ->
+            False
+
+
+isTagBoard : Config -> Bool
+isTagBoard config =
+    case config of
+        TagBoardConfig _ ->
+            True
+
+        _ ->
+            False
+
+
+defaultConfig : Config
+defaultConfig =
+    TagBoardConfig TagBoard.defaultConfig
 
 
 version : Settings -> String

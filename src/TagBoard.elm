@@ -3,6 +3,7 @@ module TagBoard exposing
     , Config
     , columnConfigsParser
     , columns
+    , defaultConfig
     )
 
 import Date exposing (Date)
@@ -31,6 +32,16 @@ type alias Config =
 type alias ColumnConfig =
     { tag : String
     , displayTitle : String
+    }
+
+
+defaultConfig : Config
+defaultConfig =
+    { columns = []
+    , completedCount = 10
+    , includeOthers = False
+    , includeUntagged = False
+    , title = ""
     }
 
 

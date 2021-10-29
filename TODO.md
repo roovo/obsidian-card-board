@@ -1,15 +1,15 @@
 # Up Next
 - plugin settings
   - delete board
-  - add new board
   - open settings automatically if there are no boards defined
-  - put settings type definition back into main.ts
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
 - how can I ensure that there is only one kanban page open?
   If I can't do this, then I need to create unique ids across pages so markdown displays
 - make the board behave better so if I open something else in the same window I can go back to it
   - does the cross-reference plugin do this well (or the kanban one, or another)
+- if I add a board via the settings, then close the CardBoard window, then click on the ribbon
+  icon -> it is not there.... but it is saved in the settings (I think)
 - handle renames - make sure I cope with both directory and file renames
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
@@ -22,6 +22,7 @@
 - how to release?
 
 # Post-release
+- put settings type definition back into main.ts
 - do I want the last board who's settings I've edited to the one shown when closing settings?
 - it looks like I am no passing the settings version with Flags.  Need to do this!
 - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard

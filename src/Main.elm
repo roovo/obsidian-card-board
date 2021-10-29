@@ -4,9 +4,10 @@ import Browser
 import Card exposing (Card)
 import CardBoard
 import Date exposing (Date)
+import DateBoard
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, placeholder, type_, value)
+import Html.Attributes exposing (checked, class, hidden, id, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Keyed
 import InteropDefinitions
@@ -42,10 +43,17 @@ main =
 
 type alias Model =
     { boardConfigs : SafeZipper CardBoard.Config
-    , configBeingEdited : Maybe (SafeZipper CardBoard.Config)
+    , configBeingEdited : EditState
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
     }
+
+
+type EditState
+    = Adding (SafeZipper CardBoard.Config) CardBoard.Config
+    | Deleting (SafeZipper CardBoard.Config)
+    | Editing (SafeZipper CardBoard.Config)
+    | NotEditing
 
 
 type State a
@@ -62,7 +70,7 @@ init flags =
 
         Ok okFlags ->
             ( { boardConfigs = SafeZipper.fromList okFlags.boardConfigs
-              , configBeingEdited = Nothing
+              , configBeingEdited = NotEditing
               , taskList = Waiting
               , timeWithZone =
                     { now = Time.millisToPosix okFlags.now
@@ -88,12 +96,17 @@ hasLoaded taskList =
 
 
 type Msg
-    = BadInputFromTypeScript JD.Error
+    = AddBoardClicked
+    | BadInputFromTypeScript JD.Error
+    | BoardTypeSelected String
     | EnteredCompletedCount String
+    | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
     | InitCompleted
+    | ModalCancelClicked
     | ModalCloseClicked
+    | NewBoardDetailsEntered
     | ReceiveTime ( Time.Zone, Time.Posix )
     | SettingsBoardNameClicked Int
     | SettingsClicked
@@ -114,19 +127,62 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( AddBoardClicked, _ ) ->
+            let
+                newConfig : EditState
+                newConfig =
+                    case model.configBeingEdited of
+                        Editing c ->
+                            Adding c CardBoard.defaultConfig
+
+                        _ ->
+                            model.configBeingEdited
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
         ( BadInputFromTypeScript error, _ ) ->
             Debug.todo <| Debug.toString error
 
-        ( EnteredCompletedCount value, _ ) ->
+        ( BoardTypeSelected board, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent updateCompletedCount c)
+                        Adding cs c ->
+                            Adding cs (updateBoardType c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
+
+                updateBoardType : CardBoard.Config -> CardBoard.Config
+                updateBoardType config =
+                    case board of
+                        "dateBoard" ->
+                            let
+                                newBoardConfig =
+                                    DateBoard.defaultConfig
+                            in
+                            CardBoard.DateBoardConfig { newBoardConfig | title = CardBoard.title config }
+
+                        _ ->
+                            let
+                                newBoardConfig =
+                                    TagBoard.defaultConfig
+                            in
+                            CardBoard.TagBoardConfig { newBoardConfig | title = CardBoard.title config }
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( EnteredCompletedCount value, _ ) ->
+            let
+                newConfig : EditState
+                newConfig =
+                    case model.configBeingEdited of
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent updateCompletedCount c)
+
+                        _ ->
+                            model.configBeingEdited
 
                 updateCompletedCount : CardBoard.Config -> CardBoard.Config
                 updateCompletedCount config =
@@ -142,16 +198,38 @@ update msg model =
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
-        ( EnteredTags tags, _ ) ->
+        ( EnteredNewBoardTitle title, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent updateTags c)
+                        Adding cs c ->
+                            Adding cs (updateTitle c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
+
+                updateTitle : CardBoard.Config -> CardBoard.Config
+                updateTitle config =
+                    case config of
+                        CardBoard.DateBoardConfig dateBoardConfig ->
+                            CardBoard.DateBoardConfig { dateBoardConfig | title = title }
+
+                        CardBoard.TagBoardConfig tagBoardConfig ->
+                            CardBoard.TagBoardConfig { tagBoardConfig | title = title }
+            in
+            ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( EnteredTags tags, _ ) ->
+            let
+                newConfig : EditState
+                newConfig =
+                    case model.configBeingEdited of
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent updateTags c)
+
+                        _ ->
+                            model.configBeingEdited
 
                 updateTags : CardBoard.Config -> CardBoard.Config
                 updateTags config =
@@ -175,14 +253,14 @@ update msg model =
 
         ( EnteredTitle title, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent updateTitle c)
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent updateTitle c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
 
                 updateTitle : CardBoard.Config -> CardBoard.Config
                 updateTitle config =
@@ -217,15 +295,52 @@ update msg model =
                 Loaded taskList ->
                     ( model, Cmd.none )
 
-        ( ModalCloseClicked, _ ) ->
+        ( ModalCancelClicked, _ ) ->
             case model.configBeingEdited of
-                Just config ->
-                    ( { model | configBeingEdited = Nothing }
+                Adding config _ ->
+                    ( { model | configBeingEdited = Editing config }
+                    , Cmd.none
+                    )
+
+                Editing config ->
+                    ( { model | configBeingEdited = NotEditing }
                     , InteropPorts.updateSettings config
                     )
 
-                Nothing ->
-                    ( { model | configBeingEdited = Nothing }
+                _ ->
+                    ( { model | configBeingEdited = NotEditing }
+                    , Cmd.none
+                    )
+
+        ( NewBoardDetailsEntered, _ ) ->
+            case model.configBeingEdited of
+                Adding config newConfig ->
+                    let
+                        configWithNew =
+                            SafeZipper.add newConfig config
+                                |> SafeZipper.last
+                    in
+                    ( { model | configBeingEdited = Editing configWithNew }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        ( ModalCloseClicked, _ ) ->
+            case model.configBeingEdited of
+                Adding config _ ->
+                    ( { model | configBeingEdited = Editing config }
+                    , Cmd.none
+                    )
+
+                Editing config ->
+                    ( { model | configBeingEdited = NotEditing }
+                    , InteropPorts.updateSettings config
+                    )
+
+                _ ->
+                    ( { model | configBeingEdited = NotEditing }
                     , Cmd.none
                     )
 
@@ -241,14 +356,14 @@ update msg model =
 
         ( SettingsBoardNameClicked index, _ ) ->
             case model.configBeingEdited of
-                Just boardConfigs ->
-                    ( { model | configBeingEdited = Just <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
+                Editing boardConfigs ->
+                    ( { model | configBeingEdited = Editing <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
 
-                Nothing ->
+                _ ->
                     ( model, Cmd.none )
 
         ( SettingsClicked, _ ) ->
-            ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
+            ( { model | configBeingEdited = Editing model.boardConfigs }, Cmd.none )
 
         ( SettingsUpdated newSettings, _ ) ->
             case model.taskList of
@@ -348,14 +463,14 @@ update msg model =
 
         ( ToggleIncludeOthers, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent toggleIncludeOthers c)
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent toggleIncludeOthers c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
 
                 toggleIncludeOthers : CardBoard.Config -> CardBoard.Config
                 toggleIncludeOthers config =
@@ -370,14 +485,14 @@ update msg model =
 
         ( ToggleIncludeUndated, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent toggleIncludeUndated c)
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent toggleIncludeUndated c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
 
                 toggleIncludeUndated : CardBoard.Config -> CardBoard.Config
                 toggleIncludeUndated config =
@@ -392,14 +507,14 @@ update msg model =
 
         ( ToggleIncludeUntagged, _ ) ->
             let
-                newConfig : Maybe (SafeZipper CardBoard.Config)
+                newConfig : EditState
                 newConfig =
                     case model.configBeingEdited of
-                        Just c ->
-                            Just (SafeZipper.mapCurrent toggleIncludeUntagged c)
+                        Editing c ->
+                            Editing (SafeZipper.mapCurrent toggleIncludeUntagged c)
 
-                        Nothing ->
-                            Nothing
+                        _ ->
+                            model.configBeingEdited
 
                 toggleIncludeUntagged : CardBoard.Config -> CardBoard.Config
                 toggleIncludeUntagged config =
@@ -557,41 +672,129 @@ view model =
                             |> SafeZipper.toList
                         )
                     ]
-                , modalView model.configBeingEdited
+                , dialogs model.configBeingEdited
                 ]
 
         _ ->
             Html.text "Loading tasks...."
 
 
-modalView : Maybe (SafeZipper CardBoard.Config) -> Html Msg
-modalView configsBeingEdited =
-    case configsBeingEdited of
-        Just configs ->
-            Html.div [ class "modal-container" ]
-                [ Html.div [ class "modal-bg" ] []
-                , Html.div [ class "modal mod-settings" ]
-                    [ Html.div
-                        [ class "modal-close-button"
-                        , onClick ModalCloseClicked
+dialogs : EditState -> Html Msg
+dialogs editState =
+    case editState of
+        Adding configsBeingEdited newConfig ->
+            Html.div []
+                [ modalSettingsView configsBeingEdited
+                , modalAddBoard newConfig
+                ]
+
+        Deleting configsBeingEdited ->
+            modalSettingsView configsBeingEdited
+
+        Editing configsBeingEdited ->
+            modalSettingsView configsBeingEdited
+
+        NotEditing ->
+            Html.text ""
+
+
+modalAddBoard : CardBoard.Config -> Html Msg
+modalAddBoard newConfig =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Add new card board" ]
+            , Html.div [ class "modal-form" ]
+                [ Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Title" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| CardBoard.title newConfig
+                            , onInput EnteredNewBoardTitle
+                            ]
+                            []
                         ]
-                        []
-                    , Html.div [ class "modal-content" ]
-                        [ Html.div [ class "settings-menu vertical-tab-header" ]
-                            (Html.div [ class "vertical-tab-header-group-title" ]
-                                [ Html.text "Boards" ]
-                                :: (configs
-                                        |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
-                                        |> SafeZipper.toList
-                                   )
-                            )
-                        , settingsFormView <| SafeZipper.current configs
+                    ]
+                , Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Type" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.select
+                            [ class "dropdown"
+                            , onInput BoardTypeSelected
+                            ]
+                            [ Html.option
+                                [ value "dateBoard"
+                                , selected <| CardBoard.isDateBoard newConfig
+                                ]
+                                [ Html.text "Date board" ]
+                            , Html.option
+                                [ value "tagBoard"
+                                , selected <| CardBoard.isTagBoard newConfig
+                                ]
+                                [ Html.text "Tag board" ]
+                            ]
+                        ]
+                    , Html.div [ class "dialog-buttons" ]
+                        [ Html.button
+                            [ onClick <| ModalCancelClicked
+                            ]
+                            [ Html.text "Cancel"
+                            ]
+                        , Html.button
+                            [ class "mod-cta"
+                            , onClick <| NewBoardDetailsEntered
+                            ]
+                            [ Html.text "Add"
+                            ]
                         ]
                     ]
                 ]
+            ]
+        ]
 
-        Nothing ->
-            Html.text ""
+
+modalSettingsView : SafeZipper CardBoard.Config -> Html Msg
+modalSettingsView configs =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal mod-settings" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-content" ]
+                [ Html.div [ class "settings-menu vertical-tab-header" ]
+                    (Html.div [ class "vertical-tab-header-group-title" ]
+                        [ Html.text "Boards"
+                        , Html.div
+                            [ class "vertical-tab-header-group-title-icon"
+                            , onClick AddBoardClicked
+                            ]
+                            [ FeatherIcons.plus
+                                |> FeatherIcons.withSize 1
+                                |> FeatherIcons.withSizeUnit "em"
+                                |> FeatherIcons.toHtml []
+                            ]
+                        ]
+                        :: (configs
+                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
+                                |> SafeZipper.toList
+                           )
+                    )
+                , settingsFormView <| SafeZipper.current configs
+                ]
+            ]
+        ]
 
 
 settingsFormView : Maybe CardBoard.Config -> Html Msg
@@ -771,7 +974,7 @@ settingsFormView boardConfig =
                 ]
 
         Nothing ->
-            Html.text "nowt here"
+            Html.text ""
 
 
 settingTitleSelectedView : Int -> CardBoard.Config -> Html Msg

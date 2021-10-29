@@ -308,6 +308,16 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0;
 }
 
+.settings-menu .vertical-tab-header-group-title {
+  display: grid;
+  grid-auto-flow: column;
+}
+
+.vertical-tab-header-group-title-icon {
+  justify-self: end;
+  cursor: pointer;
+}
+
 .modal.mod-settings .settings-menu.vertical-tab-header {
   grid-area: select;
   padding-top: 1.5em;
@@ -328,6 +338,13 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   padding: 0 2.5em 0 2em;
   overflow-y: auto;
   height: 100%;
+}
+
+.dialog-buttons {
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: center;
+  padding-top: 3em;
 }
 
 .setting-item-control textarea {

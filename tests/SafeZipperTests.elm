@@ -9,15 +9,40 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ atIndex
+        [ add
+        , atIndex
         , current
         , currentIndex
+
+        -- , first
         , fromList
         , indexedMapSelectedAndRest
+        , last
         , length
         , mapCurrent
         , next
         , selectedIndex
+        ]
+
+
+add : Test
+add =
+    describe "add"
+        [ test "adds an item to an empty zipper" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.add 1
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1 ]
+        , test "adds an item to the end of a non-empty zipper" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.add 5
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 2, 3, 4, 5 ]
         ]
 
 
@@ -59,6 +84,13 @@ atIndex =
                     |> SafeZipper.atIndex -1
                     |> SafeZipper.current
                     |> Expect.equal (Just 1)
+        , test "doesn't change the order of the items in the list" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 2, 3, 4 ]
         , test "returns an empty zipper if given one" <|
             \() ->
                 []
@@ -137,6 +169,26 @@ indexedMapSelectedAndRest =
         ]
 
 
+last : Test
+last =
+    describe "last"
+        [ test "focusses on Nothing for an empty zipper" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.last
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal Nothing
+        , test "focusses on the last item for a NON empty zipper" <|
+            \() ->
+                [ 1, 2, 3 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.last
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 2)
+        ]
+
+
 length : Test
 length =
     describe "length"
@@ -186,6 +238,14 @@ next =
                     |> SafeZipper.next
                     |> SafeZipper.current
                     |> Expect.equal (Just 2)
+        , test "doesn't reorder the items in the zippeer" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.next
+                    |> SafeZipper.next
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 2, 3, 4 ]
         ]
 
 

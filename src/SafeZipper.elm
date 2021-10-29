@@ -1,10 +1,12 @@
 module SafeZipper exposing
     ( SafeZipper
+    , add
     , atIndex
     , current
     , currentIndex
     , fromList
     , indexedMapSelectedAndRest
+    , last
     , length
     , mapCurrent
     , next
@@ -32,6 +34,16 @@ fromList xs =
 
         y :: ys ->
             SafeZipper [] y ys
+
+
+add : a -> SafeZipper a -> SafeZipper a
+add element zipper =
+    case zipper of
+        EmptyZipper ->
+            fromList [ element ]
+
+        SafeZipper b c a ->
+            SafeZipper b c (a ++ [ element ])
 
 
 
@@ -65,7 +77,7 @@ toList zipper =
             []
 
         SafeZipper ls x rs ->
-            List.append ls (x :: rs)
+            List.reverse ls ++ [ x ] ++ rs
 
 
 
@@ -102,6 +114,21 @@ first zipper =
                     SafeZipper [] y (ys ++ [ x ] ++ rs)
 
 
+last : SafeZipper a -> SafeZipper a
+last zipper =
+    case zipper of
+        EmptyZipper ->
+            zipper
+
+        SafeZipper ls x rs ->
+            case List.reverse rs of
+                [] ->
+                    zipper
+
+                y :: ys ->
+                    SafeZipper (ys ++ [ x ] ++ ls) y []
+
+
 next : SafeZipper a -> SafeZipper a
 next zipper =
     case zipper of
@@ -127,19 +154,22 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
         EmptyZipper ->
             EmptyZipper
 
-        SafeZipper b c a ->
+        SafeZipper ls c rs ->
             let
                 beforeLength =
-                    List.length b
+                    List.length ls
 
                 mappedBefore =
-                    List.indexedMap restFn b
+                    ls
+                        |> List.reverse
+                        |> List.indexedMap restFn
+                        |> List.reverse
 
                 mappedCurrent =
                     selectedFn beforeLength c
 
                 mappedAfter =
-                    List.indexedMap (\i item -> restFn (beforeLength + 1 + i) item) a
+                    List.indexedMap (\i item -> restFn (beforeLength + 1 + i) item) rs
             in
             SafeZipper mappedBefore mappedCurrent mappedAfter
 

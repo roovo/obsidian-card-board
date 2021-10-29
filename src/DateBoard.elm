@@ -1,6 +1,7 @@
 module DateBoard exposing
     ( Config
     , columns
+    , defaultConfig
     )
 
 import Date exposing (Date)
@@ -18,6 +19,14 @@ type alias Config =
     { completedCount : Int
     , includeUndated : Bool
     , title : String
+    }
+
+
+defaultConfig : Config
+defaultConfig =
+    { completedCount = 10
+    , includeUndated = True
+    , title = ""
     }
 
 
