@@ -600,52 +600,54 @@ settingsFormView boardConfig =
                     else
                         ""
             in
-            Html.div [ class "settings-form" ]
-                [ Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Title" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "The name of this board" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value config.title
-                            , onInput EnteredTitle
+            Html.div [ class "settings-form-container" ]
+                [ Html.div [ class "settings-form" ]
+                    [ Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Title" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "The name of this board" ]
                             ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include Undated" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Whether to include a colum for tasks with no due date" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ includeUndatedStyle
-                            , onClick ToggleIncludeUndated
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.input
+                                [ type_ "text"
+                                , value config.title
+                                , onInput EnteredTitle
+                                ]
+                                []
                             ]
-                            []
                         ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Completed Count" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value <| String.fromInt config.completedCount
-                            , onInput EnteredCompletedCount
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Include Undated" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Whether to include a colum for tasks with no due date" ]
                             ]
-                            []
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ includeUndatedStyle
+                                , onClick ToggleIncludeUndated
+                                ]
+                                []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Completed Count" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.input
+                                [ type_ "text"
+                                , value <| String.fromInt config.completedCount
+                                , onInput EnteredCompletedCount
+                                ]
+                                []
+                            ]
                         ]
                     ]
                 ]
@@ -671,91 +673,93 @@ settingsFormView boardConfig =
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
                         |> String.join "\n"
             in
-            Html.div [ class "settings-form" ]
-                [ Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Title" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "The name of this board" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value config.title
-                            , onInput EnteredTitle
+            Html.div [ class "settings-form-container" ]
+                [ Html.div [ class "settings-form" ]
+                    [ Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Title" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "The name of this board" ]
                             ]
-                            []
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.input
+                                [ type_ "text"
+                                , value config.title
+                                , onInput EnteredTitle
+                                ]
+                                []
+                            ]
                         ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Columns" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.div []
-                                [ Html.text "The tags to use to define board columns." ]
-                            , Html.div []
-                                [ Html.text
-                                    ("Each line should be a tag followed by the column heading.  "
-                                        ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                        ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                    )
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Columns" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.div []
+                                    [ Html.text "The tags to use to define board columns." ]
+                                , Html.div []
+                                    [ Html.text
+                                        ("Each line should be a tag followed by the column heading.  "
+                                            ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
+                                            ++ "If you do not specify the heading it will be auto-generated from the tag."
+                                        )
+                                    ]
                                 ]
                             ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.textarea
-                            [ onInput EnteredTags
-                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.textarea
+                                [ onInput EnteredTags
+                                , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
+                                ]
+                                [ Html.text tagText ]
                             ]
-                            [ Html.text tagText ]
                         ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include Others" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Whether to include a colum for tasks with tags other than those specified" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ includeOthersStyle
-                            , onClick ToggleIncludeOthers
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Include Others" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Whether to include a colum for tasks with tags other than those specified" ]
                             ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include Untagged" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Whether to include a colum for tasks with no tags" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ includeUntaggedStyle
-                            , onClick ToggleIncludeUntagged
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ includeOthersStyle
+                                , onClick ToggleIncludeOthers
+                                ]
+                                []
                             ]
-                            []
                         ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Completed Count" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value <| String.fromInt config.completedCount
-                            , onInput EnteredCompletedCount
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Include Untagged" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Whether to include a colum for tasks with no tags" ]
                             ]
-                            []
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ includeUntaggedStyle
+                                , onClick ToggleIncludeUntagged
+                                ]
+                                []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Completed Count" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.input
+                                [ type_ "text"
+                                , value <| String.fromInt config.completedCount
+                                , onInput EnteredCompletedCount
+                                ]
+                                []
+                            ]
                         ]
                     ]
                 ]

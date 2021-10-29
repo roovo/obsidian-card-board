@@ -1,7 +1,5 @@
 # Up Next
 - plugin settings
-  - allow switching between board settings in dialog
-  - contain the seting form scrolling (don't want it going above the close X)
   - don't switch board when finishing editing settings
   - open settings automatically if there are no boards defined
   - delete board
