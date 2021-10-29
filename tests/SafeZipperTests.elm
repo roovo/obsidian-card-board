@@ -13,8 +13,7 @@ suite =
         , atIndex
         , current
         , currentIndex
-
-        -- , first
+        , deleteCurrent
         , fromList
         , indexedMapSelectedAndRest
         , last
@@ -22,6 +21,7 @@ suite =
         , mapCurrent
         , next
         , selectedIndex
+        , toList
         ]
 
 
@@ -137,6 +137,58 @@ currentIndex =
         ]
 
 
+deleteCurrent : Test
+deleteCurrent =
+    describe "deleteCurrent"
+        [ test "returns an empty zipper if given one" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        , test "returns an empty zipper if given one containing only a single element" <|
+            \() ->
+                [ 1 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        , test "returns an zipper focussed on the first element if the first element is deleted" <|
+            \() ->
+                [ 1, 2, 3 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 0)
+        , test "returns an zipper focussed on the last element if the last element is deleted" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 3
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 2)
+        , test "doesn't mess with the list ordering" <|
+            \() ->
+                [ 1, 2, 3, 4, 5, 6 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.atIndex 3
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 2, 3, 5, 6 ]
+        , test "returns an zipper focussed on the element at the same index otherwise" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.deleteCurrent
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 1)
+        ]
+
+
 fromList : Test
 fromList =
     describe "fromIndex"
@@ -160,12 +212,12 @@ indexedMapSelectedAndRest =
     describe "indexedMapSelectedAndRest"
         [ test "returns a zipper focussed on a mid-list item" <|
             \() ->
-                [ 6, 6, 6, 6, 6 ]
+                [ 5, 4, 3, 2, 1 ]
                     |> SafeZipper.fromList
                     |> SafeZipper.atIndex 2
                     |> SafeZipper.indexedMapSelectedAndRest (\_ x -> ( 9, x )) Tuple.pair
                     |> SafeZipper.toList
-                    |> Expect.equal [ ( 0, 6 ), ( 1, 6 ), ( 9, 6 ), ( 3, 6 ), ( 4, 6 ) ]
+                    |> Expect.equal [ ( 0, 5 ), ( 1, 4 ), ( 9, 3 ), ( 3, 2 ), ( 4, 1 ) ]
         ]
 
 
@@ -268,4 +320,21 @@ selectedIndex =
                     |> SafeZipper.next
                     |> SafeZipper.selectedIndex
                     |> Expect.equal (Just 1)
+        ]
+
+
+toList : Test
+toList =
+    describe "toList"
+        [ test "returns an empty list for an empty zipper" <|
+            \() ->
+                SafeZipper.fromList []
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        , test "returns the zipper contents as a list" <|
+            \() ->
+                SafeZipper.fromList [ 1, 2, 3, 4, 5, 6 ]
+                    |> SafeZipper.atIndex 3
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 2, 3, 4, 5, 6 ]
         ]

@@ -99,6 +99,8 @@ type Msg
     = AddBoardClicked
     | BadInputFromTypeScript JD.Error
     | BoardTypeSelected String
+    | DeleteBoardRequested
+    | DeleteBoardConfirmed
     | EnteredCompletedCount String
     | EnteredNewBoardTitle String
     | EnteredTags String
@@ -172,6 +174,26 @@ update msg model =
                             CardBoard.TagBoardConfig { newBoardConfig | title = CardBoard.title config }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        ( DeleteBoardRequested, _ ) ->
+            case model.configBeingEdited of
+                Editing c ->
+                    ( { model | configBeingEdited = Deleting c }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        ( DeleteBoardConfirmed, _ ) ->
+            case model.configBeingEdited of
+                Deleting c ->
+                    let
+                        newConfig =
+                            SafeZipper.deleteCurrent c
+                    in
+                    ( { model | configBeingEdited = Editing newConfig }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ( EnteredCompletedCount value, _ ) ->
             let
@@ -302,6 +324,33 @@ update msg model =
                     , Cmd.none
                     )
 
+                Deleting config ->
+                    ( { model | configBeingEdited = Editing config }
+                    , Cmd.none
+                    )
+
+                Editing config ->
+                    ( { model | configBeingEdited = NotEditing }
+                    , InteropPorts.updateSettings config
+                    )
+
+                _ ->
+                    ( { model | configBeingEdited = NotEditing }
+                    , Cmd.none
+                    )
+
+        ( ModalCloseClicked, _ ) ->
+            case model.configBeingEdited of
+                Adding config _ ->
+                    ( { model | configBeingEdited = Editing config }
+                    , Cmd.none
+                    )
+
+                Deleting config ->
+                    ( { model | configBeingEdited = Editing config }
+                    , Cmd.none
+                    )
+
                 Editing config ->
                     ( { model | configBeingEdited = NotEditing }
                     , InteropPorts.updateSettings config
@@ -326,23 +375,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-
-        ( ModalCloseClicked, _ ) ->
-            case model.configBeingEdited of
-                Adding config _ ->
-                    ( { model | configBeingEdited = Editing config }
-                    , Cmd.none
-                    )
-
-                Editing config ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , InteropPorts.updateSettings config
-                    )
-
-                _ ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , Cmd.none
-                    )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model
@@ -689,7 +721,10 @@ dialogs editState =
                 ]
 
         Deleting configsBeingEdited ->
-            modalSettingsView configsBeingEdited
+            Html.div []
+                [ modalSettingsView configsBeingEdited
+                , modalConfirmDelete configsBeingEdited
+                ]
 
         Editing configsBeingEdited ->
             modalSettingsView configsBeingEdited
@@ -756,6 +791,35 @@ modalAddBoard newConfig =
                             [ Html.text "Add"
                             ]
                         ]
+                    ]
+                ]
+            ]
+        ]
+
+
+modalConfirmDelete : SafeZipper CardBoard.Config -> Html Msg
+modalConfirmDelete configs =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Confirm Deletion" ]
+            , Html.div [ class "dialog-buttons" ]
+                [ Html.button
+                    [ onClick <| ModalCancelClicked
+                    ]
+                    [ Html.text "Do not delete"
+                    ]
+                , Html.button
+                    [ class "mod-warning"
+                    , onClick <| DeleteBoardConfirmed
+                    ]
+                    [ Html.text "Go ahead"
                     ]
                 ]
             ]
@@ -856,6 +920,14 @@ settingsFormView boardConfig =
                                 , onInput EnteredCompletedCount
                                 ]
                                 []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item dialog-buttons" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteBoardRequested
+                            ]
+                            [ Html.text "Delete this board"
                             ]
                         ]
                     ]
@@ -968,6 +1040,14 @@ settingsFormView boardConfig =
                                 , onInput EnteredCompletedCount
                                 ]
                                 []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item dialog-buttons" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteBoardRequested
+                            ]
+                            [ Html.text "Delete this board"
                             ]
                         ]
                     ]

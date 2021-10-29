@@ -1,6 +1,7 @@
 # Up Next
 - plugin settings
-  - delete board
+  - constrain the width of the settings dialog
+  - improve style of new board dialog
   - open settings automatically if there are no boards defined
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
@@ -22,6 +23,8 @@
 - how to release?
 
 # Post-release
+- prob want to move the settings update and view functions into their own file(s)
+  as Main.elm is feeling like the wrong place to leave it.
 - put settings type definition back into main.ts
 - do I want the last board who's settings I've edited to the one shown when closing settings?
 - it looks like I am no passing the settings version with Flags.  Need to do this!
@@ -37,6 +40,11 @@
 - https://logseq.github.io/#/page/tasks%20%26%20todos
 
 # UI Improvements
+- allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
+  into drag and drop?)
+- mobile support?
+  - what is it like performance-wise?
+  - prob need to use CSS grid more than I am (specially on the settings modal)
 - do I want to keep the tabbar in view when horizontal scrolling? (prob yes)
 - "spinner" whilst loading tasks (perhaps like in the sidebar when doing searches)
 - does openLinkText use setSelection to highlight the selected todo?

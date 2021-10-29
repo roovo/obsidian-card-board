@@ -4,6 +4,7 @@ module SafeZipper exposing
     , atIndex
     , current
     , currentIndex
+    , deleteCurrent
     , fromList
     , indexedMapSelectedAndRest
     , last
@@ -13,6 +14,10 @@ module SafeZipper exposing
     , selectedIndex
     , toList
     )
+
+import List.Extra as LE
+
+
 
 -- TYPES
 
@@ -186,6 +191,21 @@ mapCurrent fn zipper =
 
 
 -- UTILITIES
+
+
+deleteCurrent : SafeZipper a -> SafeZipper a
+deleteCurrent zipper =
+    let
+        index =
+            zipper
+                |> currentIndex
+                |> Maybe.withDefault 0
+    in
+    zipper
+        |> toList
+        |> LE.removeAt index
+        |> fromList
+        |> atIndex index
 
 
 length : SafeZipper a -> Int
