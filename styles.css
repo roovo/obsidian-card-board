@@ -331,6 +331,26 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   padding-right: 1.5em;
 }
 
+.modal-form {
+  display: grid;
+  grid-gap: 1.5em;
+  padding-top: 1.3em;
+}
+
+.form-item {
+  display: grid;
+  grid: "words control";
+}
+
+.form-item-name {
+  grid-area: words;
+}
+
+.form-item-control {
+  grid-area: control;
+  justify-self: end;
+}
+
 .settings-form-container {
   grid-area: form;
   padding: 2em 0 0.5em 0;
@@ -348,7 +368,11 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   display: grid;
   grid-auto-flow: column;
   justify-content: center;
-  padding-top: 3em;
+  padding-top: 2em;
+}
+
+.modal-form .dialog-buttons {
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 .setting-item-control textarea {

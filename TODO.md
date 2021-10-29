@@ -1,6 +1,5 @@
 # Up Next
 - plugin settings
-  - improve style of new board dialog
   - open settings automatically if there are no boards defined
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views

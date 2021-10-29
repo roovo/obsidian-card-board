@@ -744,7 +744,7 @@ modalAddBoard newConfig =
                 ]
                 []
             , Html.div [ class "modal-title" ]
-                [ Html.text "Add new card board" ]
+                [ Html.text "Add new board" ]
             , Html.div [ class "modal-form" ]
                 [ Html.div [ class "form-item" ]
                     [ Html.div [ class "form-item-name" ]
@@ -778,18 +778,18 @@ modalAddBoard newConfig =
                                 [ Html.text "Tag board" ]
                             ]
                         ]
-                    , Html.div [ class "dialog-buttons" ]
-                        [ Html.button
-                            [ onClick <| ModalCancelClicked
-                            ]
-                            [ Html.text "Cancel"
-                            ]
-                        , Html.button
-                            [ class "mod-cta"
-                            , onClick <| NewBoardDetailsEntered
-                            ]
-                            [ Html.text "Add"
-                            ]
+                    ]
+                , Html.div [ class "dialog-buttons" ]
+                    [ Html.button
+                        [ onClick <| ModalCancelClicked
+                        ]
+                        [ Html.text "Cancel"
+                        ]
+                    , Html.button
+                        [ class "mod-cta"
+                        , onClick <| NewBoardDetailsEntered
+                        ]
+                        [ Html.text "Add"
                         ]
                     ]
                 ]
