@@ -1,6 +1,5 @@
 # Up Next
 - plugin settings
-  - cleanup settings dialog
   - allow switching between board settings in dialog
   - don't switch board when finishing editing settings
   - open settings automatically if there are no boards defined
@@ -18,11 +17,13 @@
 - run elm review
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
+  - add alternative: kanban, imdone, tasks....
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
 
 # Post-release
+- it looks like I am no passing the settings version with Flags.  Need to do this!
 - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
 - test the reading and writing of board configs as a round trip elm - encode - decode - elm?
 - work out how I will handle changes to the settings file format

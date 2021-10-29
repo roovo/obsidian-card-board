@@ -6,7 +6,7 @@ import CardBoard
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, type_, value)
+import Html.Attributes exposing (checked, class, hidden, id, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Keyed
 import InteropDefinitions
@@ -555,17 +555,20 @@ modalView configsBeingEdited =
         Just configs ->
             Html.div [ class "modal-container" ]
                 [ Html.div [ class "modal-bg" ] []
-                , Html.div [ class "modal" ]
+                , Html.div [ class "modal mod-settings" ]
                     [ Html.div
                         [ class "modal-close-button"
                         , onClick ModalCloseClicked
                         ]
                         []
                     , Html.div [ class "modal-content" ]
-                        [ Html.div [ class "settings-menu" ]
-                            (configs
-                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
-                                |> SafeZipper.toList
+                        [ Html.div [ class "settings-menu vertical-tab-header" ]
+                            (Html.div [ class "vertical-tab-header-group-title" ]
+                                [ Html.text "Boards" ]
+                                :: (configs
+                                        |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
+                                        |> SafeZipper.toList
+                                   )
                             )
                         , settingsFormView <| SafeZipper.current configs
                         ]
@@ -679,13 +682,23 @@ settingsFormView boardConfig =
                 , Html.div [ class "setting-item" ]
                     [ Html.div [ class "setting-item-info" ]
                         [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Tags" ]
+                            [ Html.text "Columns" ]
                         , Html.div [ class "setting-item-description" ]
-                            [ Html.text "The tags to use to define the board columns" ]
+                            [ Html.div []
+                                [ Html.text "The tags to use to define board columns." ]
+                            , Html.div []
+                                [ Html.text
+                                    ("Each line should be a tag followed by the column heading.  "
+                                        ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
+                                        ++ "If you do not specify the heading it will be auto-generated from the tag."
+                                    )
+                                ]
+                            ]
                         ]
                     , Html.div [ class "setting-item-control" ]
                         [ Html.textarea
                             [ onInput EnteredTags
+                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
                             ]
                             [ Html.text tagText ]
                         ]
@@ -744,13 +757,13 @@ settingsFormView boardConfig =
 
 settingTitleSelectedView : Int -> CardBoard.Config -> Html Msg
 settingTitleSelectedView index boardConfig =
-    Html.div [ class "settings-menu-title" ]
-        [ Html.text <| CardBoard.title boardConfig ++ " *" ]
+    Html.div [ class "vertical-tab-nav-item is-active" ]
+        [ Html.text <| CardBoard.title boardConfig ]
 
 
 settingTitleView : Int -> CardBoard.Config -> Html Msg
 settingTitleView index boardConfig =
-    Html.div [ class "modal-menu-title" ]
+    Html.div [ class "vertical-tab-nav-item" ]
         [ Html.text <| CardBoard.title boardConfig ]
 
 

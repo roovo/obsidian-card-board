@@ -300,6 +300,23 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   cursor: pointer;
 }
 
-.card-board .modal .setting-item-control textarea {
+.card-board .modal-content {
+  display: grid;
+  grid-auto-flow: column;
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.card-board .vertical-tab-nav-item {
+  padding-right: 1.5em;
+}
+
+.settings-form {
+  padding: 1.7em 2.5em 0.5em 2em;
+  overflow-y: auto;
+}
+
+.setting-item-control textarea {
   min-height: 10em;
+  min-width: 22em;
 }
