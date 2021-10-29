@@ -1,6 +1,7 @@
 # Up Next
 - plugin settings
   - delete board
+  - add new board
   - open settings automatically if there are no boards defined
   - put settings type definition back into main.ts
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views

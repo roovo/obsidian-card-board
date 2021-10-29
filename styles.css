@@ -302,12 +302,14 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .card-board .modal-content {
   display: grid;
-  grid-auto-flow: column;
+  grid: "select form"
+        / 200px auto;
   overflow: hidden;
   margin-top: 0;
 }
 
 .modal.mod-settings .settings-menu.vertical-tab-header {
+  grid-area: select;
   padding-top: 1.5em;
 }
 
@@ -316,6 +318,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 }
 
 .settings-form-container {
+  grid-area: form;
   padding: 2em 0 0.5em 0;
   overflow: hidden;
   height: 70vh;
