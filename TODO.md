@@ -1,6 +1,4 @@
 # Up Next
-- if I add a board via the settings, then close the CardBoard window, then click on the ribbon
-  icon -> it is not there.... but it is saved in the settings (I think)
 - handle renames - make sure I cope with both directory and file renames
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
@@ -9,6 +7,8 @@
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
   - add alternative: kanban, imdone, tasks....
+  - might not work that great on large vaults
+  - might not be great on mobile
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
@@ -127,6 +127,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- persist settings in the plugin when they are updated
 - use the excellent advice at:  https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
 - plugin settings

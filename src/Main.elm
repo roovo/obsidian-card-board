@@ -49,6 +49,18 @@ type alias Model =
     }
 
 
+defaultModel : Model
+defaultModel =
+    { boardConfigs = SafeZipper.fromList []
+    , configBeingEdited = NotEditing
+    , taskList = Waiting
+    , timeWithZone =
+        { now = Time.millisToPosix 0
+        , zone = Time.customZone 0 []
+        }
+    }
+
+
 type EditState
     = Adding (SafeZipper CardBoard.Config) CardBoard.Config
     | Deleting (SafeZipper CardBoard.Config)
@@ -66,7 +78,11 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err error ->
-            Debug.todo <| Debug.toString error
+            -- Debug.todo <| Debug.toString error
+            ( defaultModel
+                |> forceAddWhenNoBoards defaultModel.boardConfigs
+            , Cmd.none
+            )
 
         Ok okFlags ->
             let
@@ -98,13 +114,8 @@ hasLoaded taskList =
 
 forceAddWhenNoBoards : SafeZipper CardBoard.Config -> Model -> Model
 forceAddWhenNoBoards config model =
-    let
-        _ =
-            Debug.log "force check" model
-    in
     if SafeZipper.length config == 0 then
         { model | configBeingEdited = Adding config CardBoard.defaultConfig }
-            |> Debug.log "forced"
 
     else
         model
@@ -162,7 +173,8 @@ update msg model =
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ( BadInputFromTypeScript error, _ ) ->
-            Debug.todo <| Debug.toString error
+            -- Debug.todo <| Debug.toString error
+            ( model, Cmd.none )
 
         ( BoardTypeSelected board, _ ) ->
             let

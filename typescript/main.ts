@@ -50,8 +50,10 @@ export default class CardBoardPlugin extends Plugin {
     // this.settings = Object.assign([], DEFAULT_SETTINGS, await this.loadData());
     this.settings = await this.loadData();
   }
+
 // { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }
   async saveSettings(newSettings: any) {
+    this.settings = newSettings;
     await this.saveData(newSettings);
   }
 }
