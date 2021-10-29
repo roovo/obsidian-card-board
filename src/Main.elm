@@ -95,6 +95,7 @@ type Msg
     | InitCompleted
     | ModalCloseClicked
     | ReceiveTime ( Time.Zone, Time.Posix )
+    | SettingsBoardNameClicked Int
     | SettingsClicked
     | SettingsUpdated (List CardBoard.Config)
     | TabSelected Int
@@ -237,6 +238,14 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ( SettingsBoardNameClicked index, _ ) ->
+            case model.configBeingEdited of
+                Just boardConfigs ->
+                    ( { model | configBeingEdited = Just <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         ( SettingsClicked, _ ) ->
             ( { model | configBeingEdited = Just model.boardConfigs }, Cmd.none )
@@ -757,13 +766,19 @@ settingsFormView boardConfig =
 
 settingTitleSelectedView : Int -> CardBoard.Config -> Html Msg
 settingTitleSelectedView index boardConfig =
-    Html.div [ class "vertical-tab-nav-item is-active" ]
+    Html.div
+        [ class "vertical-tab-nav-item is-active"
+        , onClick <| SettingsBoardNameClicked index
+        ]
         [ Html.text <| CardBoard.title boardConfig ]
 
 
 settingTitleView : Int -> CardBoard.Config -> Html Msg
 settingTitleView index boardConfig =
-    Html.div [ class "vertical-tab-nav-item" ]
+    Html.div
+        [ class "vertical-tab-nav-item"
+        , onClick <| SettingsBoardNameClicked index
+        ]
         [ Html.text <| CardBoard.title boardConfig ]
 
 
