@@ -318,6 +318,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   cursor: pointer;
 }
 
+.modal.mod-settings {
+  width: 80%;
+}
+
 .modal.mod-settings .settings-menu.vertical-tab-header {
   grid-area: select;
   padding-top: 1.5em;

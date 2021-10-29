@@ -1,6 +1,5 @@
 # Up Next
 - plugin settings
-  - constrain the width of the settings dialog
   - improve style of new board dialog
   - open settings automatically if there are no boards defined
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
