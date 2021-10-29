@@ -1,5 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from 'obsidian';
-import { CardBoardView } from './view';
+import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
 // const DEFAULT_SETTINGS: ({ completedCount : number; includeUndated : boolean; tag : "dateBoardConfig"; title : string } | { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; tag : "tagBoardConfig"; title : string })[] = [];
 
@@ -11,6 +11,11 @@ export default class CardBoardPlugin extends Plugin {
   async onload() {
     console.log('loading CardBoard plugin');
 
+    this.registerView(
+      VIEW_TYPE_CARD_BOARD,
+      (leaf) => new CardBoardView(this, leaf)
+    );
+
     await this.loadSettings();
 
     addIcon("card-board",
@@ -19,15 +24,26 @@ export default class CardBoardPlugin extends Plugin {
       '<rect x="56" y="28" width="12" height="30" fill="none" stroke="currentColor" stroke-width="5"></rect>');
 
     this.addRibbonIcon('card-board', 'CardBoard Plugin', async () => {
-      const leaf = this.app.workspace.getLeaf(!(this.app.workspace.activeLeaf.view.getViewType() == 'empty'));
-      const view = new CardBoardView(this, leaf);
-      await leaf.open(view);
-      this.app.workspace.setActiveLeaf(leaf, true, true);
+      this.activateView();
     });
   }
 
   onunload() {
     console.log('unloading CardBoard plugin');
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
+  }
+
+  async activateView() {
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    await this.app.workspace.getLeaf(true).setViewState({
+      type: VIEW_TYPE_CARD_BOARD,
+      active: true,
+    });
+
+    this.app.workspace.revealLeaf(
+      this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0]
+    );
   }
 
   async loadSettings() {

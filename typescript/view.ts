@@ -15,6 +15,8 @@ import CardBoardPlugin from './main';
 
 const moment = require('moment');
 
+export const VIEW_TYPE_CARD_BOARD = "card-board-view";
+
 export class CardBoardView extends ItemView {
   private vault: Vault;
   private plugin: CardBoardPlugin;
@@ -269,11 +271,11 @@ export class CardBoardView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Card Board';
+    return 'Card Board View';
   }
 
   getViewType(): string {
-    return 'CardBoard';
+    return VIEW_TYPE_CARD_BOARD;
   }
 
   generateId(): string {

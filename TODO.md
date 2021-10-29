@@ -1,15 +1,10 @@
 # Up Next
-- check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
-  for guidance on creating views
-- how can I ensure that there is only one kanban page open?
-  If I can't do this, then I need to create unique ids across pages so markdown displays
-- make the board behave better so if I open something else in the same window I can go back to it
-  - does the cross-reference plugin do this well (or the kanban one, or another)
 - if I add a board via the settings, then close the CardBoard window, then click on the ribbon
   icon -> it is not there.... but it is saved in the settings (I think)
 - handle renames - make sure I cope with both directory and file renames
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
+  - in view.ts have I hardcoded the date format??
 - run elm review
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
@@ -132,6 +127,8 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- use the excellent advice at:  https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
+  for guidance on creating views
 - plugin settings
 - display multiple boards
 - I'm often passing Time.Posix and Time.Zone around together -> make a type
