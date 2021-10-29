@@ -2,6 +2,7 @@ module SafeZipper exposing
     ( SafeZipper
     , atIndex
     , current
+    , currentIndex
     , fromList
     , indexedMapSelectedAndRest
     , length
@@ -45,6 +46,16 @@ current zipper =
 
         SafeZipper b c a ->
             Just c
+
+
+currentIndex : SafeZipper a -> Maybe Int
+currentIndex zipper =
+    case zipper of
+        EmptyZipper ->
+            Nothing
+
+        SafeZipper ls x rs ->
+            Just <| List.length ls
 
 
 toList : SafeZipper a -> List a

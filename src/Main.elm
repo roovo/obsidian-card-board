@@ -262,6 +262,12 @@ update msg model =
                     let
                         newConfigs =
                             SafeZipper.fromList newSettings
+                                |> SafeZipper.atIndex newIndex
+
+                        newIndex =
+                            model.boardConfigs
+                                |> SafeZipper.currentIndex
+                                |> Maybe.withDefault 0
 
                         cards =
                             taskList

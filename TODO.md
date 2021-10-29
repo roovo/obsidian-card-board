@@ -1,8 +1,7 @@
 # Up Next
 - plugin settings
-  - don't switch board when finishing editing settings
-  - open settings automatically if there are no boards defined
   - delete board
+  - open settings automatically if there are no boards defined
   - put settings type definition back into main.ts
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
@@ -22,6 +21,7 @@
 - how to release?
 
 # Post-release
+- do I want the last board who's settings I've edited to the one shown when closing settings?
 - it looks like I am no passing the settings version with Flags.  Need to do this!
 - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
 - test the reading and writing of board configs as a round trip elm - encode - decode - elm?

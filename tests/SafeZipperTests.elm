@@ -11,6 +11,7 @@ suite =
     concat
         [ atIndex
         , current
+        , currentIndex
         , fromList
         , indexedMapSelectedAndRest
         , length
@@ -82,6 +83,24 @@ current =
                 []
                     |> SafeZipper.fromList
                     |> SafeZipper.current
+                    |> Expect.equal Nothing
+        ]
+
+
+currentIndex : Test
+currentIndex =
+    describe "currentIndex"
+        [ test "returns Just the index of the current list item if the list has items" <|
+            \() ->
+                [ 'a', 'b', 'c' ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 0)
+        , test "returns Nothing if the list has NO items" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.currentIndex
                     |> Expect.equal Nothing
         ]
 
