@@ -1,6 +1,4 @@
 # Up Next
-- plugin settings
-  - open settings automatically if there are no boards defined
 - check out https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
 - how can I ensure that there is only one kanban page open?
@@ -134,6 +132,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- plugin settings
 - display multiple boards
 - I'm often passing Time.Posix and Time.Zone around together -> make a type
 - don't store functions on the model (board is stored as a function at the moment)

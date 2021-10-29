@@ -69,7 +69,11 @@ init flags =
             Debug.todo <| Debug.toString error
 
         Ok okFlags ->
-            ( { boardConfigs = SafeZipper.fromList okFlags.boardConfigs
+            let
+                boardConfigs =
+                    SafeZipper.fromList okFlags.boardConfigs
+            in
+            ( { boardConfigs = boardConfigs
               , configBeingEdited = NotEditing
               , taskList = Waiting
               , timeWithZone =
@@ -77,6 +81,7 @@ init flags =
                     , zone = Time.customZone okFlags.zone []
                     }
               }
+                |> forceAddWhenNoBoards boardConfigs
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
 
@@ -89,6 +94,20 @@ hasLoaded taskList =
 
         _ ->
             False
+
+
+forceAddWhenNoBoards : SafeZipper CardBoard.Config -> Model -> Model
+forceAddWhenNoBoards config model =
+    let
+        _ =
+            Debug.log "force check" model
+    in
+    if SafeZipper.length config == 0 then
+        { model | configBeingEdited = Adding config CardBoard.defaultConfig }
+            |> Debug.log "forced"
+
+    else
+        model
 
 
 
@@ -190,7 +209,10 @@ update msg model =
                         newConfig =
                             SafeZipper.deleteCurrent c
                     in
-                    ( { model | configBeingEdited = Editing newConfig }, Cmd.none )
+                    ( { model | configBeingEdited = Editing newConfig }
+                        |> forceAddWhenNoBoards newConfig
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -321,6 +343,7 @@ update msg model =
             case model.configBeingEdited of
                 Adding config _ ->
                     ( { model | configBeingEdited = Editing config }
+                        |> forceAddWhenNoBoards config
                     , Cmd.none
                     )
 
@@ -343,6 +366,7 @@ update msg model =
             case model.configBeingEdited of
                 Adding config _ ->
                     ( { model | configBeingEdited = Editing config }
+                        |> forceAddWhenNoBoards config
                     , Cmd.none
                     )
 
