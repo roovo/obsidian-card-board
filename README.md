@@ -6,9 +6,10 @@ tasks from all your notes and displays them on a Kanban-style board.
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Installation
-I've not yet submitted this as an official plugin, so you will have to install it
-manually from the [releases](https://github.com/roovo/obsidian-card-board/releases/)
-page (or build it manually).
+I've not yet submitted this as an official plugin, so you will have to use the
+v.handy [obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) to install it, or manually install from the
+[releases](https://github.com/roovo/obsidian-card-board/releases/) page, or
+you can try a self-build - see the [contributing doc](CONTRIBUTING.md)).
 
 ## Use
 When installed, use the icon in the app ribbon to launch.
