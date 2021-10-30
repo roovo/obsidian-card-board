@@ -24,7 +24,6 @@
     "elm-test": "^0.19.1-revision7",
     "elm-ts-interop": "^0.0.3",
     "elm-webpack-loader": "^8.0.0",
-    "jest": "^27.1.0",
     "obsidian": "^0.12.11",
     "ts-loader": "^9.2.5",
     "ts-node": "^10.2.1",

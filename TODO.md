@@ -1,6 +1,4 @@
 # Up Next
-- how small can I make the compliled js?
-- add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
   - add alternative: kanban, imdone, tasks....
   - might not work that great on large vaults
@@ -28,10 +26,12 @@
 - ensure app doesn't crash if the settings don't parse
 - review code and add any tests that should be there
   - deleteItemsFromFile in Main.elm has the arguments in non-idiomatic order
-- remove jest as I am not using it
 - do I want to warn the user that I couldn't read settings at startup?
   - are there any sensible options I can give them if I do?
 - fix the couple of elm review errors I've left in there
+- how small can I make the compliled js?
+  https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
+  look at esbuild
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -136,6 +136,8 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- add a licence
+- remove jest as I am not using it
 - run elm review
 - check it works with the default setup for the daily notes plugin
 - check it works in a virgin vault with no plugins
