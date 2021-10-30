@@ -30,12 +30,12 @@ export class CardBoardView extends ItemView {
 
   async onOpen() {
     // @ts-ignore
-    const dailyNotesSettings  = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
+    const dailyNotesSettings = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
 
     const mySettings:Flags = {
       now:          Date.now(),
       zone:         new Date().getTimezoneOffset(),
-      boardConfigs: this.plugin.settings.data.boardConfigs
+      boardConfigs: this.plugin.settings?.data?.boardConfigs
     };
 
     const elmDiv = document.createElement('div');

@@ -1,5 +1,4 @@
 # Up Next
-- check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
   - in view.ts have I hardcoded the date format??
 - run elm review
@@ -30,6 +29,8 @@
 - review code and add any tests that should be there
   - deleteItemsFromFile in Main.elm has the arguments in non-idiomatic order
 - remove jest as I am not using it
+- do I want to warn the user that I couldn't read settings at startup?
+  - are there any sensible options I can give them if I do?
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -134,6 +135,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- check it works in a virgin vault with no plugins
 - bump settings version to 0.1.0
 - handle renames - make sure I cope with both directory and file renames
 - persist settings in the plugin when they are updated

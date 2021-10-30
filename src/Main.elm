@@ -78,7 +78,6 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err error ->
-            -- Debug.todo <| Debug.toString error
             ( defaultModel
                 |> forceAddWhenNoBoards defaultModel.boardConfigs
             , Cmd.none
