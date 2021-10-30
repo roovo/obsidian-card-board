@@ -3,6 +3,7 @@
 - check it works with the default setup for the daily notes plugin
   - in view.ts have I hardcoded the date format??
 - run elm review
+- how small can I make the compliled js?
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
   - add alternative: kanban, imdone, tasks....
@@ -11,7 +12,8 @@
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
-- how small can I make the compliled js?
+- ensure version is 0.1.0
+  - ensure this is how it appears on the community plugins setting page
 
 
 # Post-release

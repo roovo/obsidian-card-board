@@ -283,7 +283,7 @@ export class CardBoardView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Card Board View';
+    return 'CardBoard';
   }
 
   getViewType(): string {
