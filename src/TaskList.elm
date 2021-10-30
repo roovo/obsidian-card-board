@@ -5,6 +5,7 @@ module TaskList exposing
     , empty
     , filter
     , fromMarkdown
+    , map
     , parser
     , removeForFile
     , replaceForFile
@@ -18,7 +19,7 @@ module TaskList exposing
 
 import Date exposing (Date)
 import List.Extra as LE
-import Parser exposing (..)
+import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (TaskItem)
 
@@ -42,13 +43,13 @@ empty =
 
 parser : String -> Maybe String -> Parser TaskList
 parser filePath fileDate =
-    loop [] (taskItemsHelp filePath fileDate)
-        |> map (\ts -> TaskList ts)
+    P.loop [] (taskItemsHelp filePath fileDate)
+        |> P.map (\ts -> TaskList ts)
 
 
 fromMarkdown : String -> Maybe String -> String -> TaskList
 fromMarkdown filePath fileDate fileContents =
-    Parser.run (parser filePath fileDate) (fileContents ++ "\n")
+    P.run (parser filePath fileDate) (fileContents ++ "\n")
         |> Result.withDefault empty
 
 
@@ -68,6 +69,13 @@ concat =
 
 
 -- MANIPULATE
+
+
+map : (TaskItem -> TaskItem) -> TaskList -> TaskList
+map fn (TaskList taskItems) =
+    taskItems
+        |> List.map fn
+        |> TaskList
 
 
 replaceForFile : String -> TaskList -> TaskList -> TaskList
@@ -142,15 +150,15 @@ itemsNotFromFile pathToFile taskItems =
         |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (Step (List TaskItem) (List TaskItem))
+taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
 taskItemsHelp filePath fileDate revTaskItems =
-    oneOf
-        [ backtrackable
+    P.oneOf
+        [ P.backtrackable
             (TaskItem.parser filePath fileDate
-                |> map (\taskItem -> Loop (taskItem :: revTaskItems))
+                |> P.map (\taskItem -> P.Loop (taskItem :: revTaskItems))
             )
         , anyLineParser
-            |> map (\_ -> Loop revTaskItems)
-        , succeed ()
-            |> map (\_ -> Done (List.reverse revTaskItems))
+            |> P.map (\_ -> P.Loop revTaskItems)
+        , P.succeed ()
+            |> P.map (\_ -> P.Done (List.reverse revTaskItems))
         ]

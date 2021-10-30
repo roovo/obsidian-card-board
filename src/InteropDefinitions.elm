@@ -34,6 +34,7 @@ type FromElm
 type ToElm
     = FileAdded MarkdownFile
     | FileDeleted String
+    | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
     | InitCompleted ()
     | SettingsUpdated CardBoard.Settings
@@ -181,6 +182,7 @@ toElm =
     TsDecode.oneOf
         [ toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , toElmVariant "fileDeleted" FileDeleted TsDecode.string
+        , toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , toElmVariant "settingsUpdated" SettingsUpdated boardSettingsDecoder
         , toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
@@ -223,6 +225,13 @@ boardSettingsDecoder : TsDecode.Decoder CardBoard.Settings
 boardSettingsDecoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
+
+
+renamedFileDecoder : TsDecode.Decoder ( String, String )
+renamedFileDecoder =
+    TsDecode.succeed Tuple.pair
+        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
 
 
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder CardBoard.Settings)

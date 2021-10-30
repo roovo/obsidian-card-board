@@ -153,6 +153,7 @@ type Msg
     | ToggleIncludeUntagged
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
+    | VaultFileRenamed ( String, String )
     | VaultFileUpdated MarkdownFile
 
 
@@ -619,6 +620,27 @@ update msg model =
         ( VaultFileDeleted filePath, _ ) ->
             ( deleteItemsFromFile model filePath, Cmd.none )
 
+        ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
+            let
+                updatedTaskItems =
+                    rePathedTaskItems oldPath newPath model.taskList
+
+                cards =
+                    updatedTaskItems
+                        |> Panels.init model.boardConfigs
+                        |> Panels.cards model.timeWithZone
+            in
+            ( updateTaskItems model oldPath updatedTaskItems
+            , if hasLoaded model.taskList then
+                Cmd.batch
+                    [ InteropPorts.displayTaskMarkdown cards
+                    , InteropPorts.addHoverToCardEditButtons cards
+                    ]
+
+              else
+                Cmd.none
+            )
+
         ( VaultFileUpdated markdownFile, _ ) ->
             let
                 updatedTaskItems =
@@ -639,6 +661,30 @@ update msg model =
               else
                 Cmd.none
             )
+
+
+rePathedTaskItems : String -> String -> State TaskList -> TaskList
+rePathedTaskItems oldPath newPath taskList =
+    let
+        rePathedItems : TaskList -> TaskList
+        rePathedItems list =
+            list
+                |> TaskList.filter needsRename
+                |> TaskList.map (TaskItem.updateFilePath newPath)
+
+        needsRename : TaskItem -> Bool
+        needsRename item =
+            TaskItem.filePath item == oldPath
+    in
+    case taskList of
+        Waiting ->
+            TaskList.empty
+
+        Loading currentList ->
+            rePathedItems currentList
+
+        Loaded currentList ->
+            rePathedItems currentList
 
 
 deleteItemsFromFile : Model -> String -> Model
@@ -699,6 +745,9 @@ subscriptions _ =
 
                                 InteropDefinitions.FileDeleted filePath ->
                                     VaultFileDeleted filePath
+
+                                InteropDefinitions.FileRenamed oldAndNewPath ->
+                                    VaultFileRenamed oldAndNewPath
 
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile

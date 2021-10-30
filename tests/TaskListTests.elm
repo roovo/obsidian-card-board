@@ -13,6 +13,7 @@ suite =
     concat
         [ combine
         , filter
+        , map
         , parsing
         , replaceForFile
         , removeForFile
@@ -43,13 +44,47 @@ combine =
 filter : Test
 filter =
     describe "filter"
-        [ test "returns an empty array if given an empty tasklist" <|
+        [ test "returns an empty TaskList if given an one" <|
             \() ->
                 ""
                     |> Parser.run (TaskList.parser "" Nothing)
                     |> Result.map (TaskList.filter (always True))
-                    |> Result.map TaskList.topLevelTasks
+                    |> Result.map TaskList.taskTitles
                     |> Expect.equal (Ok [])
+        , test "filters a TaskList based on a TaskItem property" <|
+            \() ->
+                """- [ ] foo
+- [x] bar #tag1
+- [X] baz #tag2
+- [X] boo
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.map (TaskList.filter TaskItem.hasTags)
+                    |> Result.map TaskList.taskTitles
+                    |> Expect.equal (Ok [ "bar", "baz" ])
+        ]
+
+
+map : Test
+map =
+    describe "map"
+        [ test "returns an empty TaskList if given an one" <|
+            \() ->
+                ""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.map (TaskList.map identity)
+                    |> Result.map TaskList.taskTitles
+                    |> Expect.equal (Ok [])
+        , test "maps the contents of a TaskList throgh a function" <|
+            \() ->
+                """- [ ] foo
+- [x] bar #tag1
+"""
+                    |> Parser.run (TaskList.parser "old/path" Nothing)
+                    |> Result.map (TaskList.map <| TaskItem.updateFilePath "new/path")
+                    |> Result.map TaskList.topLevelTasks
+                    |> Result.map (List.map TaskItem.filePath)
+                    |> Expect.equal (Ok [ "new/path", "new/path" ])
         ]
 
 

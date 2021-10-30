@@ -151,6 +151,12 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
+        , test "decodes fileRenamed data" <|
+            \() ->
+                """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.FileRenamed ( "the old path", "the new path" ))
         , test "decodes fileUpdated data" <|
             \() ->
                 """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
@@ -185,6 +191,7 @@ toElmTests =
                     |> Expect.equal
                         ("{ data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
                             ++ " | { data : string; tag : \"fileDeleted\" }"
+                            ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
                             ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
                             ++ " | { data : JsonValue; tag : \"initCompleted\" }"

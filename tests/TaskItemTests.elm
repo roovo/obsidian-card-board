@@ -35,6 +35,7 @@ suite =
         , title
         , toString
         , transformation
+        , updateFilePath
         ]
 
 
@@ -895,6 +896,26 @@ transformation =
                     |> Result.map (TaskItem.toggleCompletion { now = now })
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt now)
+        ]
+
+
+updateFilePath : Test
+updateFilePath =
+    describe "updateFilePath"
+        [ test "sets the filePath if it didn't have one" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.updateFilePath "new/path")
+                    |> Result.map TaskItem.filePath
+                    |> Expect.equal (Ok "new/path")
+        , test "updates an existing filePath" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser "old/path" Nothing)
+                    |> Result.map (TaskItem.updateFilePath "new/path")
+                    |> Result.map TaskItem.filePath
+                    |> Expect.equal (Ok "new/path")
         ]
 
 

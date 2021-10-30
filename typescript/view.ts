@@ -100,6 +100,9 @@ export class CardBoardView extends ItemView {
 
     this.registerEvent(this.app.vault.on("modify",
       (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
+
+    this.registerEvent(this.app.vault.on("rename",
+      (file, oldPath) => this.handleFileRenamed(elm, dailyNotesSettings, file, oldPath)));
   }
 
   async handleAddFilePreviewHovers(data: {filePath: string, id : string }[]) {
@@ -268,6 +271,15 @@ export class CardBoardView extends ItemView {
         }
       });
     }
+  }
+
+  async handleFileRenamed(elm: any, dailyNotesSettings: any, file: TAbstractFile, oldPath:string) {
+    elm.ports.interopToElm.send({
+      tag: "fileRenamed",
+      data: { oldPath: oldPath,
+        newPath: file.path
+      }
+    });
   }
 
   getDisplayText(): string {

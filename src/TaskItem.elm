@@ -29,6 +29,7 @@ module TaskItem exposing
     , title
     , toString
     , toggleCompletion
+    , updateFilePath
     )
 
 import Date exposing (Date)
@@ -378,6 +379,11 @@ toggleCompletion timeWithZone (TaskItem fields subtasks_) =
 
         Incomplete ->
             TaskItem { fields | completion = CompletedAt timeWithZone.now } subtasks_
+
+
+updateFilePath : String -> TaskItem -> TaskItem
+updateFilePath newPath (TaskItem fields subtasks_) =
+    TaskItem { fields | filePath = newPath } subtasks_
 
 
 

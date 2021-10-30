@@ -1,5 +1,5 @@
 # Up Next
-- handle renames - make sure I cope with both directory and file renames
+- bump settings version to 0.1.0
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
   - in view.ts have I hardcoded the date format??
@@ -12,6 +12,8 @@
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
+- how small can I make the compliled js?
+
 
 # Post-release
 - prob want to move the settings update and view functions into their own file(s)
@@ -25,6 +27,7 @@
 - I want to make CardBoard.boardConfigs return just the configs, not a {}
 - ensure app doesn't crash if the settings don't parse
 - review code and add any tests that should be there
+  - deleteItemsFromFile in Main.elm has the arguments in non-idiomatic order
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -98,6 +101,8 @@
   - within column to change ordering
 
 # Misc
+- Could I write a worker that keeps an eye on what is being edited and adds
+  a completion timestamp when it is done?
 - Settings to:
   - allow/deny directories/files
   - set max title lines
@@ -127,6 +132,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- handle renames - make sure I cope with both directory and file renames
 - persist settings in the plugin when they are updated
 - use the excellent advice at:  https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
   for guidance on creating views
