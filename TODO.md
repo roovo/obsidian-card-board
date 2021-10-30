@@ -1,9 +1,4 @@
 # Up Next
-- make README.md a proper readme (and have a separate contributing/dev page?)
-  - add alternative: kanban, imdone, tasks....
-  - might not work that great on large vaults
-  - might not be great on mobile
-  - only works with the daily note plugin at the moment - not periodic notes yet!
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
@@ -136,6 +131,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- make README.md a proper readme (and have a separate contributing/dev page?)
 - add a licence
 - remove jest as I am not using it
 - run elm review
