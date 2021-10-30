@@ -237,23 +237,23 @@ renamedFileDecoder =
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder CardBoard.Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
-        (\v0Alpha unsupportedVersion version ->
+        (\v0_1_0 unsupportedVersion version ->
             case version of
-                "0.0.0-alpha" ->
-                    v0Alpha
+                "0.1.0" ->
+                    v0_1_0
 
                 _ ->
                     unsupportedVersion
         )
-        |> TsDecode.andThenDecoder (TsDecode.field "data" v0AlphaDecoder)
+        |> TsDecode.andThenDecoder (TsDecode.field "data" v0_1_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
 
 
-v0AlphaDecoder : TsDecode.Decoder CardBoard.Settings
-v0AlphaDecoder =
+v0_1_0_Decoder : TsDecode.Decoder CardBoard.Settings
+v0_1_0_Decoder =
     TsDecode.succeed CardBoard.Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 0 0 [ "alpha" ] []))
+        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 0 0 [] []))
 
 
 unsupportedVersionDecoder : TsDecode.Decoder CardBoard.Settings

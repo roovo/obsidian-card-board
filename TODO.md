@@ -1,5 +1,4 @@
 # Up Next
-- bump settings version to 0.1.0
 - check it works in a virgin vault with no plugins
 - check it works with the default setup for the daily notes plugin
   - in view.ts have I hardcoded the date format??
@@ -20,7 +19,7 @@
   as Main.elm is feeling like the wrong place to leave it.
 - put settings type definition back into main.ts
 - do I want the last board who's settings I've edited to the one shown when closing settings?
-- it looks like I am no passing the settings version with Flags.  Need to do this!
+- I am not passing the settings version with Flags.  Need to do this!
 - move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
 - test the reading and writing of board configs as a round trip elm - encode - decode - elm?
 - work out how I will handle changes to the settings file format
@@ -28,6 +27,7 @@
 - ensure app doesn't crash if the settings don't parse
 - review code and add any tests that should be there
   - deleteItemsFromFile in Main.elm has the arguments in non-idiomatic order
+- remove jest as I am not using it
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -132,6 +132,7 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- bump settings version to 0.1.0
 - handle renames - make sure I cope with both directory and file renames
 - persist settings in the plugin when they are updated
 - use the excellent advice at:  https://marcus.se.net/obsidian-plugin-docs/guides/custom-views

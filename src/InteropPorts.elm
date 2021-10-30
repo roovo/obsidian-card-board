@@ -29,7 +29,7 @@ import TsJson.Encode as TsEncode
 
 currentSettingsVersion : Semver.Version
 currentSettingsVersion =
-    Semver.version 0 0 0 [ "alpha" ] []
+    Semver.version 0 1 0 [] []
 
 
 addHoverToCardEditButtons : List Card -> Cmd msg
