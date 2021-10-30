@@ -12,6 +12,7 @@ To get up and running:
 
 ```
 npm install             # install dependencies
+npm run gnerate         # generate ts type definitions for elm ports
 npm run dev             # run dev build
 npx elm-test --watch    # run (elm) tests
 ```
