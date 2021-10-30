@@ -3,6 +3,7 @@ import {
   FileView,
   ItemView,
   MarkdownRenderer,
+  MarkdownView,
   TAbstractFile,
   TFile,
   Vault,
@@ -177,34 +178,13 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleOpenTodoSourceFile(data: { filePath: string, blockLink: (string | null), lineNumber: number, originalText: string }) {
-    var linkText = ""
-    if (data.blockLink == null) {
-      const blockLink = "^" + this.generateId();
-      const newText   = data.originalText + " " + blockLink;
+  async handleOpenTodoSourceFile(
+    data: { filePath: string,
+            blockLink: (string | null),
+            lineNumber: number,
+            originalText: string }) {
 
-      await this.handleUpdateTodos({
-        filePath: data.filePath,
-        todos: [ {
-          lineNumber: data.lineNumber,
-          originalText: data.originalText,
-          newText: newText
-        } ]
-      });
-
-      // TODO: this is an icky hack to ensure that the cache
-      // has caught up before I call openLinkText
-      await this.delay(300);
-
-      linkText = data.filePath + "#" + blockLink
-    } else {
-      linkText = data.filePath + "#" + data.blockLink
-    }
-    this.app.workspace.openLinkText(linkText, data.filePath, true, { active: !0 });
-  }
-
-  delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+    await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
   }
 
   async handleUpdateSettings(elm: ElmApp, data: { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }) {
@@ -302,5 +282,41 @@ export class CardBoardView extends ItemView {
       }
     }
     return fileDate
+  }
+
+  async openOrSwitchWithHighlight(
+    app: App,
+    filePath: string,
+    lineNumber: number
+  ): Promise<void> {
+    const { workspace } = app;
+
+    let destFile = app.metadataCache.getFirstLinkpathDest(filePath, "");
+
+    if (!destFile) {
+       return;
+    }
+
+    const leavesWithDestAlreadyOpen: WorkspaceLeaf[] = [];
+
+    workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view instanceof MarkdownView) {
+        if (leaf.view?.file?.path === filePath) {
+          leavesWithDestAlreadyOpen.push(leaf);
+        }
+      }
+    });
+
+    let leaf: WorkspaceLeaf;
+
+    if (leavesWithDestAlreadyOpen.length > 0) {
+      leaf = leavesWithDestAlreadyOpen[0];
+      await workspace.setActiveLeaf(leaf);
+    } else {
+      leaf = workspace.splitActiveLeaf();
+      await leaf.openFile(destFile);
+    }
+
+    leaf.setEphemeralState({ line: lineNumber - 1 });
   }
 }
