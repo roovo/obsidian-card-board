@@ -7,6 +7,7 @@
 
 
 # Post-release
+- look at https://github.com/TfTHacker/obsidian42-brat
 - update to use periodic notes -> use https://github.com/liamcain/obsidian-daily-notes-interface
   getDailyNoteSettings()
 - prob want to move the settings update and view functions into their own file(s)
