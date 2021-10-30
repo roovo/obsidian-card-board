@@ -6,14 +6,12 @@ module TagBoard exposing
     , defaultConfig
     )
 
-import Date exposing (Date)
 import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import String.Extra as SE
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import Time
 
 
 
@@ -187,11 +185,6 @@ prependUntagged config taskList columnList =
         isIncompleteWithNoTags : TaskItem -> Bool
         isIncompleteWithNoTags item =
             not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
-
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
     in
     if config.includeUntagged then
         ( "Untagged", cards ) :: columnList

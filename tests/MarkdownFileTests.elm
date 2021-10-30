@@ -1,7 +1,7 @@
 module MarkdownFileTests exposing (suite)
 
 import Expect
-import MarkdownFile exposing (MarkdownFile, decoder)
+import MarkdownFile exposing (decoder)
 import Test exposing (..)
 import TsJson.Decode as TsDecode
 

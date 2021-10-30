@@ -13,7 +13,6 @@ import CardBoard
 import Panel exposing (Panel)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
-import Time
 import TimeWithZone exposing (TimeWithZone)
 
 

@@ -61,7 +61,7 @@ current zipper =
         EmptyZipper ->
             Nothing
 
-        SafeZipper b c a ->
+        SafeZipper _ c _ ->
             Just c
 
 
@@ -71,7 +71,7 @@ currentIndex zipper =
         EmptyZipper ->
             Nothing
 
-        SafeZipper ls x rs ->
+        SafeZipper ls _ _ ->
             Just <| List.length ls
 
 
@@ -95,7 +95,7 @@ atIndex index zipper =
         EmptyZipper ->
             zipper
 
-        SafeZipper ls x rs ->
+        SafeZipper _ _ _ ->
             let
                 moveAlong : Int -> SafeZipper a -> SafeZipper a
                 moveAlong _ z =
@@ -214,7 +214,7 @@ length zipper =
         EmptyZipper ->
             0
 
-        SafeZipper b c a ->
+        SafeZipper b _ a ->
             List.length b + 1 + List.length a
 
 

@@ -10,7 +10,6 @@ import DateBoard
 import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import Time
 import TimeWithZone exposing (TimeWithZone)
 
 

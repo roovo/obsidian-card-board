@@ -163,12 +163,12 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
-        , test "decodes version 0.0.0-alpha settings data" <|
+        , test "decodes version 0.1.0 settings data" <|
             \() ->
-                """{"tag":"settingsUpdated","data":{"version":"0.0.0-alpha","data":{"boardConfigs":[]}}}"""
+                """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 0 0 [ "alpha" ] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 1 0 [] [], boardConfigs = [] })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""

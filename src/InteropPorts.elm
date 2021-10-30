@@ -3,7 +3,6 @@ port module InteropPorts exposing
     , decodeFlags
     , deleteTodo
     , displayTaskMarkdown
-    , fromElm
     , openTodoSourceFile
     , rewriteTodos
     , toElm
@@ -15,13 +14,9 @@ import CardBoard
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
-import Panel exposing (Panel)
-import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
-import Time
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -81,13 +76,6 @@ updateSettings configs =
     { version = currentSettingsVersion, boardConfigs = SafeZipper.toList configs }
         -- SafeZipper.toList configs
         |> encodeVariant "updateSettings" InteropDefinitions.updateSettingsEncoder
-        |> interopFromElm
-
-
-fromElm : InteropDefinitions.FromElm -> Cmd msg
-fromElm value =
-    value
-        |> (InteropDefinitions.interop.fromElm |> TsEncode.encoder)
         |> interopFromElm
 
 

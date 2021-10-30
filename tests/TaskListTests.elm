@@ -1,6 +1,5 @@
 module TaskListTests exposing (suite)
 
-import Date
 import Expect
 import Parser
 import TaskItem

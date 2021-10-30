@@ -13,9 +13,8 @@ module Card exposing
     , taskItemId
     )
 
-import Date exposing (Date)
+import Date
 import TaskItem exposing (TaskItem)
-import Time
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -67,7 +66,7 @@ highlight timeWithZone (Card _ item) =
             else
                 HighlightNone
 
-        ( _, _ ) ->
+        _ ->
             HighlightNone
 
 

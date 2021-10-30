@@ -305,17 +305,17 @@ selectedIndex : Test
 selectedIndex =
     describe "selectedIndex"
         [ test "is Nothing for an empty zipper" <|
-            \randomList ->
+            \_ ->
                 SafeZipper.fromList []
                     |> SafeZipper.selectedIndex
                     |> Expect.equal Nothing
         , test "is Just 0 for a newly built zipper with stuff in it" <|
-            \randomList ->
+            \_ ->
                 SafeZipper.fromList [ 1, 2 ]
                     |> SafeZipper.selectedIndex
                     |> Expect.equal (Just 0)
         , test "is Just 1 for a zipper pointing at the second item" <|
-            \randomList ->
+            \_ ->
                 SafeZipper.fromList [ 1, 2, 3, 4 ]
                     |> SafeZipper.next
                     |> SafeZipper.selectedIndex

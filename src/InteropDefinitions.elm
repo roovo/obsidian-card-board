@@ -13,13 +13,12 @@ module InteropDefinitions exposing
 
 import CardBoard
 import DateBoard
-import Json.Decode as JD
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
 import Semver
 import TagBoard
 import TsJson.Decode as TsDecode
-import TsJson.Encode as TsEncode exposing (optional, required)
+import TsJson.Encode as TsEncode exposing (required)
 
 
 type FromElm
@@ -253,7 +252,7 @@ v0_1_0_Decoder : TsDecode.Decoder CardBoard.Settings
 v0_1_0_Decoder =
     TsDecode.succeed CardBoard.Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 0 0 [] []))
+        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 1 0 [] []))
 
 
 unsupportedVersionDecoder : TsDecode.Decoder CardBoard.Settings

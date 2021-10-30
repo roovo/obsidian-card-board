@@ -4,7 +4,7 @@ import Expect
 import Parser
 import TagBoard
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
+import TaskList
 import Test exposing (..)
 
 
@@ -426,5 +426,5 @@ defaultConfig =
 tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem
 tasksInColumn columnName tasksInColumns =
     tasksInColumns
-        |> List.filter (\( c, ts ) -> c == columnName)
+        |> List.filter (\( c, _ ) -> c == columnName)
         |> List.concatMap Tuple.second

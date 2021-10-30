@@ -7,7 +7,6 @@ module DateBoard exposing
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import Time
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -41,13 +40,13 @@ columns timeWithZone config taskList =
             TimeWithZone.toDate timeWithZone
     in
     [ ( "Today"
-      , todaysItems datestamp taskList config
+      , todaysItems datestamp taskList
       )
     , ( "Tomorrow"
-      , tomorrowsItems datestamp taskList config
+      , tomorrowsItems datestamp taskList
       )
     , ( "Future"
-      , futureItems datestamp taskList config
+      , futureItems datestamp taskList
       )
     ]
         |> prependUndated taskList config
@@ -69,8 +68,8 @@ prependUndated taskList config columnList =
         columnList
 
 
-todaysItems : Date -> TaskList -> Config -> List TaskItem
-todaysItems today taskList config =
+todaysItems : Date -> TaskList -> List TaskItem
+todaysItems today taskList =
     let
         isToday t =
             case TaskItem.due t of
@@ -90,8 +89,8 @@ todaysItems today taskList config =
         |> List.sortBy TaskItem.dueRataDie
 
 
-tomorrowsItems : Date -> TaskList -> Config -> List TaskItem
-tomorrowsItems today taskList config =
+tomorrowsItems : Date -> TaskList -> List TaskItem
+tomorrowsItems today taskList =
     let
         tomorrow =
             Date.add Date.Days 1 today
@@ -113,8 +112,8 @@ tomorrowsItems today taskList config =
         |> List.sortBy (String.toLower << TaskItem.title)
 
 
-futureItems : Date -> TaskList -> Config -> List TaskItem
-futureItems today taskList config =
+futureItems : Date -> TaskList -> List TaskItem
+futureItems today taskList =
     let
         tomorrow =
             Date.add Date.Days 1 today

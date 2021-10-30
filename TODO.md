@@ -1,13 +1,11 @@
 # Up Next
-- check it works with the default setup for the daily notes plugin
-  - in view.ts have I hardcoded the date format??
-- run elm review
 - how small can I make the compliled js?
 - add a licence
 - make README.md a proper readme (and have a separate contributing/dev page?)
   - add alternative: kanban, imdone, tasks....
   - might not work that great on large vaults
   - might not be great on mobile
+  - only works with the daily note plugin at the moment - not periodic notes yet!
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
@@ -16,6 +14,8 @@
 
 
 # Post-release
+- update to use periodic notes -> use https://github.com/liamcain/obsidian-daily-notes-interface
+  getDailyNoteSettings()
 - prob want to move the settings update and view functions into their own file(s)
   as Main.elm is feeling like the wrong place to leave it.
 - put settings type definition back into main.ts
@@ -31,6 +31,7 @@
 - remove jest as I am not using it
 - do I want to warn the user that I couldn't read settings at startup?
   - are there any sensible options I can give them if I do?
+- fix the couple of elm review errors I've left in there
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -135,6 +136,8 @@ https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/1023
 
 # Done
 
+- run elm review
+- check it works with the default setup for the daily notes plugin
 - check it works in a virgin vault with no plugins
 - bump settings version to 0.1.0
 - handle renames - make sure I cope with both directory and file renames

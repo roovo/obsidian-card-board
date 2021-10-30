@@ -13,7 +13,6 @@ import Html.Keyed
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
-import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
 import Panel exposing (Panel)
 import Panels exposing (Panels)
@@ -77,7 +76,7 @@ type State a
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
-        Err error ->
+        Err _ ->
             ( defaultModel
                 |> forceAddWhenNoBoards defaultModel.boardConfigs
             , Cmd.none
@@ -172,7 +171,7 @@ update msg model =
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
-        ( BadInputFromTypeScript error, _ ) ->
+        ( BadInputFromTypeScript _, _ ) ->
             -- Debug.todo <| Debug.toString error
             ( model, Cmd.none )
 
@@ -290,7 +289,7 @@ update msg model =
                 updateTags : CardBoard.Config -> CardBoard.Config
                 updateTags config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
+                        CardBoard.DateBoardConfig _ ->
                             config
 
                         CardBoard.TagBoardConfig tagBoardConfig ->
@@ -348,7 +347,7 @@ update msg model =
                         ]
                     )
 
-                Loaded taskList ->
+                Loaded _ ->
                     ( model, Cmd.none )
 
         ( ModalCancelClicked, _ ) ->
@@ -438,7 +437,7 @@ update msg model =
                 Waiting ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
 
-                Loading taskList ->
+                Loading _ ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
 
                 Loaded taskList ->
@@ -543,7 +542,7 @@ update msg model =
                 toggleIncludeOthers : CardBoard.Config -> CardBoard.Config
                 toggleIncludeOthers config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
+                        CardBoard.DateBoardConfig _ ->
                             config
 
                         CardBoard.TagBoardConfig tagBoardConfig ->
@@ -568,7 +567,7 @@ update msg model =
                         CardBoard.DateBoardConfig dateBoardConfig ->
                             CardBoard.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
+                        CardBoard.TagBoardConfig _ ->
                             config
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
@@ -587,7 +586,7 @@ update msg model =
                 toggleIncludeUntagged : CardBoard.Config -> CardBoard.Config
                 toggleIncludeUntagged config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
+                        CardBoard.DateBoardConfig _ ->
                             config
 
                         CardBoard.TagBoardConfig tagBoardConfig ->
@@ -807,7 +806,7 @@ dialogs editState =
         Deleting configsBeingEdited ->
             Html.div []
                 [ modalSettingsView configsBeingEdited
-                , modalConfirmDelete configsBeingEdited
+                , modalConfirmDelete
                 ]
 
         Editing configsBeingEdited ->
@@ -881,8 +880,8 @@ modalAddBoard newConfig =
         ]
 
 
-modalConfirmDelete : SafeZipper CardBoard.Config -> Html Msg
-modalConfirmDelete configs =
+modalConfirmDelete : Html Msg
+modalConfirmDelete =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -1196,7 +1195,7 @@ tabHeaders currentIndex panels =
 
 
 selectedTabHeader : Int -> String -> Html Msg
-selectedTabHeader index title =
+selectedTabHeader _ title =
     Html.li [ class "card-board-tab-title is-active" ]
         [ Html.div [ class "card-board-tabs-inner" ]
             [ Html.text <| title ]

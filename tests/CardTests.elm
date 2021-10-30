@@ -2,7 +2,7 @@ module CardTests exposing (suite)
 
 import Card exposing (Highlight(..))
 import Expect
-import Parser exposing ((|=))
+import Parser
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import Time

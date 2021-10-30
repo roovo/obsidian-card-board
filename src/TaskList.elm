@@ -17,7 +17,6 @@ module TaskList exposing
     , topLevelTasks
     )
 
-import Date exposing (Date)
 import List.Extra as LE
 import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
