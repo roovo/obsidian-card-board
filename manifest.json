@@ -5,6 +5,7 @@
 	"version": "0.1.0-beta",
 	"author": "roovo",
 	"authorUrl": "https://github.com/roovo",
+  "branch": :"main",
 	"minAppVersion": "0.12.13",
 	"isDesktopOnly": false
 }
