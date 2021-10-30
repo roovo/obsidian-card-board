@@ -1393,7 +1393,7 @@ cardActionButtons taskItemId editButtonId =
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemEditClicked taskItemId
+            , onClickWithPreventDefault <| TaskItemEditClicked taskItemId
             , id editButtonId
             ]
             [ FeatherIcons.edit
@@ -1411,6 +1411,20 @@ cardActionButtons taskItemId editButtonId =
                 |> FeatherIcons.toHtml []
             ]
         ]
+
+
+
+-- HELPERS
+
+
+onClickWithPreventDefault : msg -> Html.Attribute msg
+onClickWithPreventDefault msg =
+    Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
+
+
+alwaysPreventDefault : msg -> ( msg, Bool )
+alwaysPreventDefault msg =
+    ( msg, True )
 
 
 empty : Html Msg
