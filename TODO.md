@@ -1,7 +1,5 @@
 # Up Next
 - how to release?
-- ensure version is 0.1.0
-  - ensure this is how it appears on the community plugins setting page
 - enter into OO!
 
 

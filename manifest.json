@@ -1,11 +1,10 @@
 {
-	"id": "cardBoard",
+	"id": "card-board",
 	"name": "CardBoard",
-	"description": "Card based view of your obsidian tasks",
-	"version": "0.1.0-beta",
+	"description": "Display markdown tasks on kanban-style boards.",
+	"version": "0.1.0",
 	"author": "roovo",
 	"authorUrl": "https://github.com/roovo",
-	"branch": "main",
 	"minAppVersion": "0.12.13",
 	"isDesktopOnly": false
 }
