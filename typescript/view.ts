@@ -19,14 +19,25 @@ const moment = require('moment');
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 
 export class CardBoardView extends ItemView {
-  private vault: Vault;
+  private vault:  Vault;
   private plugin: CardBoardPlugin;
 
-  constructor(plugin: CardBoardPlugin, leaf: WorkspaceLeaf) {
+  constructor(
+    plugin: CardBoardPlugin,
+    leaf: WorkspaceLeaf
+  ) {
     super(leaf);
     this.plugin = plugin;
     this.app = plugin.app;
     this.vault = plugin.app.vault;
+  }
+
+  getViewType(): string {
+    return VIEW_TYPE_CARD_BOARD;
+  }
+
+  getDisplayText(): string {
+    return 'CardBoard';
   }
 
   async onOpen() {
@@ -48,8 +59,13 @@ export class CardBoardView extends ItemView {
       flags: mySettings
     })
 
+    // TODO: I know I shouldn't need to do this, but my js foo
+    // failed me at the time!
     const that = this;
 
+    // messages from elm code.  This is the only route
+    // that elm has to the obsidian API, so this is the
+    // entry point for anything side-effecty
     elm.ports.interopFromElm.subscribe((fromElm) => {
       switch (fromElm.tag) {
         case "addFilePreviewHovers":
@@ -76,12 +92,12 @@ export class CardBoardView extends ItemView {
     const markdownFiles = this.vault.getMarkdownFiles();
 
     for (const file of markdownFiles) {
-      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
-
-      const fileContents = await this.vault.cachedRead(file);
+      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileContents  = await this.vault.cachedRead(file);
       elm.ports.interopToElm.send({
         tag: "fileAdded",
-        data: { filePath: file.path,
+        data: {
+          filePath: file.path,
           fileDate: fileDate,
           fileContents: fileContents
         }
@@ -106,11 +122,20 @@ export class CardBoardView extends ItemView {
       (file, oldPath) => this.handleFileRenamed(elm, dailyNotesSettings, file, oldPath)));
   }
 
-  async handleAddFilePreviewHovers(data: {filePath: string, id : string }[]) {
+  // MESSAGES FROM ELM
+
+  async handleAddFilePreviewHovers(
+    data: {
+      filePath: string,
+      id : string
+    }[]
+  ) {
     const that = this;
+
     requestAnimationFrame(function () {
       for (const card of data) {
         const element = document.getElementById(card.id);
+
         if (element instanceof HTMLElement) {
           element.addEventListener('mouseover', (event: MouseEvent) => {
             that.app.workspace.trigger('hover-link', {
@@ -127,11 +152,18 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleDeleteTodo(data: {filePath: string, lineNumber: number, originalText: string}) {
+  async handleDeleteTodo(
+    data: {
+      filePath: string,
+      lineNumber: number,
+      originalText: string}
+  ) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
+
     if (file instanceof TFile) {
-      const markdown = await this.vault.read(file)
+      const markdown      = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
+
       if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
         markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(.*)$/, "<del>$1</del>")
         this.vault.modify(file, markdownLines.join("\n"))
@@ -139,12 +171,22 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleDisplayTodoMarkdown(data: { filePath: string, todoMarkdown: {id: string, markdown: string }[]}[]) {
+  async handleDisplayTodoMarkdown(
+    data: {
+      filePath: string,
+      todoMarkdown: {
+        id: string,
+        markdown: string
+      }[]
+    }[]
+  ) {
     const that = this;
+
     requestAnimationFrame(function () {
       for (const card of data) {
         for (const item of card.todoMarkdown) {
           const element = document.getElementById(item.id);
+
           if (element instanceof HTMLElement) {
             element.innerHTML = "";
             MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, this);
@@ -165,10 +207,11 @@ export class CardBoardView extends ItemView {
                 });
 
                 internalLink.addEventListener("click", (event: MouseEvent) => {
-                    event.preventDefault();
-                    that.app.workspace.openLinkText(internalLink.getAttribute("href"), card.filePath, true, {
-                        active: !0
-                    });
+                  event.preventDefault();
+
+                  that.app.workspace.openLinkText(internalLink.getAttribute("href"), card.filePath, true, {
+                      active: !0
+                  });
                 });
               }
             }
@@ -179,44 +222,82 @@ export class CardBoardView extends ItemView {
   }
 
   async handleOpenTodoSourceFile(
-    data: { filePath: string,
-            lineNumber: number,
-            originalText: string }) {
-
+    data: {
+      filePath: string,
+      lineNumber: number,
+      originalText: string
+    }
+  ) {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
   }
 
-  async handleUpdateSettings(elm: ElmApp, data: { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }) {
+  async handleUpdateSettings(
+    elm: ElmApp,
+    data: {
+      data : {
+        boardConfigs : (
+          { data : {
+              columns : { displayTitle : string; tag : string }[];
+              completedCount : number;
+              includeOthers : boolean;
+              includeUntagged : boolean;
+              title : string
+            };
+            tag : "tagBoardConfig" }
+          | { data : {
+              completedCount : number;
+              includeUndated : boolean;
+              title : string
+            };
+            tag : "dateBoardConfig"
+          }
+        )[]
+      };
+      version : string
+  }) {
     await this.plugin.saveSettings(data);
+
     elm.ports.interopToElm.send({
       tag: "settingsUpdated",
       data: data
     });
   }
 
-  async handleUpdateTodos(data: { filePath: string, todos: { lineNumber: number, originalText: string, newText: string }[] }) {
-      const file = this.app.vault.getAbstractFileByPath(data.filePath)
-      if (file instanceof TFile) {
-        const markdown = await this.vault.read(file)
-        const markdownLines = markdown.split(/\r?\n/)
-        for (const item of data.todos) {
-          if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
-            markdownLines[item.lineNumber - 1] = item.newText
-          }
-        }
-        this.vault.modify(file, markdownLines.join("\n"))
-     }
-  }
-
-  async handleFileCreated(elm: ElmApp, dailyNotesSettings: any, file: TAbstractFile) {
+  async handleUpdateTodos(
+    data: {
+      filePath: string,
+      todos: { lineNumber: number, originalText: string, newText: string }[]
+  }) {
+    const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
     if (file instanceof TFile) {
-      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
-      const fileContents = await this.vault.read(file);
+      const markdown      = await this.vault.read(file)
+      const markdownLines = markdown.split(/\r?\n/)
+
+      for (const item of data.todos) {
+        if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
+          markdownLines[item.lineNumber - 1] = item.newText
+        }
+      }
+      this.vault.modify(file, markdownLines.join("\n"))
+    }
+  }
+
+  // THESE SEND MESSAGES TO THE ELM APPLICATION
+
+  async handleFileCreated(
+    elm: ElmApp,
+    dailyNotesSettings: any,
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileContents  = await this.vault.read(file);
 
       elm.ports.interopToElm.send({
         tag: "fileAdded",
-        data: { filePath: file.path,
+        data: {
+          filePath: file.path,
           fileDate: fileDate,
           fileContents: fileContents
         }
@@ -224,27 +305,34 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleFileDeleted(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
-
+  async handleFileDeleted(
+    elm: any,
+    dailyNotesSettings: any,
+    file: TAbstractFile
+  ) {
     if (file instanceof TFile) {
       const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
 
       elm.ports.interopToElm.send({
         tag: "fileDeleted",
         data: file.path
-        });
+      });
     }
   }
 
-  async handleFileModified(elm: any, dailyNotesSettings: any, file: TAbstractFile) {
-
+  async handleFileModified(
+    elm: any,
+    dailyNotesSettings: any,
+    file: TAbstractFile
+  ) {
     if (file instanceof TFile) {
-      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
-      const fileContents = await this.vault.read(file);
+      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileContents  = await this.vault.read(file);
 
       elm.ports.interopToElm.send({
         tag: "fileUpdated",
-        data: { filePath: file.path,
+        data: {
+          filePath: file.path,
           fileDate: fileDate,
           fileContents: fileContents
         }
@@ -252,29 +340,30 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleFileRenamed(elm: any, dailyNotesSettings: any, file: TAbstractFile, oldPath:string) {
+  async handleFileRenamed(
+    elm: any,
+    dailyNotesSettings: any,
+    file: TAbstractFile,
+    oldPath:string
+  ) {
     elm.ports.interopToElm.send({
       tag: "fileRenamed",
-      data: { oldPath: oldPath,
+      data: {
+        oldPath: oldPath,
         newPath: file.path
       }
     });
   }
 
-  getDisplayText(): string {
-    return 'CardBoard';
-  }
+  // HELPERS
 
-  getViewType(): string {
-    return VIEW_TYPE_CARD_BOARD;
-  }
+  getFileDate(
+    dailyNotesFolder: string,
+    dailyNotesNameFormat: string,
+    file: any
+  ): string | null {
+    let fileDate = null;
 
-  generateId(): string {
-    return Math.random().toString(36).substr(2, 6);
-  }
-
-  getFileDate(dailyNotesFolder: string, dailyNotesNameFormat: string, file: any): string | null {
-    var fileDate = null;
     if (dailyNotesFolder != null) {
       if (file.path.startsWith(dailyNotesFolder)) {
         fileDate = moment(file.basename, dailyNotesNameFormat).format('YYYY-MM-DD');
