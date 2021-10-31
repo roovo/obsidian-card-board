@@ -27,12 +27,13 @@ npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
 ```
 
 ### Formatting elm code
-Use elm-format (https://github.com/avh4/elm-format) and set up with
-your editor to format on save.
+Use elm-format (https://github.com/avh4/elm-format)
 
 ```
 npm i -g elm-format
 ```
+
+works best if you set up with editor to format on save.
 
 ### Find/remove dead elm code
 npx elm-review --template jfmengels/elm-review-unused/example
