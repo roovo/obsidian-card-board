@@ -27,6 +27,7 @@
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too
 - install code on a fresh machine (see #12)
+- remove regex package from elm
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks

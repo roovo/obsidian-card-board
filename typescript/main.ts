@@ -26,6 +26,14 @@ export default class CardBoardPlugin extends Plugin {
     this.addRibbonIcon('card-board', 'CardBoard Plugin', async () => {
       this.activateView();
     });
+
+    this.addCommand({
+      id: "open-card-board-plugin",
+      name: "Open Window",
+      callback: async () => {
+        this.activateView();
+      },
+    });
   }
 
   onunload() {
