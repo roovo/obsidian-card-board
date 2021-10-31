@@ -1,26 +1,27 @@
 # Obsidian CardBoard Plugin
 
 A plugin for the (most wonderful) [Obsidian](https://obsidian.md/) which collates
-tasks from all your notes and displays them on a kanban-style board.
+tasks from all your notes and displays them on kanban-style boards.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Installation
-I've not yet submitted this as an official plugin, so you will have to use the
-v.handy [obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) to install it, or manually install from the
-[releases](https://github.com/roovo/obsidian-card-board/releases/) page, or
+This has not been accepted (yet - submitted Oct 31st) as an official plugin, so you will have to use the
+v.handy [obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) to install it, or manually
+install from the [releases](https://github.com/roovo/obsidian-card-board/releases/) page, or
 you can try a self-build - see the [contributing doc](CONTRIBUTING.md)).
 
 ## Use
-When installed, use the icon in the app ribbon to launch.
+When installed, use the icon in the app ribbon to launch or use the `CardBoard: Open Window` command
+in the Command Palette.
 
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
 You should get a dialog asking you to add a new board.  There are 2 types of board:
 
-- **Date based**: looks like the main screenshot above
+- **Date based**: looks like the main screenshot above.
 - **Tag based**: uses tags to define the columns (you need to include tags on
-  your tasks for this to work)
+  your tasks for this to work).
 
 Name and configure your board and you are good to go.
 
@@ -28,17 +29,17 @@ Name and configure your board and you are good to go.
 Any task in your vault can appear as a card in a column on a board.  In order to
 do this, it must:
 
-- Be in a markdown file
+- Be in a markdown file.
 - Not be indented.
 - Have the format: `- [ ] Task title`.
 
 What appears on the card depends on what your task looks like:
 
-- Anything that is indented under a task will appear in the body of the task
-- Indented tasks will appear as subtasks (all subtasks are grouped together)
-- Indented text will appear as notes
-- Tags on the line of the task (or any subtasks) will appear at the top of the card
-- Any due date will appear at the bottom of the card.
+- Anything that is indented under a task will appear in the body of the task.
+  - Indented tasks will appear as subtasks (all subtasks are grouped together).
+  - Indented text will appear as notes.
+- #tags on the line of the task (or any subtasks) will appear at the top of the card.
+- Due date (if given) will appear at the bottom of the card.
 
 So, if you had the following in one of your markdown files:
 
@@ -52,8 +53,6 @@ So, if you had the following in one of your markdown files:
 
   - [ ] do something with a long title that will truncate when displayed
   - [ ] go to bed
-
-
 ```
 
 It will look something like this on a card on your board:
@@ -109,11 +108,11 @@ tasks you place on a daily note will be assigned to the day of the note.
 You can also assign a date to any task using the format:
 
 ```
-- [ ] My task due(2021-10-31)
+- [ ] My task @due(2021-10-31)
 ```
 
 ### Overdue tasks
-These will appear above in the `Today` column above any  any tasks that are actually
+These will appear in the `Today` column above any  any tasks that are actually
 due today.
 
 The idea being that it will get steadily more annoying to see what you were planning
@@ -135,23 +134,24 @@ If you specify a tag with a trailing `/` then the column will contain all subtag
 
 
 ## Settings
-The plugin settings are (only) accessible from the plugin view (via the settings icon
-above the board to the left of the tabs).  With these, you can
+Plugin settings are accessible from the plugin view itself, via the settings icon
+above the board to the left of the tabs.  You can:
 
-- Create new boards (using the + icon next to _BOARDS_)
-- Configure your boards
-- Delete any boards you no longer need
+- Create new boards (using the + icon next to _BOARDS_).
+- Configure your boards.
+- Delete any boards you no longer need.
 
 ## Limitations
-- Uses the settings from the Daily Notes plugin, NOT periodic notes (will fix soon)
-- Might not work that great on large vaults (as it parses all markdown files at startup)
+- Uses the settings from the Daily Notes plugin, NOT periodic notes (will fix soon).
+- Might not work that great on large vaults (as it parses all markdown files at startup).
 - Might not be great on mobile (see previous, plus I haven't made the interface mobile
-  friendly - yet)
+  friendly - yet).
 
 ## Alternatives
-If the way that this works doesn't work for you, there are plenty of other plugins you
-can use for task management in Obsidian.  See the list on the wonderful
+If the way that this works doesn't work for you, there are plenty of other fabulous
+plugins you can use for task management in Obsidian.  See the list on the wonderful
 [roundup site](https://www.obsidianroundup.org/plugins/).
+
 
 ## Contributing
 Not worked out how/if this will work yet as it is early days.  There is
