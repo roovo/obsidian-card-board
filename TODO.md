@@ -34,6 +34,9 @@
 # UI Improvements
 - allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
   into drag and drop?)
+- when jumping to the todo using the edit link perhaps I could highlight the complete
+  taskItem block (if is has indented content).  Will have to explore the setEphemeralState
+  code to see if I can do this using line numbers or whether I need to track characters..
 - mobile support?
   - what is it like performance-wise?
   - prob need to use CSS grid more than I am (specially on the settings modal)

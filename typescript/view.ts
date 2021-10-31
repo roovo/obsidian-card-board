@@ -180,7 +180,6 @@ export class CardBoardView extends ItemView {
 
   async handleOpenTodoSourceFile(
     data: { filePath: string,
-            blockLink: (string | null),
             lineNumber: number,
             originalText: string }) {
 

@@ -25,7 +25,7 @@ type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
-    | OpenTodoSourceFile { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
+    | OpenTodoSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | UpdateSettings CardBoard.Settings
     | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 
@@ -87,11 +87,10 @@ displayTodoMarkdownEncoder =
         )
 
 
-openTodoSourceFileEncoder : TsEncode.Encoder { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String }
+openTodoSourceFileEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
 openTodoSourceFileEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
-        , required "blockLink" .blockLink <| TsEncode.maybe TsEncode.string
         , required "lineNumber" .lineNumber TsEncode.int
         , required "originalText" .originalText TsEncode.string
         ]

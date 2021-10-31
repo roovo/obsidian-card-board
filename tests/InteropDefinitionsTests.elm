@@ -92,11 +92,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"displayTodoMarkdown","data":[{"filePath":"a path","todoMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
         , test "encodes OpenTodoSourceFile data" <|
             \() ->
-                { filePath = "a path", blockLink = Just "a link", lineNumber = 33, originalText = "the text" }
+                { filePath = "a path", lineNumber = 33, originalText = "the text" }
                     |> InteropDefinitions.OpenTodoSourceFile
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"openTodoSourceFile","data":{"filePath":"a path","blockLink":"a link","lineNumber":33,"originalText":"the text"}}"""
+                    |> Expect.equal """{"tag":"openTodoSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
         , test "encodes UpdateSettings with DateBoardConfig data" <|
             \() ->
                 { version = Semver.version 1 2 3 [] []
@@ -128,7 +128,7 @@ fromElmTests =
                     |> Expect.equal
                         ("""{ data : { filePath : string; todos : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTodos" }"""
                             ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
-                            ++ """ | { data : { blockLink : string | null; filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
+                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
                             ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""
                             ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
