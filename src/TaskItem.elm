@@ -37,7 +37,6 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
-import Regex exposing (Regex)
 import TaskPaperTag
 import Time
 
@@ -163,16 +162,11 @@ hasOneOfTheTags tagsToMatch taskItem =
 hasTag : String -> TaskItem -> Bool
 hasTag tagToMatch taskItem =
     let
-        regex : String -> Regex
-        regex tagToMatch_ =
-            (tagToMatch_ ++ "(?:/.*)*")
-                |> Regex.fromStringWith { caseInsensitive = True, multiline = False }
-                |> Maybe.withDefault Regex.never
-
         matches : String -> Bool
         matches itemTag =
             if String.endsWith "/" tagToMatch then
-                Regex.contains (regex <| String.dropRight 1 tagToMatch) itemTag
+                String.startsWith (String.toLower tagToMatch) (String.toLower itemTag)
+                    || (String.toLower itemTag == String.dropRight 1 (String.toLower tagToMatch))
 
             else
                 String.toLower itemTag == String.toLower tagToMatch

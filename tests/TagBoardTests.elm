@@ -164,6 +164,22 @@ columnsBasic =
                     |> tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
+        , test "ensure only matches subtasks when using subtags" <|
+            \() ->
+                """- [ ] bar1 #at
+- [ ] bar2 #at/foo
+- [ ] bar3 #matt
+- [ ] bar4 #atHome
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
+                        }
+                    |> tasksInColumn "At Tasks"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "bar1", "bar2" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)

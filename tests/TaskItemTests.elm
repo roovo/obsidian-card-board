@@ -354,6 +354,12 @@ hasTagWithSubtag =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.hasTag "bar/baz")
                     |> Expect.equal (Ok False)
+        , test "only matches actual subtags" <|
+            \() ->
+                "- [ ] foo #bart"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Expect.equal (Ok False)
         ]
 
 
