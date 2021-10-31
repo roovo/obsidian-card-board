@@ -102,6 +102,16 @@ You can also assign a date to any task using the format:
 - [ ] My task due(2021-10-31)
 ```
 
+### Overdue tasks
+These will appear above in the `Today` column above any  any tasks that are actually
+due today.
+
+The idea being that it will get steadily more annoying to see what you were planning
+to do today if you have a lot of incomplete tasks from previous days, (hopefully)
+encouraging you to do something about them; like do them or move them to a future
+date if you want to schedule them later.
+
+
 ## Tag boards
 If you give your tasks tags, you can use these to set up a tag-board.  So if you
 have the tags `#project1/backlog`, `#project1/triaged`, `project1/blocked`, `#project1/doing`,
