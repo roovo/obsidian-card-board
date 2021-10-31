@@ -1,7 +1,7 @@
 # Obsidian CardBoard Plugin
 
 A plugin for the (most wonderful) [Obsidian](https://obsidian.md/) which collates
-tasks from all your notes and displays them on a Kanban-style board.
+tasks from all your notes and displays them on a kanban-style board.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -91,6 +91,16 @@ the task from your vault, it simply surrounds it with markdown `<del>` tags:
 ### Editing tasks (and hover preview)
 Click on the edit icon to open the file containing the task.  Cmd (or Ctrl on windows)
 hover over the icon for the normal Obsidian hover preview.
+
+
+### Column ordering
+The current behaviour for the different columns is:
+
+- **Completed**: has the most recently completed at the top (assuming they were marked as complete using the checkbox on the board)
+- **Future**, **Today**, **Tags**: these are sorted by due date and then alphabetically within this
+- other columns are sorted alphabetically
+
+I am not convinced that this is the best strategy so this may well change in a future release.
 
 ## Date boards
 You will get the best out of these if you are using the (core) Daily Notes plugin as any
