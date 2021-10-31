@@ -110,6 +110,10 @@ you can define a board that shows tasks tagged with these in separate columns:
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
 
 
+### Subtags
+If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
+
+
 ## Settings
 The plugin settings are (only) accessible from the plugin view (via the settings icon
 above the board to the left of the tabs).  With these, you can

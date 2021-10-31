@@ -1,13 +1,11 @@
 # Up Next
-- put the target in dist
-  - put the static sources in an assets dir and copy them into dist on build too
 - how to release?
 - ensure version is 0.1.0
   - ensure this is how it appears on the community plugins setting page
+- enter into OO!
 
 
 # Post-release
-- look at https://github.com/TfTHacker/obsidian42-brat
 - update to use periodic notes -> use https://github.com/liamcain/obsidian-daily-notes-interface
   getDailyNoteSettings()
 - prob want to move the settings update and view functions into their own file(s)
@@ -28,6 +26,8 @@
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
   look at esbuild
+- put the target in dist
+  - put the static sources in an assets dir and copy them into dist on build too
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -99,6 +99,12 @@
 - drag and drop
   - into today, tomorrow, and done columns
   - within column to change ordering
+- would need a date picker for dragging into (e.g.) future
+  suggestion from discord: koala
+  31 Oct at 07:52
+  https://github.com/TfTHacker/obsidian42-jump-to-date
+  https://github.com/liamcain/obsidian-calendar-ui
+  For a date picker.
 
 # Misc
 - Could I write a worker that keeps an eye on what is being edited and adds
