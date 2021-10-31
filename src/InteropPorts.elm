@@ -42,7 +42,7 @@ deleteTodo info =
         |> interopFromElm
 
 
-openTodoSourceFile : { filePath : String, blockLink : Maybe String, lineNumber : Int, originalText : String } -> Cmd msg
+openTodoSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 openTodoSourceFile info =
     info
         |> encodeVariant "openTodoSourceFile" InteropDefinitions.openTodoSourceFileEncoder

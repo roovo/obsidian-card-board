@@ -3,7 +3,6 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , autoComplete
-    , blockLink
     , completedPosix
     , completion
     , containsId
@@ -98,11 +97,6 @@ type IndentedItem
 autoComplete : TaskItem -> AutoCompletion
 autoComplete (TaskItem fields _) =
     fields.autoComplete
-
-
-blockLink : TaskItem -> Maybe String
-blockLink (TaskItem fields _) =
-    fields.blockLink
 
 
 completedPosix : TaskItem -> Int

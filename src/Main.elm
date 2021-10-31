@@ -493,7 +493,6 @@ update msg model =
                             ( model
                             , InteropPorts.openTodoSourceFile
                                 { filePath = TaskItem.filePath matchingItem
-                                , blockLink = TaskItem.blockLink matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , originalText = TaskItem.originalText matchingItem
                                 }
