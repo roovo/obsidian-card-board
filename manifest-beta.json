@@ -1,0 +1,10 @@
+{
+	"id": "cardBoard",
+	"name": "CardBoard",
+	"description": "Card based view of your obsidian tasks",
+	"version": "0.1.0-beta",
+	"author": "roovo",
+	"authorUrl": "https://github.com/roovo",
+	"minAppVersion": "0.12.13",
+	"isDesktopOnly": false
+}
