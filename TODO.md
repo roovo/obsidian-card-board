@@ -1,39 +1,9 @@
-# Up Next
-- how to release?
-- enter into OO!
-
-
-# Post-release
-- update to use periodic notes -> use https://github.com/liamcain/obsidian-daily-notes-interface
-  getDailyNoteSettings()
-- prob want to move the settings update and view functions into their own file(s)
-  as Main.elm is feeling like the wrong place to leave it.
-- put settings type definition back into main.ts
-- do I want the last board who's settings I've edited to the one shown when closing settings?
-- I am not passing the settings version with Flags.  Need to do this!
-- move config decoders from InteropDefinitions into CardBoard, TagBoard, DateBoard
-- test the reading and writing of board configs as a round trip elm - encode - decode - elm?
-- work out how I will handle changes to the settings file format
-- I want to make CardBoard.boardConfigs return just the configs, not a {}
-- ensure app doesn't crash if the settings don't parse
-- review code and add any tests that should be there
-  - deleteItemsFromFile in Main.elm has the arguments in non-idiomatic order
-- do I want to warn the user that I couldn't read settings at startup?
-  - are there any sensible options I can give them if I do?
-- fix the couple of elm review errors I've left in there
-- how small can I make the compliled js?
-  https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
-  look at esbuild
-- put the target in dist
-  - put the static sources in an assets dir and copy them into dist on build too
-- install code on a fresh machine (see #12)
-- remove regex package from elm
-
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
 
 # UI Improvements
+- do I want the last board who's settings I've edited to the one shown when closing settings?
 - allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
   into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete
@@ -110,6 +80,7 @@
   For a date picker.
 
 # Misc
+- work out how I will handle changes to the settings file format
 - Could I write a worker that keeps an eye on what is being edited and adds
   a completion timestamp when it is done?
 - Settings to:
