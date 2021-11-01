@@ -1,5 +1,7 @@
 module CardBoardConfig exposing
     ( Config(..)
+    , configsEncoder
+    , decoder
     , defaultConfig
     , isDateBoard
     , isTagBoard
@@ -7,7 +9,10 @@ module CardBoardConfig exposing
     )
 
 import DateBoard
+import DecodeHelpers
 import TagBoard
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -56,3 +61,38 @@ title config =
 
         TagBoardConfig tagBoardConfig ->
             tagBoardConfig.title
+
+
+
+-- SERIALIZATION
+
+
+encoder : TsEncode.Encoder Config
+encoder =
+    TsEncode.union
+        (\vDateBoardConfig vTagBoardConfig value ->
+            case value of
+                DateBoardConfig config ->
+                    vDateBoardConfig config
+
+                TagBoardConfig config ->
+                    vTagBoardConfig config
+        )
+        |> TsEncode.variantTagged "dateBoardConfig" DateBoard.configEncoder
+        |> TsEncode.variantTagged "tagBoardConfig" TagBoard.configEncoder
+        |> TsEncode.buildUnion
+
+
+configsEncoder : TsEncode.Encoder { boardConfigs : List Config }
+configsEncoder =
+    TsEncode.object
+        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list encoder)
+        ]
+
+
+decoder : TsDecode.Decoder Config
+decoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        ]

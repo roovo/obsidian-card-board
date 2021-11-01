@@ -7,13 +7,13 @@ module InteropDefinitions exposing
     , displayTodoMarkdownEncoder
     , interop
     , openTodoSourceFileEncoder
-    , updateSettingsEncoder
     , updateTodosEncoder
     )
 
 import CardBoardConfig
 import CardBoardSettings exposing (Settings)
 import DateBoard
+import DecodeHelpers
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
 import Semver
@@ -97,65 +97,6 @@ openTodoSourceFileEncoder =
         ]
 
 
-updateSettingsEncoder : TsEncode.Encoder Settings
-updateSettingsEncoder =
-    TsEncode.object
-        [ required "version" CardBoardSettings.version TsEncode.string
-        , required "data" CardBoardSettings.boardConfigs boardConfigsEncoder
-        ]
-
-
-boardConfigsEncoder : TsEncode.Encoder { boardConfigs : List CardBoardConfig.Config }
-boardConfigsEncoder =
-    TsEncode.object
-        [ required "boardConfigs" .boardConfigs (TsEncode.list cardBoardConfigEncoder)
-        ]
-
-
-cardBoardConfigEncoder : TsEncode.Encoder CardBoardConfig.Config
-cardBoardConfigEncoder =
-    TsEncode.union
-        (\vDateBoardConfig vTagBoardConfig value ->
-            case value of
-                CardBoardConfig.DateBoardConfig config ->
-                    vDateBoardConfig config
-
-                CardBoardConfig.TagBoardConfig config ->
-                    vTagBoardConfig config
-        )
-        |> TsEncode.variantTagged "dateBoardConfig" dateBoardConfigEncoder
-        |> TsEncode.variantTagged "tagBoardConfig" tagBoardConfigEncoder
-        |> TsEncode.buildUnion
-
-
-dateBoardConfigEncoder : TsEncode.Encoder DateBoard.Config
-dateBoardConfigEncoder =
-    TsEncode.object
-        [ required "completedCount" .completedCount TsEncode.int
-        , required "includeUndated" .includeUndated TsEncode.bool
-        , required "title" .title TsEncode.string
-        ]
-
-
-tagBoardConfigEncoder : TsEncode.Encoder TagBoard.Config
-tagBoardConfigEncoder =
-    TsEncode.object
-        [ required "columns" .columns <| TsEncode.list tagBoardColumnConfigEncoder
-        , required "completedCount" .completedCount TsEncode.int
-        , required "includeOthers" .includeOthers TsEncode.bool
-        , required "includeUntagged" .includeUntagged TsEncode.bool
-        , required "title" .title TsEncode.string
-        ]
-
-
-tagBoardColumnConfigEncoder : TsEncode.Encoder TagBoard.ColumnConfig
-tagBoardColumnConfigEncoder =
-    TsEncode.object
-        [ required "tag" .tag TsEncode.string
-        , required "displayTitle" .displayTitle TsEncode.string
-        ]
-
-
 updateTodosEncoder : TsEncode.Encoder { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 updateTodosEncoder =
     TsEncode.object
@@ -171,7 +112,7 @@ updateTodosEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list CardBoardConfig.decoder))
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 
@@ -179,12 +120,12 @@ flags =
 toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
-        [ toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
-        , toElmVariant "fileDeleted" FileDeleted TsDecode.string
-        , toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
-        , toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
-        , toElmVariant "settingsUpdated" SettingsUpdated boardSettingsDecoder
-        , toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
+        [ DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
+        , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
+        , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
+        , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
+        , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
+        , DecodeHelpers.toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
         ]
 
 
@@ -215,15 +156,9 @@ fromElm =
         |> TsEncode.variantTagged "deleteTodo" deleteTodoEncoder
         |> TsEncode.variantTagged "displayTodoMarkdown" displayTodoMarkdownEncoder
         |> TsEncode.variantTagged "openTodoSourceFile" openTodoSourceFileEncoder
-        |> TsEncode.variantTagged "updateSettings" updateSettingsEncoder
+        |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTodos" updateTodosEncoder
         |> TsEncode.buildUnion
-
-
-boardSettingsDecoder : TsDecode.Decoder Settings
-boardSettingsDecoder =
-    TsDecode.field "version" TsDecode.string
-        |> TsDecode.andThen versionedSettingsDecoder
 
 
 renamedFileDecoder : TsDecode.Decoder ( String, String )
@@ -231,66 +166,6 @@ renamedFileDecoder =
     TsDecode.succeed Tuple.pair
         |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
-
-
-versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
-versionedSettingsDecoder =
-    TsDecode.andThenInit
-        (\v0_1_0 unsupportedVersion version ->
-            case version of
-                "0.1.0" ->
-                    v0_1_0
-
-                _ ->
-                    unsupportedVersion
-        )
-        |> TsDecode.andThenDecoder (TsDecode.field "data" v0_1_0_Decoder)
-        |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
-
-
-v0_1_0_Decoder : TsDecode.Decoder Settings
-v0_1_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 1 0 [] []))
-
-
-unsupportedVersionDecoder : TsDecode.Decoder Settings
-unsupportedVersionDecoder =
-    TsDecode.fail "Unsupported settings file version"
-
-
-boardConfigDecoder : TsDecode.Decoder CardBoardConfig.Config
-boardConfigDecoder =
-    TsDecode.oneOf
-        [ toElmVariant "dateBoardConfig" CardBoardConfig.DateBoardConfig dateBoardConfigDecoder
-        , toElmVariant "tagBoardConfig" CardBoardConfig.TagBoardConfig tagBoardConfigDecoder
-        ]
-
-
-dateBoardConfigDecoder : TsDecode.Decoder DateBoard.Config
-dateBoardConfigDecoder =
-    TsDecode.succeed DateBoard.Config
-        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
-        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-
-
-tagBoardConfigDecoder : TsDecode.Decoder TagBoard.Config
-tagBoardConfigDecoder =
-    TsDecode.succeed TagBoard.Config
-        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list tagBoardColumnConfigDecoder))
-        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
-        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-
-
-tagBoardColumnConfigDecoder : TsDecode.Decoder TagBoard.ColumnConfig
-tagBoardColumnConfigDecoder =
-    TsDecode.succeed TagBoard.ColumnConfig
-        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
 
 
 
@@ -312,9 +187,3 @@ todoUpdatesEncoder =
         , required "originalText" .originalText TsEncode.string
         , required "newText" .newText TsEncode.string
         ]
-
-
-toElmVariant : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
-toElmVariant tagName constructor decoder_ =
-    TsDecode.field "tag" (TsDecode.literal constructor (JE.string tagName))
-        |> TsDecode.andMap (TsDecode.field "data" decoder_)

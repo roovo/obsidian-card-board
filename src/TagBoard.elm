@@ -3,6 +3,8 @@ module TagBoard exposing
     , Config
     , columnConfigsParser
     , columns
+    , configDecoder
+    , configEncoder
     , defaultConfig
     )
 
@@ -12,6 +14,8 @@ import ParserHelper
 import String.Extra as SE
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -41,6 +45,46 @@ defaultConfig =
     , includeUntagged = False
     , title = ""
     }
+
+
+
+-- SERIALIZATION
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
+        , TsEncode.required "completedCount" .completedCount TsEncode.int
+        , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
+        , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
+        , TsEncode.required "title" .title TsEncode.string
+        ]
+
+
+columnConfigEncoder : TsEncode.Encoder ColumnConfig
+columnConfigEncoder =
+    TsEncode.object
+        [ TsEncode.required "tag" .tag TsEncode.string
+        , TsEncode.required "displayTitle" .displayTitle TsEncode.string
+        ]
+
+
+configDecoder : TsDecode.Decoder Config
+configDecoder =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+columnConfigDecoder : TsDecode.Decoder ColumnConfig
+columnConfigDecoder =
+    TsDecode.succeed ColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
 
 
 

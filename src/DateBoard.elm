@@ -1,6 +1,8 @@
 module DateBoard exposing
     ( Config
     , columns
+    , configDecoder
+    , configEncoder
     , defaultConfig
     )
 
@@ -8,6 +10,8 @@ import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -27,6 +31,27 @@ defaultConfig =
     , includeUndated = True
     , title = ""
     }
+
+
+
+-- SERIALIZATION
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "completedCount" .completedCount TsEncode.int
+        , TsEncode.required "includeUndated" .includeUndated TsEncode.bool
+        , TsEncode.required "title" .title TsEncode.string
+        ]
+
+
+configDecoder : TsDecode.Decoder Config
+configDecoder =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
 
