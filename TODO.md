@@ -1,6 +1,8 @@
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
+- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
+- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
 - do I want the last board who's settings I've edited to the one shown when closing settings?
