@@ -11,6 +11,11 @@ import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
+currentVersion : Semver.Version
+currentVersion =
+    Semver.version 0 1 0 [] []
+
+
 
 -- TYPES
 
@@ -68,23 +73,23 @@ boardConfigsEncoder =
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
-        (\v0_1_0 unsupportedVersion version_ ->
+        (\current unsupportedVersion version_ ->
             case version_ of
                 "0.1.0" ->
-                    v0_1_0
+                    current
 
                 _ ->
                     unsupportedVersion
         )
-        |> TsDecode.andThenDecoder (TsDecode.field "data" v0_1_0_Decoder)
+        |> TsDecode.andThenDecoder (TsDecode.field "data" currentVersionDecoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
 
 
-v0_1_0_Decoder : TsDecode.Decoder Settings
-v0_1_0_Decoder =
+currentVersionDecoder : TsDecode.Decoder Settings
+currentVersionDecoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
-        |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 1 0 [] []))
+        |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings

@@ -44,6 +44,15 @@ encodeDecode =
                     |> runDecoder CardBoardSettings.decoder
                     |> .decoded
                     |> Expect.equal (Ok defaultSettings)
+        , test "fails if the version number is unsupported" <|
+            \() ->
+                { defaultSettings | version = Semver.version 0 0 0 [] [] }
+                    |> TsEncode.runExample CardBoardSettings.encoder
+                    |> .output
+                    |> runDecoder CardBoardSettings.decoder
+                    |> .decoded
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 
