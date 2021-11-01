@@ -1,6 +1,5 @@
 module CardBoardSettings exposing
     ( Settings
-    , boardConfigs
     , decoder
     , encoder
     , version
@@ -31,11 +30,6 @@ version settings =
     Semver.print settings.version
 
 
-boardConfigs : Settings -> { boardConfigs : List BoardConfig }
-boardConfigs settings =
-    { boardConfigs = settings.boardConfigs }
-
-
 
 -- SERIALIZATION
 
@@ -43,8 +37,8 @@ boardConfigs settings =
 encoder : TsEncode.Encoder Settings
 encoder =
     TsEncode.object
-        [ TsEncode.required "version" version TsEncode.string
-        , TsEncode.required "data" boardConfigs BoardConfig.configsEncoder
+        [ TsEncode.required "version" .version semverEncoder
+        , TsEncode.required "data" .boardConfigs boardConfigsEncoder
         ]
 
 
@@ -56,6 +50,19 @@ decoder =
 
 
 -- HELPERS
+
+
+semverEncoder : TsEncode.Encoder Semver.Version
+semverEncoder =
+    TsEncode.string
+        |> TsEncode.map Semver.print
+
+
+boardConfigsEncoder : TsEncode.Encoder (List BoardConfig)
+boardConfigsEncoder =
+    TsEncode.object
+        [ TsEncode.required "boardConfigs" identity (TsEncode.list BoardConfig.encoder)
+        ]
 
 
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)

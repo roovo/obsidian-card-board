@@ -1,8 +1,8 @@
 module BoardConfig exposing
     ( BoardConfig(..)
-    , configsEncoder
     , decoder
     , defaultConfig
+    , encoder
     , isForDateBoard
     , isForTagBoard
     , title
@@ -22,6 +22,11 @@ import TsJson.Encode as TsEncode
 type BoardConfig
     = DateBoardConfig DateBoard.Config
     | TagBoardConfig TagBoard.Config
+
+
+defaultConfig : BoardConfig
+defaultConfig =
+    TagBoardConfig TagBoard.defaultConfig
 
 
 
@@ -48,11 +53,6 @@ isForTagBoard config =
             False
 
 
-defaultConfig : BoardConfig
-defaultConfig =
-    TagBoardConfig TagBoard.defaultConfig
-
-
 title : BoardConfig -> String
 title config =
     case config of
@@ -65,25 +65,6 @@ title config =
 
 
 -- SERIALIZATION
-
-
-configsEncoder : TsEncode.Encoder { boardConfigs : List BoardConfig }
-configsEncoder =
-    TsEncode.object
-        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list encoder)
-        ]
-
-
-decoder : TsDecode.Decoder BoardConfig
-decoder =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
-        ]
-
-
-
--- HELPERS
 
 
 encoder : TsEncode.Encoder BoardConfig
@@ -100,3 +81,11 @@ encoder =
         |> TsEncode.variantTagged "dateBoardConfig" DateBoard.configEncoder
         |> TsEncode.variantTagged "tagBoardConfig" TagBoard.configEncoder
         |> TsEncode.buildUnion
+
+
+decoder : TsDecode.Decoder BoardConfig
+decoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        ]

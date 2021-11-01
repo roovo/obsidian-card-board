@@ -1,8 +1,5 @@
 module CardBoardSettingsTests exposing (suite)
 
--- import DateBoard
--- import TagBoard
-
 import CardBoardSettings
 import Expect
 import Semver

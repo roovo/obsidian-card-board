@@ -12,7 +12,19 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ encodeDecode
+        [ defaultConfigTests
+        , encodeDecode
+        ]
+
+
+defaultConfigTests : Test
+defaultConfigTests =
+    describe "defaultConfig"
+        [ test "is for a TagBoard" <|
+            \() ->
+                BoardConfig.defaultConfig
+                    |> BoardConfig.isForTagBoard
+                    |> Expect.equal True
         ]
 
 
@@ -22,28 +34,23 @@ encodeDecode =
         [ test "encodes config correctly" <|
             \() ->
                 defaultConfig
-                    |> TsEncode.runExample BoardConfig.configsEncoder
+                    |> TsEncode.runExample BoardConfig.encoder
                     |> .output
-                    |> Expect.equal """{"boardConfigs":[{"tag":"tagBoardConfig","data":{"columns":[],"completedCount":10,"includeOthers":false,"includeUntagged":false,"title":""}}]}"""
+                    |> Expect.equal """{"tag":"tagBoardConfig","data":{"columns":[],"completedCount":10,"includeOthers":false,"includeUntagged":false,"title":""}}"""
         , test "produces the expected type" <|
             \() ->
                 defaultConfig
-                    |> TsEncode.runExample BoardConfig.configsEncoder
+                    |> TsEncode.runExample BoardConfig.encoder
                     |> .tsType
-                    |> Expect.equal """{ boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }"""
-
-        -- TODO : Add this test case when I have made the sig for defaultConfig : CardBoardConfig.CardBoardConfig
-        --        I can also then add the various property tests!
-        --
-        --
-        -- , test "can decode the encoded string back to the original" <|
-        --     \() ->
-        --         defaultConfig
-        --             |> TsEncode.runExample CardBoardConfig.configsEncoder
-        --             |> .output
-        --             |> runDecoder CardBoardConfig.decoder
-        --             |> .decoded
-        --             |> Expect.equal (Ok defaultConfig)
+                    |> Expect.equal """{ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }"""
+        , test "can decode the encoded string back to the original" <|
+            \() ->
+                defaultConfig
+                    |> TsEncode.runExample BoardConfig.encoder
+                    |> .output
+                    |> runDecoder BoardConfig.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok defaultConfig)
         ]
 
 
@@ -51,9 +58,9 @@ encodeDecode =
 -- HELPERS
 
 
-defaultConfig : { boardConfigs : List BoardConfig }
+defaultConfig : BoardConfig
 defaultConfig =
-    { boardConfigs = [ BoardConfig.TagBoardConfig TagBoard.defaultConfig ] }
+    BoardConfig.TagBoardConfig TagBoard.defaultConfig
 
 
 type alias DecodeResult value =
