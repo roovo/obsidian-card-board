@@ -36,7 +36,7 @@ type ToElm
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
-    | InitCompleted ()
+    | InitCompleted
     | SettingsUpdated Settings
 
 
@@ -125,7 +125,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
-        , DecodeHelpers.toElmVariant "initCompleted" InitCompleted (TsDecode.succeed ())
+        , DecodeHelpers.toElmVariant "initCompleted" (always InitCompleted) (TsDecode.succeed ())
         ]
 
 
