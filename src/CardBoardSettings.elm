@@ -1,13 +1,11 @@
-module CardBoard exposing
+module CardBoardSettings exposing
     ( Settings
     , boardConfigs
     , version
     )
 
 import CardBoardConfig
-import DateBoard
 import Semver
-import TagBoard
 
 
 

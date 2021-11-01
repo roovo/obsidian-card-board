@@ -11,8 +11,8 @@ module InteropDefinitions exposing
     , updateTodosEncoder
     )
 
-import CardBoard
 import CardBoardConfig
+import CardBoardSettings exposing (Settings)
 import DateBoard
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
@@ -27,7 +27,7 @@ type FromElm
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
     | OpenTodoSourceFile { filePath : String, lineNumber : Int, originalText : String }
-    | UpdateSettings CardBoard.Settings
+    | UpdateSettings Settings
     | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -37,7 +37,7 @@ type ToElm
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
     | InitCompleted ()
-    | SettingsUpdated CardBoard.Settings
+    | SettingsUpdated Settings
 
 
 type alias Flags =
@@ -97,11 +97,11 @@ openTodoSourceFileEncoder =
         ]
 
 
-updateSettingsEncoder : TsEncode.Encoder CardBoard.Settings
+updateSettingsEncoder : TsEncode.Encoder Settings
 updateSettingsEncoder =
     TsEncode.object
-        [ required "version" CardBoard.version TsEncode.string
-        , required "data" CardBoard.boardConfigs boardConfigsEncoder
+        [ required "version" CardBoardSettings.version TsEncode.string
+        , required "data" CardBoardSettings.boardConfigs boardConfigsEncoder
         ]
 
 
@@ -220,7 +220,7 @@ fromElm =
         |> TsEncode.buildUnion
 
 
-boardSettingsDecoder : TsDecode.Decoder CardBoard.Settings
+boardSettingsDecoder : TsDecode.Decoder Settings
 boardSettingsDecoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
@@ -233,7 +233,7 @@ renamedFileDecoder =
         |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
 
 
-versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder CardBoard.Settings)
+versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
         (\v0_1_0 unsupportedVersion version ->
@@ -248,14 +248,14 @@ versionedSettingsDecoder =
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
 
 
-v0_1_0_Decoder : TsDecode.Decoder CardBoard.Settings
+v0_1_0_Decoder : TsDecode.Decoder Settings
 v0_1_0_Decoder =
-    TsDecode.succeed CardBoard.Settings
+    TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list boardConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 1 0 [] []))
 
 
-unsupportedVersionDecoder : TsDecode.Decoder CardBoard.Settings
+unsupportedVersionDecoder : TsDecode.Decoder Settings
 unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
 
