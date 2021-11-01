@@ -6,6 +6,8 @@ import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -16,6 +18,7 @@ suite =
         , columnOthers
         , columnUntagged
         , columnConfigsParserTest
+        , encodeDecode
         ]
 
 
@@ -425,6 +428,32 @@ columnConfigsParserTest =
         ]
 
 
+encodeDecode : Test
+encodeDecode =
+    describe "encoding and decoding config"
+        [ test "encodes config correctly" <|
+            \() ->
+                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
+                    |> TsEncode.runExample TagBoard.configEncoder
+                    |> .output
+                    |> Expect.equal """{"columns":[{"tag":"foo","displayTitle":"bar"}],"completedCount":0,"includeOthers":false,"includeUntagged":false,"title":"Tag Board Title"}"""
+        , test "produces the expected type" <|
+            \() ->
+                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
+                    |> TsEncode.runExample TagBoard.configEncoder
+                    |> .tsType
+                    |> Expect.equal "{ columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }"
+        , test "can decode the encoded string back to the original" <|
+            \() ->
+                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
+                    |> TsEncode.runExample TagBoard.configEncoder
+                    |> .output
+                    |> runDecoder TagBoard.configDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] })
+        ]
+
+
 
 -- HELPERS
 
@@ -444,3 +473,14 @@ tasksInColumn columnName tasksInColumns =
     tasksInColumns
         |> List.filter (\( c, _ ) -> c == columnName)
         |> List.concatMap Tuple.second
+
+
+type alias DecodeResult value =
+    { decoded : Result String value
+    , tsType : String
+    }
+
+
+runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
+runDecoder decoder input =
+    TsDecode.runExample input decoder

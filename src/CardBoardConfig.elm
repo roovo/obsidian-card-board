@@ -67,6 +67,25 @@ title config =
 -- SERIALIZATION
 
 
+configsEncoder : TsEncode.Encoder { boardConfigs : List Config }
+configsEncoder =
+    TsEncode.object
+        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list encoder)
+        ]
+
+
+decoder : TsDecode.Decoder Config
+decoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        ]
+
+
+
+-- HELPERS
+
+
 encoder : TsEncode.Encoder Config
 encoder =
     TsEncode.union
@@ -81,18 +100,3 @@ encoder =
         |> TsEncode.variantTagged "dateBoardConfig" DateBoard.configEncoder
         |> TsEncode.variantTagged "tagBoardConfig" TagBoard.configEncoder
         |> TsEncode.buildUnion
-
-
-configsEncoder : TsEncode.Encoder { boardConfigs : List Config }
-configsEncoder =
-    TsEncode.object
-        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list encoder)
-        ]
-
-
-decoder : TsDecode.Decoder Config
-decoder =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
-        ]

@@ -9,6 +9,8 @@ import TaskList exposing (TaskList)
 import Test exposing (..)
 import Time
 import TimeWithZone exposing (TimeWithZone)
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -17,6 +19,7 @@ suite =
         [ columns
         , columnCompleted
         , columnUndated
+        , encodeDecode
         ]
 
 
@@ -96,6 +99,32 @@ columnUndated =
                     |> tasksInColumn "Undated"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
+        ]
+
+
+encodeDecode : Test
+encodeDecode =
+    describe "encoding and decoding config"
+        [ test "encodes config correctly" <|
+            \() ->
+                defaultConfig
+                    |> TsEncode.runExample DateBoard.configEncoder
+                    |> .output
+                    |> Expect.equal """{"completedCount":0,"includeUndated":false,"title":"Date Board Title"}"""
+        , test "produces the expected type" <|
+            \() ->
+                defaultConfig
+                    |> TsEncode.runExample DateBoard.configEncoder
+                    |> .tsType
+                    |> Expect.equal "{ completedCount : number; includeUndated : boolean; title : string }"
+        , test "can decode the encoded string back to the original" <|
+            \() ->
+                defaultConfig
+                    |> TsEncode.runExample DateBoard.configEncoder
+                    |> .output
+                    |> runDecoder DateBoard.configDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok defaultConfig)
         ]
 
 
@@ -221,3 +250,14 @@ yesterdaysTasks =
 - [ ] another yesterday incomplete
 - [x] yesterday complete @completed(2020-06-01)
 """ )
+
+
+type alias DecodeResult value =
+    { decoded : Result String value
+    , tsType : String
+    }
+
+
+runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
+runDecoder decoder input =
+    TsDecode.runExample input decoder
