@@ -6,7 +6,7 @@ module CardBoardSettings exposing
     , version
     )
 
-import CardBoardConfig
+import BoardConfig exposing (BoardConfig)
 import Semver
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -17,7 +17,7 @@ import TsJson.Encode as TsEncode
 
 
 type alias Settings =
-    { boardConfigs : List CardBoardConfig.Config
+    { boardConfigs : List BoardConfig
     , version : Semver.Version
     }
 
@@ -31,7 +31,7 @@ version settings =
     Semver.print settings.version
 
 
-boardConfigs : Settings -> { boardConfigs : List CardBoardConfig.Config }
+boardConfigs : Settings -> { boardConfigs : List BoardConfig }
 boardConfigs settings =
     { boardConfigs = settings.boardConfigs }
 
@@ -44,7 +44,7 @@ encoder : TsEncode.Encoder Settings
 encoder =
     TsEncode.object
         [ TsEncode.required "version" version TsEncode.string
-        , TsEncode.required "data" boardConfigs CardBoardConfig.configsEncoder
+        , TsEncode.required "data" boardConfigs BoardConfig.configsEncoder
         ]
 
 
@@ -76,7 +76,7 @@ versionedSettingsDecoder =
 v0_1_0_Decoder : TsDecode.Decoder Settings
 v0_1_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list CardBoardConfig.decoder))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
         |> TsDecode.andMap (TsDecode.succeed (Semver.version 0 1 0 [] []))
 
 

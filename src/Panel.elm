@@ -4,8 +4,8 @@ module Panel exposing
     , init
     )
 
+import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardConfig
 import DateBoard
 import TagBoard
 import TaskItem exposing (TaskItem)
@@ -18,14 +18,14 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Panel
-    = Panel CardBoardConfig.Config TaskList
+    = Panel BoardConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : CardBoardConfig.Config -> TaskList -> Panel
+init : BoardConfig -> TaskList -> Panel
 init config taskList =
     Panel config taskList
 
@@ -37,11 +37,11 @@ init config taskList =
 columns : TimeWithZone -> Int -> Panel -> List ( String, List Card )
 columns timeWithZone panelIndex (Panel config taskList) =
     case config of
-        CardBoardConfig.DateBoardConfig dateBoardConfig ->
+        BoardConfig.DateBoardConfig dateBoardConfig ->
             DateBoard.columns timeWithZone dateBoardConfig taskList
                 |> placeCardsInColumns panelIndex
 
-        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+        BoardConfig.TagBoardConfig tagBoardConfig ->
             TagBoard.columns tagBoardConfig taskList
                 |> placeCardsInColumns panelIndex
 

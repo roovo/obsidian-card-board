@@ -1,6 +1,6 @@
-module CardBoardConfigTests exposing (suite)
+module BoardConfigTests exposing (suite)
 
-import CardBoardConfig
+import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Expect
 import TagBoard
@@ -22,13 +22,13 @@ encodeDecode =
         [ test "encodes config correctly" <|
             \() ->
                 defaultConfig
-                    |> TsEncode.runExample CardBoardConfig.configsEncoder
+                    |> TsEncode.runExample BoardConfig.configsEncoder
                     |> .output
                     |> Expect.equal """{"boardConfigs":[{"tag":"tagBoardConfig","data":{"columns":[],"completedCount":10,"includeOthers":false,"includeUntagged":false,"title":""}}]}"""
         , test "produces the expected type" <|
             \() ->
                 defaultConfig
-                    |> TsEncode.runExample CardBoardConfig.configsEncoder
+                    |> TsEncode.runExample BoardConfig.configsEncoder
                     |> .tsType
                     |> Expect.equal """{ boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }"""
 
@@ -51,9 +51,9 @@ encodeDecode =
 -- HELPERS
 
 
-defaultConfig : { boardConfigs : List CardBoardConfig.Config }
+defaultConfig : { boardConfigs : List BoardConfig }
 defaultConfig =
-    { boardConfigs = [ CardBoardConfig.TagBoardConfig TagBoard.defaultConfig ] }
+    { boardConfigs = [ BoardConfig.TagBoardConfig TagBoard.defaultConfig ] }
 
 
 type alias DecodeResult value =

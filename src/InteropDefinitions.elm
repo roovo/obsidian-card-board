@@ -10,7 +10,7 @@ module InteropDefinitions exposing
     , updateTodosEncoder
     )
 
-import CardBoardConfig
+import BoardConfig exposing (BoardConfig)
 import CardBoardSettings exposing (Settings)
 import DateBoard
 import DecodeHelpers
@@ -41,7 +41,7 @@ type ToElm
 
 
 type alias Flags =
-    { boardConfigs : List CardBoardConfig.Config
+    { boardConfigs : List BoardConfig
     , now : Int
     , zone : Int
     }
@@ -112,7 +112,7 @@ updateTodosEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list CardBoardConfig.decoder))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 

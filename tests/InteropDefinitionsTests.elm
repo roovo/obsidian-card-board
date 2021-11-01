@@ -1,6 +1,6 @@
 module InteropDefinitionsTests exposing (suite)
 
-import CardBoardConfig
+import BoardConfig
 import Expect
 import InteropDefinitions exposing (interop)
 import Semver
@@ -29,12 +29,12 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { boardConfigs =
-                                [ CardBoardConfig.DateBoardConfig
+                                [ BoardConfig.DateBoardConfig
                                     { completedCount = 4
                                     , includeUndated = True
                                     , title = "date board title"
                                     }
-                                , CardBoardConfig.TagBoardConfig
+                                , BoardConfig.TagBoardConfig
                                     { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                     , completedCount = 5
                                     , includeOthers = False
@@ -101,7 +101,7 @@ fromElmTests =
             \() ->
                 { version = Semver.version 1 2 3 [] []
                 , boardConfigs =
-                    [ CardBoardConfig.DateBoardConfig
+                    [ BoardConfig.DateBoardConfig
                         { completedCount = 3
                         , includeUndated = True
                         , title = "A Date Board"

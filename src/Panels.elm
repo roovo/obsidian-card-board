@@ -8,8 +8,8 @@ module Panels exposing
     , tabTitles
     )
 
+import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardConfig
 import Panel exposing (Panel)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
@@ -21,14 +21,14 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Panels
-    = Panels (SafeZipper CardBoardConfig.Config) TaskList
+    = Panels (SafeZipper BoardConfig) TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : SafeZipper CardBoardConfig.Config -> TaskList -> Panels
+init : SafeZipper BoardConfig -> TaskList -> Panels
 init configs taskList =
     Panels configs taskList
 
@@ -72,16 +72,16 @@ length (Panels config _) =
 -- PRIVATE
 
 
-tabTitle : Int -> CardBoardConfig.Config -> String
+tabTitle : Int -> BoardConfig -> String
 tabTitle _ config =
     case config of
-        CardBoardConfig.DateBoardConfig dateBoardConfig ->
+        BoardConfig.DateBoardConfig dateBoardConfig ->
             dateBoardConfig.title
 
-        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+        BoardConfig.TagBoardConfig tagBoardConfig ->
             tagBoardConfig.title
 
 
-panel : TaskList -> Int -> CardBoardConfig.Config -> Panel
+panel : TaskList -> Int -> BoardConfig -> Panel
 panel taskList _ config =
     Panel.init config taskList
