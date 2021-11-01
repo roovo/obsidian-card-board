@@ -10,7 +10,7 @@ port module InteropPorts exposing
     )
 
 import Card exposing (Card)
-import CardBoard
+import CardBoardConfig
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
@@ -71,7 +71,7 @@ rewriteTodos timeWithZone filePath taskItems =
         |> interopFromElm
 
 
-updateSettings : SafeZipper CardBoard.Config -> Cmd msg
+updateSettings : SafeZipper CardBoardConfig.Config -> Cmd msg
 updateSettings configs =
     { version = currentSettingsVersion, boardConfigs = SafeZipper.toList configs }
         -- SafeZipper.toList configs

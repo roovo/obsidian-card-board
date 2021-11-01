@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Card exposing (Card)
-import CardBoard
+import CardBoardConfig
 import Date exposing (Date)
 import DateBoard
 import FeatherIcons
@@ -42,7 +42,7 @@ main =
 
 
 type alias Model =
-    { boardConfigs : SafeZipper CardBoard.Config
+    { boardConfigs : SafeZipper CardBoardConfig.Config
     , configBeingEdited : EditState
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -62,9 +62,9 @@ defaultModel =
 
 
 type EditState
-    = Adding (SafeZipper CardBoard.Config) CardBoard.Config
-    | Deleting (SafeZipper CardBoard.Config)
-    | Editing (SafeZipper CardBoard.Config)
+    = Adding (SafeZipper CardBoardConfig.Config) CardBoardConfig.Config
+    | Deleting (SafeZipper CardBoardConfig.Config)
+    | Editing (SafeZipper CardBoardConfig.Config)
     | NotEditing
 
 
@@ -111,10 +111,10 @@ hasLoaded taskList =
             False
 
 
-forceAddWhenNoBoards : SafeZipper CardBoard.Config -> Model -> Model
+forceAddWhenNoBoards : SafeZipper CardBoardConfig.Config -> Model -> Model
 forceAddWhenNoBoards config model =
     if SafeZipper.length config == 0 then
-        { model | configBeingEdited = Adding config CardBoard.defaultConfig }
+        { model | configBeingEdited = Adding config CardBoardConfig.defaultConfig }
 
     else
         model
@@ -141,7 +141,7 @@ type Msg
     | ReceiveTime ( Time.Zone, Time.Posix )
     | SettingsBoardNameClicked Int
     | SettingsClicked
-    | SettingsUpdated (List CardBoard.Config)
+    | SettingsUpdated (List CardBoardConfig.Config)
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -165,7 +165,7 @@ update msg model =
                 newConfig =
                     case model.configBeingEdited of
                         Editing c ->
-                            Adding c CardBoard.defaultConfig
+                            Adding c CardBoardConfig.defaultConfig
 
                         _ ->
                             model.configBeingEdited
@@ -187,7 +187,7 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                updateBoardType : CardBoard.Config -> CardBoard.Config
+                updateBoardType : CardBoardConfig.Config -> CardBoardConfig.Config
                 updateBoardType config =
                     case board of
                         "dateBoard" ->
@@ -195,14 +195,14 @@ update msg model =
                                 newBoardConfig =
                                     DateBoard.defaultConfig
                             in
-                            CardBoard.DateBoardConfig { newBoardConfig | title = CardBoard.title config }
+                            CardBoardConfig.DateBoardConfig { newBoardConfig | title = CardBoardConfig.title config }
 
                         _ ->
                             let
                                 newBoardConfig =
                                     TagBoard.defaultConfig
                             in
-                            CardBoard.TagBoardConfig { newBoardConfig | title = CardBoard.title config }
+                            CardBoardConfig.TagBoardConfig { newBoardConfig | title = CardBoardConfig.title config }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -240,14 +240,14 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                updateCompletedCount : CardBoard.Config -> CardBoard.Config
+                updateCompletedCount : CardBoardConfig.Config -> CardBoardConfig.Config
                 updateCompletedCount config =
                     case ( config, String.toInt value ) of
-                        ( CardBoard.DateBoardConfig dateBoardConfig, Just newCount ) ->
-                            CardBoard.DateBoardConfig { dateBoardConfig | completedCount = newCount }
+                        ( CardBoardConfig.DateBoardConfig dateBoardConfig, Just newCount ) ->
+                            CardBoardConfig.DateBoardConfig { dateBoardConfig | completedCount = newCount }
 
-                        ( CardBoard.TagBoardConfig tagBoardConfig, Just newCount ) ->
-                            CardBoard.TagBoardConfig { tagBoardConfig | completedCount = newCount }
+                        ( CardBoardConfig.TagBoardConfig tagBoardConfig, Just newCount ) ->
+                            CardBoardConfig.TagBoardConfig { tagBoardConfig | completedCount = newCount }
 
                         _ ->
                             config
@@ -265,14 +265,14 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                updateTitle : CardBoard.Config -> CardBoard.Config
+                updateTitle : CardBoardConfig.Config -> CardBoardConfig.Config
                 updateTitle config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
-                            CardBoard.DateBoardConfig { dateBoardConfig | title = title }
+                        CardBoardConfig.DateBoardConfig dateBoardConfig ->
+                            CardBoardConfig.DateBoardConfig { dateBoardConfig | title = title }
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
-                            CardBoard.TagBoardConfig { tagBoardConfig | title = title }
+                        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+                            CardBoardConfig.TagBoardConfig { tagBoardConfig | title = title }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -287,20 +287,20 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                updateTags : CardBoard.Config -> CardBoard.Config
+                updateTags : CardBoardConfig.Config -> CardBoardConfig.Config
                 updateTags config =
                     case config of
-                        CardBoard.DateBoardConfig _ ->
+                        CardBoardConfig.DateBoardConfig _ ->
                             config
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
+                        CardBoardConfig.TagBoardConfig tagBoardConfig ->
                             let
                                 columnsConfig =
                                     Parser.run TagBoard.columnConfigsParser tags
                             in
                             case columnsConfig of
                                 Ok parsedConfig ->
-                                    CardBoard.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
+                                    CardBoardConfig.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
 
                                 _ ->
                                     config
@@ -318,14 +318,14 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                updateTitle : CardBoard.Config -> CardBoard.Config
+                updateTitle : CardBoardConfig.Config -> CardBoardConfig.Config
                 updateTitle config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
-                            CardBoard.DateBoardConfig { dateBoardConfig | title = title }
+                        CardBoardConfig.DateBoardConfig dateBoardConfig ->
+                            CardBoardConfig.DateBoardConfig { dateBoardConfig | title = title }
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
-                            CardBoard.TagBoardConfig { tagBoardConfig | title = title }
+                        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+                            CardBoardConfig.TagBoardConfig { tagBoardConfig | title = title }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -539,14 +539,14 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                toggleIncludeOthers : CardBoard.Config -> CardBoard.Config
+                toggleIncludeOthers : CardBoardConfig.Config -> CardBoardConfig.Config
                 toggleIncludeOthers config =
                     case config of
-                        CardBoard.DateBoardConfig _ ->
+                        CardBoardConfig.DateBoardConfig _ ->
                             config
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
-                            CardBoard.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
+                        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+                            CardBoardConfig.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -561,13 +561,13 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                toggleIncludeUndated : CardBoard.Config -> CardBoard.Config
+                toggleIncludeUndated : CardBoardConfig.Config -> CardBoardConfig.Config
                 toggleIncludeUndated config =
                     case config of
-                        CardBoard.DateBoardConfig dateBoardConfig ->
-                            CardBoard.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
+                        CardBoardConfig.DateBoardConfig dateBoardConfig ->
+                            CardBoardConfig.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
 
-                        CardBoard.TagBoardConfig _ ->
+                        CardBoardConfig.TagBoardConfig _ ->
                             config
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
@@ -583,14 +583,14 @@ update msg model =
                         _ ->
                             model.configBeingEdited
 
-                toggleIncludeUntagged : CardBoard.Config -> CardBoard.Config
+                toggleIncludeUntagged : CardBoardConfig.Config -> CardBoardConfig.Config
                 toggleIncludeUntagged config =
                     case config of
-                        CardBoard.DateBoardConfig _ ->
+                        CardBoardConfig.DateBoardConfig _ ->
                             config
 
-                        CardBoard.TagBoardConfig tagBoardConfig ->
-                            CardBoard.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
+                        CardBoardConfig.TagBoardConfig tagBoardConfig ->
+                            CardBoardConfig.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
@@ -816,7 +816,7 @@ dialogs editState =
             Html.text ""
 
 
-modalAddBoard : CardBoard.Config -> Html Msg
+modalAddBoard : CardBoardConfig.Config -> Html Msg
 modalAddBoard newConfig =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
@@ -835,7 +835,7 @@ modalAddBoard newConfig =
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| CardBoard.title newConfig
+                            , value <| CardBoardConfig.title newConfig
                             , onInput EnteredNewBoardTitle
                             ]
                             []
@@ -851,12 +851,12 @@ modalAddBoard newConfig =
                             ]
                             [ Html.option
                                 [ value "dateBoard"
-                                , selected <| CardBoard.isDateBoard newConfig
+                                , selected <| CardBoardConfig.isDateBoard newConfig
                                 ]
                                 [ Html.text "Date board" ]
                             , Html.option
                                 [ value "tagBoard"
-                                , selected <| CardBoard.isTagBoard newConfig
+                                , selected <| CardBoardConfig.isTagBoard newConfig
                                 ]
                                 [ Html.text "Tag board" ]
                             ]
@@ -909,7 +909,7 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper CardBoard.Config -> Html Msg
+modalSettingsView : SafeZipper CardBoardConfig.Config -> Html Msg
 modalSettingsView configs =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
@@ -944,10 +944,10 @@ modalSettingsView configs =
         ]
 
 
-settingsFormView : Maybe CardBoard.Config -> Html Msg
+settingsFormView : Maybe CardBoardConfig.Config -> Html Msg
 settingsFormView boardConfig =
     case boardConfig of
-        Just (CardBoard.DateBoardConfig config) ->
+        Just (CardBoardConfig.DateBoardConfig config) ->
             let
                 includeUndatedStyle =
                     if config.includeUndated then
@@ -1016,7 +1016,7 @@ settingsFormView boardConfig =
                     ]
                 ]
 
-        Just (CardBoard.TagBoardConfig config) ->
+        Just (CardBoardConfig.TagBoardConfig config) ->
             let
                 includeOthersStyle =
                     if config.includeOthers then
@@ -1140,22 +1140,22 @@ settingsFormView boardConfig =
             Html.text ""
 
 
-settingTitleSelectedView : Int -> CardBoard.Config -> Html Msg
+settingTitleSelectedView : Int -> CardBoardConfig.Config -> Html Msg
 settingTitleSelectedView index boardConfig =
     Html.div
         [ class "vertical-tab-nav-item is-active"
         , onClick <| SettingsBoardNameClicked index
         ]
-        [ Html.text <| CardBoard.title boardConfig ]
+        [ Html.text <| CardBoardConfig.title boardConfig ]
 
 
-settingTitleView : Int -> CardBoard.Config -> Html Msg
+settingTitleView : Int -> CardBoardConfig.Config -> Html Msg
 settingTitleView index boardConfig =
     Html.div
         [ class "vertical-tab-nav-item"
         , onClick <| SettingsBoardNameClicked index
         ]
-        [ Html.text <| CardBoard.title boardConfig ]
+        [ Html.text <| CardBoardConfig.title boardConfig ]
 
 
 tabHeaders : Maybe Int -> Panels -> List (Html Msg)

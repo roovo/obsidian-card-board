@@ -12,6 +12,7 @@ module InteropDefinitions exposing
     )
 
 import CardBoard
+import CardBoardConfig
 import DateBoard
 import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
@@ -40,7 +41,7 @@ type ToElm
 
 
 type alias Flags =
-    { boardConfigs : List CardBoard.Config
+    { boardConfigs : List CardBoardConfig.Config
     , now : Int
     , zone : Int
     }
@@ -104,22 +105,22 @@ updateSettingsEncoder =
         ]
 
 
-boardConfigsEncoder : TsEncode.Encoder { boardConfigs : List CardBoard.Config }
+boardConfigsEncoder : TsEncode.Encoder { boardConfigs : List CardBoardConfig.Config }
 boardConfigsEncoder =
     TsEncode.object
         [ required "boardConfigs" .boardConfigs (TsEncode.list cardBoardConfigEncoder)
         ]
 
 
-cardBoardConfigEncoder : TsEncode.Encoder CardBoard.Config
+cardBoardConfigEncoder : TsEncode.Encoder CardBoardConfig.Config
 cardBoardConfigEncoder =
     TsEncode.union
         (\vDateBoardConfig vTagBoardConfig value ->
             case value of
-                CardBoard.DateBoardConfig config ->
+                CardBoardConfig.DateBoardConfig config ->
                     vDateBoardConfig config
 
-                CardBoard.TagBoardConfig config ->
+                CardBoardConfig.TagBoardConfig config ->
                     vTagBoardConfig config
         )
         |> TsEncode.variantTagged "dateBoardConfig" dateBoardConfigEncoder
@@ -259,11 +260,11 @@ unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
 
 
-boardConfigDecoder : TsDecode.Decoder CardBoard.Config
+boardConfigDecoder : TsDecode.Decoder CardBoardConfig.Config
 boardConfigDecoder =
     TsDecode.oneOf
-        [ toElmVariant "dateBoardConfig" CardBoard.DateBoardConfig dateBoardConfigDecoder
-        , toElmVariant "tagBoardConfig" CardBoard.TagBoardConfig tagBoardConfigDecoder
+        [ toElmVariant "dateBoardConfig" CardBoardConfig.DateBoardConfig dateBoardConfigDecoder
+        , toElmVariant "tagBoardConfig" CardBoardConfig.TagBoardConfig tagBoardConfigDecoder
         ]
 
 
