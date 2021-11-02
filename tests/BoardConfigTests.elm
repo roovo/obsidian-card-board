@@ -12,17 +12,17 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ defaultConfigTests
+        [ default
         , encodeDecode
         ]
 
 
-defaultConfigTests : Test
-defaultConfigTests =
-    describe "defaultConfig"
+default : Test
+default =
+    describe "default"
         [ test "is for a TagBoard" <|
             \() ->
-                BoardConfig.defaultConfig
+                BoardConfig.default
                     |> BoardConfig.isForTagBoard
                     |> Expect.equal True
         ]

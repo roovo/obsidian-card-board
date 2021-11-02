@@ -1,7 +1,7 @@
 module BoardConfig exposing
     ( BoardConfig(..)
     , decoder
-    , defaultConfig
+    , default
     , encoder
     , isForDateBoard
     , isForTagBoard
@@ -24,8 +24,8 @@ type BoardConfig
     | TagBoardConfig TagBoard.Config
 
 
-defaultConfig : BoardConfig
-defaultConfig =
+default : BoardConfig
+default =
     TagBoardConfig TagBoard.defaultConfig
 
 

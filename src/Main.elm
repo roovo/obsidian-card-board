@@ -3,6 +3,7 @@ module Main exposing (main)
 import BoardConfig exposing (BoardConfig)
 import Browser
 import Card exposing (Card)
+import CardBoardSettings exposing (Settings)
 import Date exposing (Date)
 import DateBoard
 import FeatherIcons
@@ -14,6 +15,8 @@ import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
+import Model exposing (Model, State)
+import Page.Settings as SettingsPage
 import Panel exposing (Panel)
 import Panels exposing (Panels)
 import Parser
@@ -37,51 +40,11 @@ main =
         }
 
 
-
--- TYPES
-
-
-type alias Model =
-    { boardConfigs : SafeZipper BoardConfig
-    , configBeingEdited : EditState
-    , taskList : State TaskList
-    , timeWithZone : TimeWithZone
-    }
-
-
-defaultModel : Model
-defaultModel =
-    { boardConfigs = SafeZipper.fromList []
-    , configBeingEdited = NotEditing
-    , taskList = Waiting
-    , timeWithZone =
-        { now = Time.millisToPosix 0
-        , zone = Time.customZone 0 []
-        }
-    }
-
-
-type EditState
-    = Adding (SafeZipper BoardConfig) BoardConfig
-    | Deleting (SafeZipper BoardConfig)
-    | Editing (SafeZipper BoardConfig)
-    | NotEditing
-
-
-type State a
-    = Waiting
-    | Loading a
-    | Loaded a
-
-
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err _ ->
-            ( defaultModel
-                |> forceAddWhenNoBoards defaultModel.boardConfigs
-            , Cmd.none
-            )
+            ( Model.default, Cmd.none )
 
         Ok okFlags ->
             let
@@ -89,14 +52,14 @@ init flags =
                     SafeZipper.fromList okFlags.boardConfigs
             in
             ( { boardConfigs = boardConfigs
-              , configBeingEdited = NotEditing
-              , taskList = Waiting
+              , configBeingEdited = Model.NotEditing
+              , taskList = Model.Waiting
               , timeWithZone =
                     { now = Time.millisToPosix okFlags.now
                     , zone = Time.customZone okFlags.zone []
                     }
               }
-                |> forceAddWhenNoBoards boardConfigs
+                |> Model.forceAddWhenNoBoards boardConfigs
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
 
@@ -104,20 +67,11 @@ init flags =
 hasLoaded : State TaskList -> Bool
 hasLoaded taskList =
     case taskList of
-        Loaded _ ->
+        Model.Loaded _ ->
             True
 
         _ ->
             False
-
-
-forceAddWhenNoBoards : SafeZipper BoardConfig -> Model -> Model
-forceAddWhenNoBoards config model =
-    if SafeZipper.length config == 0 then
-        { model | configBeingEdited = Adding config BoardConfig.defaultConfig }
-
-    else
-        model
 
 
 
@@ -125,21 +79,10 @@ forceAddWhenNoBoards config model =
 
 
 type Msg
-    = AddBoardClicked
-    | BadInputFromTypeScript JD.Error
-    | BoardTypeSelected String
-    | DeleteBoardRequested
-    | DeleteBoardConfirmed
-    | EnteredCompletedCount String
-    | EnteredNewBoardTitle String
-    | EnteredTags String
-    | EnteredTitle String
+    = BadInputFromTypeScript JD.Error
+    | GotSettingsPageMsg SettingsPage.Msg
     | InitCompleted
-    | ModalCancelClicked
-    | ModalCloseClicked
-    | NewBoardDetailsEntered
     | ReceiveTime ( Time.Zone, Time.Posix )
-    | SettingsBoardNameClicked Int
     | SettingsClicked
     | SettingsUpdated (List BoardConfig)
     | TabSelected Int
@@ -147,9 +90,6 @@ type Msg
     | TaskItemDeleteClicked String
     | TaskItemToggled String
     | Tick Time.Posix
-    | ToggleIncludeOthers
-    | ToggleIncludeUndated
-    | ToggleIncludeUntagged
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileRenamed ( String, String )
@@ -159,257 +99,34 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( AddBoardClicked, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Adding c BoardConfig.defaultConfig
-
-                        _ ->
-                            model.configBeingEdited
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
         ( BadInputFromTypeScript _, _ ) ->
             -- Debug.todo <| Debug.toString error
             ( model, Cmd.none )
 
-        ( BoardTypeSelected board, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Adding cs c ->
-                            Adding cs (updateBoardType c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateBoardType : BoardConfig -> BoardConfig
-                updateBoardType config =
-                    case board of
-                        "dateBoard" ->
-                            let
-                                newBoardConfig =
-                                    DateBoard.defaultConfig
-                            in
-                            BoardConfig.DateBoardConfig { newBoardConfig | title = BoardConfig.title config }
-
-                        _ ->
-                            let
-                                newBoardConfig =
-                                    TagBoard.defaultConfig
-                            in
-                            BoardConfig.TagBoardConfig { newBoardConfig | title = BoardConfig.title config }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( DeleteBoardRequested, _ ) ->
-            case model.configBeingEdited of
-                Editing c ->
-                    ( { model | configBeingEdited = Deleting c }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        ( DeleteBoardConfirmed, _ ) ->
-            case model.configBeingEdited of
-                Deleting c ->
-                    let
-                        newConfig =
-                            SafeZipper.deleteCurrent c
-                    in
-                    ( { model | configBeingEdited = Editing newConfig }
-                        |> forceAddWhenNoBoards newConfig
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
-
-        ( EnteredCompletedCount value, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent updateCompletedCount c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateCompletedCount : BoardConfig -> BoardConfig
-                updateCompletedCount config =
-                    case ( config, String.toInt value ) of
-                        ( BoardConfig.DateBoardConfig dateBoardConfig, Just newCount ) ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | completedCount = newCount }
-
-                        ( BoardConfig.TagBoardConfig tagBoardConfig, Just newCount ) ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | completedCount = newCount }
-
-                        _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( EnteredNewBoardTitle title, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Adding cs c ->
-                            Adding cs (updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( EnteredTags tags, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent updateTags c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTags : BoardConfig -> BoardConfig
-                updateTags config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            let
-                                columnsConfig =
-                                    Parser.run TagBoard.columnConfigsParser tags
-                            in
-                            case columnsConfig of
-                                Ok parsedConfig ->
-                                    BoardConfig.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
-
-                                _ ->
-                                    config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( EnteredTitle title, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+        ( GotSettingsPageMsg subMsg, _ ) ->
+            SettingsPage.update subMsg model
+                |> updateWith GotSettingsPageMsg
 
         ( InitCompleted, _ ) ->
             case model.taskList of
-                Waiting ->
-                    ( { model | taskList = Loaded TaskList.empty }, Cmd.none )
+                Model.Waiting ->
+                    ( { model | taskList = Model.Loaded TaskList.empty }, Cmd.none )
 
-                Loading taskList ->
+                Model.Loading taskList ->
                     let
                         cards =
                             taskList
                                 |> Panels.init model.boardConfigs
                                 |> Panels.cards model.timeWithZone
                     in
-                    ( { model | taskList = Loaded taskList }
+                    ( { model | taskList = Model.Loaded taskList }
                     , Cmd.batch
                         [ InteropPorts.displayTaskMarkdown cards
                         , InteropPorts.addHoverToCardEditButtons cards
                         ]
                     )
 
-                Loaded _ ->
-                    ( model, Cmd.none )
-
-        ( ModalCancelClicked, _ ) ->
-            case model.configBeingEdited of
-                Adding config _ ->
-                    ( { model | configBeingEdited = Editing config }
-                        |> forceAddWhenNoBoards config
-                    , Cmd.none
-                    )
-
-                Deleting config ->
-                    ( { model | configBeingEdited = Editing config }
-                    , Cmd.none
-                    )
-
-                Editing config ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , InteropPorts.updateSettings config
-                    )
-
-                _ ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , Cmd.none
-                    )
-
-        ( ModalCloseClicked, _ ) ->
-            case model.configBeingEdited of
-                Adding config _ ->
-                    ( { model | configBeingEdited = Editing config }
-                        |> forceAddWhenNoBoards config
-                    , Cmd.none
-                    )
-
-                Deleting config ->
-                    ( { model | configBeingEdited = Editing config }
-                    , Cmd.none
-                    )
-
-                Editing config ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , InteropPorts.updateSettings config
-                    )
-
-                _ ->
-                    ( { model | configBeingEdited = NotEditing }
-                    , Cmd.none
-                    )
-
-        ( NewBoardDetailsEntered, _ ) ->
-            case model.configBeingEdited of
-                Adding config newConfig ->
-                    let
-                        configWithNew =
-                            SafeZipper.add newConfig config
-                                |> SafeZipper.last
-                    in
-                    ( { model | configBeingEdited = Editing configWithNew }
-                    , Cmd.none
-                    )
-
-                _ ->
+                Model.Loaded _ ->
                     ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
@@ -422,26 +139,18 @@ update msg model =
             , Cmd.none
             )
 
-        ( SettingsBoardNameClicked index, _ ) ->
-            case model.configBeingEdited of
-                Editing boardConfigs ->
-                    ( { model | configBeingEdited = Editing <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
-
         ( SettingsClicked, _ ) ->
-            ( { model | configBeingEdited = Editing model.boardConfigs }, Cmd.none )
+            ( { model | configBeingEdited = Model.Editing model.boardConfigs }, Cmd.none )
 
         ( SettingsUpdated newSettings, _ ) ->
             case model.taskList of
-                Waiting ->
+                Model.Waiting ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
 
-                Loading _ ->
+                Model.Loading _ ->
                     ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
 
-                Loaded taskList ->
+                Model.Loaded taskList ->
                     let
                         newConfigs =
                             SafeZipper.fromList newSettings
@@ -469,7 +178,7 @@ update msg model =
 
         ( TaskItemDeleteClicked id, _ ) ->
             case model.taskList of
-                Loaded taskList ->
+                Model.Loaded taskList ->
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
@@ -488,7 +197,7 @@ update msg model =
 
         ( TaskItemEditClicked id, _ ) ->
             case model.taskList of
-                Loaded taskList ->
+                Model.Loaded taskList ->
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
@@ -507,7 +216,7 @@ update msg model =
 
         ( TaskItemToggled id, _ ) ->
             case model.taskList of
-                Loaded taskList ->
+                Model.Loaded taskList ->
                     case TaskList.taskContainingId id taskList of
                         Just matchingItem ->
                             ( model
@@ -527,72 +236,6 @@ update msg model =
             ( { model | timeWithZone = TimeWithZone.now time model.timeWithZone }
             , Cmd.none
             )
-
-        ( ToggleIncludeOthers, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent toggleIncludeOthers c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeOthers : BoardConfig -> BoardConfig
-                toggleIncludeOthers config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( ToggleIncludeUndated, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent toggleIncludeUndated c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUndated : BoardConfig -> BoardConfig
-                toggleIncludeUndated config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
-
-                        BoardConfig.TagBoardConfig _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
-
-        ( ToggleIncludeUntagged, _ ) ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Editing (SafeZipper.mapCurrent toggleIncludeUntagged c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUntagged : BoardConfig -> BoardConfig
-                toggleIncludeUntagged config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ( VaultFileAdded markdownFile, _ ) ->
             let
@@ -661,6 +304,11 @@ update msg model =
             )
 
 
+updateWith : (subMsg -> Msg) -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toMsg ( model, subCmd ) =
+    ( model, Cmd.map toMsg subCmd )
+
+
 rePathedTaskItems : String -> String -> State TaskList -> TaskList
 rePathedTaskItems oldPath newPath taskList =
     let
@@ -675,53 +323,53 @@ rePathedTaskItems oldPath newPath taskList =
             TaskItem.filePath item == oldPath
     in
     case taskList of
-        Waiting ->
+        Model.Waiting ->
             TaskList.empty
 
-        Loading currentList ->
+        Model.Loading currentList ->
             rePathedItems currentList
 
-        Loaded currentList ->
+        Model.Loaded currentList ->
             rePathedItems currentList
 
 
 deleteItemsFromFile : Model -> String -> Model
 deleteItemsFromFile model filePath =
     case model.taskList of
-        Waiting ->
+        Model.Waiting ->
             model
 
-        Loading currentList ->
-            { model | taskList = Loading (TaskList.removeForFile filePath currentList) }
+        Model.Loading currentList ->
+            { model | taskList = Model.Loading (TaskList.removeForFile filePath currentList) }
 
-        Loaded currentList ->
-            { model | taskList = Loaded (TaskList.removeForFile filePath currentList) }
+        Model.Loaded currentList ->
+            { model | taskList = Model.Loaded (TaskList.removeForFile filePath currentList) }
 
 
 addTaskItems : Model -> TaskList -> Model
 addTaskItems model taskList =
     case model.taskList of
-        Waiting ->
-            { model | taskList = Loading taskList }
+        Model.Waiting ->
+            { model | taskList = Model.Loading taskList }
 
-        Loading currentList ->
-            { model | taskList = Loading (TaskList.append currentList taskList) }
+        Model.Loading currentList ->
+            { model | taskList = Model.Loading (TaskList.append currentList taskList) }
 
-        Loaded currentList ->
-            { model | taskList = Loaded (TaskList.append currentList taskList) }
+        Model.Loaded currentList ->
+            { model | taskList = Model.Loaded (TaskList.append currentList taskList) }
 
 
 updateTaskItems : Model -> String -> TaskList -> Model
 updateTaskItems model filePath updatedList =
     case model.taskList of
-        Waiting ->
-            { model | taskList = Loading updatedList }
+        Model.Waiting ->
+            { model | taskList = Model.Loading updatedList }
 
-        Loading currentList ->
-            { model | taskList = Loading (TaskList.replaceForFile filePath updatedList currentList) }
+        Model.Loading currentList ->
+            { model | taskList = Model.Loading (TaskList.replaceForFile filePath updatedList currentList) }
 
-        Loaded currentList ->
-            { model | taskList = Loaded (TaskList.replaceForFile filePath updatedList currentList) }
+        Model.Loaded currentList ->
+            { model | taskList = Model.Loaded (TaskList.replaceForFile filePath updatedList currentList) }
 
 
 
@@ -769,7 +417,7 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     case model.taskList of
-        Loaded taskList ->
+        Model.Loaded taskList ->
             let
                 panels =
                     Panels.init model.boardConfigs taskList
@@ -787,375 +435,12 @@ view model =
                             |> SafeZipper.toList
                         )
                     ]
-                , dialogs model.configBeingEdited
+                , SettingsPage.dialogs model.configBeingEdited
+                    |> Html.map GotSettingsPageMsg
                 ]
 
         _ ->
             Html.text "Loading tasks...."
-
-
-dialogs : EditState -> Html Msg
-dialogs editState =
-    case editState of
-        Adding configsBeingEdited newConfig ->
-            Html.div []
-                [ modalSettingsView configsBeingEdited
-                , modalAddBoard newConfig
-                ]
-
-        Deleting configsBeingEdited ->
-            Html.div []
-                [ modalSettingsView configsBeingEdited
-                , modalConfirmDelete
-                ]
-
-        Editing configsBeingEdited ->
-            modalSettingsView configsBeingEdited
-
-        NotEditing ->
-            Html.text ""
-
-
-modalAddBoard : BoardConfig -> Html Msg
-modalAddBoard newConfig =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
-                ]
-                []
-            , Html.div [ class "modal-title" ]
-                [ Html.text "Add new board" ]
-            , Html.div [ class "modal-form" ]
-                [ Html.div [ class "form-item" ]
-                    [ Html.div [ class "form-item-name" ]
-                        [ Html.text "Title" ]
-                    , Html.div [ class "form-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value <| BoardConfig.title newConfig
-                            , onInput EnteredNewBoardTitle
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "form-item" ]
-                    [ Html.div [ class "form-item-name" ]
-                        [ Html.text "Type" ]
-                    , Html.div [ class "form-item-control" ]
-                        [ Html.select
-                            [ class "dropdown"
-                            , onInput BoardTypeSelected
-                            ]
-                            [ Html.option
-                                [ value "dateBoard"
-                                , selected <| BoardConfig.isForDateBoard newConfig
-                                ]
-                                [ Html.text "Date board" ]
-                            , Html.option
-                                [ value "tagBoard"
-                                , selected <| BoardConfig.isForTagBoard newConfig
-                                ]
-                                [ Html.text "Tag board" ]
-                            ]
-                        ]
-                    ]
-                , Html.div [ class "dialog-buttons" ]
-                    [ Html.button
-                        [ onClick <| ModalCancelClicked
-                        ]
-                        [ Html.text "Cancel"
-                        ]
-                    , Html.button
-                        [ class "mod-cta"
-                        , onClick <| NewBoardDetailsEntered
-                        ]
-                        [ Html.text "Add"
-                        ]
-                    ]
-                ]
-            ]
-        ]
-
-
-modalConfirmDelete : Html Msg
-modalConfirmDelete =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
-                ]
-                []
-            , Html.div [ class "modal-title" ]
-                [ Html.text "Confirm Deletion" ]
-            , Html.div [ class "dialog-buttons" ]
-                [ Html.button
-                    [ onClick <| ModalCancelClicked
-                    ]
-                    [ Html.text "Do not delete"
-                    ]
-                , Html.button
-                    [ class "mod-warning"
-                    , onClick <| DeleteBoardConfirmed
-                    ]
-                    [ Html.text "Go ahead"
-                    ]
-                ]
-            ]
-        ]
-
-
-modalSettingsView : SafeZipper BoardConfig -> Html Msg
-modalSettingsView configs =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal mod-settings" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
-                ]
-                []
-            , Html.div [ class "modal-content" ]
-                [ Html.div [ class "settings-menu vertical-tab-header" ]
-                    (Html.div [ class "vertical-tab-header-group-title" ]
-                        [ Html.text "Boards"
-                        , Html.div
-                            [ class "vertical-tab-header-group-title-icon"
-                            , onClick AddBoardClicked
-                            ]
-                            [ FeatherIcons.plus
-                                |> FeatherIcons.withSize 1
-                                |> FeatherIcons.withSizeUnit "em"
-                                |> FeatherIcons.toHtml []
-                            ]
-                        ]
-                        :: (configs
-                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
-                                |> SafeZipper.toList
-                           )
-                    )
-                , settingsFormView <| SafeZipper.current configs
-                ]
-            ]
-        ]
-
-
-settingsFormView : Maybe BoardConfig -> Html Msg
-settingsFormView boardConfig =
-    case boardConfig of
-        Just (BoardConfig.DateBoardConfig config) ->
-            let
-                includeUndatedStyle =
-                    if config.includeUndated then
-                        " is-enabled"
-
-                    else
-                        ""
-            in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Undated" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with no due date" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUndatedStyle
-                                , onClick ToggleIncludeUndated
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
-                            ]
-                            [ Html.text "Delete this board"
-                            ]
-                        ]
-                    ]
-                ]
-
-        Just (BoardConfig.TagBoardConfig config) ->
-            let
-                includeOthersStyle =
-                    if config.includeOthers then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                includeUntaggedStyle =
-                    if config.includeUntagged then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                tagText =
-                    config.columns
-                        |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
-                        |> String.join "\n"
-            in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Columns" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.div []
-                                    [ Html.text "The tags to use to define board columns." ]
-                                , Html.div []
-                                    [ Html.text
-                                        ("Each line should be a tag followed by the column heading.  "
-                                            ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                            ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                        )
-                                    ]
-                                ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.textarea
-                                [ onInput EnteredTags
-                                , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                                ]
-                                [ Html.text tagText ]
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Others" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with tags other than those specified" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeOthersStyle
-                                , onClick ToggleIncludeOthers
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Untagged" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with no tags" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUntaggedStyle
-                                , onClick ToggleIncludeUntagged
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
-                            ]
-                            [ Html.text "Delete this board"
-                            ]
-                        ]
-                    ]
-                ]
-
-        Nothing ->
-            Html.text ""
-
-
-settingTitleSelectedView : Int -> BoardConfig -> Html Msg
-settingTitleSelectedView index boardConfig =
-    Html.div
-        [ class "vertical-tab-nav-item is-active"
-        , onClick <| SettingsBoardNameClicked index
-        ]
-        [ Html.text <| BoardConfig.title boardConfig ]
-
-
-settingTitleView : Int -> BoardConfig -> Html Msg
-settingTitleView index boardConfig =
-    Html.div
-        [ class "vertical-tab-nav-item"
-        , onClick <| SettingsBoardNameClicked index
-        ]
-        [ Html.text <| BoardConfig.title boardConfig ]
 
 
 tabHeaders : Maybe Int -> Panels -> List (Html Msg)
