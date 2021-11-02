@@ -3,7 +3,6 @@ module CardBoardSettings exposing
     , boardConfigs
     , decoder
     , encoder
-    , version
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -34,11 +33,6 @@ type alias Settings =
 boardConfigs : Settings -> List BoardConfig
 boardConfigs =
     .boardConfigs
-
-
-version : Settings -> String
-version settings =
-    Semver.print settings.version
 
 
 

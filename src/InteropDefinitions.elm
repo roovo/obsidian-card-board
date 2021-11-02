@@ -10,21 +10,15 @@ module InteropDefinitions exposing
     , updateTasksEncoder
     )
 
-import BoardConfig exposing (BoardConfig)
 import CardBoardSettings exposing (Settings)
-import DateBoard
 import DecodeHelpers
-import Json.Encode as JE
 import MarkdownFile exposing (MarkdownFile)
-import Semver
-import TagBoard
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
 
 
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
-    | CloseView
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
@@ -133,13 +127,10 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
-
-                CloseView ->
-                    vCloseView
 
                 DeleteTask info ->
                     vDeleteTask info

@@ -1,7 +1,6 @@
 module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
 import Expect
 import TagBoard
 import Test exposing (..)

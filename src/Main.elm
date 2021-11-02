@@ -3,13 +3,12 @@ module Main exposing (main)
 import BoardConfig exposing (BoardConfig)
 import Browser
 import Card exposing (Card)
-import CardBoardSettings exposing (Settings)
+import CardBoardSettings
 import Date exposing (Date)
-import DateBoard
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, placeholder, selected, type_, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (checked, class, hidden, id, type_)
+import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropDefinitions
 import InteropPorts
@@ -19,10 +18,8 @@ import Model exposing (Model, State)
 import Page.Settings as SettingsPage
 import Panel exposing (Panel)
 import Panels exposing (Panels)
-import Parser
-import SafeZipper exposing (SafeZipper)
+import SafeZipper
 import String
-import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
