@@ -113,34 +113,10 @@ update msg model =
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
 
         ( TaskItemDeleteClicked id, _ ) ->
-            case model.taskList of
-                State.Loaded taskList ->
-                    case TaskList.taskFromId id taskList of
-                        Just matchingItem ->
-                            ( model
-                            , InteropPorts.deleteTask <| TaskItem.fields matchingItem
-                            )
-
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( model, cmdIfHasTask id model InteropPorts.deleteTask )
 
         ( TaskItemEditClicked id, _ ) ->
-            case model.taskList of
-                State.Loaded taskList ->
-                    case TaskList.taskFromId id taskList of
-                        Just matchingItem ->
-                            ( model
-                            , InteropPorts.openTaskSourceFile <| TaskItem.fields matchingItem
-                            )
-
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( model, cmdIfHasTask id model InteropPorts.openTaskSourceFile )
 
         ( TaskItemToggled id, _ ) ->
             case model.taskList of
@@ -169,21 +145,9 @@ update msg model =
             let
                 newTasks =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
-
-                cards =
-                    newTasks
-                        |> Panels.init model.boardConfigs
-                        |> Panels.cards model.timeWithZone
             in
             ( Model.addTaskList newTasks model
-            , if Model.taskListLoaded model then
-                Cmd.batch
-                    [ InteropPorts.displayTaskMarkdown cards
-                    , InteropPorts.addHoverToCardEditButtons cards
-                    ]
-
-              else
-                Cmd.none
+            , cmdForTaskRedraws newTasks model
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -193,43 +157,55 @@ update msg model =
             let
                 updatedTaskItems =
                     rePathedTaskItems oldPath newPath model.taskList
-
-                cards =
-                    updatedTaskItems
-                        |> Panels.init model.boardConfigs
-                        |> Panels.cards model.timeWithZone
             in
             ( Model.updateTaskItems oldPath updatedTaskItems model
-            , if Model.taskListLoaded model then
-                Cmd.batch
-                    [ InteropPorts.displayTaskMarkdown cards
-                    , InteropPorts.addHoverToCardEditButtons cards
-                    ]
-
-              else
-                Cmd.none
+            , cmdForTaskRedraws updatedTaskItems model
             )
 
         ( VaultFileUpdated markdownFile, _ ) ->
             let
                 updatedTaskItems =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
-
-                cards =
-                    updatedTaskItems
-                        |> Panels.init model.boardConfigs
-                        |> Panels.cards model.timeWithZone
             in
             ( Model.updateTaskItems markdownFile.filePath updatedTaskItems model
-            , if Model.taskListLoaded model then
-                Cmd.batch
-                    [ InteropPorts.displayTaskMarkdown cards
-                    , InteropPorts.addHoverToCardEditButtons cards
-                    ]
-
-              else
-                Cmd.none
+            , cmdForTaskRedraws updatedTaskItems model
             )
+
+
+cmdForTaskRedraws : TaskList -> Model -> Cmd Msg
+cmdForTaskRedraws newTasks model =
+    let
+        cards =
+            newTasks
+                |> Panels.init model.boardConfigs
+                |> Panels.cards model.timeWithZone
+    in
+    if Model.taskListLoaded model then
+        Cmd.batch
+            [ InteropPorts.displayTaskMarkdown cards
+            , InteropPorts.addHoverToCardEditButtons cards
+            ]
+
+    else
+        Cmd.none
+
+
+
+-- cmdIfHasTask : String -> Model -> ({ a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg) -> Cmd Msg
+
+
+cmdIfHasTask id model cmd =
+    case model.taskList of
+        State.Loaded taskList ->
+            case TaskList.taskFromId id taskList of
+                Just matchingItem ->
+                    cmd <| TaskItem.fields matchingItem
+
+                Nothing ->
+                    Cmd.none
+
+        _ ->
+            Cmd.none
 
 
 rePathedTaskItems : String -> String -> State TaskList -> TaskList
