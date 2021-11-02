@@ -40,8 +40,8 @@ type State a
 
 default : Model
 default =
-    { boardConfigs = SafeZipper.fromList []
-    , configBeingEdited = Adding (SafeZipper.fromList []) BoardConfig.default
+    { boardConfigs = SafeZipper.empty
+    , configBeingEdited = Adding SafeZipper.empty BoardConfig.default
     , taskList = Waiting
     , timeWithZone =
         { now = Time.millisToPosix 0

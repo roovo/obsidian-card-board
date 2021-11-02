@@ -14,6 +14,7 @@ suite =
         , current
         , currentIndex
         , deleteCurrent
+        , empty
         , fromList
         , indexedMapSelectedAndRest
         , last
@@ -189,6 +190,17 @@ deleteCurrent =
         ]
 
 
+empty : Test
+empty =
+    describe "empty"
+        [ test "returns an empty zipper" <|
+            \() ->
+                SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        ]
+
+
 fromList : Test
 fromList =
     describe "fromIndex"
@@ -306,7 +318,7 @@ selectedIndex =
     describe "selectedIndex"
         [ test "is Nothing for an empty zipper" <|
             \_ ->
-                SafeZipper.fromList []
+                SafeZipper.empty
                     |> SafeZipper.selectedIndex
                     |> Expect.equal Nothing
         , test "is Just 0 for a newly built zipper with stuff in it" <|
@@ -328,7 +340,7 @@ toList =
     describe "toList"
         [ test "returns an empty list for an empty zipper" <|
             \() ->
-                SafeZipper.fromList []
+                SafeZipper.empty
                     |> SafeZipper.toList
                     |> Expect.equal []
         , test "returns the zipper contents as a list" <|

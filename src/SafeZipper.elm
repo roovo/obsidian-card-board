@@ -5,6 +5,7 @@ module SafeZipper exposing
     , current
     , currentIndex
     , deleteCurrent
+    , empty
     , fromList
     , indexedMapSelectedAndRest
     , last
@@ -29,6 +30,11 @@ type SafeZipper a
 
 
 -- CONSTRUCTION
+
+
+empty : SafeZipper a
+empty =
+    EmptyZipper
 
 
 fromList : List a -> SafeZipper a
