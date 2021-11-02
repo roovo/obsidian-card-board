@@ -47,7 +47,7 @@ export class CardBoardView extends ItemView {
     const mySettings:Flags = {
       now:          Date.now(),
       zone:         new Date().getTimezoneOffset(),
-      boardConfigs: this.plugin.settings?.data?.boardConfigs
+      settings:     this.plugin.settings
     };
 
     const elmDiv = document.createElement('div');

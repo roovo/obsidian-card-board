@@ -41,7 +41,7 @@ type ToElm
 
 
 type alias Flags =
-    { boardConfigs : List BoardConfig
+    { settings : CardBoardSettings.Settings
     , now : Int
     , zone : Int
     }
@@ -112,7 +112,7 @@ updateTodosEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
+        |> TsDecode.andMap (TsDecode.field "settings" CardBoardSettings.decoder)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 

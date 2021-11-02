@@ -23,25 +23,28 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags" <|
             \() ->
-                """{"now":11,"zone":22,"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
-                            { boardConfigs =
-                                [ BoardConfig.DateBoardConfig
-                                    { completedCount = 4
-                                    , includeUndated = True
-                                    , title = "date board title"
-                                    }
-                                , BoardConfig.TagBoardConfig
-                                    { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                    , completedCount = 5
-                                    , includeOthers = False
-                                    , includeUntagged = True
-                                    , title = "tag board title"
-                                    }
-                                ]
+                            { settings =
+                                { version = Semver.version 0 1 0 [] []
+                                , boardConfigs =
+                                    [ BoardConfig.DateBoardConfig
+                                        { completedCount = 4
+                                        , includeUndated = True
+                                        , title = "date board title"
+                                        }
+                                    , BoardConfig.TagBoardConfig
+                                        { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , completedCount = 5
+                                        , includeOthers = False
+                                        , includeUntagged = True
+                                        , title = "tag board title"
+                                        }
+                                    ]
+                                }
                             , now = 11
                             , zone = 22
                             }
@@ -59,8 +62,8 @@ flagsTests =
                     |> runDecoder interop.flags
                     |> .tsType
                     |> Expect.equal
-                        ("{ boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; "
-                            ++ "now : number; "
+                        ("{ now : number; "
+                            ++ "settings : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); "
                             ++ "zone : number }"
                         )
         ]

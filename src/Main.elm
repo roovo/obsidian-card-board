@@ -49,7 +49,7 @@ init flags =
         Ok okFlags ->
             let
                 boardConfigs =
-                    SafeZipper.fromList okFlags.boardConfigs
+                    SafeZipper.fromList <| CardBoardSettings.boardConfigs okFlags.settings
             in
             ( { boardConfigs = boardConfigs
               , configBeingEdited = Model.NotEditing

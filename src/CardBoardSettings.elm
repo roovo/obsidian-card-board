@@ -1,5 +1,6 @@
 module CardBoardSettings exposing
     ( Settings
+    , boardConfigs
     , decoder
     , encoder
     , version
@@ -28,6 +29,11 @@ type alias Settings =
 
 
 -- INFO
+
+
+boardConfigs : Settings -> List BoardConfig
+boardConfigs =
+    .boardConfigs
 
 
 version : Settings -> String
