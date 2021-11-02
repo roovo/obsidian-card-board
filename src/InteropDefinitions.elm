@@ -24,6 +24,7 @@ import TsJson.Encode as TsEncode exposing (required)
 
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
+    | CloseView
     | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
     | OpenTodoSourceFile { filePath : String, lineNumber : Int, originalText : String }
@@ -67,6 +68,12 @@ addFilePreviewHoversEncoder =
             , required "id" .id TsEncode.string
             ]
         )
+
+
+closeViewEncoder : JE.Value
+closeViewEncoder =
+    JE.object
+        [ ( "tag", JE.string "closeView" ) ]
 
 
 deleteTodoEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
@@ -132,10 +139,13 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vDeleteTodo vDisplayTodoMarkdown vOpenTodoSourceFile vUpdateConfig vUpdateTodos value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTodo vDisplayTodoMarkdown vOpenTodoSourceFile vUpdateConfig vUpdateTodos value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
+
+                CloseView ->
+                    vCloseView
 
                 DeleteTodo info ->
                     vDeleteTodo info
@@ -153,6 +163,7 @@ fromElm =
                     vUpdateTodos info
         )
         |> TsEncode.variantTagged "addFilePreviewHovers" addFilePreviewHoversEncoder
+        |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTodo" deleteTodoEncoder
         |> TsEncode.variantTagged "displayTodoMarkdown" displayTodoMarkdownEncoder
         |> TsEncode.variantTagged "openTodoSourceFile" openTodoSourceFileEncoder

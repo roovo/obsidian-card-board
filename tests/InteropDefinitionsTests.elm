@@ -134,6 +134,7 @@ fromElmTests =
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
                             ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""
+                            ++ """ | { tag : "closeView" }"""
                             ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
                         )
         ]

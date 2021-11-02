@@ -54,6 +54,10 @@ export default class CardBoardPlugin extends Plugin {
     );
   }
 
+  async deactivateView() {
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
+  }
+
   async loadSettings() {
     // this.settings = Object.assign([], DEFAULT_SETTINGS, await this.loadData());
     this.settings = await this.loadData();

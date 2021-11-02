@@ -1,5 +1,6 @@
 port module InteropPorts exposing
     ( addHoverToCardEditButtons
+    , closeView
     , decodeFlags
     , deleteTodo
     , displayTaskMarkdown
@@ -28,11 +29,28 @@ currentSettingsVersion =
     Semver.version 0 1 0 [] []
 
 
+toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
+toElm =
+    (InteropDefinitions.interop.toElm |> TsDecode.decoder)
+        |> Json.Decode.decodeValue
+        |> interopToElm
+
+
+
+-- COMMANDS
+
+
 addHoverToCardEditButtons : List Card -> Cmd msg
 addHoverToCardEditButtons cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, id = Card.editButtonId c })
         |> encodeVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
+        |> interopFromElm
+
+
+closeView : Cmd msg
+closeView =
+    encodeVariant "closeView" (TsEncode.object []) ()
         |> interopFromElm
 
 
@@ -43,18 +61,18 @@ deleteTodo info =
         |> interopFromElm
 
 
-openTodoSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
-openTodoSourceFile info =
-    info
-        |> encodeVariant "openTodoSourceFile" InteropDefinitions.openTodoSourceFileEncoder
-        |> interopFromElm
-
-
 displayTaskMarkdown : List Card -> Cmd msg
 displayTaskMarkdown cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, todoMarkdown = Card.markdownWithIds c })
         |> encodeVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
+        |> interopFromElm
+
+
+openTodoSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
+openTodoSourceFile info =
+    info
+        |> encodeVariant "openTodoSourceFile" InteropDefinitions.openTodoSourceFileEncoder
         |> interopFromElm
 
 
@@ -79,15 +97,8 @@ updateSettings configs =
         |> interopFromElm
 
 
-toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
-toElm =
-    (InteropDefinitions.interop.toElm |> TsDecode.decoder)
-        |> Json.Decode.decodeValue
-        |> interopToElm
 
-
-
--- PRIVATE
+-- HELPERS
 
 
 encodeVariant : String -> TsEncode.Encoder arg1 -> arg1 -> Json.Encode.Value
@@ -106,6 +117,10 @@ decodeFlags flags =
     Json.Decode.decodeValue
         (InteropDefinitions.interop.flags |> TsDecode.decoder)
         flags
+
+
+
+-- PORTS
 
 
 port interopFromElm : Json.Encode.Value -> Cmd msg

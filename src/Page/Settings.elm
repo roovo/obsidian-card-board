@@ -99,9 +99,11 @@ update msg model =
                     let
                         newConfig =
                             SafeZipper.deleteCurrent c
+                                |> Debug.log "foo"
                     in
                     ( { model | configBeingEdited = Model.Editing newConfig }
                         |> Model.forceAddWhenNoBoards newConfig
+                        |> Debug.log "deleting"
                     , Cmd.none
                     )
 
@@ -209,50 +211,10 @@ update msg model =
             ( { model | configBeingEdited = newConfig }, Cmd.none )
 
         ModalCancelClicked ->
-            case model.configBeingEdited of
-                Model.Adding config _ ->
-                    ( { model | configBeingEdited = Model.Editing config }
-                        |> Model.forceAddWhenNoBoards config
-                    , Cmd.none
-                    )
-
-                Model.Deleting config ->
-                    ( { model | configBeingEdited = Model.Editing config }
-                    , Cmd.none
-                    )
-
-                Model.Editing config ->
-                    ( { model | configBeingEdited = Model.NotEditing }
-                    , InteropPorts.updateSettings config
-                    )
-
-                _ ->
-                    ( { model | configBeingEdited = Model.NotEditing }
-                    , Cmd.none
-                    )
+            closeDialogOrExit model
 
         ModalCloseClicked ->
-            case model.configBeingEdited of
-                Model.Adding config _ ->
-                    ( { model | configBeingEdited = Model.Editing config }
-                        |> Model.forceAddWhenNoBoards config
-                    , Cmd.none
-                    )
-
-                Model.Deleting config ->
-                    ( { model | configBeingEdited = Model.Editing config }
-                    , Cmd.none
-                    )
-
-                Model.Editing config ->
-                    ( { model | configBeingEdited = Model.NotEditing }
-                    , InteropPorts.updateSettings config
-                    )
-
-                _ ->
-                    ( { model | configBeingEdited = Model.NotEditing }
-                    , Cmd.none
-                    )
+            closeDialogOrExit model
 
         NewBoardDetailsEntered ->
             case model.configBeingEdited of
@@ -342,6 +304,42 @@ update msg model =
                             BoardConfig.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+
+closeDialogOrExit : Model -> ( Model, Cmd Msg )
+closeDialogOrExit model =
+    case model.configBeingEdited of
+        Model.Adding config _ ->
+            let
+                cmd =
+                    if SafeZipper.length config == 0 then
+                        Cmd.batch
+                            [ InteropPorts.updateSettings config
+                            , InteropPorts.closeView
+                            ]
+
+                    else
+                        Cmd.none
+            in
+            ( { model | configBeingEdited = Model.Editing config }
+                |> Model.forceAddWhenNoBoards config
+            , cmd
+            )
+
+        Model.Deleting config ->
+            ( { model | configBeingEdited = Model.Editing config }
+            , Cmd.none
+            )
+
+        Model.Editing config ->
+            ( { model | configBeingEdited = Model.NotEditing }
+            , InteropPorts.updateSettings config
+            )
+
+        _ ->
+            ( { model | configBeingEdited = Model.NotEditing }
+            , Cmd.none
+            )
 
 
 

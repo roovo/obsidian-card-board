@@ -71,6 +71,9 @@ export class CardBoardView extends ItemView {
         case "addFilePreviewHovers":
           that.handleAddFilePreviewHovers(fromElm.data);
           break;
+        case "closeView":
+          that.handleCloseView();
+          break;
         case "deleteTodo":
           that.handleDeleteTodo(fromElm.data);
           break;
@@ -150,6 +153,10 @@ export class CardBoardView extends ItemView {
         }
       }
     })
+  }
+
+  async handleCloseView() {
+    this.plugin.deactivateView();
   }
 
   async handleDeleteTodo(
