@@ -23,6 +23,7 @@ import TagBoard
 
 type Msg
     = AddBoardClicked
+    | AddBoardConfirmed
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
@@ -32,7 +33,6 @@ type Msg
     | EnteredTitle String
     | ModalCancelClicked
     | ModalCloseClicked
-    | NewBoardDetailsEntered
     | SettingsBoardNameClicked Int
     | ToggleIncludeOthers
     | ToggleIncludeUndated
@@ -54,6 +54,21 @@ update msg model =
                             model.configBeingEdited
             in
             ( { model | configBeingEdited = newConfig }, Cmd.none )
+
+        AddBoardConfirmed ->
+            case model.configBeingEdited of
+                Model.Adding config newConfig ->
+                    let
+                        configWithNew =
+                            SafeZipper.add newConfig config
+                                |> SafeZipper.last
+                    in
+                    ( { model | configBeingEdited = Model.Editing configWithNew }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         BoardTypeSelected board ->
             let
@@ -213,21 +228,6 @@ update msg model =
 
         ModalCloseClicked ->
             closeDialogOrExit model
-
-        NewBoardDetailsEntered ->
-            case model.configBeingEdited of
-                Model.Adding config newConfig ->
-                    let
-                        configWithNew =
-                            SafeZipper.add newConfig config
-                                |> SafeZipper.last
-                    in
-                    ( { model | configBeingEdited = Model.Editing configWithNew }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
 
         SettingsBoardNameClicked index ->
             case model.configBeingEdited of
@@ -420,7 +420,7 @@ modalAddBoard newConfig =
                         ]
                     , Html.button
                         [ class "mod-cta"
-                        , onClick <| NewBoardDetailsEntered
+                        , onClick <| AddBoardConfirmed
                         ]
                         [ Html.text "Add"
                         ]
