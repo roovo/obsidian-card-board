@@ -18,6 +18,7 @@ import Panel exposing (Panel)
 import Panels exposing (Panels)
 import Parser
 import SafeZipper exposing (SafeZipper)
+import String exposing (replace)
 import TagBoard
 import Task
 import TaskItem exposing (TaskItem)
@@ -1331,7 +1332,7 @@ cardTagsView tags =
 
 cardTagView : String -> Html Msg
 cardTagView tagText =
-    Html.div [ class "card-board-card-tag" ]
+    Html.div [ class ("card-board-card-tag tag-" ++ (replace "/" "-" tagText)) ]
         [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
             [ Html.text "#" ]
         , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
