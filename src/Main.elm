@@ -182,7 +182,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , InteropPorts.deleteTodo
+                            , InteropPorts.deleteTask
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , originalText = TaskItem.originalText matchingItem
@@ -201,7 +201,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , InteropPorts.openTodoSourceFile
+                            , InteropPorts.openTaskSourceFile
                                 { filePath = TaskItem.filePath matchingItem
                                 , lineNumber = TaskItem.lineNumber matchingItem
                                 , originalText = TaskItem.originalText matchingItem
@@ -220,7 +220,7 @@ update msg model =
                     case TaskList.taskContainingId id taskList of
                         Just matchingItem ->
                             ( model
-                            , InteropPorts.rewriteTodos
+                            , InteropPorts.rewriteTasks
                                 model.timeWithZone
                                 (TaskItem.filePath matchingItem)
                                 (TaskItem.tasksToToggle id model.timeWithZone matchingItem)

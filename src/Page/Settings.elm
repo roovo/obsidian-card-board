@@ -99,11 +99,9 @@ update msg model =
                     let
                         newConfig =
                             SafeZipper.deleteCurrent c
-                                |> Debug.log "foo"
                     in
                     ( { model | configBeingEdited = Model.Editing newConfig }
                         |> Model.forceAddWhenNoBoards newConfig
-                        |> Debug.log "deleting"
                     , Cmd.none
                     )
 

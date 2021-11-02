@@ -2,10 +2,10 @@ port module InteropPorts exposing
     ( addHoverToCardEditButtons
     , closeView
     , decodeFlags
-    , deleteTodo
+    , deleteTask
     , displayTaskMarkdown
-    , openTodoSourceFile
-    , rewriteTodos
+    , openTaskSourceFile
+    , rewriteTasks
     , toElm
     , updateSettings
     )
@@ -54,30 +54,30 @@ closeView =
         |> interopFromElm
 
 
-deleteTodo : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
-deleteTodo info =
+deleteTask : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
+deleteTask info =
     info
-        |> encodeVariant "deleteTodo" InteropDefinitions.deleteTodoEncoder
+        |> encodeVariant "deleteTask" InteropDefinitions.deleteTaskEncoder
         |> interopFromElm
 
 
 displayTaskMarkdown : List Card -> Cmd msg
 displayTaskMarkdown cards =
     cards
-        |> List.map (\c -> { filePath = Card.filePath c, todoMarkdown = Card.markdownWithIds c })
-        |> encodeVariant "displayTodoMarkdown" InteropDefinitions.displayTodoMarkdownEncoder
+        |> List.map (\c -> { filePath = Card.filePath c, taskMarkdown = Card.markdownWithIds c })
+        |> encodeVariant "displayTaskMarkdown" InteropDefinitions.displayTaskMarkdownEncoder
         |> interopFromElm
 
 
-openTodoSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
-openTodoSourceFile info =
+openTaskSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
+openTaskSourceFile info =
     info
-        |> encodeVariant "openTodoSourceFile" InteropDefinitions.openTodoSourceFileEncoder
+        |> encodeVariant "openTaskSourceFile" InteropDefinitions.openTaskSourceFileEncoder
         |> interopFromElm
 
 
-rewriteTodos : TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTodos timeWithZone filePath taskItems =
+rewriteTasks : TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTasks timeWithZone filePath taskItems =
     let
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
@@ -85,8 +85,8 @@ rewriteTodos timeWithZone filePath taskItems =
             , newText = taskItem |> TaskItem.toggleCompletion timeWithZone |> TaskItem.toString
             }
     in
-    { filePath = filePath, todos = List.map rewriteDetails taskItems }
-        |> encodeVariant "updateTodos" InteropDefinitions.updateTodosEncoder
+    { filePath = filePath, tasks = List.map rewriteDetails taskItems }
+        |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
         |> interopFromElm
 
 

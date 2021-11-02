@@ -74,20 +74,20 @@ export class CardBoardView extends ItemView {
         case "closeView":
           that.handleCloseView();
           break;
-        case "deleteTodo":
-          that.handleDeleteTodo(fromElm.data);
+        case "deleteTask":
+          that.handleDeleteTask(fromElm.data);
           break;
-        case "displayTodoMarkdown":
-          that.handleDisplayTodoMarkdown(fromElm.data);
+        case "displayTaskMarkdown":
+          that.handleDisplayTaskMarkdown(fromElm.data);
           break;
-        case "openTodoSourceFile":
-          that.handleOpenTodoSourceFile(fromElm.data);
+        case "openTaskSourceFile":
+          that.handleOpenTaskSourceFile(fromElm.data);
           break;
         case "updateSettings":
           that.handleUpdateSettings(elm, fromElm.data);
           break;
-        case "updateTodos":
-          that.handleUpdateTodos(fromElm.data);
+        case "updateTasks":
+          that.handleUpdateTasks(fromElm.data);
           break;
       }
     });
@@ -159,7 +159,7 @@ export class CardBoardView extends ItemView {
     this.plugin.deactivateView();
   }
 
-  async handleDeleteTodo(
+  async handleDeleteTask(
     data: {
       filePath: string,
       lineNumber: number,
@@ -178,10 +178,10 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleDisplayTodoMarkdown(
+  async handleDisplayTaskMarkdown(
     data: {
       filePath: string,
-      todoMarkdown: {
+      taskMarkdown: {
         id: string,
         markdown: string
       }[]
@@ -191,7 +191,7 @@ export class CardBoardView extends ItemView {
 
     requestAnimationFrame(function () {
       for (const card of data) {
-        for (const item of card.todoMarkdown) {
+        for (const item of card.taskMarkdown) {
           const element = document.getElementById(item.id);
 
           if (element instanceof HTMLElement) {
@@ -228,7 +228,7 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleOpenTodoSourceFile(
+  async handleOpenTaskSourceFile(
     data: {
       filePath: string,
       lineNumber: number,
@@ -270,10 +270,10 @@ export class CardBoardView extends ItemView {
     });
   }
 
-  async handleUpdateTodos(
+  async handleUpdateTasks(
     data: {
       filePath: string,
-      todos: { lineNumber: number, originalText: string, newText: string }[]
+      tasks: { lineNumber: number, originalText: string, newText: string }[]
   }) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
@@ -281,7 +281,7 @@ export class CardBoardView extends ItemView {
       const markdown      = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
 
-      for (const item of data.todos) {
+      for (const item of data.tasks) {
         if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
           markdownLines[item.lineNumber - 1] = item.newText
         }

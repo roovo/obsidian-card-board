@@ -3,11 +3,11 @@ module InteropDefinitions exposing
     , FromElm(..)
     , ToElm(..)
     , addFilePreviewHoversEncoder
-    , deleteTodoEncoder
-    , displayTodoMarkdownEncoder
+    , deleteTaskEncoder
+    , displayTaskMarkdownEncoder
     , interop
-    , openTodoSourceFileEncoder
-    , updateTodosEncoder
+    , openTaskSourceFileEncoder
+    , updateTasksEncoder
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -25,11 +25,11 @@ import TsJson.Encode as TsEncode exposing (required)
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | CloseView
-    | DeleteTodo { filePath : String, lineNumber : Int, originalText : String }
-    | DisplayTodoMarkdown (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
-    | OpenTodoSourceFile { filePath : String, lineNumber : Int, originalText : String }
+    | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
+    | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+    | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | UpdateSettings Settings
-    | UpdateTodos { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
+    | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
 type ToElm
@@ -70,14 +70,8 @@ addFilePreviewHoversEncoder =
         )
 
 
-closeViewEncoder : JE.Value
-closeViewEncoder =
-    JE.object
-        [ ( "tag", JE.string "closeView" ) ]
-
-
-deleteTodoEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
-deleteTodoEncoder =
+deleteTaskEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
+deleteTaskEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
         , required "lineNumber" .lineNumber TsEncode.int
@@ -85,18 +79,18 @@ deleteTodoEncoder =
         ]
 
 
-displayTodoMarkdownEncoder : TsEncode.Encoder (List { filePath : String, todoMarkdown : List { id : String, markdown : String } })
-displayTodoMarkdownEncoder =
+displayTaskMarkdownEncoder : TsEncode.Encoder (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+displayTaskMarkdownEncoder =
     TsEncode.list
         (TsEncode.object
             [ required "filePath" .filePath TsEncode.string
-            , required "todoMarkdown" .todoMarkdown (TsEncode.list markdownListEncoder)
+            , required "taskMarkdown" .taskMarkdown (TsEncode.list markdownListEncoder)
             ]
         )
 
 
-openTodoSourceFileEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
-openTodoSourceFileEncoder =
+openTaskSourceFileEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
+openTaskSourceFileEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
         , required "lineNumber" .lineNumber TsEncode.int
@@ -104,11 +98,11 @@ openTodoSourceFileEncoder =
         ]
 
 
-updateTodosEncoder : TsEncode.Encoder { filePath : String, todos : List { lineNumber : Int, originalText : String, newText : String } }
-updateTodosEncoder =
+updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
+updateTasksEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
-        , required "todos" .todos (TsEncode.list todoUpdatesEncoder)
+        , required "tasks" .tasks (TsEncode.list taskUpdatesEncoder)
         ]
 
 
@@ -139,7 +133,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTodo vDisplayTodoMarkdown vOpenTodoSourceFile vUpdateConfig vUpdateTodos value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -147,28 +141,28 @@ fromElm =
                 CloseView ->
                     vCloseView
 
-                DeleteTodo info ->
-                    vDeleteTodo info
+                DeleteTask info ->
+                    vDeleteTask info
 
-                DisplayTodoMarkdown info ->
-                    vDisplayTodoMarkdown info
+                DisplayTaskMarkdown info ->
+                    vDisplayTaskMarkdown info
 
-                OpenTodoSourceFile info ->
-                    vOpenTodoSourceFile info
+                OpenTaskSourceFile info ->
+                    vOpenTaskSourceFile info
 
                 UpdateSettings info ->
                     vUpdateConfig info
 
-                UpdateTodos info ->
-                    vUpdateTodos info
+                UpdateTasks info ->
+                    vUpdateTasks info
         )
         |> TsEncode.variantTagged "addFilePreviewHovers" addFilePreviewHoversEncoder
         |> TsEncode.variant0 "closeView"
-        |> TsEncode.variantTagged "deleteTodo" deleteTodoEncoder
-        |> TsEncode.variantTagged "displayTodoMarkdown" displayTodoMarkdownEncoder
-        |> TsEncode.variantTagged "openTodoSourceFile" openTodoSourceFileEncoder
+        |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
+        |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
+        |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
-        |> TsEncode.variantTagged "updateTodos" updateTodosEncoder
+        |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion
 
 
@@ -191,8 +185,8 @@ markdownListEncoder =
         ]
 
 
-todoUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalText : String, newText : String }
-todoUpdatesEncoder =
+taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalText : String, newText : String }
+taskUpdatesEncoder =
     TsEncode.object
         [ required "lineNumber" .lineNumber TsEncode.int
         , required "originalText" .originalText TsEncode.string

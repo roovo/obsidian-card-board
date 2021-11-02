@@ -79,27 +79,27 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"addFilePreviewHovers","data":[{"filePath":"a path","id":"an id"}]}"""
-        , test "encodes DeleteTodo data" <|
+        , test "encodes DeleteTask data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
-                    |> InteropDefinitions.DeleteTodo
+                    |> InteropDefinitions.DeleteTask
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"deleteTodo","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
-        , test "encodes DisplayTodoMarkdown data" <|
+                    |> Expect.equal """{"tag":"deleteTask","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
+        , test "encodes DisplayTaskMarkdown data" <|
             \() ->
-                [ { filePath = "a path", todoMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
-                    |> InteropDefinitions.DisplayTodoMarkdown
+                [ { filePath = "a path", taskMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
+                    |> InteropDefinitions.DisplayTaskMarkdown
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"displayTodoMarkdown","data":[{"filePath":"a path","todoMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
-        , test "encodes OpenTodoSourceFile data" <|
+                    |> Expect.equal """{"tag":"displayTaskMarkdown","data":[{"filePath":"a path","taskMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
+        , test "encodes OpenTaskSourceFile data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
-                    |> InteropDefinitions.OpenTodoSourceFile
+                    |> InteropDefinitions.OpenTaskSourceFile
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"openTodoSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
+                    |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
         , test "encodes UpdateSettings with DateBoardConfig data" <|
             \() ->
                 { version = Semver.version 1 2 3 [] []
@@ -115,25 +115,25 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"updateSettings","data":{"version":"1.2.3","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}}}"""
-        , test "encodes UpdateTodos data" <|
+        , test "encodes UpdateTasks data" <|
             \() ->
-                { filePath = "a path", todos = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
-                    |> InteropDefinitions.UpdateTodos
+                { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
+                    |> InteropDefinitions.UpdateTasks
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"updateTodos","data":{"filePath":"a path","todos":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
+                    |> Expect.equal """{"tag":"updateTasks","data":{"filePath":"a path","tasks":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
         , test "encodes the correct tsType" <|
             \() ->
-                [ { filePath = "a path", todoMarkdown = [] } ]
-                    |> InteropDefinitions.DisplayTodoMarkdown
+                [ { filePath = "a path", taskMarkdown = [] } ]
+                    |> InteropDefinitions.DisplayTaskMarkdown
                     |> TsEncode.runExample interop.fromElm
                     |> .tsType
                     |> Expect.equal
-                        ("""{ data : { filePath : string; todos : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTodos" }"""
+                        ("""{ data : { filePath : string; tasks : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTasks" }"""
                             ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTodoSourceFile" }"""
-                            ++ """ | { data : { filePath : string; todoMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTodoMarkdown" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTodo" }"""
+                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTaskSourceFile" }"""
+                            ++ """ | { data : { filePath : string; taskMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTaskMarkdown" }"""
+                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTask" }"""
                             ++ """ | { tag : "closeView" }"""
                             ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
                         )
