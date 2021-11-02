@@ -65,7 +65,7 @@
 # Board Types
 - have a subtag board that uses a root tag then subtags to define columns
 - eisenhower matrix view
-- define boards by headings on a page
+- #3 define a board from the contents of a file with columns set by the headings on a page
 
 # Drag n Drop
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card
