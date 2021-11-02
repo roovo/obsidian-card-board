@@ -118,11 +118,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , InteropPorts.deleteTask
-                                { filePath = TaskItem.filePath matchingItem
-                                , lineNumber = TaskItem.lineNumber matchingItem
-                                , originalText = TaskItem.originalText matchingItem
-                                }
+                            , InteropPorts.deleteTask <| TaskItem.fields matchingItem
                             )
 
                         Nothing ->
@@ -137,11 +133,7 @@ update msg model =
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
-                            , InteropPorts.openTaskSourceFile
-                                { filePath = TaskItem.filePath matchingItem
-                                , lineNumber = TaskItem.lineNumber matchingItem
-                                , originalText = TaskItem.originalText matchingItem
-                                }
+                            , InteropPorts.openTaskSourceFile <| TaskItem.fields matchingItem
                             )
 
                         Nothing ->

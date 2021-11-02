@@ -64,7 +64,7 @@ addFilePreviewHoversEncoder =
         )
 
 
-deleteTaskEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
+deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
 deleteTaskEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
@@ -83,7 +83,7 @@ displayTaskMarkdownEncoder =
         )
 
 
-openTaskSourceFileEncoder : TsEncode.Encoder { filePath : String, lineNumber : Int, originalText : String }
+openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
 openTaskSourceFileEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string

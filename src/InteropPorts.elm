@@ -54,7 +54,7 @@ closeView =
         |> interopFromElm
 
 
-deleteTask : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
+deleteTask : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 deleteTask info =
     info
         |> encodeVariant "deleteTask" InteropDefinitions.deleteTaskEncoder
@@ -69,7 +69,7 @@ displayTaskMarkdown cards =
         |> interopFromElm
 
 
-openTaskSourceFile : { filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
+openTaskSourceFile : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 openTaskSourceFile info =
     info
         |> encodeVariant "openTaskSourceFile" InteropDefinitions.openTaskSourceFileEncoder

@@ -8,6 +8,7 @@ module TaskItem exposing
     , containsId
     , due
     , dueRataDie
+    , fields
     , filePath
     , hasNotes
     , hasOneOfTheTags
@@ -94,8 +95,8 @@ type IndentedItem
 
 
 autoComplete : TaskItem -> AutoCompletion
-autoComplete (TaskItem fields _) =
-    fields.autoComplete
+autoComplete =
+    fields >> .autoComplete
 
 
 completedPosix : TaskItem -> Int
@@ -109,8 +110,8 @@ completedPosix taskItem =
 
 
 completion : TaskItem -> Completion
-completion (TaskItem fields _) =
-    fields.completion
+completion =
+    fields >> .completion
 
 
 containsId : String -> TaskItem -> Bool
@@ -120,13 +121,13 @@ containsId targetId taskItem =
 
 
 due : TaskItem -> Maybe Date
-due (TaskItem fields _) =
-    case fields.dueTag of
+due (TaskItem fields_ _) =
+    case fields_.dueTag of
         Just _ ->
-            fields.dueTag
+            fields_.dueTag
 
         Nothing ->
-            fields.dueFile
+            fields_.dueFile
 
 
 dueRataDie : TaskItem -> Int
@@ -139,14 +140,19 @@ dueRataDie taskItem =
             0
 
 
+fields : TaskItem -> TaskItemFields
+fields (TaskItem f _) =
+    f
+
+
 filePath : TaskItem -> String
-filePath (TaskItem fields _) =
-    fields.filePath
+filePath =
+    fields >> .filePath
 
 
 hasNotes : TaskItem -> Bool
-hasNotes (TaskItem fields _) =
-    not <| String.isEmpty fields.notes
+hasNotes =
+    fields >> .notes >> String.isEmpty >> not
 
 
 hasTags : TaskItem -> Bool
@@ -180,8 +186,8 @@ hasSubtasks (TaskItem _ subtasks_) =
 
 
 id : TaskItem -> String
-id (TaskItem fields _) =
-    fields.filePath ++ ":" ++ String.fromInt fields.lineNumber
+id (TaskItem fields_ _) =
+    fields_.filePath ++ ":" ++ String.fromInt fields_.lineNumber
 
 
 isDated : TaskItem -> Bool
@@ -192,8 +198,8 @@ isDated taskItem =
 
 
 isCompleted : TaskItem -> Bool
-isCompleted (TaskItem fields _) =
-    case fields.completion of
+isCompleted (TaskItem fields_ _) =
+    case fields_.completion of
         Incomplete ->
             False
 
@@ -202,23 +208,23 @@ isCompleted (TaskItem fields _) =
 
 
 isFromFile : String -> TaskItem -> Bool
-isFromFile pathToFile (TaskItem fields _) =
-    fields.filePath == pathToFile
+isFromFile pathToFile =
+    fields >> .filePath >> (==) pathToFile
 
 
 lineNumber : TaskItem -> Int
-lineNumber (TaskItem fields _) =
-    fields.lineNumber
+lineNumber =
+    fields >> .lineNumber
 
 
 notes : TaskItem -> String
-notes (TaskItem fields _) =
-    fields.notes
+notes =
+    fields >> .notes
 
 
 originalText : TaskItem -> String
-originalText (TaskItem fields _) =
-    fields.originalText
+originalText =
+    fields >> .originalText
 
 
 subtasks : TaskItem -> List TaskItem
@@ -227,10 +233,10 @@ subtasks (TaskItem _ subtasks_) =
 
 
 tags : TaskItem -> List String
-tags ((TaskItem fields _) as taskItem) =
+tags ((TaskItem fields_ _) as taskItem) =
     subtasks taskItem
         |> List.concatMap (\(TaskItem fs _) -> fs.tags)
-        |> List.append fields.tags
+        |> List.append fields_.tags
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
@@ -277,21 +283,21 @@ tasksToToggle id_ timeWithZone taskItem =
 
 
 title : TaskItem -> String
-title (TaskItem fields _) =
-    fields.title
+title =
+    fields >> .title
 
 
 toString : TaskItem -> String
-toString (TaskItem fields _) =
+toString (TaskItem fields_ _) =
     let
         leadingWhiteSpace =
-            fields.originalText
+            fields_.originalText
                 |> String.toList
                 |> LE.takeWhile ParserHelper.isSpaceOrTab
                 |> String.fromList
 
         checkbox =
-            case fields.completion of
+            case fields_.completion of
                 Incomplete ->
                     "- [ ] "
 
@@ -299,8 +305,8 @@ toString (TaskItem fields _) =
                     "- [x] "
 
         fieldTags =
-            if List.length fields.tags > 0 then
-                fields.tags
+            if List.length fields_.tags > 0 then
+                fields_.tags
                     |> List.map (String.append "#")
                     |> String.join " "
                     |> String.append " "
@@ -309,7 +315,7 @@ toString (TaskItem fields _) =
                 ""
 
         dueTag =
-            case fields.dueTag of
+            case fields_.dueTag of
                 Just date ->
                     " @due(" ++ Date.toIsoString date ++ ")"
 
@@ -317,7 +323,7 @@ toString (TaskItem fields _) =
                     ""
 
         completionTag =
-            case fields.completion of
+            case fields_.completion of
                 CompletedAt completionTime ->
                     let
                         completionString =
@@ -331,7 +337,7 @@ toString (TaskItem fields _) =
                     ""
 
         autoCompleteTag =
-            case fields.autoComplete of
+            case fields_.autoComplete of
                 NotSpecifed ->
                     ""
 
@@ -342,14 +348,14 @@ toString (TaskItem fields _) =
                     " @autocomplete(true)"
 
         blockLinkText =
-            case fields.blockLink of
+            case fields_.blockLink of
                 Just blockLink_ ->
                     " " ++ blockLink_
 
                 _ ->
                     ""
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag ++ blockLinkText
+    leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag ++ blockLinkText
 
 
 
@@ -357,21 +363,21 @@ toString (TaskItem fields _) =
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
-toggleCompletion timeWithZone (TaskItem fields subtasks_) =
-    case fields.completion of
+toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
+    case fields_.completion of
         Completed ->
-            TaskItem { fields | completion = Incomplete } subtasks_
+            TaskItem { fields_ | completion = Incomplete } subtasks_
 
         CompletedAt _ ->
-            TaskItem { fields | completion = Incomplete } subtasks_
+            TaskItem { fields_ | completion = Incomplete } subtasks_
 
         Incomplete ->
-            TaskItem { fields | completion = CompletedAt timeWithZone.now } subtasks_
+            TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
 
 
 updateFilePath : String -> TaskItem -> TaskItem
-updateFilePath newPath (TaskItem fields subtasks_) =
-    TaskItem { fields | filePath = newPath } subtasks_
+updateFilePath newPath (TaskItem fields_ subtasks_) =
+    TaskItem { fields_ | filePath = newPath } subtasks_
 
 
 
@@ -467,15 +473,15 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
             List.foldr extractAutoComplete NotSpecifed contents
 
         addCompletionTime : TaskItemFields -> TaskItemFields
-        addCompletionTime fields =
-            if isCompleted (TaskItem fields []) then
+        addCompletionTime fields_ =
+            if isCompleted (TaskItem fields_ []) then
                 contents
                     |> List.foldr extractCompletionTime Nothing
-                    |> Maybe.map (\completionDate_ -> { fields | completion = CompletedAt completionDate_ })
-                    |> Maybe.withDefault fields
+                    |> Maybe.map (\completionDate_ -> { fields_ | completion = CompletedAt completionDate_ })
+                    |> Maybe.withDefault fields_
 
             else
-                fields
+                fields_
 
         parsedTitle : String
         parsedTitle =
@@ -582,11 +588,11 @@ fileDateParser fileDate =
 
 
 addAnySubtasksAndNotes : String -> Maybe String -> TaskItemFields -> Parser TaskItem
-addAnySubtasksAndNotes pathToFile fileDate fields =
+addAnySubtasksAndNotes pathToFile fileDate fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
         buildTaskItem indentedItems =
-            P.succeed (TaskItem { fields | notes = parsedNotes indentedItems } <| parsedSubtasks indentedItems)
+            P.succeed (TaskItem { fields_ | notes = parsedNotes indentedItems } <| parsedSubtasks indentedItems)
 
         parsedSubtasks : List IndentedItem -> List TaskItemFields
         parsedSubtasks indentedItems =
@@ -652,9 +658,9 @@ subTaskParser pathToFile fileDate =
 
 
 rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
-rejectIfNoTitle fields =
-    if String.length fields.title == 0 then
+rejectIfNoTitle fields_ =
+    if String.length fields_.title == 0 then
         P.problem "Task has no title"
 
     else
-        P.succeed fields
+        P.succeed fields_
