@@ -14,11 +14,12 @@ import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
-import Model exposing (Model, State)
+import Model exposing (Model)
 import Page.Settings as SettingsPage
 import Panel exposing (Panel)
 import Panels exposing (Panels)
-import SafeZipper
+import SafeZipper exposing (SafeZipper)
+import State exposing (State)
 import String
 import Task
 import TaskItem exposing (TaskItem)
@@ -44,31 +45,9 @@ init flags =
             ( Model.default, Cmd.none )
 
         Ok okFlags ->
-            let
-                boardConfigs =
-                    SafeZipper.fromList <| CardBoardSettings.boardConfigs okFlags.settings
-            in
-            ( { boardConfigs = boardConfigs
-              , configBeingEdited = Model.NotEditing
-              , taskList = Model.Waiting
-              , timeWithZone =
-                    { now = Time.millisToPosix okFlags.now
-                    , zone = Time.customZone okFlags.zone []
-                    }
-              }
-                |> Model.forceAddWhenNoBoards boardConfigs
+            ( Model.fromFlags okFlags
             , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
             )
-
-
-hasLoaded : State TaskList -> Bool
-hasLoaded taskList =
-    case taskList of
-        Model.Loaded _ ->
-            True
-
-        _ ->
-            False
 
 
 
@@ -77,11 +56,11 @@ hasLoaded taskList =
 
 type Msg
     = BadInputFromTypeScript JD.Error
+    | BoardConfigsUpdated (List BoardConfig)
     | GotSettingsPageMsg SettingsPage.Msg
     | InitCompleted
     | ReceiveTime ( Time.Zone, Time.Posix )
     | SettingsClicked
-    | SettingsUpdated (List BoardConfig)
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -100,82 +79,42 @@ update msg model =
             -- Debug.todo <| Debug.toString error
             ( model, Cmd.none )
 
+        ( BoardConfigsUpdated newConfigs, _ ) ->
+            let
+                newModel =
+                    Model.updateConfigs newConfigs model
+            in
+            ( newModel
+            , Cmd.batch
+                [ InteropPorts.displayTaskMarkdown <| Model.cards newModel
+                , InteropPorts.addHoverToCardEditButtons <| Model.cards newModel
+                ]
+            )
+
         ( GotSettingsPageMsg subMsg, _ ) ->
             SettingsPage.update subMsg model
                 |> updateWith GotSettingsPageMsg
 
         ( InitCompleted, _ ) ->
-            case model.taskList of
-                Model.Waiting ->
-                    ( { model | taskList = Model.Loaded TaskList.empty }, Cmd.none )
-
-                Model.Loading taskList ->
-                    let
-                        cards =
-                            taskList
-                                |> Panels.init model.boardConfigs
-                                |> Panels.cards model.timeWithZone
-                    in
-                    ( { model | taskList = Model.Loaded taskList }
-                    , Cmd.batch
-                        [ InteropPorts.displayTaskMarkdown cards
-                        , InteropPorts.addHoverToCardEditButtons cards
-                        ]
-                    )
-
-                Model.Loaded _ ->
-                    ( model, Cmd.none )
+            ( Model.finishAdding model
+            , Cmd.batch
+                [ InteropPorts.displayTaskMarkdown <| Model.cards model
+                , InteropPorts.addHoverToCardEditButtons <| Model.cards model
+                ]
+            )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
-            ( { model
-                | timeWithZone =
-                    { zone = zone
-                    , now = posix
-                    }
-              }
-            , Cmd.none
-            )
+            ( { model | timeWithZone = { zone = zone, now = posix } }, Cmd.none )
 
         ( SettingsClicked, _ ) ->
             ( { model | configBeingEdited = Model.Editing model.boardConfigs }, Cmd.none )
-
-        ( SettingsUpdated newSettings, _ ) ->
-            case model.taskList of
-                Model.Waiting ->
-                    ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
-
-                Model.Loading _ ->
-                    ( { model | boardConfigs = SafeZipper.fromList newSettings }, Cmd.none )
-
-                Model.Loaded taskList ->
-                    let
-                        newConfigs =
-                            SafeZipper.fromList newSettings
-                                |> SafeZipper.atIndex newIndex
-
-                        newIndex =
-                            model.boardConfigs
-                                |> SafeZipper.currentIndex
-                                |> Maybe.withDefault 0
-
-                        cards =
-                            taskList
-                                |> Panels.init newConfigs
-                                |> Panels.cards model.timeWithZone
-                    in
-                    ( { model | boardConfigs = newConfigs }
-                    , Cmd.batch
-                        [ InteropPorts.displayTaskMarkdown cards
-                        , InteropPorts.addHoverToCardEditButtons cards
-                        ]
-                    )
 
         ( TabSelected tabIndex, _ ) ->
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
 
         ( TaskItemDeleteClicked id, _ ) ->
             case model.taskList of
-                Model.Loaded taskList ->
+                State.Loaded taskList ->
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
@@ -194,7 +133,7 @@ update msg model =
 
         ( TaskItemEditClicked id, _ ) ->
             case model.taskList of
-                Model.Loaded taskList ->
+                State.Loaded taskList ->
                     case TaskList.taskFromId id taskList of
                         Just matchingItem ->
                             ( model
@@ -213,7 +152,7 @@ update msg model =
 
         ( TaskItemToggled id, _ ) ->
             case model.taskList of
-                Model.Loaded taskList ->
+                State.Loaded taskList ->
                     case TaskList.taskContainingId id taskList of
                         Just matchingItem ->
                             ( model
@@ -236,16 +175,16 @@ update msg model =
 
         ( VaultFileAdded markdownFile, _ ) ->
             let
-                newTaskItems =
+                newTasks =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
 
                 cards =
-                    newTaskItems
+                    newTasks
                         |> Panels.init model.boardConfigs
                         |> Panels.cards model.timeWithZone
             in
-            ( addTaskItems model newTaskItems
-            , if hasLoaded model.taskList then
+            ( Model.addTaskList newTasks model
+            , if Model.taskListLoaded model then
                 Cmd.batch
                     [ InteropPorts.displayTaskMarkdown cards
                     , InteropPorts.addHoverToCardEditButtons cards
@@ -256,7 +195,7 @@ update msg model =
             )
 
         ( VaultFileDeleted filePath, _ ) ->
-            ( deleteItemsFromFile model filePath, Cmd.none )
+            ( Model.deleteItemsFromFile filePath model, Cmd.none )
 
         ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
             let
@@ -268,8 +207,8 @@ update msg model =
                         |> Panels.init model.boardConfigs
                         |> Panels.cards model.timeWithZone
             in
-            ( updateTaskItems model oldPath updatedTaskItems
-            , if hasLoaded model.taskList then
+            ( Model.updateTaskItems oldPath updatedTaskItems model
+            , if Model.taskListLoaded model then
                 Cmd.batch
                     [ InteropPorts.displayTaskMarkdown cards
                     , InteropPorts.addHoverToCardEditButtons cards
@@ -289,8 +228,8 @@ update msg model =
                         |> Panels.init model.boardConfigs
                         |> Panels.cards model.timeWithZone
             in
-            ( updateTaskItems model markdownFile.filePath updatedTaskItems
-            , if hasLoaded model.taskList then
+            ( Model.updateTaskItems markdownFile.filePath updatedTaskItems model
+            , if Model.taskListLoaded model then
                 Cmd.batch
                     [ InteropPorts.displayTaskMarkdown cards
                     , InteropPorts.addHoverToCardEditButtons cards
@@ -299,11 +238,6 @@ update msg model =
               else
                 Cmd.none
             )
-
-
-updateWith : (subMsg -> Msg) -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toMsg ( model, subCmd ) =
-    ( model, Cmd.map toMsg subCmd )
 
 
 rePathedTaskItems : String -> String -> State TaskList -> TaskList
@@ -320,53 +254,19 @@ rePathedTaskItems oldPath newPath taskList =
             TaskItem.filePath item == oldPath
     in
     case taskList of
-        Model.Waiting ->
+        State.Waiting ->
             TaskList.empty
 
-        Model.Loading currentList ->
+        State.Loading currentList ->
             rePathedItems currentList
 
-        Model.Loaded currentList ->
+        State.Loaded currentList ->
             rePathedItems currentList
 
 
-deleteItemsFromFile : Model -> String -> Model
-deleteItemsFromFile model filePath =
-    case model.taskList of
-        Model.Waiting ->
-            model
-
-        Model.Loading currentList ->
-            { model | taskList = Model.Loading (TaskList.removeForFile filePath currentList) }
-
-        Model.Loaded currentList ->
-            { model | taskList = Model.Loaded (TaskList.removeForFile filePath currentList) }
-
-
-addTaskItems : Model -> TaskList -> Model
-addTaskItems model taskList =
-    case model.taskList of
-        Model.Waiting ->
-            { model | taskList = Model.Loading taskList }
-
-        Model.Loading currentList ->
-            { model | taskList = Model.Loading (TaskList.append currentList taskList) }
-
-        Model.Loaded currentList ->
-            { model | taskList = Model.Loaded (TaskList.append currentList taskList) }
-
-
-updateTaskItems : Model -> String -> TaskList -> Model
-updateTaskItems model filePath updatedList =
-    case model.taskList of
-        Model.Waiting ->
-            { model | taskList = Model.Loading updatedList }
-
-        Model.Loading currentList ->
-            { model | taskList = Model.Loading (TaskList.replaceForFile filePath updatedList currentList) }
-
-        Model.Loaded currentList ->
-            { model | taskList = Model.Loaded (TaskList.replaceForFile filePath updatedList currentList) }
+updateWith : (subMsg -> Msg) -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toMsg ( model, subCmd ) =
+    ( model, Cmd.map toMsg subCmd )
 
 
 
@@ -399,7 +299,7 @@ subscriptions _ =
                                     InitCompleted
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
-                                    SettingsUpdated newSettings.boardConfigs
+                                    BoardConfigsUpdated newSettings.boardConfigs
 
                         Err error ->
                             BadInputFromTypeScript error
@@ -414,7 +314,7 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     case model.taskList of
-        Model.Loaded taskList ->
+        State.Loaded taskList ->
             let
                 panels =
                     Panels.init model.boardConfigs taskList
