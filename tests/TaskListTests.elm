@@ -3,7 +3,7 @@ module TaskListTests exposing (suite)
 import Expect
 import Parser
 import TaskItem
-import TaskList exposing (TaskList)
+import TaskList
 import TaskListTestHelpers
     exposing
         ( parsedTasks

@@ -5,7 +5,9 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
-- do I want the last board who's settings I've edited to the one shown when closing settings?
+- do I want to warn the user that I couldn't read settings at startup?
+  are there any sensible options I can give them if I do?
+-- do I want the last board who's settings I've edited to the one shown when closing settings?
 - allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
   into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete
@@ -82,6 +84,8 @@
   For a date picker.
 
 # Misc
+- BadInputFromTypeScript -> I don't do anything if I can something bad from
+  typescript via ports.  Should I leave it like this?
 - work out how I will handle changes to the settings file format
 - Could I write a worker that keeps an eye on what is being edited and adds
   a completion timestamp when it is done?

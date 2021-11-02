@@ -3,7 +3,6 @@ module Main exposing (main)
 import BoardConfig exposing (BoardConfig)
 import Browser
 import Card exposing (Card)
-import CardBoardSettings
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
@@ -18,7 +17,7 @@ import Model exposing (Model)
 import Page.Settings as SettingsPage
 import Panel exposing (Panel)
 import Panels exposing (Panels)
-import SafeZipper exposing (SafeZipper)
+import SafeZipper
 import State exposing (State)
 import String
 import Task
@@ -55,7 +54,7 @@ init flags =
 
 
 type Msg
-    = BadInputFromTypeScript JD.Error
+    = BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
     | GotSettingsPageMsg SettingsPage.Msg
     | InitCompleted
@@ -75,8 +74,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( BadInputFromTypeScript _, _ ) ->
-            -- Debug.todo <| Debug.toString error
+        ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
         ( BoardConfigsUpdated newConfigs, _ ) ->
@@ -270,7 +268,7 @@ subscriptions _ =
                                     BoardConfigsUpdated newSettings.boardConfigs
 
                         Err error ->
-                            BadInputFromTypeScript error
+                            BadInputFromTypeScript
                 )
         ]
 
