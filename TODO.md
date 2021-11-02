@@ -5,6 +5,7 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- I parse 'foo:w' as a tag whereas obsidian only recognises the foo part.
 - do I want to warn the user that I couldn't read settings at startup?
   are there any sensible options I can give them if I do?
 -- do I want the last board who's settings I've edited to the one shown when closing settings?

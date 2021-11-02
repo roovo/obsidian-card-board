@@ -101,6 +101,16 @@ The current behaviour for the different columns is:
 
 I am not convinced that this is the best strategy so this may well change in a future release.
 
+### Customising Tags
+If you like to apply different styles to different tags, this is now possible
+(thank you @darthmachina).  Tags now have a class that reflects the tag name.
+So if you have a tag `#foo/bar` you will be able to style it with your favorite
+color for foobars using:
+
+```
+div.tag-foo-bar
+```
+
 ## Date boards
 You will get the best out of these if you are using the (core) Daily Notes plugin as any
 tasks you place on a daily note will be assigned to the day of the note.
