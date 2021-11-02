@@ -1332,7 +1332,7 @@ cardTagsView tags =
 
 cardTagView : String -> Html Msg
 cardTagView tagText =
-    Html.div [ class ("card-board-card-tag tag-" ++ (replace "/" "-" tagText)) ]
+    Html.div [ class ("card-board-card-tag tag-" ++ replace "/" "-" tagText) ]
         [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
             [ Html.text "#" ]
         , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
