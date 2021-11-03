@@ -86,7 +86,11 @@
   For a date picker.
 
 # Misc
-- BadInputFromTypeScript -> I don't do anything if I can something bad from
+- how small can I make the compliled js?
+  https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
+  look at esbuild
+- put the target in dist
+  - put the static sources in an assets dir and copy them into dist on build too- BadInputFromTypeScript -> I don't do anything if I can something bad from
   typescript via ports.  Should I leave it like this?
 - work out how I will handle changes to the settings file format
 - Could I write a worker that keeps an eye on what is being edited and adds
