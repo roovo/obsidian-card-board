@@ -8,6 +8,8 @@ module Model exposing
     , finishAdding
     , forceAddWhenNoBoards
     , fromFlags
+    , taskContainingId
+    , taskFromId
     , taskListLoaded
     , updateConfigs
     , updateTaskItems
@@ -20,6 +22,7 @@ import InteropDefinitions
 import Panels
 import SafeZipper exposing (SafeZipper)
 import State exposing (State)
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
 import TimeWithZone exposing (TimeWithZone)
@@ -148,6 +151,32 @@ forceAddWhenNoBoards config model =
 
     else
         model
+
+
+taskFromId : String -> Model -> Maybe TaskItem
+taskFromId id model =
+    case model.taskList of
+        State.Loaded list ->
+            TaskList.taskFromId id list
+
+        State.Loading list ->
+            TaskList.taskFromId id list
+
+        _ ->
+            Nothing
+
+
+taskContainingId : String -> Model -> Maybe TaskItem
+taskContainingId id model =
+    case model.taskList of
+        State.Loaded list ->
+            TaskList.taskContainingId id list
+
+        State.Loading list ->
+            TaskList.taskContainingId id list
+
+        _ ->
+            Nothing
 
 
 taskListLoaded : Model -> Bool

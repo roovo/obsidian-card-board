@@ -2,6 +2,7 @@ module TaskItem exposing
     ( AutoCompletion(..)
     , Completion(..)
     , TaskItem
+    , TaskItemFields
     , autoComplete
     , completedPosix
     , completion

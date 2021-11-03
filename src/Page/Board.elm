@@ -19,7 +19,7 @@ import Panel exposing (Panel)
 import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
 import State
-import TaskItem exposing (TaskItem)
+import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
 
@@ -52,40 +52,27 @@ update msg model =
             ( model, cmdIfHasTask id model InteropPorts.openTaskSourceFile )
 
         TaskItemToggled id ->
-            case model.taskList of
-                State.Loaded taskList ->
-                    case TaskList.taskContainingId id taskList of
-                        Just matchingItem ->
-                            ( model
-                            , InteropPorts.rewriteTasks
-                                model.timeWithZone
-                                (TaskItem.filePath matchingItem)
-                                (TaskItem.tasksToToggle id model.timeWithZone matchingItem)
-                            )
-
-                        Nothing ->
-                            ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            let
+                toggleCmd taskItem =
+                    InteropPorts.rewriteTasks
+                        model.timeWithZone
+                        (TaskItem.filePath taskItem)
+                        (TaskItem.tasksToToggle id model.timeWithZone taskItem)
+            in
+            model
+                |> Model.taskContainingId id
+                |> Maybe.map toggleCmd
+                |> Maybe.withDefault Cmd.none
+                |> Tuple.pair model
 
 
-
--- cmdIfHasTask : String -> Model -> ({ a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg) -> Cmd Msg
-
-
+cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
 cmdIfHasTask id model cmd =
-    case model.taskList of
-        State.Loaded taskList ->
-            case TaskList.taskFromId id taskList of
-                Just matchingItem ->
-                    cmd <| TaskItem.fields matchingItem
-
-                Nothing ->
-                    Cmd.none
-
-        _ ->
-            Cmd.none
+    model
+        |> Model.taskFromId id
+        |> Maybe.map TaskItem.fields
+        |> Maybe.map cmd
+        |> Maybe.withDefault Cmd.none
 
 
 
