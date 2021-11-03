@@ -10,11 +10,13 @@ import {
   WorkspaceLeaf
 } from 'obsidian';
 
+const moment = require('moment');
+
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
 
-const moment = require('moment');
+import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 
@@ -41,9 +43,6 @@ export class CardBoardView extends ItemView {
   }
 
   async onOpen() {
-    // @ts-ignore
-    const dailyNotesSettings = this.app.internalPlugins.getPluginById("daily-notes")?.instance?.options;
-
     const mySettings:Flags = {
       now:          Date.now(),
       zone:         new Date().getTimezoneOffset(),
@@ -95,13 +94,13 @@ export class CardBoardView extends ItemView {
     const markdownFiles = this.vault.getMarkdownFiles();
 
     for (const file of markdownFiles) {
-      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.cachedRead(file);
       elm.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
-          filePath: file.path,
-          fileDate: fileDate,
+          filePath:     file.path,
+          fileDate:     fileDate,
           fileContents: fileContents
         }
       });
@@ -113,16 +112,16 @@ export class CardBoardView extends ItemView {
     });
 
     this.registerEvent(this.app.vault.on("create",
-      (file) => this.handleFileCreated(elm, dailyNotesSettings, file)));
+      (file) => this.handleFileCreated(elm, file)));
 
     this.registerEvent(this.app.vault.on("delete",
-      (file) => this.handleFileDeleted(elm, dailyNotesSettings, file)));
+      (file) => this.handleFileDeleted(elm, file)));
 
     this.registerEvent(this.app.vault.on("modify",
-      (file) => this.handleFileModified(elm, dailyNotesSettings, file)));
+      (file) => this.handleFileModified(elm, file)));
 
     this.registerEvent(this.app.vault.on("rename",
-      (file, oldPath) => this.handleFileRenamed(elm, dailyNotesSettings, file, oldPath)));
+      (file, oldPath) => this.handleFileRenamed(elm, file, oldPath)));
   }
 
   // MESSAGES FROM ELM
@@ -294,11 +293,10 @@ export class CardBoardView extends ItemView {
 
   async handleFileCreated(
     elm: ElmApp,
-    dailyNotesSettings: any,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.read(file);
 
       elm.ports.interopToElm.send({
@@ -314,11 +312,10 @@ export class CardBoardView extends ItemView {
 
   async handleFileDeleted(
     elm: any,
-    dailyNotesSettings: any,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileDate = this.formattedFileDate(file);
 
       elm.ports.interopToElm.send({
         tag: "fileDeleted",
@@ -329,11 +326,10 @@ export class CardBoardView extends ItemView {
 
   async handleFileModified(
     elm: any,
-    dailyNotesSettings: any,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.getFileDate(dailyNotesSettings.folder, dailyNotesSettings.format, file);
+      const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.read(file);
 
       elm.ports.interopToElm.send({
@@ -349,9 +345,8 @@ export class CardBoardView extends ItemView {
 
   async handleFileRenamed(
     elm: any,
-    dailyNotesSettings: any,
     file: TAbstractFile,
-    oldPath:string
+    oldPath: string
   ) {
     elm.ports.interopToElm.send({
       tag: "fileRenamed",
@@ -364,19 +359,10 @@ export class CardBoardView extends ItemView {
 
   // HELPERS
 
-  getFileDate(
-    dailyNotesFolder: string,
-    dailyNotesNameFormat: string,
-    file: any
+  formattedFileDate(
+    file: TFile
   ): string | null {
-    let fileDate = null;
-
-    if (dailyNotesFolder != null) {
-      if (file.path.startsWith(dailyNotesFolder)) {
-        fileDate = moment(file.basename, dailyNotesNameFormat).format('YYYY-MM-DD');
-      }
-    }
-    return fileDate
+    return getDateFromFile(file, "day")?.format('YYYY-MM-DD') || null;
   }
 
   async openOrSwitchWithHighlight(
