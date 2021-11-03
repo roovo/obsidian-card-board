@@ -26,7 +26,7 @@ export default class CardBoardPlugin extends Plugin {
       '<rect x="28" y="28" width="12" height="46" fill="none" stroke="currentColor" stroke-width="5"></rect>' +
       '<rect x="56" y="28" width="12" height="30" fill="none" stroke="currentColor" stroke-width="5"></rect>');
 
-    this.addRibbonIcon('card-board', 'CardBoard Plugin', async () => {
+    this.addRibbonIcon('card-board', 'CardBoard', async () => {
       this.activateView();
     });
 
