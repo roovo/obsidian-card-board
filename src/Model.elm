@@ -7,10 +7,13 @@ module Model exposing
     , deleteItemsFromFile
     , finishAdding
     , forceAddWhenNoBoards
+    , fromAddingConfigTo
+    , fromEditingConfigTo
     , fromFlags
     , taskContainingId
     , taskFromId
     , taskListLoaded
+    , updateConfigBeingEdited
     , updateConfigs
     , updateTaskItems
     )
@@ -74,6 +77,30 @@ fromFlags flags =
         }
     }
         |> forceAddWhenNoBoards boardConfigs
+
+
+
+-- CONFIG BEING EDITED
+
+
+fromAddingConfigTo : (SafeZipper BoardConfig -> BoardConfig -> EditState) -> EditState -> EditState
+fromAddingConfigTo fn existingState =
+    case existingState of
+        Adding cs c ->
+            fn cs c
+
+        _ ->
+            existingState
+
+
+fromEditingConfigTo : (SafeZipper BoardConfig -> EditState) -> EditState -> EditState
+fromEditingConfigTo fn existingState =
+    case existingState of
+        Editing cs ->
+            fn cs
+
+        _ ->
+            existingState
 
 
 
@@ -182,6 +209,11 @@ taskContainingId id model =
 taskListLoaded : Model -> Bool
 taskListLoaded model =
     State.hasLoaded model.taskList
+
+
+updateConfigBeingEdited : EditState -> Model -> Model
+updateConfigBeingEdited newConfig model =
+    { model | configBeingEdited = newConfig }
 
 
 updateConfigs : List BoardConfig -> Model -> Model

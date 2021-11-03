@@ -7,6 +7,7 @@ module Page.Settings exposing
 import BoardConfig exposing (BoardConfig)
 import DateBoard
 import FeatherIcons
+import Flip
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -43,62 +44,35 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            let
-                newConfig : EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Editing c ->
-                            Adding c BoardConfig.default
-
-                        _ ->
-                            model.configBeingEdited
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            model
+                |> .configBeingEdited
+                |> Model.fromEditingConfigTo (\cs -> Adding cs BoardConfig.default)
+                |> Flip.flip Model.updateConfigBeingEdited model
+                |> Flip.flip Tuple.pair Cmd.none
 
         AddBoardConfirmed ->
-            case model.configBeingEdited of
-                Model.Adding config newConfig ->
-                    let
-                        configWithNew =
-                            SafeZipper.add newConfig config
-                                |> SafeZipper.last
-                    in
-                    ( { model | configBeingEdited = Model.Editing configWithNew }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            let
+                configWithNew cs c =
+                    SafeZipper.add c cs
+                        |> SafeZipper.last
+            in
+            model
+                |> .configBeingEdited
+                |> Model.fromAddingConfigTo (\cs c -> Editing <| configWithNew cs c)
+                |> Flip.flip Model.updateConfigBeingEdited model
+                |> Flip.flip Tuple.pair Cmd.none
 
         BoardTypeSelected board ->
             let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Adding cs c ->
-                            Model.Adding cs (updateBoardType c)
-
-                        _ ->
-                            model.configBeingEdited
-
                 updateBoardType : BoardConfig -> BoardConfig
                 updateBoardType config =
-                    case board of
-                        "dateBoard" ->
-                            let
-                                newBoardConfig =
-                                    DateBoard.defaultConfig
-                            in
-                            BoardConfig.DateBoardConfig { newBoardConfig | title = BoardConfig.title config }
-
-                        _ ->
-                            let
-                                newBoardConfig =
-                                    TagBoard.defaultConfig
-                            in
-                            BoardConfig.TagBoardConfig { newBoardConfig | title = BoardConfig.title config }
+                    BoardConfig.fromBoardType board (BoardConfig.title config)
             in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            model
+                |> .configBeingEdited
+                |> Model.fromAddingConfigTo (\cs c -> Adding cs <| updateBoardType c)
+                |> Flip.flip Model.updateConfigBeingEdited model
+                |> Flip.flip Tuple.pair Cmd.none
 
         DeleteBoardRequested ->
             case model.configBeingEdited of

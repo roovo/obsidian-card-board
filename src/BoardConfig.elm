@@ -3,6 +3,7 @@ module BoardConfig exposing
     , decoder
     , default
     , encoder
+    , fromBoardType
     , isForDateBoard
     , isForTagBoard
     , title
@@ -27,6 +28,24 @@ type BoardConfig
 default : BoardConfig
 default =
     TagBoardConfig TagBoard.defaultConfig
+
+
+fromBoardType : String -> String -> BoardConfig
+fromBoardType boardType title_ =
+    case boardType of
+        "dateBoard" ->
+            let
+                newBoardConfig =
+                    DateBoard.defaultConfig
+            in
+            DateBoardConfig { newBoardConfig | title = title_ }
+
+        _ ->
+            let
+                newBoardConfig =
+                    TagBoard.defaultConfig
+            in
+            TagBoardConfig { newBoardConfig | title = title_ }
 
 
 
