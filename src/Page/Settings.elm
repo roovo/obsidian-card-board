@@ -5,7 +5,6 @@ module Page.Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
 import FeatherIcons
 import Flip
 import Html exposing (Html)

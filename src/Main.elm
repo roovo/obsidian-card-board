@@ -2,9 +2,6 @@ module Main exposing (main)
 
 import BoardConfig exposing (BoardConfig)
 import Browser
-import Card exposing (Card)
-import Date exposing (Date)
-import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import InteropDefinitions
@@ -14,16 +11,13 @@ import MarkdownFile exposing (MarkdownFile)
 import Model exposing (Model)
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
-import Panel exposing (Panel)
-import Panels exposing (Panels)
-import SafeZipper
+import Panels
 import State exposing (State)
-import String
 import Task
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Time
-import TimeWithZone exposing (TimeWithZone)
+import TimeWithZone
 
 
 main : Program JD.Value Model Msg
@@ -218,7 +212,7 @@ subscriptions _ =
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     BoardConfigsUpdated newSettings.boardConfigs
 
-                        Err error ->
+                        Err _ ->
                             BadInputFromTypeScript
                 )
         ]

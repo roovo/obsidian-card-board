@@ -18,7 +18,6 @@ import Model exposing (Model)
 import Panel exposing (Panel)
 import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
-import State
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
