@@ -67,6 +67,7 @@
 
 # Board Types
 - have a subtag board that uses a root tag then subtags to define columns
+- reverse subtag: #class1/week1, #class2/week1 (you could specify week1 to get both class 1 & 2 on a board)
 - eisenhower matrix view
 - #3 define a board from the contents of a file with columns set by the headings on a page
 
