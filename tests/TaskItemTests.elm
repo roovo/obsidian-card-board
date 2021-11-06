@@ -660,6 +660,12 @@ tags =
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
                     |> Expect.equal (Ok [ "tag1", "tag2", "tag3" ])
+        , test "returns unique list of tags" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map TaskItem.tags
+                    |> Expect.equal (Ok [ "tag1", "tag2" ])
         , test "tags are not included in the title" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2"
