@@ -238,6 +238,7 @@ tags ((TaskItem fields_ _) as taskItem) =
     subtasks taskItem
         |> List.concatMap (\(TaskItem fs _) -> fs.tags)
         |> List.append fields_.tags
+        |> LE.unique
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
