@@ -38,6 +38,7 @@ import TimeWithZone exposing (TimeWithZone)
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
     , configBeingEdited : EditState
+    , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
     }
@@ -54,6 +55,7 @@ default : Model
 default =
     { boardConfigs = SafeZipper.empty
     , configBeingEdited = Adding SafeZipper.empty BoardConfig.default
+    , isActiveView = False
     , taskList = State.Waiting
     , timeWithZone =
         { now = Time.millisToPosix 0
@@ -70,6 +72,7 @@ fromFlags flags =
     in
     { boardConfigs = boardConfigs
     , configBeingEdited = NotEditing
+    , isActiveView = False
     , taskList = State.Waiting
     , timeWithZone =
         { now = Time.millisToPosix flags.now

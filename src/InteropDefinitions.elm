@@ -27,7 +27,8 @@ type FromElm
 
 
 type ToElm
-    = FileAdded MarkdownFile
+    = ActiveStateUpdated Bool
+    | FileAdded MarkdownFile
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
@@ -115,7 +116,8 @@ flags =
 toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
+        [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
+        , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder

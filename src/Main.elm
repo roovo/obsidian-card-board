@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import BoardConfig exposing (BoardConfig)
 import Browser
+import Browser.Events as Browser
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import InteropDefinitions
@@ -46,12 +47,19 @@ init flags =
 -- UPDATE
 
 
+type KeyValue
+    = Character Char
+    | Control String
+
+
 type Msg
-    = BadInputFromTypeScript
+    = ActiveStateUpdated Bool
+    | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | InitCompleted
+    | KeyDown KeyValue
     | ReceiveTime ( Time.Zone, Time.Posix )
     | Tick Time.Posix
     | VaultFileAdded MarkdownFile
@@ -63,6 +71,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( ActiveStateUpdated isActiveView, _ ) ->
+            ( { model | isActiveView = isActiveView }, Cmd.none )
+
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
@@ -93,6 +104,15 @@ update msg model =
                 , InteropPorts.addHoverToCardEditButtons <| Model.cards model
                 ]
             )
+
+        ( KeyDown keyValue, _ ) ->
+            case ( keyValue, model.isActiveView ) of
+                ( Control "Escape", True ) ->
+                    SettingsPage.update SettingsPage.ModalCloseClicked model
+                        |> updateWith GotSettingsPageMsg
+
+                _ ->
+                    ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model | timeWithZone = { zone = zone, now = posix } }, Cmd.none )
@@ -188,12 +208,16 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ Time.every 1000 Tick
+        , Browser.onKeyDown (JD.map KeyDown keyDecoder)
         , InteropPorts.toElm
             |> Sub.map
                 (\result ->
                     case result of
                         Ok toElm ->
                             case toElm of
+                                InteropDefinitions.ActiveStateUpdated flag ->
+                                    ActiveStateUpdated flag
+
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile
 
@@ -216,6 +240,25 @@ subscriptions _ =
                             BadInputFromTypeScript
                 )
         ]
+
+
+keyDecoder : JD.Decoder KeyValue
+keyDecoder =
+    JD.map toKeyValue (JD.field "key" JD.string)
+
+
+toKeyValue : String -> KeyValue
+toKeyValue string =
+    let
+        _ =
+            Debug.log string
+    in
+    case String.uncons string of
+        Just ( char, "" ) ->
+            Character char
+
+        _ ->
+            Control string
 
 
 
