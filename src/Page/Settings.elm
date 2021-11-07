@@ -502,7 +502,7 @@ settingsFormView boardConfig =
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Include Undated" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with no due date" ]
+                                [ Html.text "Whether to include a column for tasks with no due date" ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -607,7 +607,7 @@ settingsFormView boardConfig =
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Include Others" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with tags other than those specified" ]
+                                [ Html.text "Whether to include a column for tasks with tags other than those specified" ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -622,7 +622,7 @@ settingsFormView boardConfig =
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Include Untagged" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a colum for tasks with no tags" ]
+                                [ Html.text "Whether to include a column for tasks with no tags" ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
