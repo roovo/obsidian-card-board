@@ -23,6 +23,7 @@ export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 export class CardBoardView extends ItemView {
   private vault:  Vault;
   private plugin: CardBoardPlugin;
+  private elm: ElmApp;
 
   constructor(
     plugin: CardBoardPlugin,
@@ -53,7 +54,7 @@ export class CardBoardView extends ItemView {
     elmDiv.id = "elm-node";
     this.containerEl.children[1].appendChild(elmDiv);
 
-    const elm:ElmApp = Elm.Main.init({
+    this.elm = Elm.Main.init({
       node: elmDiv,
       flags: mySettings
     })
@@ -65,7 +66,7 @@ export class CardBoardView extends ItemView {
     // messages from elm code.  This is the only route
     // that elm has to the obsidian API, so this is the
     // entry point for anything side-effecty
-    elm.ports.interopFromElm.subscribe((fromElm) => {
+    this.elm.ports.interopFromElm.subscribe((fromElm) => {
       switch (fromElm.tag) {
         case "addFilePreviewHovers":
           that.handleAddFilePreviewHovers(fromElm.data);
@@ -83,7 +84,7 @@ export class CardBoardView extends ItemView {
           that.handleOpenTaskSourceFile(fromElm.data);
           break;
         case "updateSettings":
-          that.handleUpdateSettings(elm, fromElm.data);
+          that.handleUpdateSettings(fromElm.data);
           break;
         case "updateTasks":
           that.handleUpdateTasks(fromElm.data);
@@ -96,7 +97,7 @@ export class CardBoardView extends ItemView {
     for (const file of markdownFiles) {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.cachedRead(file);
-      elm.ports.interopToElm.send({
+      this.elm.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
           filePath:     file.path,
@@ -106,22 +107,32 @@ export class CardBoardView extends ItemView {
       });
     }
 
-    elm.ports.interopToElm.send({
+    this.elm.ports.interopToElm.send({
       tag: "initCompleted",
       data: { }
     });
 
+    this.registerEvent(this.app.workspace.on("active-leaf-change",
+      (leaf) => this.handleActiveLeafChange(leaf)));
+
     this.registerEvent(this.app.vault.on("create",
-      (file) => this.handleFileCreated(elm, file)));
+      (file) => this.handleFileCreated(file)));
 
     this.registerEvent(this.app.vault.on("delete",
-      (file) => this.handleFileDeleted(elm, file)));
+      (file) => this.handleFileDeleted(file)));
 
     this.registerEvent(this.app.vault.on("modify",
-      (file) => this.handleFileModified(elm, file)));
+      (file) => this.handleFileModified(file)));
 
     this.registerEvent(this.app.vault.on("rename",
-      (file, oldPath) => this.handleFileRenamed(elm, file, oldPath)));
+      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+  }
+
+  async onClose() {
+    this.elm.ports.interopToElm.send({
+      tag: "activeStateUpdated",
+      data: false
+    });
   }
 
   // MESSAGES FROM ELM
@@ -238,7 +249,6 @@ export class CardBoardView extends ItemView {
   }
 
   async handleUpdateSettings(
-    elm: ElmApp,
     data: {
       data : {
         boardConfigs : (
@@ -263,7 +273,7 @@ export class CardBoardView extends ItemView {
   }) {
     await this.plugin.saveSettings(data);
 
-    elm.ports.interopToElm.send({
+    this.elm.ports.interopToElm.send({
       tag: "settingsUpdated",
       data: data
     });
@@ -290,16 +300,30 @@ export class CardBoardView extends ItemView {
   }
 
   // THESE SEND MESSAGES TO THE ELM APPLICATION
+  async handleActiveLeafChange(
+    leaf: WorkspaceLeaf | null
+  ) {
+    let isActive: boolean = false;
+
+    if (leaf.view.getViewType() == "card-board-view") {
+      isActive = true
+    }
+
+    this.elm.ports.interopToElm.send({
+      tag: "activeStateUpdated",
+      data: isActive
+    });
+  }
+
 
   async handleFileCreated(
-    elm: ElmApp,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.read(file);
 
-      elm.ports.interopToElm.send({
+      this.elm.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
           filePath: file.path,
@@ -311,13 +335,12 @@ export class CardBoardView extends ItemView {
   }
 
   async handleFileDeleted(
-    elm: any,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
       const fileDate = this.formattedFileDate(file);
 
-      elm.ports.interopToElm.send({
+      this.elm.ports.interopToElm.send({
         tag: "fileDeleted",
         data: file.path
       });
@@ -325,14 +348,13 @@ export class CardBoardView extends ItemView {
   }
 
   async handleFileModified(
-    elm: any,
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.read(file);
 
-      elm.ports.interopToElm.send({
+      this.elm.ports.interopToElm.send({
         tag: "fileUpdated",
         data: {
           filePath: file.path,
@@ -344,11 +366,10 @@ export class CardBoardView extends ItemView {
   }
 
   async handleFileRenamed(
-    elm: any,
     file: TAbstractFile,
     oldPath: string
   ) {
-    elm.ports.interopToElm.send({
+    this.elm.ports.interopToElm.send({
       tag: "fileRenamed",
       data: {
         oldPath: oldPath,

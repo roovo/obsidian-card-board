@@ -47,7 +47,8 @@ init flags =
 
 
 type Msg
-    = BadInputFromTypeScript
+    = ActiveStateUpdated Bool
+    | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
@@ -63,6 +64,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
+        ( ActiveStateUpdated _, _ ) ->
+            ( model, Cmd.none )
+
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
@@ -194,6 +198,9 @@ subscriptions _ =
                     case result of
                         Ok toElm ->
                             case toElm of
+                                InteropDefinitions.ActiveStateUpdated flag ->
+                                    ActiveStateUpdated flag
+
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile
 
