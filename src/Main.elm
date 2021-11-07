@@ -64,8 +64,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
-        ( ActiveStateUpdated _, _ ) ->
-            ( model, Cmd.none )
+        ( ActiveStateUpdated isActiveView, _ ) ->
+            ( { model | isActiveView = isActiveView }, Cmd.none )
 
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
