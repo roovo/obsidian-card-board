@@ -164,10 +164,12 @@ plugins you can use for task management in Obsidian.  See the list on the wonder
 
 
 ## Contributing
-Not worked out how/if this will work yet as it is early days.  There is
-a [contributing doc](CONTRIBUTING.md) that at the moment lets you know
-how to build the project if you want to have a play.
+How this will work is still evolving, but I am accepting pull requests, so
+if you would like to help out then you are welcome.  Please see the
+[contributing doc](CONTRIBUTING.md) for more info and guidance on
+how to get a dev environment set up and running.
 
-Feel free to add any bugs/suggestions/feature requests as
-[github issues](https://github.com/roovo/obsidian-card-board/issues).
+- **Bugs/suggestions/feature requests** - [github issues](https://github.com/roovo/obsidian-card-board/issues).
+- **Questions/discussions** - [github discussions](https://github.com/roovo/obsidian-card-board/discussions)
+
 
