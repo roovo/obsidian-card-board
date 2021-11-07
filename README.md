@@ -1,7 +1,10 @@
 # Obsidian CardBoard Plugin
+An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
+(hopefully anyway).
 
-A plugin for the (most wonderful) [Obsidian](https://obsidian.md/) which collates
-tasks from all your notes and displays them on kanban-style boards.
+If you're like me and have tasks dotted all around your vault, then CardBoard is built
+to help you keep track of them.  Daily notes support built in, plus you can use `#tags` to
+define custom boards.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -158,8 +161,11 @@ above the board to the left of the tabs.  You can:
   friendly - yet).
 
 ## Alternatives
-If the way that this works doesn't work for you, there are plenty of other fabulous
-plugins you can use for task management in Obsidian.  See the list on the wonderful
+If the way that this works isn't for for you, there are plenty of other fabulous
+plugins you can use for task management in Obsidian.
+[Kanban](https://github.com/mgmeyers/obsidian-kanban) and
+[Tasks](https://github.com/schemar/obsidian-tasks) are the most popular. There are
+others too, see the list on the wonderful
 [roundup site](https://www.obsidianroundup.org/plugins/).
 
 
