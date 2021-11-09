@@ -13,6 +13,7 @@ import Model exposing (Model)
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
 import Panels
+import SafeZipper
 import State exposing (State)
 import Task
 import TaskItem exposing (TaskItem)
@@ -61,6 +62,7 @@ type Msg
     | InitCompleted
     | KeyDown KeyValue
     | ReceiveTime ( Time.Zone, Time.Posix )
+    | ShowBoard Int
     | Tick Time.Posix
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
@@ -116,6 +118,9 @@ update msg model =
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( { model | timeWithZone = { zone = zone, now = posix } }, Cmd.none )
+
+        ( ShowBoard index, _ ) ->
+            ( { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }, Cmd.none )
 
         ( Tick time, _ ) ->
             ( { model | timeWithZone = TimeWithZone.now time model.timeWithZone }
@@ -235,6 +240,9 @@ subscriptions _ =
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     BoardConfigsUpdated newSettings.boardConfigs
+
+                                InteropDefinitions.ShowBoard index ->
+                                    ShowBoard index
 
                         Err _ ->
                             BadInputFromTypeScript

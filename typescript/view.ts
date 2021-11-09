@@ -136,7 +136,10 @@ export class CardBoardView extends ItemView {
   }
 
   currentBoardIndex(index: number) {
-    console.log("Jump to view at index: " + index);
+    this.elm.ports.interopToElm.send({
+      tag: "showBoard",
+      data: index
+    });
   }
 
   // MESSAGES FROM ELM
