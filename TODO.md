@@ -1,3 +1,5 @@
+- do I want to rename Panel -> Board ??
+
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos

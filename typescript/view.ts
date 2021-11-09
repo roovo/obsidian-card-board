@@ -135,6 +135,13 @@ export class CardBoardView extends ItemView {
     });
   }
 
+  currentBoardIndex(index: number) {
+    this.elm.ports.interopToElm.send({
+      tag: "showBoard",
+      data: index
+    });
+  }
+
   // MESSAGES FROM ELM
 
   async handleAddFilePreviewHovers(

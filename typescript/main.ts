@@ -2,6 +2,7 @@ import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from '
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
 export default class CardBoardPlugin extends Plugin {
+  private commandIds: string[] = [];
   settings: {
     data :
       { boardConfigs : (
@@ -27,16 +28,10 @@ export default class CardBoardPlugin extends Plugin {
       '<rect x="56" y="28" width="12" height="30" fill="none" stroke="currentColor" stroke-width="5"></rect>');
 
     this.addRibbonIcon('card-board', 'CardBoard', async () => {
-      this.activateView();
+      this.activateView(0);
     });
 
-    this.addCommand({
-      id: "open-card-board-plugin",
-      name: "Open Window",
-      callback: async () => {
-        this.activateView();
-      },
-    });
+    this.addCommands();
   }
 
   onunload() {
@@ -44,13 +39,43 @@ export default class CardBoardPlugin extends Plugin {
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
   }
 
-  async activateView() {
+
+  addCommands() {
+    this.settings.data.boardConfigs.forEach((boardConfig, index) => {
+      const command = this.addCommand({
+        id: "open-card-board-plugin-" + index,
+        name: "Open " + boardConfig.data.title,
+        callback: async () => {
+          this.activateView(index);
+        },
+      });
+
+      this.commandIds.push(command.id);
+    });
+  }
+
+
+  removeCommands() {
+    for (const commandId of this.commandIds) {
+      // @ts-ignore
+      this.app.commands.removeCommand(commandId);
+    }
+    this.commandIds = [];
+  }
+
+  async activateView(index: number) {
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
     await this.app.workspace.getLeaf(true).setViewState({
       type: VIEW_TYPE_CARD_BOARD,
       active: true,
     });
+
+    const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0];
+
+    if (leaf.view instanceof CardBoardView) {
+      leaf.view.currentBoardIndex(index);
+    }
 
     this.app.workspace.revealLeaf(
       this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0]
@@ -76,6 +101,8 @@ export default class CardBoardPlugin extends Plugin {
     }
   ) {
     this.settings = newSettings;
+    this.removeCommands();
+    this.addCommands();
     await this.saveData(newSettings);
   }
 }

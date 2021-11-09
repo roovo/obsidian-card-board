@@ -34,6 +34,7 @@ type ToElm
     | FileUpdated MarkdownFile
     | InitCompleted
     | SettingsUpdated Settings
+    | ShowBoard Int
 
 
 type alias Flags =
@@ -121,8 +122,9 @@ toElm =
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
-        , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
         , DecodeHelpers.toElmVariant "initCompleted" (always InitCompleted) (TsDecode.succeed ())
+        , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
+        , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]
 
 
