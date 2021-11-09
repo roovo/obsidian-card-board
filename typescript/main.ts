@@ -28,7 +28,7 @@ export default class CardBoardPlugin extends Plugin {
       '<rect x="56" y="28" width="12" height="30" fill="none" stroke="currentColor" stroke-width="5"></rect>');
 
     this.addRibbonIcon('card-board', 'CardBoard', async () => {
-      this.activateView();
+      this.activateView(0);
     });
 
     this.addCommands();
@@ -46,7 +46,7 @@ export default class CardBoardPlugin extends Plugin {
         id: "open-card-board-plugin-" + index,
         name: "Open " + boardConfig.data.title,
         callback: async () => {
-          this.activateView();
+          this.activateView(index);
         },
       });
 
@@ -63,13 +63,19 @@ export default class CardBoardPlugin extends Plugin {
     this.commandIds = [];
   }
 
-  async activateView() {
+  async activateView(index: number) {
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
     await this.app.workspace.getLeaf(true).setViewState({
       type: VIEW_TYPE_CARD_BOARD,
       active: true,
     });
+
+    const leaf = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0];
+
+    if (leaf.view instanceof CardBoardView) {
+      leaf.view.currentBoardIndex(index);
+    }
 
     this.app.workspace.revealLeaf(
       this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0]

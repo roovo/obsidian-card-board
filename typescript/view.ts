@@ -135,6 +135,10 @@ export class CardBoardView extends ItemView {
     });
   }
 
+  currentBoardIndex(index: number) {
+    console.log("Jump to view at index: " + index);
+  }
+
   // MESSAGES FROM ELM
 
   async handleAddFilePreviewHovers(
