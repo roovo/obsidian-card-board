@@ -2,6 +2,7 @@ import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from '
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
 export default class CardBoardPlugin extends Plugin {
+  private commandIds: string[] = [];
   settings: {
     data :
       { boardConfigs : (
@@ -30,18 +31,36 @@ export default class CardBoardPlugin extends Plugin {
       this.activateView();
     });
 
-    this.addCommand({
-      id: "open-card-board-plugin",
-      name: "Open Window",
-      callback: async () => {
-        this.activateView();
-      },
-    });
+    this.addCommands();
   }
 
   onunload() {
     console.log('unloading CardBoard plugin');
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
+  }
+
+
+  addCommands() {
+    this.settings.data.boardConfigs.forEach((boardConfig, index) => {
+      const command = this.addCommand({
+        id: "open-card-board-plugin-" + index,
+        name: "Open " + boardConfig.data.title,
+        callback: async () => {
+          this.activateView();
+        },
+      });
+
+      this.commandIds.push(command.id);
+    });
+  }
+
+
+  removeCommands() {
+    for (const commandId of this.commandIds) {
+      // @ts-ignore
+      this.app.commands.removeCommand(commandId);
+    }
+    this.commandIds = [];
   }
 
   async activateView() {
@@ -76,6 +95,8 @@ export default class CardBoardPlugin extends Plugin {
     }
   ) {
     this.settings = newSettings;
+    this.removeCommands();
+    this.addCommands();
     await this.saveData(newSettings);
   }
 }
