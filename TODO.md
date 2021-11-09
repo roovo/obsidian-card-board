@@ -86,6 +86,7 @@
   For a date picker.
 
 # Misc
+- https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
   look at esbuild
