@@ -24,6 +24,7 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
+    , removeTag
     , subtasks
     , tags
     , tasksToToggle
@@ -41,7 +42,6 @@ import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
 import Time
-
 
 
 -- TYPES
@@ -362,6 +362,16 @@ toString (TaskItem fields_ _) =
 
 
 -- MODIFICATION
+
+
+removeTag : String -> TaskItem -> TaskItem
+removeTag tag (TaskItem fields_ subtasks_) =
+    TaskItem { fields_ | tags = List.filter (\t -> t /= tag) fields_.tags } (List.map (removeTagFromFields tag) subtasks_)
+
+
+removeTagFromFields : String -> TaskItemFields -> TaskItemFields
+removeTagFromFields tag fields_ =
+    { fields_ | tags  = List.filter (\t -> t /= tag) fields_.tags }
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
