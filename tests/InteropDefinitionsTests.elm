@@ -143,7 +143,13 @@ fromElmTests =
 toElmTests : Test
 toElmTests =
     describe "interop.toElm (decoding)"
-        [ test "decodes fileAdded data" <|
+        [ test "decodes activeStateUpdated data" <|
+            \() ->
+                """{"tag":"activeStateUpdated","data":false}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
+        , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
                     |> runDecoder interop.toElm
@@ -167,6 +173,12 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
+        , test "decodes showBoard data" <|
+            \() ->
+                """{"tag":"showBoard","data":17}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
@@ -193,12 +205,14 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .tsType
                     |> Expect.equal
-                        ("{ data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
+                        ("{ data : boolean; tag : \"activeStateUpdated\" }"
+                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
                             ++ " | { data : string; tag : \"fileDeleted\" }"
                             ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
-                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
                             ++ " | { data : JsonValue; tag : \"initCompleted\" }"
+                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
+                            ++ " | { data : number; tag : \"showBoard\" }"
                         )
         ]
 
