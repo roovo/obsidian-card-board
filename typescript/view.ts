@@ -44,6 +44,8 @@ export class CardBoardView extends ItemView {
   }
 
   async onOpen() {
+    this.icon = "card-board"
+
     const mySettings:Flags = {
       now:          Date.now(),
       zone:         new Date().getTimezoneOffset(),
