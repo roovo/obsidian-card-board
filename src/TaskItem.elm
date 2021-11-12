@@ -24,6 +24,7 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
+    , removeTag
     , subtasks
     , tags
     , tasksToToggle
@@ -41,7 +42,6 @@ import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
 import Time
-
 
 
 -- TYPES
@@ -362,6 +362,27 @@ toString (TaskItem fields_ _) =
 
 
 -- MODIFICATION
+
+
+removeTag : String -> TaskItem -> TaskItem
+removeTag tag (TaskItem fields_ subtasks_) =
+    TaskItem (removeTagFromFields tag fields_) (List.map (removeTagFromFields tag) subtasks_)
+
+
+removeTagFromFields : String -> TaskItemFields -> TaskItemFields
+removeTagFromFields tag fields_ =
+    let
+        matches : String -> Bool
+        matches itemTag =
+            if String.endsWith "/" tag then
+                tag == itemTag
+                    || (String.toLower itemTag == String.dropRight 1 (String.toLower tag))
+
+            else
+                String.toLower itemTag == String.toLower tag
+    in
+
+    { fields_ | tags  = List.filter (\t -> not (matches t)) fields_.tags }
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem

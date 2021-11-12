@@ -183,6 +183,22 @@ columnsBasic =
                     |> tasksInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
+        , test "removes tags that match the column's tag" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar/
+  - [ ] bar1.1 #bar/baz
+- [ ] bar2 #bar #baz
+"""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
+                        }
+                    |> tasksInColumn "Bar Tasks"
+                    |> List.concatMap TaskItem.tags
+                    |> Expect.equal [ "bar/baz", "baz"  ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)

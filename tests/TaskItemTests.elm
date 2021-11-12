@@ -29,6 +29,7 @@ suite =
         , notes
         , originalText
         , parsing
+        , removeTag
         , subtasks
         , tags
         , tasksToToggle
@@ -607,6 +608,54 @@ parsing =
                     |> Expect.equal (Err "failed")
         ]
 
+
+removeTag : Test
+removeTag =
+    describe "removeTag"
+        [ test "removes tag when it's the only tag" <|
+            \() ->
+                "- [ ] foo #bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo")
+        , test "remove tag when there are other tags present" <|
+            \() ->
+                "- [ ] foo #bar #baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo #baz")
+        , test "remove tag when there is another tag that starts with the same" <|
+            \() ->
+                "- [ ] foo #bar #bart"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo #bart")
+        , test "remove tag when tag includes a slash" <|
+            \() ->
+                "- [ ] foo #bar/ #baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar/")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo #baz")
+        , test "it will not remove sub-tags when a trailing slash is given" <|
+            \() ->
+                "- [ ] foo #bar/qux #baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar/")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo #bar/qux #baz")
+        , test "remove tag when tag is on a subtask" <|
+            \() ->
+                "- [ ] foo #baz\n  - [ ] bar #bar"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "bar")
+                    |> Result.map (TaskItem.subtasks)
+                    |> Result.map (List.map TaskItem.toString)
+                    |> Expect.equal (Ok [ "  - [ ] bar" ])
+        ]
 
 subtasks : Test
 subtasks =
