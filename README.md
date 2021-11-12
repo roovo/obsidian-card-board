@@ -15,12 +15,15 @@ install from the [releases](https://github.com/roovo/obsidian-card-board/release
 you can try a self-build - see the [contributing doc](CONTRIBUTING.md)).
 
 ## Use
-When installed, use the icon in the app ribbon to launch or use the `CardBoard: Open Window` command
-in the Command Palette.
+When installed, you can launch the plugin:
+
+- using the icon in the app ribbon (see below), or
+- using the Command Pallete command (which allows you to open a specific board).
 
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
-You should get a dialog asking you to add a new board.  There are 2 types of board:
+If you have no boards defined, you should get a dialog asking you to add a new
+board.  There are 2 types of board:
 
 - **Date based**: looks like the main screenshot above.
 - **Tag based**: uses tags to define the columns (you need to include tags on
