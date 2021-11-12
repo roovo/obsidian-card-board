@@ -626,6 +626,13 @@ removeTag =
                     |> Result.map (TaskItem.removeTag "bar")
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [ ] foo #baz")
+        , test "is case insensative" <|
+            \() ->
+                "- [ ] foo #bAr #baz"
+                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Result.map (TaskItem.removeTag "Bar")
+                    |> Result.map TaskItem.toString
+                    |> Expect.equal (Ok "- [ ] foo #baz")
         , test "remove tag when there is another tag that starts with the same" <|
             \() ->
                 "- [ ] foo #bar #bart"
@@ -652,10 +659,11 @@ removeTag =
                 "- [ ] foo #baz\n  - [ ] bar #bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map (TaskItem.removeTag "bar")
-                    |> Result.map (TaskItem.subtasks)
+                    |> Result.map TaskItem.subtasks
                     |> Result.map (List.map TaskItem.toString)
                     |> Expect.equal (Ok [ "  - [ ] bar" ])
         ]
+
 
 subtasks : Test
 subtasks =
