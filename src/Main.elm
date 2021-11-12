@@ -257,10 +257,6 @@ keyDecoder =
 
 toKeyValue : String -> KeyValue
 toKeyValue string =
-    let
-        _ =
-            Debug.log string
-    in
     case String.uncons string of
         Just ( char, "" ) ->
             Character char
