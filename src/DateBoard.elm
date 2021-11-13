@@ -2,6 +2,7 @@ module DateBoard exposing
     ( Config
     , columns
     , configDecoder
+    , configDecoder_v_0_1_0
     , configEncoder
     , defaultConfig
     )
@@ -20,6 +21,8 @@ import TsJson.Encode as TsEncode
 
 type alias Config =
     { completedCount : Int
+    , filterPaths : String
+    , filterTags : String
     , includeUndated : Bool
     , title : String
     }
@@ -28,6 +31,8 @@ type alias Config =
 defaultConfig : Config
 defaultConfig =
     { completedCount = 10
+    , filterPaths = ""
+    , filterTags = ""
     , includeUndated = True
     , title = ""
     }
@@ -42,6 +47,8 @@ configEncoder =
     TsEncode.object
         [ TsEncode.required "completedCount" .completedCount TsEncode.int
         , TsEncode.required "includeUndated" .includeUndated TsEncode.bool
+        , TsEncode.required "filterPaths" .filterPaths TsEncode.string
+        , TsEncode.required "filterTags" .filterTags TsEncode.string
         , TsEncode.required "title" .title TsEncode.string
         ]
 
@@ -50,6 +57,18 @@ configDecoder : TsDecode.Decoder Config
 configDecoder =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filterPaths" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "filterTags" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+configDecoder_v_0_1_0 : TsDecode.Decoder Config
+configDecoder_v_0_1_0 =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.succeed "")
+        |> TsDecode.andMap (TsDecode.succeed "")
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 

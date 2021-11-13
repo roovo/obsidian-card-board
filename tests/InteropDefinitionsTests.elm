@@ -24,7 +24,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filterPaths":"a/path","filterTags":"tag1","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filterPaths":"b/path","filterTags":"tag2","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -34,12 +34,16 @@ flagsTests =
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
+                                        , filterPaths = "a/path"
+                                        , filterTags = "tag1"
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
+                                        , filterPaths = "b/path"
+                                        , filterTags = "tag2"
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -63,12 +67,16 @@ flagsTests =
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
+                                        , filterPaths = ""
+                                        , filterTags = ""
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
+                                        , filterPaths = ""
+                                        , filterTags = ""
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -196,23 +204,6 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct (toELm) tsType" <|
-            \() ->
-                ""
-                    |> runDecoder interop.toElm
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ data : boolean; tag : \"activeStateUpdated\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
-                            ++ " | { data : string; tag : \"fileDeleted\" }"
-                            ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
-                            ++ " | { data : JsonValue; tag : \"initCompleted\" }"
-                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs :"
-                            ++ " ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" }"
-                            ++ ")[] } } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; globalSettings : JsonValue } })); tag : \"settingsUpdated\" }"
-                            ++ " | { data : number; tag : \"showBoard\" }"
-                        )
         ]
 
 

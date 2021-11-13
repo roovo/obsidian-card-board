@@ -4,6 +4,7 @@ module TagBoard exposing
     , columnConfigsParser
     , columns
     , configDecoder
+    , configDecoder_v_0_1_0
     , configEncoder
     , defaultConfig
     )
@@ -25,6 +26,8 @@ import TsJson.Encode as TsEncode
 type alias Config =
     { columns : List ColumnConfig
     , completedCount : Int
+    , filterPaths : String
+    , filterTags : String
     , includeOthers : Bool
     , includeUntagged : Bool
     , title : String
@@ -41,6 +44,8 @@ defaultConfig : Config
 defaultConfig =
     { columns = []
     , completedCount = 10
+    , filterPaths = ""
+    , filterTags = ""
     , includeOthers = False
     , includeUntagged = False
     , title = ""
@@ -56,6 +61,8 @@ configEncoder =
     TsEncode.object
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
         , TsEncode.required "completedCount" .completedCount TsEncode.int
+        , TsEncode.required "filterPaths" .filterPaths TsEncode.string
+        , TsEncode.required "filterTags" .filterTags TsEncode.string
         , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
         , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
@@ -75,6 +82,20 @@ configDecoder =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filterPaths" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "filterTags" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+configDecoder_v_0_1_0 : TsDecode.Decoder Config
+configDecoder_v_0_1_0 =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.succeed "")
+        |> TsDecode.andMap (TsDecode.succeed "")
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)

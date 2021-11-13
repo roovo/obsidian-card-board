@@ -198,7 +198,7 @@ columnsBasic =
                         }
                     |> tasksInColumn "Bar Tasks"
                     |> List.concatMap TaskItem.tags
-                    |> Expect.equal [ "bar/baz", "baz"  ]
+                    |> Expect.equal [ "bar/baz", "baz" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
@@ -447,26 +447,14 @@ columnConfigsParserTest =
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding config"
-        [ test "encodes config correctly" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
-                    |> TsEncode.runExample TagBoard.configEncoder
-                    |> .output
-                    |> Expect.equal """{"columns":[{"tag":"foo","displayTitle":"bar"}],"completedCount":0,"includeOthers":false,"includeUntagged":false,"title":"Tag Board Title"}"""
-        , test "produces the expected type" <|
-            \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
-                    |> TsEncode.runExample TagBoard.configEncoder
-                    |> .tsType
-                    |> Expect.equal "{ columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }"
-        , test "can decode the encoded string back to the original" <|
-            \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
+                exampleConfig
                     |> TsEncode.runExample TagBoard.configEncoder
                     |> .output
                     |> runDecoder TagBoard.configDecoder
                     |> .decoded
-                    |> Expect.equal (Ok { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] })
+                    |> Expect.equal (Ok exampleConfig)
         ]
 
 
@@ -478,8 +466,22 @@ defaultConfig : TagBoard.Config
 defaultConfig =
     { columns = []
     , completedCount = 0
+    , filterPaths = ""
+    , filterTags = ""
     , includeOthers = False
     , includeUntagged = False
+    , title = "Tag Board Title"
+    }
+
+
+exampleConfig : TagBoard.Config
+exampleConfig =
+    { columns = [ { tag = "foo", displayTitle = "bar" } ]
+    , completedCount = 6
+    , filterPaths = "a\nb\nc"
+    , filterTags = "t1\nt2\nt3"
+    , includeOthers = False
+    , includeUntagged = True
     , title = "Tag Board Title"
     }
 

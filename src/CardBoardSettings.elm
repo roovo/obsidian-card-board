@@ -133,7 +133,7 @@ currentVersionDecoder =
 v_0_1_0_Decoder : TsDecode.Decoder Settings
 v_0_1_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_1_0))
         |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
