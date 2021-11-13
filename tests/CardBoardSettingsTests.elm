@@ -1,5 +1,6 @@
 module CardBoardSettingsTests exposing (suite)
 
+import BoardConfig
 import CardBoardSettings
 import Expect
 import Semver
@@ -32,15 +33,15 @@ encodeDecode =
     describe "encoding and decoding settings"
         [ test "can decode the encoded string back to the original" <|
             \() ->
-                defaultSettings
+                exampleSettings
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
                     |> runDecoder CardBoardSettings.decoder
                     |> .decoded
-                    |> Expect.equal (Ok defaultSettings)
+                    |> Expect.equal (Ok exampleSettings)
         , test "fails if the version number is unsupported" <|
             \() ->
-                { defaultSettings | version = Semver.version 0 0 0 [] [] }
+                { exampleSettings | version = Semver.version 0 0 0 [] [] }
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
                     |> runDecoder CardBoardSettings.decoder
@@ -54,19 +55,36 @@ encodeDecode =
 -- HELPERS
 
 
-defaultSettings : CardBoardSettings.Settings
-defaultSettings =
-    { boardConfigs = []
-    , globalSettings = defaultGlobalSettings
+exampleSettings : CardBoardSettings.Settings
+exampleSettings =
+    { boardConfigs =
+        [ BoardConfig.TagBoardConfig
+            { columns = [ { tag = "foo", displayTitle = "bar" } ]
+            , completedCount = 10
+            , filterPaths = "path1\npath2"
+            , filterTags = "aTag\nanotherTag"
+            , includeOthers = False
+            , includeUntagged = True
+            , title = "A tagboard"
+            }
+        , BoardConfig.DateBoardConfig
+            { completedCount = 15
+            , filterPaths = "date/path"
+            , filterTags = "dateTag"
+            , includeUndated = False
+            , title = "A dateboard"
+            }
+        ]
+    , globalSettings = exampleGlobalSettings
     , version = Semver.version 0 2 0 [] []
     }
 
 
-defaultGlobalSettings : CardBoardSettings.GlobalSettings
-defaultGlobalSettings =
-    { hideCompletedSubtasks = False
-    , ignorePaths = ""
-    , subTaskDisplayLimit = Nothing
+exampleGlobalSettings : CardBoardSettings.GlobalSettings
+exampleGlobalSettings =
+    { hideCompletedSubtasks = True
+    , ignorePaths = "a/path"
+    , subTaskDisplayLimit = Just 17
     }
 
 
