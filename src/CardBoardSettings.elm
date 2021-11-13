@@ -126,7 +126,7 @@ currentVersionDecoder : TsDecode.Decoder Settings
 currentVersionDecoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
-        |> TsDecode.andMap (TsDecode.field "globalSettings" defaultGlobalSettingsDecoder)
+        |> TsDecode.andMap (TsDecode.field "globalSettings" globalSettingsDecoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
@@ -141,6 +141,14 @@ v_0_1_0_Decoder =
 unsupportedVersionDecoder : TsDecode.Decoder Settings
 unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
+
+
+globalSettingsDecoder : TsDecode.Decoder GlobalSettings
+globalSettingsDecoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "hideCompletedSubtasks" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "ignorePaths" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "subTaskDisplayLimit" (TsDecode.maybe TsDecode.int))
 
 
 defaultGlobalSettingsDecoder : TsDecode.Decoder GlobalSettings
