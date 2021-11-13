@@ -11,32 +11,26 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ encodeDecode
+        [ currentVersion
+        , encodeDecode
+        ]
+
+
+currentVersion : Test
+currentVersion =
+    describe "currentVersion"
+        [ test "is 0.2.0" <|
+            \() ->
+                CardBoardSettings.currentVersion
+                    |> Semver.print
+                    |> Expect.equal "0.2.0"
         ]
 
 
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding settings"
-        [ test "encodes settings correctly" <|
-            \() ->
-                defaultSettings
-                    |> TsEncode.runExample CardBoardSettings.encoder
-                    |> .output
-                    |> Expect.equal """{"version":"0.1.0","data":{"boardConfigs":[]}}"""
-        , test "produces the expected type" <|
-            \() ->
-                defaultSettings
-                    |> TsEncode.runExample CardBoardSettings.encoder
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ data : { boardConfigs : ("
-                            ++ "{ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" } | "
-                            ++ "{ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" }"
-                            ++ ")[] }; "
-                            ++ "version : string }"
-                        )
-        , test "can decode the encoded string back to the original" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
                 defaultSettings
                     |> TsEncode.runExample CardBoardSettings.encoder
@@ -63,7 +57,16 @@ encodeDecode =
 defaultSettings : CardBoardSettings.Settings
 defaultSettings =
     { boardConfigs = []
-    , version = Semver.version 0 1 0 [] []
+    , globalSettings = defaultGlobalSettings
+    , version = Semver.version 0 2 0 [] []
+    }
+
+
+defaultGlobalSettings : CardBoardSettings.GlobalSettings
+defaultGlobalSettings =
+    { hideCompletedSubtasks = False
+    , ignorePaths = ""
+    , subTaskDisplayLimit = Nothing
     }
 
 

@@ -1,5 +1,4 @@
-- forgot to update the tests for InteropDefinitions!
-- do I want to rename Panel -> Board ??
+- do I need to export CardBoardSettings.defaultGlobalSettings?
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -89,6 +88,7 @@
   For a date picker.
 
 # Misc
+- do I want to rename Panel -> Board ??
 - https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632

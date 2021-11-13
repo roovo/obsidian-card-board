@@ -24,11 +24,6 @@ import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
-currentSettingsVersion : Semver.Version
-currentSettingsVersion =
-    Semver.version 0 1 0 [] []
-
-
 toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
 toElm =
     (InteropDefinitions.interop.toElm |> TsDecode.decoder)
@@ -92,7 +87,10 @@ rewriteTasks timeWithZone filePath taskItems =
 
 updateSettings : SafeZipper BoardConfig -> Cmd msg
 updateSettings configs =
-    { version = currentSettingsVersion, boardConfigs = SafeZipper.toList configs }
+    { version = CardBoardSettings.currentVersion
+    , boardConfigs = SafeZipper.toList configs
+    , globalSettings = CardBoardSettings.defaultGlobalSettings
+    }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder
         |> interopFromElm
 

@@ -1,6 +1,7 @@
 module InteropDefinitionsTests exposing (suite)
 
 import BoardConfig
+import CardBoardSettings
 import Expect
 import InteropDefinitions exposing (interop)
 import Semver
@@ -21,15 +22,15 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        [ test "decodes valid flags" <|
+        [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 1 0 [] []
+                                { version = Semver.version 0 2 0 [] []
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
@@ -44,6 +45,36 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
+                                , globalSettings = defaultGlobalSettings
+                                }
+                            , now = 11
+                            , zone = 22
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.1.0" <|
+            \() ->
+                """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                    |> runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 2 0 [] []
+                                , boardConfigs =
+                                    [ BoardConfig.DateBoardConfig
+                                        { completedCount = 4
+                                        , includeUndated = True
+                                        , title = "date board title"
+                                        }
+                                    , BoardConfig.TagBoardConfig
+                                        { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , completedCount = 5
+                                        , includeOthers = False
+                                        , includeUntagged = True
+                                        , title = "tag board title"
+                                        }
+                                    ]
+                                , globalSettings = defaultGlobalSettings
                                 }
                             , now = 11
                             , zone = 22
@@ -56,16 +87,6 @@ flagsTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct tsType" <|
-            \() ->
-                ""
-                    |> runDecoder interop.flags
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ now : number; "
-                            ++ "settings : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); "
-                            ++ "zone : number }"
-                        )
         ]
 
 
@@ -100,21 +121,6 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
-        , test "encodes UpdateSettings with DateBoardConfig data" <|
-            \() ->
-                { version = Semver.version 1 2 3 [] []
-                , boardConfigs =
-                    [ BoardConfig.DateBoardConfig
-                        { completedCount = 3
-                        , includeUndated = True
-                        , title = "A Date Board"
-                        }
-                    ]
-                }
-                    |> InteropDefinitions.UpdateSettings
-                    |> TsEncode.runExample interop.fromElm
-                    |> .output
-                    |> Expect.equal """{"tag":"updateSettings","data":{"version":"1.2.3","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -122,21 +128,6 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"updateTasks","data":{"filePath":"a path","tasks":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
-        , test "encodes the correct tsType" <|
-            \() ->
-                [ { filePath = "a path", taskMarkdown = [] } ]
-                    |> InteropDefinitions.DisplayTaskMarkdown
-                    |> TsEncode.runExample interop.fromElm
-                    |> .tsType
-                    |> Expect.equal
-                        ("""{ data : { filePath : string; tasks : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTasks" }"""
-                            ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTaskSourceFile" }"""
-                            ++ """ | { data : { filePath : string; taskMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTaskMarkdown" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTask" }"""
-                            ++ """ | { tag : "closeView" }"""
-                            ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
-                        )
         ]
 
 
@@ -179,12 +170,18 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
+        , test "decodes version 0.2.0 settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":"","subTaskDisplayLimit":null}}}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = defaultGlobalSettings })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 1 0 [] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = defaultGlobalSettings })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
@@ -199,7 +196,7 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct tsType" <|
+        , test "builds the correct (toELm) tsType" <|
             \() ->
                 ""
                     |> runDecoder interop.toElm
@@ -211,7 +208,9 @@ toElmTests =
                             ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
                             ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
                             ++ " | { data : JsonValue; tag : \"initCompleted\" }"
-                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
+                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs :"
+                            ++ " ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" }"
+                            ++ ")[] } } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[]; globalSettings : JsonValue } })); tag : \"settingsUpdated\" }"
                             ++ " | { data : number; tag : \"showBoard\" }"
                         )
         ]
@@ -224,6 +223,14 @@ toElmTests =
 type alias DecodeResult value =
     { decoded : Result String value
     , tsType : String
+    }
+
+
+defaultGlobalSettings : CardBoardSettings.GlobalSettings
+defaultGlobalSettings =
+    { hideCompletedSubtasks = False
+    , ignorePaths = ""
+    , subTaskDisplayLimit = Nothing
     }
 
 
