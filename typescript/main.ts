@@ -41,7 +41,7 @@ export default class CardBoardPlugin extends Plugin {
 
 
   addCommands() {
-    this.settings.data.boardConfigs.forEach((boardConfig, index) => {
+    this.settings?.data?.boardConfigs?.forEach((boardConfig, index) => {
       const command = this.addCommand({
         id: "open-card-board-plugin-" + index,
         name: "Open " + boardConfig.data.title,
