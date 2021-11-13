@@ -6,6 +6,7 @@ module CardBoardSettings exposing
     , decoder
     , defaultGlobalSettings
     , encoder
+    , globalSettings
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -52,6 +53,11 @@ defaultGlobalSettings =
 boardConfigs : Settings -> List BoardConfig
 boardConfigs =
     .boardConfigs
+
+
+globalSettings : Settings -> GlobalSettings
+globalSettings =
+    .globalSettings
 
 
 

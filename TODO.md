@@ -1,6 +1,3 @@
-- write settings back on launch (from elm) so that you are always on the latest version
-- do I need to export CardBoardSettings.defaultGlobalSettings?
-
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
@@ -92,11 +89,8 @@
   For a date picker.
 
 # Misc
-<<<<<<< HEAD
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?
-=======
->>>>>>> NewSettings: add global settings to typescript interop
 - do I want to rename Panel -> Board ??
 - https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?

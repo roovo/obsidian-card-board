@@ -285,7 +285,7 @@ closeDialogOrExit model =
                 cmd =
                     if SafeZipper.length config == 0 then
                         Cmd.batch
-                            [ InteropPorts.updateSettings config
+                            [ InteropPorts.updateSettings model
                             , InteropPorts.closeView
                             ]
 
@@ -304,7 +304,7 @@ closeDialogOrExit model =
 
         Model.Editing config ->
             ( { model | configBeingEdited = Model.NotEditing }
-            , InteropPorts.updateSettings config
+            , InteropPorts.updateSettings model
             )
 
         _ ->

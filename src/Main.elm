@@ -44,10 +44,15 @@ init flags =
             )
 
         Ok okFlags ->
-            ( Model.fromFlags okFlags
+            let
+                model =
+                    Model.fromFlags okFlags
+            in
+            ( model
             , Cmd.batch
-                [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+                [ InteropPorts.updateSettings model
                 , InteropPorts.elmInitialized
+                , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
             )
 
