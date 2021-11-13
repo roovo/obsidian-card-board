@@ -20,7 +20,7 @@ module Model exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardSettings
+import CardBoardSettings exposing (GlobalSettings)
 import InteropDefinitions
 import Panels
 import SafeZipper exposing (SafeZipper)
@@ -38,6 +38,7 @@ import TimeWithZone exposing (TimeWithZone)
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
     , configBeingEdited : EditState
+    , globalSettings : GlobalSettings
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -55,6 +56,7 @@ default : Model
 default =
     { boardConfigs = SafeZipper.empty
     , configBeingEdited = Adding SafeZipper.empty BoardConfig.default
+    , globalSettings = CardBoardSettings.defaultGlobalSettings
     , isActiveView = False
     , taskList = State.Waiting
     , timeWithZone =
@@ -72,6 +74,7 @@ fromFlags flags =
     in
     { boardConfigs = boardConfigs
     , configBeingEdited = NotEditing
+    , globalSettings = CardBoardSettings.globalSettings flags.settings
     , isActiveView = False
     , taskList = State.Waiting
     , timeWithZone =

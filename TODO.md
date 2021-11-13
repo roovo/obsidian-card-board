@@ -1,6 +1,3 @@
-- write settings back on launch (from elm) so that you are always on the latest version
-- do I need to export CardBoardSettings.defaultGlobalSettings?
-
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
