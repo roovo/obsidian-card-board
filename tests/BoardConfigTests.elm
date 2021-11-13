@@ -30,19 +30,7 @@ default =
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding config"
-        [ test "encodes config correctly" <|
-            \() ->
-                defaultConfig
-                    |> TsEncode.runExample BoardConfig.encoder
-                    |> .output
-                    |> Expect.equal """{"tag":"tagBoardConfig","data":{"columns":[],"completedCount":10,"includeOthers":false,"includeUntagged":false,"title":""}}"""
-        , test "produces the expected type" <|
-            \() ->
-                defaultConfig
-                    |> TsEncode.runExample BoardConfig.encoder
-                    |> .tsType
-                    |> Expect.equal """{ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }"""
-        , test "can decode the encoded string back to the original" <|
+        [ test "can decode an encoded string back to the original" <|
             \() ->
                 defaultConfig
                     |> TsEncode.runExample BoardConfig.encoder

@@ -105,26 +105,14 @@ columnUndated =
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding config"
-        [ test "encodes config correctly" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
-                defaultConfig
-                    |> TsEncode.runExample DateBoard.configEncoder
-                    |> .output
-                    |> Expect.equal """{"completedCount":0,"includeUndated":false,"title":"Date Board Title"}"""
-        , test "produces the expected type" <|
-            \() ->
-                defaultConfig
-                    |> TsEncode.runExample DateBoard.configEncoder
-                    |> .tsType
-                    |> Expect.equal "{ completedCount : number; includeUndated : boolean; title : string }"
-        , test "can decode the encoded string back to the original" <|
-            \() ->
-                defaultConfig
+                exampleConfig
                     |> TsEncode.runExample DateBoard.configEncoder
                     |> .output
                     |> runDecoder DateBoard.configDecoder
                     |> .decoded
-                    |> Expect.equal (Ok defaultConfig)
+                    |> Expect.equal (Ok exampleConfig)
         ]
 
 
@@ -135,6 +123,18 @@ encodeDecode =
 defaultConfig : DateBoard.Config
 defaultConfig =
     { completedCount = 0
+    , filterPaths = ""
+    , filterTags = ""
+    , includeUndated = False
+    , title = "Date Board Title"
+    }
+
+
+exampleConfig : DateBoard.Config
+exampleConfig =
+    { completedCount = 12
+    , filterPaths = "a/path\nb/path"
+    , filterTags = "tag1\ntag2"
     , includeUndated = False
     , title = "Date Board Title"
     }
