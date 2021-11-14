@@ -1,5 +1,6 @@
 module MarkdownFile exposing (MarkdownFile, decoder)
 
+import Set exposing (Set)
 import TsJson.Decode as TsDecode
 import Yaml.Decode as YD
 
@@ -7,7 +8,7 @@ import Yaml.Decode as YD
 type alias MarkdownFile =
     { filePath : String
     , fileDate : Maybe String
-    , frontMatterTags : List String
+    , frontMatterTags : Set String
     , bodyOffset : Int
     , body : String
     }
@@ -25,35 +26,35 @@ decoder =
 -- INTERNAL
 
 
-markdownFileBuilder : String -> Maybe String -> ( List String, Int, String ) -> MarkdownFile
+markdownFileBuilder : String -> Maybe String -> ( Set String, Int, String ) -> MarkdownFile
 markdownFileBuilder filePath fileDate ( tags, bodyOffset, body ) =
     MarkdownFile filePath fileDate tags bodyOffset body
 
 
-tagsAndContentsDecoder : TsDecode.Decoder ( List String, Int, String )
+tagsAndContentsDecoder : TsDecode.Decoder ( Set String, Int, String )
 tagsAndContentsDecoder =
     TsDecode.andThen (TsDecode.andThenInit contentDecoder) TsDecode.string
 
 
-contentDecoder : String -> TsDecode.Decoder ( List String, Int, String )
+contentDecoder : String -> TsDecode.Decoder ( Set String, Int, String )
 contentDecoder contents =
     case frontMatterAndBodyFrom contents of
         ( Just frontMatter, bodyOffset, Just body ) ->
             case YD.fromString frontMatterDecoder frontMatter of
                 Ok tags ->
-                    TsDecode.succeed ( tags, bodyOffset, body )
+                    TsDecode.succeed ( Set.fromList tags, bodyOffset, body )
 
                 Err _ ->
-                    TsDecode.succeed ( [], bodyOffset, body )
+                    TsDecode.succeed ( Set.empty, bodyOffset, body )
 
         ( Nothing, _, Just _ ) ->
-            TsDecode.succeed ( [], 0, contents )
+            TsDecode.succeed ( Set.empty, 0, contents )
 
         ( Just _, _, Nothing ) ->
-            TsDecode.succeed ( [], 0, "" )
+            TsDecode.succeed ( Set.empty, 0, "" )
 
         ( Nothing, _, Nothing ) ->
-            TsDecode.succeed ( [], 0, "" )
+            TsDecode.succeed ( Set.empty, 0, "" )
 
 
 frontMatterDecoder : YD.Decoder (List String)

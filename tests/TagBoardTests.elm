@@ -6,6 +6,7 @@ import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
+import Set
 import TagBoard
 import TaskItem
 import TaskList
@@ -200,15 +201,16 @@ columnsBasic =
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
                     |> BoardHelpers.tasksInColumn "Bar Tasks"
-                    |> List.concatMap TaskItem.tags
-                    |> Expect.equal [ "bar/", "bar/baz", "bar", "baz" ]
+                    |> List.map TaskItem.tags
+                    |> List.foldl Set.union Set.empty
+                    |> Expect.equalSets (Set.fromList [ "bar/", "bar/baz", "bar", "baz" ])
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing [] 0)
+                    |> Parser.run (TaskList.parser "file_a" Nothing Set.empty 0)
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig

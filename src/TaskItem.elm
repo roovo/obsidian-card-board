@@ -41,6 +41,7 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import Set exposing (Set)
 import TaskPaperTag
 import Time
 
@@ -55,11 +56,11 @@ type alias TaskItemFields =
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
-    , frontMatterTags : List String
+    , frontMatterTags : Set String
     , lineNumber : Int
     , notes : String
     , originalText : String
-    , tags : List String
+    , tags : Set String
     , title : String
     }
 
@@ -72,11 +73,11 @@ dummy =
         , dueFile = Nothing
         , dueTag = Nothing
         , filePath = ""
-        , frontMatterTags = []
+        , frontMatterTags = Set.empty
         , lineNumber = 0
         , notes = ""
         , originalText = ""
-        , tags = []
+        , tags = Set.empty
         , title = ""
         }
         []
@@ -178,7 +179,7 @@ hasNotes =
 
 hasTags : TaskItem -> Bool
 hasTags taskItem =
-    not <| List.isEmpty <| tags taskItem
+    not <| Set.isEmpty <| tags taskItem
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -198,7 +199,7 @@ hasTag tagToMatch taskItem =
             else
                 String.toLower itemTag == String.toLower tagToMatch
     in
-    List.any matches <| tags taskItem
+    Set.size (Set.filter matches <| tags taskItem) > 0
 
 
 hasSubtasks : TaskItem -> Bool
@@ -253,13 +254,12 @@ subtasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-tags : TaskItem -> List String
+tags : TaskItem -> Set String
 tags ((TaskItem fields_ _) as taskItem) =
     subtasks taskItem
-        |> List.concatMap (\(TaskItem fs _) -> fs.tags)
-        |> List.append fields_.tags
-        |> List.append fields_.frontMatterTags
-        |> LE.unique
+        |> List.map tags
+        |> List.foldl Set.union fields_.tags
+        |> Set.union fields_.frontMatterTags
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
@@ -336,9 +336,10 @@ toString (TaskItem fields_ _) =
 
         fieldTags : String
         fieldTags =
-            if List.length fields_.tags > 0 then
+            if Set.size fields_.tags > 0 then
                 fields_.tags
-                    |> List.map (String.append "#")
+                    |> Set.map (String.append "#")
+                    |> Set.toList
                     |> String.join " "
                     |> String.append " "
 
@@ -415,7 +416,7 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 -- SERIALIZATION
 
 
-parser : String -> Maybe String -> List String -> Int -> Parser TaskItem
+parser : String -> Maybe String -> Set String -> Int -> Parser TaskItem
 parser pathToFile fileDate frontMatterTags bodyOffset =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
@@ -436,7 +437,7 @@ parser pathToFile fileDate frontMatterTags bodyOffset =
         |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset)
 
 
-taskItemFieldsBuilder : Int -> Int -> String -> List String -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder : Int -> Int -> String -> Set String -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
 taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
@@ -457,16 +458,16 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
             contents
                 |> List.foldr extractDueDate Nothing
 
-        obsidianTags : List String
+        obsidianTags : Set String
         obsidianTags =
             contents
-                |> List.foldr extractTag []
+                |> List.foldr extractTag Set.empty
 
-        extractTag : Content -> List String -> List String
+        extractTag : Content -> Set String -> Set String
         extractTag content ts =
             case content of
                 ObsidianTag t ->
-                    t :: ts
+                    Set.insert t ts
 
                 _ ->
                     ts
@@ -607,7 +608,7 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-addAnySubtasksAndNotes : String -> Maybe String -> List String -> Int -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes : String -> Maybe String -> Set String -> Int -> TaskItemFields -> Parser TaskItem
 addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
@@ -646,7 +647,7 @@ addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
         |> P.andThen buildTaskItem
 
 
-indentedItemParser : String -> Maybe String -> List String -> Int -> Parser IndentedItem
+indentedItemParser : String -> Maybe String -> Set String -> Int -> Parser IndentedItem
 indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
     P.oneOf
         [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
@@ -660,7 +661,7 @@ notesParser =
         |= ParserHelper.anyLineParser
 
 
-subTaskParser : String -> Maybe String -> List String -> Int -> Parser IndentedItem
+subTaskParser : String -> Maybe String -> Set String -> Int -> Parser IndentedItem
 subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
