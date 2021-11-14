@@ -8,6 +8,7 @@ import TaskList
 import Test exposing (..)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
+import Set
 
 
 suite : Test
@@ -197,8 +198,9 @@ columnsBasic =
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
                     |> tasksInColumn "Bar Tasks"
-                    |> List.concatMap TaskItem.tags
-                    |> Expect.equal [ "bar/baz", "baz"  ]
+                    |> List.map TaskItem.tags
+                    |> List.foldl (Set.union) Set.empty
+                    |> Expect.equalSets (Set.fromList [ "bar/baz", "baz" ])
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)

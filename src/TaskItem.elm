@@ -42,6 +42,7 @@ import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
 import Time
+import Set exposing (Set)
 
 
 -- TYPES
@@ -57,7 +58,7 @@ type alias TaskItemFields =
     , lineNumber : Int
     , notes : String
     , originalText : String
-    , tags : List String
+    , tags : Set String
     , title : String
     }
 
@@ -158,7 +159,7 @@ hasNotes =
 
 hasTags : TaskItem -> Bool
 hasTags taskItem =
-    not <| List.isEmpty <| tags taskItem
+    not <| Set.isEmpty <| tags taskItem
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -178,7 +179,7 @@ hasTag tagToMatch taskItem =
             else
                 String.toLower itemTag == String.toLower tagToMatch
     in
-    List.any matches <| tags taskItem
+    Set.size (Set.filter matches <| tags taskItem) > 0
 
 
 hasSubtasks : TaskItem -> Bool
@@ -233,12 +234,11 @@ subtasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-tags : TaskItem -> List String
+tags : TaskItem -> Set String
 tags ((TaskItem fields_ _) as taskItem) =
     subtasks taskItem
-        |> List.concatMap (\(TaskItem fs _) -> fs.tags)
-        |> List.append fields_.tags
-        |> LE.unique
+        |> List.map tags
+        |> List.foldl (Set.union) fields_.tags
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
@@ -307,9 +307,10 @@ toString (TaskItem fields_ _) =
                     "- [x] "
 
         fieldTags =
-            if List.length fields_.tags > 0 then
+            if Set.size fields_.tags > 0 then
                 fields_.tags
-                    |> List.map (String.append "#")
+                    |> Set.map (String.append "#")
+                    |> Set.toList
                     |> String.join " "
                     |> String.append " "
 
@@ -382,7 +383,7 @@ removeTagFromFields tag fields_ =
                 String.toLower itemTag == String.toLower tag
     in
 
-    { fields_ | tags  = List.filter (\t -> not (matches t)) fields_.tags }
+    { fields_ | tags  = Set.filter (\t -> not (matches t)) fields_.tags }
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
@@ -447,16 +448,16 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
             contents
                 |> List.foldr extractDueDate Nothing
 
-        obsidianTags : List String
+        obsidianTags : Set String
         obsidianTags =
             contents
-                |> List.foldr extractTag []
+                |> List.foldr extractTag Set.empty
 
-        extractTag : Content -> List String -> List String
+        extractTag : Content -> Set String -> Set String
         extractTag content ts =
             case content of
                 ObsidianTag t ->
-                    t :: ts
+                    Set.insert t ts 
 
                 _ ->
                     ts

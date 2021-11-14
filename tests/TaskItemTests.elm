@@ -6,6 +6,7 @@ import Parser exposing ((|=))
 import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
 import Time
+import Set
 
 
 suite : Test
@@ -710,19 +711,19 @@ tags =
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
-                    |> Expect.equal (Ok [])
+                    |> Expect.equal (Ok Set.empty)
         , test "returns all tags from the top level and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
-                    |> Expect.equal (Ok [ "tag1", "tag2", "tag3" ])
+                    |> Expect.equal (Ok (Set.fromList [ "tag1", "tag2", "tag3" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.map TaskItem.tags
-                    |> Expect.equal (Ok [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok (Set.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2"
