@@ -218,6 +218,14 @@ not a task
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskIds
                     |> Expect.equal [ "file_a:1", "file_a:4", "file_a:6" ]
+        , test "correctly parses tags with a colon" <|
+            \() ->
+                "- [ ] foo #bar:baz"
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.withDefault TaskList.empty
+                    |> TaskList.topLevelTasks
+                    |> List.concatMap TaskItem.tags
+                    |> Expect.equal [ "bar"]
         ]
 
 
