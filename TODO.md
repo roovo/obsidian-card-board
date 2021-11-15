@@ -1,5 +1,3 @@
-- do I want to rename Panel -> Board ??
-
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
@@ -7,6 +5,8 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- Some sort of toggle compact view - where it shows each task as a single line card
+  with only the checkbox and the first line of the title.
 - I parse 'foo:w' as a tag whereas obsidian only recognises the foo part.
 - do I want to warn the user that I couldn't read settings at startup?
   are there any sensible options I can give them if I do?
@@ -66,6 +66,7 @@
 # Theme Compatibility
 - Firefly Theme: why is the text so big?
 - get working with tabbed view plugin
+- bubble space - tags not rendering properly
 
 # Board Types
 - have a subtag board that uses a root tag then subtags to define columns
@@ -88,6 +89,9 @@
   For a date picker.
 
 # Misc
+- do I want to do anything with Alternate Checkboxes?
+- supercharged links? - what does it do - does it work with cardBoard?
+- do I want to rename Panel -> Board ??
 - https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
