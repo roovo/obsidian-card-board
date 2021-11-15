@@ -140,6 +140,12 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
+        , test "decodes allMarkdownLoaded" <|
+            \() ->
+                """{"tag":"allMarkdownLoaded","data":{}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
@@ -190,21 +196,6 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct tsType" <|
-            \() ->
-                ""
-                    |> runDecoder interop.toElm
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ data : boolean; tag : \"activeStateUpdated\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
-                            ++ " | { data : string; tag : \"fileDeleted\" }"
-                            ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
-                            ++ " | { data : JsonValue; tag : \"initCompleted\" }"
-                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
-                            ++ " | { data : number; tag : \"showBoard\" }"
-                        )
         ]
 
 

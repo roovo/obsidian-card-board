@@ -248,7 +248,7 @@ export class CardBoardView extends ItemView {
     }
 
     this.elm.ports.interopToElm.send({
-      tag: "initCompleted",
+      tag: "allMarkdownLoaded",
       data: { }
     });
   }

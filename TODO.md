@@ -1,4 +1,4 @@
-- forgot to update the tests for InteropDefinitions!
+- add test for InteropDefinitions.closeView
 - do I want to rename Panel -> Board ??
 
 
