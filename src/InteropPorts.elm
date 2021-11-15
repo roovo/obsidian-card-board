@@ -4,6 +4,7 @@ port module InteropPorts exposing
     , decodeFlags
     , deleteTask
     , displayTaskMarkdown
+    , elmInitialized
     , openTaskSourceFile
     , rewriteTasks
     , toElm
@@ -51,6 +52,12 @@ addHoverToCardEditButtons cards =
 closeView : Cmd msg
 closeView =
     encodeVariant "closeView" (TsEncode.object []) ()
+        |> interopFromElm
+
+
+elmInitialized : Cmd msg
+elmInitialized =
+    encodeVariant "elmInitialized" (TsEncode.object []) ()
         |> interopFromElm
 
 
