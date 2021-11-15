@@ -185,6 +185,6 @@ if you would like to help out then you are welcome.  Please see the
 how to get a dev environment set up and running.
 
 - **Bugs/suggestions/feature requests** - [github issues](https://github.com/roovo/obsidian-card-board/issues).
+- **What's being worked on and up next?** - [CardBoard Dev](https://github.com/users/roovo/projects/2)
 - **Questions/discussions** - [github discussions](https://github.com/roovo/obsidian-card-board/discussions)
-
 
