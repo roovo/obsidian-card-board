@@ -1,4 +1,3 @@
-- add test for InteropDefinitions.closeView
 - do I want to rename Panel -> Board ??
 
 # Task Formats

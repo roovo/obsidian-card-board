@@ -10,8 +10,6 @@ import {
   WorkspaceLeaf
 } from 'obsidian';
 
-const moment = require('moment');
-
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
