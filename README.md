@@ -114,8 +114,10 @@ So if you have a tag `#foo/bar` you will be able to style it with your favorite
 color for foobars using:
 
 ```
-div.tag-foo-bar
-```
+.cm-s-obsidian div.tag-foo-bar > span.cm-hashtag {
+  background-color: HotPink !important;
+  color: DimGrey !important;
+}```
 
 ## Date boards
 You will get the best out of these if you are using the (core) Daily Notes plugin as any
