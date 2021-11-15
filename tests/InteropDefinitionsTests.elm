@@ -79,6 +79,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"addFilePreviewHovers","data":[{"filePath":"a path","id":"an id"}]}"""
+        , test "encodes CloseView" <|
+            \() ->
+                InteropDefinitions.CloseView
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"closeView"}"""
         , test "encodes DeleteTask data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }

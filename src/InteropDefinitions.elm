@@ -19,6 +19,7 @@ import TsJson.Encode as TsEncode exposing (required)
 
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
+    | CloseView
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
     | ElmInitialized
@@ -132,10 +133,13 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
+
+                CloseView ->
+                    vCloseView
 
                 DeleteTask info ->
                     vDeleteTask info
