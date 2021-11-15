@@ -101,9 +101,11 @@ hover over the icon for the normal Obsidian hover preview.
 ### Column ordering
 The current behaviour for the different columns is:
 
-- **Completed**: has the most recently completed at the top (assuming they were marked as complete using the checkbox on the board)
-- **Future**, **Today**, **Tags**: these are sorted by due date and then alphabetically within this
-- other columns are sorted alphabetically
+- **Completed**: has the most recently completed at the top (assuming they were
+  marked as complete using the checkbox on the board).
+- **Future**, **Today**, **Tags**: these are sorted by due date and then
+  alphabetically within this.
+- other columns are sorted alphabetically.
 
 I am not convinced that this is the best strategy so this may well change in a future release.
 
@@ -121,8 +123,9 @@ color for foo/bars (which just has to be HotPink) using:
 ```
 
 ## Date boards
-You will get the best out of these if you are using the (core) Daily Notes plugin as any
-tasks you place on a daily note will be assigned to the day of the note.
+You will get the best out of these if you are using the (Core) Daily Notes
+or the (Community) Periodic Notes plugins, as any tasks you place on a daily
+note will be assigned to the day of the note.
 
 You can also assign a date to any task using the format:
 
@@ -161,7 +164,6 @@ above the board to the left of the tabs.  You can:
 - Delete any boards you no longer need.
 
 ## Limitations
-- Uses the settings from the Daily Notes plugin, NOT periodic notes (will fix soon).
 - Might not work that great on large vaults (as it parses all markdown files at startup).
 - Might not be great on mobile (see previous, plus I haven't made the interface mobile
   friendly - yet).
