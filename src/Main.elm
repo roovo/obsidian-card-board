@@ -40,7 +40,10 @@ init flags =
 
         Ok okFlags ->
             ( Model.fromFlags okFlags
-            , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+            , Cmd.batch
+                [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+                , InteropPorts.elmInitialized
+                ]
             )
 
 

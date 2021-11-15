@@ -21,6 +21,7 @@ type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+    | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | UpdateSettings Settings
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
@@ -131,7 +132,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -141,6 +142,9 @@ fromElm =
 
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
+
+                ElmInitialized ->
+                    vElmInitialized
 
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
@@ -155,6 +159,7 @@ fromElm =
         |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
+        |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder

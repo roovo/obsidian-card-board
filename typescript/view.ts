@@ -82,6 +82,9 @@ export class CardBoardView extends ItemView {
         case "displayTaskMarkdown":
           that.handleDisplayTaskMarkdown(fromElm.data);
           break;
+        case "elmInitialized":
+          that.handleElmInitialized();
+          break;
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
           break;
@@ -92,26 +95,6 @@ export class CardBoardView extends ItemView {
           that.handleUpdateTasks(fromElm.data);
           break;
       }
-    });
-
-    const markdownFiles = this.vault.getMarkdownFiles();
-
-    for (const file of markdownFiles) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.cachedRead(file);
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath:     file.path,
-          fileDate:     fileDate,
-          fileContents: fileContents
-        }
-      });
-    }
-
-    this.elm.ports.interopToElm.send({
-      tag: "initCompleted",
-      data: { }
     });
 
     this.registerEvent(this.app.workspace.on("active-leaf-change",
@@ -245,6 +228,29 @@ export class CardBoardView extends ItemView {
         }
       }
     })
+  }
+
+  async handleElmInitialized() {
+
+    const markdownFiles = this.vault.getMarkdownFiles();
+
+    for (const file of markdownFiles) {
+      const fileDate      = this.formattedFileDate(file);
+      const fileContents  = await this.vault.cachedRead(file);
+      this.elm.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: {
+          filePath:     file.path,
+          fileDate:     fileDate,
+          fileContents: fileContents
+        }
+      });
+    }
+
+    this.elm.ports.interopToElm.send({
+      tag: "initCompleted",
+      data: { }
+    });
   }
 
   async handleOpenTaskSourceFile(
