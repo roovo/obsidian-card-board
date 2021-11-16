@@ -22,9 +22,6 @@ import SafeZipper exposing (SafeZipper)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
-import CardBoardSettings exposing (globalSettings)
-import String exposing (toInt)
-import TaskItem exposing (toString)
 import Card exposing (subtasks)
 
 
