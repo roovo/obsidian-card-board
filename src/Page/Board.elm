@@ -254,7 +254,7 @@ cardView globalSettings timeWithZone card =
                 |> when (TaskItem.hasTags taskItem)
             , subtasksView globalSettings (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
-            , subtaskCountView (TaskItem.subtasks taskItem)
+            , subtaskCountView (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
@@ -295,7 +295,7 @@ notesView notesId =
 subtasksView : GlobalSettings -> List ( String, TaskItem ) -> Html Msg
 subtasksView globalSettings subtasks =
     let
-        maybeFilterList list = 
+        maybeHideCompletedList list =
             if globalSettings.hideCompletedSubtasks then
                 List.filter (\(_, s) -> not (TaskItem.isCompleted s)) list
 
@@ -311,11 +311,11 @@ subtasksView globalSettings subtasks =
 
             else
                 list
-            
+
     in
     Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
-            (maybeFilterList subtasks
+            (maybeHideCompletedList subtasks
                 |> maybeShortenList
                 |> List.map subtaskView)
         ]
@@ -336,21 +336,21 @@ subtaskView ( uniqueId, subtask ) =
         ]
 
 
-subtaskCountView : List TaskItem -> Html Msg
+subtaskCountView : List ( String, TaskItem ) -> Html Msg
 subtaskCountView subtasks =
     let
         completeSubtasks =
-            List.filter (\s -> TaskItem.isCompleted s) subtasks
+            List.filter (\(_, s) -> TaskItem.isCompleted s) subtasks
                 |> List.length
                 |> String.fromInt
 
-        totalSubtaks =
+        totalSubtasks =
             List.length subtasks
                 |> String.fromInt
     in
         Html.div [ class "card-board-subtask-count" ]
-            [ Html.div [ class "card-board-subtask-count-data" ] 
-                [Html.text (completeSubtasks ++ " / " ++ totalSubtaks) ]
+            [ Html.div [ class "card-board-subtask-count-data" ]
+                [Html.text (completeSubtasks ++ " / " ++ totalSubtasks) ]
             ]
 
 
