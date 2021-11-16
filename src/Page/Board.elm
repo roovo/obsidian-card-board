@@ -293,16 +293,28 @@ notesView notesId =
 subtasksView : GlobalSettings -> List ( String, TaskItem ) -> Html Msg
 subtasksView globalSettings subtasks =
     let
-        filteredList list = 
+        maybeFilterList list = 
             if globalSettings.hideCompletedSubtasks then
                 List.filter (\(_, s) -> not (TaskItem.isCompleted s)) list
 
             else
                 list
+
+        displayLimit =
+            Maybe.withDefault 0 globalSettings.subTaskDisplayLimit
+
+        maybeShortenList list =
+            if (displayLimit > 0) then
+                List.take displayLimit list
+
+            else
+                list
+            
     in
     Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
-            (filteredList subtasks
+            (maybeFilterList subtasks
+                |> maybeShortenList
                 |> List.map subtaskView)
         ]
 
