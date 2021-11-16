@@ -25,6 +25,7 @@ import TimeWithZone exposing (TimeWithZone)
 import CardBoardSettings exposing (globalSettings)
 import String exposing (toInt)
 import TaskItem exposing (toString)
+import Card exposing (subtasks)
 
 
 
@@ -346,14 +347,13 @@ subtaskCountView subtasks =
                 |> List.length
                 |> String.fromInt
 
-        incompleteSubtaks =
-            List.filter (\s -> not (TaskItem.isCompleted s)) subtasks
-                |> List.length
+        totalSubtaks =
+            List.length subtasks
                 |> String.fromInt
     in
         Html.div [ class "card-board-subtask-count" ]
             [ Html.div [ class "card-board-subtask-count-data" ] 
-                [Html.text (completeSubtasks ++ " / " ++ incompleteSubtaks) ]
+                [Html.text (completeSubtasks ++ " / " ++ totalSubtaks) ]
             ]
 
 
