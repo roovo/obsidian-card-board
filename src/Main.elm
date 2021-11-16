@@ -282,7 +282,7 @@ view model =
         State.Loaded taskList ->
             Html.div [ class "card-board" ]
                 [ Html.div [ class "card-board-container" ]
-                    [ BoardPage.view model.timeWithZone model.boardConfigs taskList
+                    [ BoardPage.view model.globalSettings model.timeWithZone model.boardConfigs taskList
                         |> Html.map GotBoardPageMsg
                     , SettingsPage.dialogs model.configBeingEdited
                         |> Html.map GotSettingsPageMsg

@@ -6,6 +6,7 @@ module Page.Board exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
+import CardBoardSettings exposing (GlobalSettings)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
@@ -21,6 +22,7 @@ import SafeZipper exposing (SafeZipper)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
+import CardBoardSettings exposing (globalSettings)
 
 
 
@@ -78,8 +80,8 @@ cmdIfHasTask id model cmd =
 -- VIEW
 
 
-view : TimeWithZone -> SafeZipper BoardConfig -> TaskList -> Html Msg
-view timeWithZone boardConfigs taskList =
+view : GlobalSettings -> TimeWithZone -> SafeZipper BoardConfig -> TaskList -> Html Msg
+view globalSettings timeWithZone boardConfigs taskList =
     let
         panels =
             Panels.init boardConfigs taskList
@@ -92,7 +94,7 @@ view timeWithZone boardConfigs taskList =
             (tabHeaders currentIndex panels)
         , Html.div [ class "card-board-panels" ]
             (Panels.panels panels
-                |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView timeWithZone) (panelView timeWithZone)
+                |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView globalSettings timeWithZone) (panelView globalSettings timeWithZone)
                 |> SafeZipper.toList
             )
         ]
@@ -174,8 +176,8 @@ tabHeaderClass currentIndex index =
             ""
 
 
-panelView : TimeWithZone -> Int -> Panel -> Html Msg
-panelView timeWithZone index panel =
+panelView : GlobalSettings -> TimeWithZone -> Int -> Panel -> Html Msg
+panelView globalSettings timeWithZone index panel =
     Html.div
         [ class "card-board-panel"
         , hidden True
@@ -183,34 +185,34 @@ panelView timeWithZone index panel =
         [ Html.div [ class "card-board-columns" ]
             (panel
                 |> Panel.columns timeWithZone index
-                |> List.map (\( n, cs ) -> column timeWithZone n cs)
+                |> List.map (\( n, cs ) -> column globalSettings timeWithZone n cs)
             )
         ]
 
 
-selectedPanelView : TimeWithZone -> Int -> Panel -> Html Msg
-selectedPanelView timeWithZone index panel =
+selectedPanelView : GlobalSettings -> TimeWithZone -> Int -> Panel -> Html Msg
+selectedPanelView globalSettings timeWithZone index panel =
     Html.div [ class "card-board-panel" ]
         [ Html.div [ class "card-board-columns" ]
             (panel
                 |> Panel.columns timeWithZone index
-                |> List.map (\( n, cs ) -> column timeWithZone n cs)
+                |> List.map (\( n, cs ) -> column globalSettings timeWithZone n cs)
             )
         ]
 
 
-column : TimeWithZone -> String -> List Card -> Html Msg
-column timeWithZone title cards =
+column : GlobalSettings -> TimeWithZone -> String -> List Card -> Html Msg
+column globalSettings timeWithZone title cards =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text title ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView timeWithZone) cards)
+            (List.map (cardView globalSettings timeWithZone) cards)
         ]
 
 
-cardView : TimeWithZone -> Card -> ( String, Html Msg )
-cardView timeWithZone card =
+cardView : GlobalSettings -> TimeWithZone -> Card -> ( String, Html Msg )
+cardView globalSettings timeWithZone card =
     let
         cardId =
             Card.id card
@@ -250,7 +252,7 @@ cardView timeWithZone card =
                 []
             , cardTagsView (TaskItem.tags taskItem)
                 |> when (TaskItem.hasTags taskItem)
-            , subtasksView (Card.subtasks card)
+            , subtasksView globalSettings (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
@@ -288,11 +290,20 @@ notesView notesId =
         []
 
 
-subtasksView : List ( String, TaskItem ) -> Html Msg
-subtasksView subtasks =
+subtasksView : GlobalSettings -> List ( String, TaskItem ) -> Html Msg
+subtasksView globalSettings subtasks =
+    let
+        filteredList list = 
+            if globalSettings.hideCompletedSubtasks then
+                List.filter (\(_, s) -> not (TaskItem.isCompleted s)) list
+
+            else
+                list
+    in
     Html.div [ class "card-board-card-subtasks-area" ]
         [ Html.ul [ class "contains-task-list" ]
-            (List.map subtaskView subtasks)
+            (filteredList subtasks
+                |> List.map subtaskView)
         ]
 
 

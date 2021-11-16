@@ -60,6 +60,8 @@
 - when clicking the edit button place the cursor at the line of the todo
   have tried to do this using setCursor and not go it to work so far
 - display on card - done date
+- hide tag on card if it only exists on a completed subtask?
+  - Decided against for now to keep it simple, but may revist in future
 
 # Theme Compatibility
 - Firefly Theme: why is the text so big?
