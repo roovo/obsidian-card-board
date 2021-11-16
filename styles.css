@@ -152,6 +152,7 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card-content-area {
   grid-area: contents;
+  position: relative;
   display: grid;
   padding: 0.5em;
   grid: "tags        tags"
@@ -206,6 +207,18 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
     border-left: none;
     padding-right: 6px;
     border-right: 1px solid var(--background-modifier-border);
+}
+
+.card-board-card-content-area div.card-board-subtask-count {
+  grid-area: tags;
+}
+
+.card-board-card-content-area div.card-board-subtask-count-data {
+  float: right;
+  top: 0px;
+  right: 0px;
+  color: var(--text-faint);
+  font-size: var(--font-small);
 }
 
 .card-board-card.markdown-preview-view .task-list-item-checkbox {

@@ -23,6 +23,8 @@ import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
 import CardBoardSettings exposing (globalSettings)
+import String exposing (toInt)
+import TaskItem exposing (toString)
 
 
 
@@ -254,6 +256,8 @@ cardView globalSettings timeWithZone card =
                 |> when (TaskItem.hasTags taskItem)
             , subtasksView globalSettings (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
+            , subtaskCountView (TaskItem.subtasks taskItem)
+                |> when (TaskItem.hasSubtasks taskItem)
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
             , Html.div [ class "card-board-card-footer-area" ]
@@ -332,6 +336,25 @@ subtaskView ( uniqueId, subtask ) =
         , Html.div [ class "card-board-card-title", id uniqueId ]
             []
         ]
+
+
+subtaskCountView : List TaskItem -> Html Msg
+subtaskCountView subtasks =
+    let
+        completeSubtasks =
+            List.filter (\s -> TaskItem.isCompleted s) subtasks
+                |> List.length
+                |> String.fromInt
+
+        incompleteSubtaks =
+            List.filter (\s -> not (TaskItem.isCompleted s)) subtasks
+                |> List.length
+                |> String.fromInt
+    in
+        Html.div [ class "card-board-subtask-count" ]
+            [ Html.div [ class "card-board-subtask-count-data" ] 
+                [Html.text (completeSubtasks ++ " / " ++ incompleteSubtaks) ]
+            ]
 
 
 taskDueDate : Maybe Date -> Html Msg
