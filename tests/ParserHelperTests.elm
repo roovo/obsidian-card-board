@@ -3,7 +3,7 @@ module ParserHelperTests exposing (suite)
 import Date
 import Expect
 import Parser as P exposing ((|.), (|=))
-import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, timeParser, wordParser)
+import ParserHelper exposing (anyLineParser, booleanParser, dateParser, nonEmptyStringParser, tagParser, timeParser, wordParser)
 import Test exposing (..)
 import Time exposing (Month(..))
 
@@ -17,6 +17,7 @@ suite =
         , dateParserTests
         , indentParserTests
         , nonEmptyStringParserTest
+        , tagParserTests
         , timeParserTests
         , wordParserTest
         ]
@@ -241,6 +242,37 @@ baz
                     |> P.run nonEmptyStringParser
                     |> Result.withDefault "eek"
                     |> Expect.equal "eek"
+        ]
+
+
+tagParserTests: Test
+tagParserTests =
+    describe "parsing tag names"
+        [ test "parse valid normal tag" <|
+            \() ->
+                "foo"
+                    |> P.run tagParser
+                    |> Expect.equal (Ok <| "foo")
+        , test "parse tag with colon" <|
+            \() ->
+                "foo:bar"
+                    |> P.run tagParser
+                    |> Expect.equal (Ok <| "foo")
+        , test "parse tag with subtag" <|
+            \() ->
+                "foo/bar"
+                    |> P.run tagParser
+                    |> Expect.equal (Ok <| "foo/bar")
+        , test "parse tag with underscore" <|
+            \() ->
+                "foo_bar"
+                    |> P.run tagParser
+                    |> Expect.equal (Ok <| "foo_bar")
+        , test "parse tag with hyphen" <|
+            \() ->
+                "foo-bar"
+                    |> P.run tagParser
+                    |> Expect.equal (Ok <| "foo-bar")
         ]
 
 

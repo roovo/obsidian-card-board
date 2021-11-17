@@ -456,11 +456,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
         extractTag content ts =
             case content of
                 ObsidianTag t ->
-                    List.head (String.split ":" t)
-                        |> Maybe.withDefault ""
-                        |> List.singleton
-                        |> (\l -> List.append l ts) 
-
+                    t :: ts
                 _ ->
                     ts
 

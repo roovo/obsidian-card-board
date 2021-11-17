@@ -4,10 +4,12 @@ module ParserHelper exposing
     , checkWhitespaceFollows
     , dateParser
     , indentParser
+    , isEndOfTag
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
     , spaces
+    , tagParser
     , timeParser
     , wordParser
     )
@@ -28,6 +30,16 @@ type ParseResult b
 
 
 -- TESTS
+
+
+isEndOfTag : Char -> Bool
+isEndOfTag char =
+    -- Alphanumeric, _ and - are valid tag characters
+    if Char.isAlphaNum char then False
+    else if char == '_' then False
+    else if char == '-' then False
+    else if char == '/' then False
+    else True
 
 
 isLineEnd : Char -> Bool
@@ -242,7 +254,12 @@ wordParser : Parser String
 wordParser =
     P.getChompedString chompToEndOfWord
         |> P.andThen (checkIfEmpty "wordParser")
-        |> checkWhitespaceFollows
+
+
+tagParser : Parser String
+tagParser = 
+    P.getChompedString chompToEndOfTag
+        |> P.andThen (checkIfEmpty "tagParser")
 
 
 checkWhitespaceFollows : Parser a -> Parser a
@@ -278,6 +295,11 @@ chompToEndOfWord : Parser ()
 chompToEndOfWord =
     P.succeed ()
         |. P.chompWhile (not << isSpaceTabOrLineEnd)
+
+
+chompToEndOfTag : Parser ()
+chompToEndOfTag =
+    P.chompWhile (not << isEndOfTag)
 
 
 checkIfEmpty : String -> String -> Parser String
