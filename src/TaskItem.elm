@@ -585,7 +585,7 @@ obsidianTagParser : Parser Content
 obsidianTagParser =
     P.succeed ObsidianTag
         |. P.token "#"
-        |= ParserHelper.wordParser
+        |= ParserHelper.tagParser
 
 
 prefixParser : Parser Completion
