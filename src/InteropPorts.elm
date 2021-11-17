@@ -4,6 +4,7 @@ port module InteropPorts exposing
     , decodeFlags
     , deleteTask
     , displayTaskMarkdown
+    , globalSearch
     , openTaskSourceFile
     , rewriteTasks
     , toElm
@@ -66,6 +67,13 @@ displayTaskMarkdown cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, taskMarkdown = Card.markdownWithIds c })
         |> encodeVariant "displayTaskMarkdown" InteropDefinitions.displayTaskMarkdownEncoder
+        |> interopFromElm
+
+
+globalSearch : { a | searchTerm : String } -> Cmd msg
+globalSearch term =
+    term
+        |> encodeVariant "globalSearch" InteropDefinitions.globalSearchTermEncoder
         |> interopFromElm
 
 

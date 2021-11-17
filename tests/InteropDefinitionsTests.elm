@@ -132,6 +132,7 @@ fromElmTests =
                         ("""{ data : { filePath : string; tasks : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTasks" }"""
                             ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTaskSourceFile" }"""
+                            ++ """ | { data : { searchTerm : string }; tag : "globalSearch" }"""
                             ++ """ | { data : { filePath : string; taskMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTaskMarkdown" }"""
                             ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTask" }"""
                             ++ """ | { tag : "closeView" }"""

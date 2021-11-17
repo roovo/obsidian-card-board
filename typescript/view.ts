@@ -82,6 +82,9 @@ export class CardBoardView extends ItemView {
         case "displayTaskMarkdown":
           that.handleDisplayTaskMarkdown(fromElm.data);
           break;
+        case "globalSearch":
+          that.handleGlobalSearch(fromElm.data);
+          break;
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
           break;
@@ -245,6 +248,16 @@ export class CardBoardView extends ItemView {
         }
       }
     })
+  }
+
+  async handleGlobalSearch(
+    data: {
+      searchTerm: string
+    }
+  ) {
+    console.log("globalSearch: " + data.searchTerm);
+    //@ts-ignore
+    this.app.internalPlugins.plugins["global-search"].instance.openGlobalSearch(data.searchTerm);
   }
 
   async handleOpenTaskSourceFile(

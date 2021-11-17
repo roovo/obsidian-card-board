@@ -21,6 +21,7 @@ import SafeZipper exposing (SafeZipper)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
+import InteropDefinitions exposing (FromElm(..))
 
 
 
@@ -28,7 +29,8 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Msg
-    = SettingsClicked
+    = GlobalSearch String
+    | SettingsClicked
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -38,6 +40,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GlobalSearch searchTerm ->
+            ( model, InteropPorts.globalSearch { searchTerm = searchTerm } )
+
         SettingsClicked ->
             ( { model | configBeingEdited = Model.Editing model.boardConfigs }, Cmd.none )
 
@@ -248,7 +253,7 @@ cardView timeWithZone card =
                 []
             , Html.div [ class "card-board-card-title", id cardId ]
                 []
-            , cardTagsView (TaskItem.tags taskItem)
+            , cardTagsView (Card.id card) (TaskItem.tags taskItem)
                 |> when (TaskItem.hasTags taskItem)
             , subtasksView (Card.subtasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
@@ -264,18 +269,24 @@ cardView timeWithZone card =
         |> Tuple.pair cardId
 
 
-cardTagsView : List String -> Html Msg
-cardTagsView tags =
+cardTagsView : String -> List String -> Html Msg
+cardTagsView cardId tags =
     Html.div [ class "card-board-card-tag-area" ]
-        (List.map cardTagView tags)
+        (List.map (cardTagView cardId) tags)
 
 
-cardTagView : String -> Html Msg
-cardTagView tagText =
-    Html.div [ class ("card-board-card-tag tag-" ++ String.replace "/" "-" tagText) ]
+cardTagView : String -> String -> Html Msg
+cardTagView cardId tagText =
+    Html.div [ class ("card-board-card-tag tag-" ++ String.replace "/" "-" tagText) 
+        , onClick <| GlobalSearch ("tag:" ++ tagText)
+        , id (cardId ++ ":" ++ tagText ++ ":link")
+        ]
         [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
             [ Html.text "#" ]
-        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
+        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" 
+            , onClick <| GlobalSearch ("tag:" ++ tagText)
+            , id (cardId ++ ":" ++ tagText ++ ":link")
+        ]
             [ Html.text tagText ]
         , Html.span [ class "cm-list-1" ]
             [ Html.text " " ]
