@@ -207,7 +207,7 @@ anyLineParser =
 nonEmptyLineParser : Parser String
 nonEmptyLineParser =
     P.getChompedString chompWithEndOfLine
-        |> P.andThen (checkIfEmpty "nonEmptyLineParser")
+        |> P.andThen (failIfEmpty "nonEmptyLineParser")
 
 
 dateParser : Parser Date
@@ -247,19 +247,20 @@ lineEndOrEnd =
 nonEmptyStringParser : Parser String
 nonEmptyStringParser =
     P.getChompedString chompToEndOfLine
-        |> P.andThen (checkIfEmpty "nonEmptyStringParser")
+        |> P.andThen (failIfEmpty "nonEmptyStringParser")
 
 
 wordParser : Parser String
 wordParser =
     P.getChompedString chompToEndOfWord
-        |> P.andThen (checkIfEmpty "wordParser")
+        |> P.andThen (failIfEmpty "wordParser")
 
 
 tagParser : Parser String
 tagParser = 
     P.getChompedString chompToEndOfTag
-        |> P.andThen (checkIfEmpty "tagParser")
+        |> P.andThen (failIfEmpty "tagParser")
+        |> P.andThen (failIfInt "tagParser")
 
 
 checkWhitespaceFollows : Parser a -> Parser a
@@ -302,11 +303,19 @@ chompToEndOfTag =
     P.chompWhile (not << isEndOfTag)
 
 
-checkIfEmpty : String -> String -> Parser String
-checkIfEmpty calledFrom parsedString =
+failIfEmpty : String -> String -> Parser String
+failIfEmpty calledFrom parsedString =
     if String.length parsedString == 0 then
         P.problem <| "Empty string found in " ++ calledFrom
 
+    else
+        P.succeed parsedString
+
+
+failIfInt : String -> String -> Parser String
+failIfInt calledFrom parsedString =
+    if String.toInt parsedString /= Nothing then
+        P.problem <| "Parsed string is only an int, found in " ++ calledFrom
     else
         P.succeed parsedString
 

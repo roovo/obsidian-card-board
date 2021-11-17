@@ -273,6 +273,12 @@ tagParserTests =
                 "foo-bar"
                     |> P.run tagParser
                     |> Expect.equal (Ok <| "foo-bar")
+        , test "fails to parse tag string that is only digits" <|
+            \() ->
+                "1234"
+                    |> P.run tagParser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         ]
 
 
