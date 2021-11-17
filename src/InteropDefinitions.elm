@@ -5,6 +5,7 @@ module InteropDefinitions exposing
     , addFilePreviewHoversEncoder
     , deleteTaskEncoder
     , displayTaskMarkdownEncoder
+    , globalSearchTermEncoder
     , interop
     , openTaskSourceFileEncoder
     , updateTasksEncoder
@@ -21,6 +22,7 @@ type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+    | GlobalSearch { searchTerm : String }
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | UpdateSettings Settings
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
@@ -85,6 +87,11 @@ displayTaskMarkdownEncoder =
         )
 
 
+globalSearchTermEncoder : TsEncode.Encoder { a | searchTerm : String }
+globalSearchTermEncoder =
+    TsEncode.object [ required "searchTerm" .searchTerm TsEncode.string ]
+
+
 openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
 openTaskSourceFileEncoder =
     TsEncode.object
@@ -131,7 +138,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vGlobalSearch vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -141,6 +148,9 @@ fromElm =
 
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
+
+                GlobalSearch searchTerm ->
+                    vGlobalSearch searchTerm
 
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
@@ -155,6 +165,7 @@ fromElm =
         |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
+        |> TsEncode.variantTagged "globalSearch" globalSearchTermEncoder
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder

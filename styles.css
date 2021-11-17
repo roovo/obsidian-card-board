@@ -171,6 +171,7 @@ ul.card-board-column-list > li.card-board-card::before {
 .card-board-card-tag {
   display: inline-block;
   margin-right: 0.3em;
+  cursor: pointer;
 }
 
 .cm-s-obsidian div.card-board-card-tag > span.cm-hashtag {
@@ -189,7 +190,6 @@ ul.card-board-column-list > li.card-board-card::before {
     border-left: none;
     border-right: none;
     padding-bottom: 2px;
-    cursor: text;
 }
 
 div.card-board-card-tag > span.cm-hashtag.cm-hashtag-begin {
