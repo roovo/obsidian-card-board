@@ -5,6 +5,7 @@ import Expect
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.TaskListHelpers as TaskListHelpers
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
@@ -25,27 +26,27 @@ columns =
     describe "columns"
         [ test "default columns are just today tomorrow and future" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "todaysItems are sorted by due date (then task title ascending)" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.tasksInColumn "Today"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "another yesterday incomplete", "yesterday incomplete", "today incomplete" ]
         , test "tommorrowsItems are sorted by task title ascending" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.tasksInColumn "Tomorrow"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a task for tomorrow", "tomorrow incomplete" ]
         , test "futureItems are sorted by due date ascending (then task title)" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.tasksInColumn "Future"
                     |> List.map TaskItem.title
@@ -58,13 +59,13 @@ columnCompleted =
     describe "columnCompleted"
         [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 99 }
                     |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
@@ -85,13 +86,13 @@ columnUndated =
     describe "columnUndated"
         [ test "an Undated column is prepended if config sets includeUndated" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by title ascending" <|
             \() ->
-                BoardHelpers.exampleDateBoardTaskList
+                TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> BoardHelpers.tasksInColumn "Undated"
                     |> List.map TaskItem.title

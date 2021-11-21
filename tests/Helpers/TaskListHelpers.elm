@@ -1,11 +1,13 @@
 module Helpers.TaskListHelpers exposing
-    ( parsedTasks
+    ( exampleDateBoardTaskList
+    , parsedTasks
     , taskListFromFile
     , taskListFromFileA
     , taskListFromFileG
     , taskListFromNewFile
     )
 
+import Helpers.DateTimeHelpers as DateTimeHelpers
 import Parser
 import TaskList exposing (TaskList)
 
@@ -38,6 +40,13 @@ taskListFromNewFile path =
     path
         |> tasksFromNewFile
         |> parsedTasks
+
+
+exampleDateBoardTaskList : TaskList
+exampleDateBoardTaskList =
+    exampleDateBoardTasks
+        |> List.map parsedTasks
+        |> TaskList.concat
 
 
 
@@ -73,4 +82,50 @@ tasksFromNewFile path =
     ( path, Nothing, """
 - [ ] n1
 - [x] n2
+""" )
+
+
+exampleDateBoardTasks : List ( String, Maybe String, String )
+exampleDateBoardTasks =
+    [ undatedTasks
+    , ( "d", Just DateTimeHelpers.farFuture, """
+- [ ] zapping into the future
+- [ ] far future incomplete
+- [x] far future complete
+""" )
+    , ( "e", Just DateTimeHelpers.future, """
+- [ ] future incomplete
+- [x] future complete @completed(2020-06-02)
+""" )
+    , ( "c", Just DateTimeHelpers.tomorrow, """
+- [ ] tomorrow incomplete
+- [ ] a task for tomorrow
+- [x] tomorrow complete @completed(2020-06-02)
+""" )
+    , ( "b", Just DateTimeHelpers.today, """
+- [ ] today incomplete
+- [x] today complete @completed(2020-06-02)
+""" )
+    , yesterdaysTasks
+    , ( "f", Just "invalid date", """
+- [ ] invalid date incomplete
+- [x] invalid date complete
+""" )
+    ]
+
+
+undatedTasks : ( String, Maybe String, String )
+undatedTasks =
+    ( "g", Nothing, """
+- [ ] an undated incomplete
+- [x] undated complete @completed(2020-06-02)
+""" )
+
+
+yesterdaysTasks : ( String, Maybe String, String )
+yesterdaysTasks =
+    ( "a", Just DateTimeHelpers.yesterday, """
+- [ ] yesterday incomplete
+- [ ] another yesterday incomplete
+- [x] yesterday complete @completed(2020-06-01)
 """ )

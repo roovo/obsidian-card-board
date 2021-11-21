@@ -3,7 +3,6 @@ module Helpers.BoardHelpers exposing
     , defaultTagBoardConfig
     , exampleBoardConfig
     , exampleDateBoardConfig
-    , exampleDateBoardTaskList
     , exampleTagBoardConfig
     , tasksInColumn
     )
@@ -11,7 +10,6 @@ module Helpers.BoardHelpers exposing
 import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Filter
-import Helpers.DateTimeHelpers as DateTimeHelpers
 import Parser
 import TagBoard
 import TaskItem exposing (TaskItem)
@@ -41,13 +39,6 @@ exampleDateBoardConfig =
     }
 
 
-exampleDateBoardTaskList : TaskList
-exampleDateBoardTaskList =
-    exampleRawTasks
-        |> List.map parseRawTasks
-        |> TaskList.concat
-
-
 defaultTagBoardConfig : TagBoard.Config
 defaultTagBoardConfig =
     { columns = []
@@ -75,59 +66,3 @@ tasksInColumn columnName tasksInColumns =
     tasksInColumns
         |> List.filter (\( c, _ ) -> c == columnName)
         |> List.concatMap Tuple.second
-
-
-
--- PRIVATE
-
-
-parseRawTasks : ( String, Maybe String, String ) -> TaskList
-parseRawTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d) ts
-        |> Result.withDefault TaskList.empty
-
-
-exampleRawTasks : List ( String, Maybe String, String )
-exampleRawTasks =
-    [ undatedRawTasks
-    , ( "d", Just DateTimeHelpers.farFuture, """
-- [ ] zapping into the future
-- [ ] far future incomplete
-- [x] far future complete
-""" )
-    , ( "e", Just DateTimeHelpers.future, """
-- [ ] future incomplete
-- [x] future complete @completed(2020-06-02)
-""" )
-    , ( "c", Just DateTimeHelpers.tomorrow, """
-- [ ] tomorrow incomplete
-- [ ] a task for tomorrow
-- [x] tomorrow complete @completed(2020-06-02)
-""" )
-    , ( "b", Just DateTimeHelpers.today, """
-- [ ] today incomplete
-- [x] today complete @completed(2020-06-02)
-""" )
-    , yesterdaysRawTasks
-    , ( "f", Just "invalid date", """
-- [ ] invalid date incomplete
-- [x] invalid date complete
-""" )
-    ]
-
-
-undatedRawTasks : ( String, Maybe String, String )
-undatedRawTasks =
-    ( "g", Nothing, """
-- [ ] an undated incomplete
-- [x] undated complete @completed(2020-06-02)
-""" )
-
-
-yesterdaysRawTasks : ( String, Maybe String, String )
-yesterdaysRawTasks =
-    ( "a", Just DateTimeHelpers.yesterday, """
-- [ ] yesterday incomplete
-- [ ] another yesterday incomplete
-- [x] yesterday complete @completed(2020-06-01)
-""" )
