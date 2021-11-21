@@ -19,10 +19,10 @@ module Model exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import Boards
 import Card exposing (Card)
 import CardBoardSettings exposing (GlobalSettings)
 import InteropDefinitions
-import Panels
 import SafeZipper exposing (SafeZipper)
 import SettingsEditState exposing (SettingsEditState)
 import State exposing (State)
@@ -139,8 +139,8 @@ cards : Model -> List Card
 cards model =
     model
         |> taskList
-        |> Panels.init model.boardConfigs
-        |> Panels.cards model.timeWithZone
+        |> Boards.init model.boardConfigs
+        |> Boards.cards model.timeWithZone
 
 
 forceAddWhenNoBoards : Model -> Model

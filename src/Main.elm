@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import BoardConfig exposing (BoardConfig)
+import Boards
 import Browser
 import Browser.Events as Browser
 import Html exposing (Html)
@@ -12,7 +13,6 @@ import MarkdownFile exposing (MarkdownFile)
 import Model exposing (Model)
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
-import Panels
 import SafeZipper
 import State exposing (State)
 import Task
@@ -176,8 +176,8 @@ cmdForTaskRedraws newTasks model =
     let
         cards =
             newTasks
-                |> Panels.init model.boardConfigs
-                |> Panels.cards model.timeWithZone
+                |> Boards.init model.boardConfigs
+                |> Boards.cards model.timeWithZone
     in
     if Model.taskListLoaded model then
         Cmd.batch

@@ -75,7 +75,7 @@ li.is-after-active .card-board-tabs-inner {
   color: var(--text-normal);
 }
 
-.card-board-panels {
+.card-board-boards {
   display: grid;
   padding: 1em;
   padding-bottom: 0.5em;
@@ -84,7 +84,7 @@ li.is-after-active .card-board-tabs-inner {
   overflow-x: auto;
 }
 
-.card-board-panel {
+.card-board-board {
   grid-column-start: 1;
   grid-row-start: 1;
 }

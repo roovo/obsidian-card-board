@@ -4,7 +4,9 @@ module Page.Board exposing
     , view
     )
 
+import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
+import Boards exposing (Boards)
 import Card exposing (Card)
 import Date exposing (Date)
 import FeatherIcons
@@ -15,8 +17,6 @@ import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
 import Model exposing (Model)
-import Panel exposing (Panel)
-import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
 import SettingsEditState
 import TaskItem exposing (TaskItem, TaskItemFields)
@@ -82,25 +82,25 @@ cmdIfHasTask id model cmd =
 view : TimeWithZone -> SafeZipper BoardConfig -> TaskList -> Html Msg
 view timeWithZone boardConfigs taskList =
     let
-        panels =
-            Panels.init boardConfigs taskList
+        boards =
+            Boards.init boardConfigs taskList
 
         currentIndex =
-            Panels.currentIndex panels
+            Boards.currentIndex boards
     in
     Html.div []
         [ Html.ul [ class "card-board-tab-list" ]
-            (tabHeaders currentIndex panels)
-        , Html.div [ class "card-board-panels" ]
-            (Panels.panels panels
-                |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView timeWithZone) (panelView timeWithZone)
+            (tabHeaders currentIndex boards)
+        , Html.div [ class "card-board-boards" ]
+            (Boards.boardZipper boards
+                |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
                 |> SafeZipper.toList
             )
         ]
 
 
-tabHeaders : Maybe Int -> Panels -> List (Html Msg)
-tabHeaders currentIndex panels =
+tabHeaders : Maybe Int -> Boards -> List (Html Msg)
+tabHeaders currentIndex boards =
     let
         beforeHeaderClass =
             tabHeaderClass currentIndex -1
@@ -119,7 +119,7 @@ tabHeaders currentIndex panels =
                 ]
 
         afterHeaderClass =
-            tabHeaderClass currentIndex (Panels.length panels)
+            tabHeaderClass currentIndex (Boards.length boards)
 
         afterLast =
             Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
@@ -128,7 +128,7 @@ tabHeaders currentIndex panels =
                 ]
 
         tabs =
-            Panels.tabTitles panels
+            Boards.titles boards
                 |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentIndex)
                 |> SafeZipper.toList
     in
@@ -175,26 +175,26 @@ tabHeaderClass currentIndex index =
             ""
 
 
-panelView : TimeWithZone -> Int -> Panel -> Html Msg
-panelView timeWithZone index panel =
+boardView : TimeWithZone -> Int -> Board -> Html Msg
+boardView timeWithZone index board =
     Html.div
-        [ class "card-board-panel"
+        [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
-            (panel
-                |> Panel.columns timeWithZone index
+            (board
+                |> Board.columns timeWithZone index
                 |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
 
 
-selectedPanelView : TimeWithZone -> Int -> Panel -> Html Msg
-selectedPanelView timeWithZone index panel =
-    Html.div [ class "card-board-panel" ]
+selectedBoardView : TimeWithZone -> Int -> Board -> Html Msg
+selectedBoardView timeWithZone index board =
+    Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
-            (panel
-                |> Panel.columns timeWithZone index
+            (board
+                |> Board.columns timeWithZone index
                 |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
