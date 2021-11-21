@@ -4,10 +4,12 @@ module ParserHelper exposing
     , checkWhitespaceFollows
     , dateParser
     , indentParser
+    , isEndOfTag
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
     , spaces
+    , tagParser
     , timeParser
     , wordParser
     )
@@ -28,6 +30,16 @@ type ParseResult b
 
 
 -- TESTS
+
+
+isEndOfTag : Char -> Bool
+isEndOfTag char =
+    -- Alphanumeric, _ and - are valid tag characters
+    if Char.isAlphaNum char then False
+    else if char == '_' then False
+    else if char == '-' then False
+    else if char == '/' then False
+    else True
 
 
 isLineEnd : Char -> Bool
@@ -195,7 +207,7 @@ anyLineParser =
 nonEmptyLineParser : Parser String
 nonEmptyLineParser =
     P.getChompedString chompWithEndOfLine
-        |> P.andThen (checkIfEmpty "nonEmptyLineParser")
+        |> P.andThen (failIfEmpty "nonEmptyLineParser")
 
 
 dateParser : Parser Date
@@ -235,14 +247,20 @@ lineEndOrEnd =
 nonEmptyStringParser : Parser String
 nonEmptyStringParser =
     P.getChompedString chompToEndOfLine
-        |> P.andThen (checkIfEmpty "nonEmptyStringParser")
+        |> P.andThen (failIfEmpty "nonEmptyStringParser")
 
 
 wordParser : Parser String
 wordParser =
     P.getChompedString chompToEndOfWord
-        |> P.andThen (checkIfEmpty "wordParser")
-        |> checkWhitespaceFollows
+        |> P.andThen (failIfEmpty "wordParser")
+
+
+tagParser : Parser String
+tagParser = 
+    P.getChompedString chompToEndOfTag
+        |> P.andThen (failIfEmpty "tagParser")
+        |> P.andThen (failIfInt "tagParser")
 
 
 checkWhitespaceFollows : Parser a -> Parser a
@@ -280,11 +298,24 @@ chompToEndOfWord =
         |. P.chompWhile (not << isSpaceTabOrLineEnd)
 
 
-checkIfEmpty : String -> String -> Parser String
-checkIfEmpty calledFrom parsedString =
+chompToEndOfTag : Parser ()
+chompToEndOfTag =
+    P.chompWhile (not << isEndOfTag)
+
+
+failIfEmpty : String -> String -> Parser String
+failIfEmpty calledFrom parsedString =
     if String.length parsedString == 0 then
         P.problem <| "Empty string found in " ++ calledFrom
 
+    else
+        P.succeed parsedString
+
+
+failIfInt : String -> String -> Parser String
+failIfInt calledFrom parsedString =
+    if String.toInt parsedString /= Nothing then
+        P.problem <| "Parsed string is only an int, found in " ++ calledFrom
     else
         P.succeed parsedString
 

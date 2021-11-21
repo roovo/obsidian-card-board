@@ -457,7 +457,6 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
             case content of
                 ObsidianTag t ->
                     t :: ts
-
                 _ ->
                     ts
 
@@ -586,7 +585,7 @@ obsidianTagParser : Parser Content
 obsidianTagParser =
     P.succeed ObsidianTag
         |. P.token "#"
-        |= ParserHelper.wordParser
+        |= ParserHelper.tagParser
 
 
 prefixParser : Parser Completion
