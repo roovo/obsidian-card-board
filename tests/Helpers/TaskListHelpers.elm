@@ -1,23 +1,47 @@
-module TaskListTestHelpers exposing
+module Helpers.TaskListHelpers exposing
     ( parsedTasks
-    , tasksFromFile
-    , tasksFromFileA
-    , tasksFromFileG
-    , tasksFromNewFile
+    , taskListFromFile
+    , taskListFromFileA
+    , taskListFromFileG
+    , taskListFromNewFile
     )
 
 import Parser
 import TaskList exposing (TaskList)
 
 
-
--- HELPERS
-
-
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
     Parser.run (TaskList.parser p d) ts
         |> Result.withDefault TaskList.empty
+
+
+taskListFromFile : String -> TaskList
+taskListFromFile path =
+    path
+        |> tasksFromFile
+        |> parsedTasks
+
+
+taskListFromFileA : TaskList
+taskListFromFileA =
+    parsedTasks tasksFromFileA
+
+
+taskListFromFileG : TaskList
+taskListFromFileG =
+    parsedTasks tasksFromFileG
+
+
+taskListFromNewFile : String -> TaskList
+taskListFromNewFile path =
+    path
+        |> tasksFromNewFile
+        |> parsedTasks
+
+
+
+-- HELPERS
 
 
 tasksFromFileG : ( String, Maybe String, String )

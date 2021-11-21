@@ -1,10 +1,10 @@
 module ModelTests exposing (suite)
 
 import Expect
+import Helpers.TaskListHelpers as TaskListHelpers
 import Model
 import State
 import TaskList
-import TaskListTestHelpers exposing (parsedTasks, tasksFromFileA, tasksFromFileG, tasksFromNewFile)
 import Test exposing (..)
 
 
@@ -25,24 +25,24 @@ addTaskList =
         [ test "if Waiting, sets to be Loading the added tasks" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loading [ "a1", "a2" ])
         , test "if Loading, adds the tasks to those already loaded" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loading [ "a1", "a2", "g1", "g2" ])
         , test "if Loaded, adds the tasks to those already loaded" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
                     |> Model.finishAdding
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loaded [ "a1", "a2", "g1", "g2" ])
@@ -72,8 +72,8 @@ deleteItemsFromFile =
         , test "if Loading, removes tasks from the file from the Loading list" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
                     |> Model.deleteItemsFromFile "g"
                     |> .taskList
                     |> State.map TaskList.taskTitles
@@ -81,8 +81,8 @@ deleteItemsFromFile =
         , test "if Loaded, removes tasks from the file from the Loaded list" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
                     |> Model.finishAdding
                     |> Model.deleteItemsFromFile "g"
                     |> .taskList
@@ -103,7 +103,7 @@ finishAdding =
         , test "if Loading, sets to be Loaded with the loaded tasks in the list" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
                     |> Model.finishAdding
                     |> .taskList
                     |> State.map TaskList.taskTitles
@@ -111,7 +111,7 @@ finishAdding =
         , test "if Loaded, stays Loaded" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
                     |> Model.finishAdding
                     |> Model.finishAdding
                     |> .taskList
@@ -126,26 +126,26 @@ updateTaskItems =
         [ test "if Waiting, sets to Loading with the given tasks" <|
             \() ->
                 Model.default
-                    |> Model.updateTaskItems "" (parsedTasks tasksFromFileA)
+                    |> Model.updateTaskItems "" TaskListHelpers.taskListFromFileA
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loading [ "a1", "a2" ])
         , test "if Loading, replaces tasks from the file with those given" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
-                    |> Model.updateTaskItems "a" (parsedTasks <| tasksFromNewFile "path")
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Model.updateTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loading [ "n1", "n2", "g1", "g2" ])
         , test "if Loaded, replaces tasks from the file with those given" <|
             \() ->
                 Model.default
-                    |> Model.addTaskList (parsedTasks tasksFromFileA)
-                    |> Model.addTaskList (parsedTasks tasksFromFileG)
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Model.addTaskList TaskListHelpers.taskListFromFileG
                     |> Model.finishAdding
-                    |> Model.updateTaskItems "g" (parsedTasks <| tasksFromNewFile "path")
+                    |> Model.updateTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
                     |> .taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loaded [ "n1", "n2", "a1", "a2" ])

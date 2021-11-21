@@ -2,17 +2,10 @@ module TaskListTests exposing (suite)
 
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
+import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
 import TaskItem
 import TaskList
-import TaskListTestHelpers
-    exposing
-        ( parsedTasks
-        , tasksFromFile
-        , tasksFromFileA
-        , tasksFromFileG
-        , tasksFromNewFile
-        )
 import Test exposing (..)
 
 
@@ -36,13 +29,13 @@ combine =
     describe "combine"
         [ test "append joins two TaskLists" <|
             \() ->
-                parsedTasks tasksFromFileG
-                    |> TaskList.append (parsedTasks tasksFromFileA)
+                TaskListHelpers.taskListFromFileG
+                    |> TaskList.append TaskListHelpers.taskListFromFileA
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2", "g1", "g2" ]
         , test "concat concatinates a list of TaskLists into a single TaskList" <|
             \() ->
-                [ parsedTasks tasksFromFileG, parsedTasks tasksFromFileA ]
+                [ TaskListHelpers.taskListFromFileG, TaskListHelpers.taskListFromFileA ]
                     |> TaskList.concat
                     |> TaskList.taskTitles
                     |> Expect.equal [ "g1", "g2", "a1", "a2" ]
@@ -229,24 +222,24 @@ replaceForFile =
             \() ->
                 TaskList.empty
                     |> TaskList.replaceForFile "ignored"
-                        (parsedTasks <| tasksFromFile "file a")
+                        (TaskListHelpers.taskListFromFile "file a")
                     |> TaskList.taskTitles
                     |> List.sort
                     |> Expect.equal (List.sort [ "c1", "c2" ])
         , test "adds the tasks if the list doesn't contain tasks from the file" <|
             \() ->
-                parsedTasks tasksFromFileG
+                TaskListHelpers.taskListFromFileG
                     |> TaskList.replaceForFile "ignored"
-                        (parsedTasks <| tasksFromFile "file a")
+                        (TaskListHelpers.taskListFromFile "file a")
                     |> TaskList.taskTitles
                     |> List.sort
                     |> Expect.equal (List.sort [ "g1", "g2", "c1", "c2" ])
         , test "replaces tasks from the file" <|
             \() ->
-                parsedTasks tasksFromFileG
-                    |> TaskList.append (parsedTasks <| tasksFromFile "file a")
+                TaskListHelpers.taskListFromFileG
+                    |> TaskList.append (TaskListHelpers.taskListFromFile "file a")
                     |> TaskList.replaceForFile "file a"
-                        (parsedTasks <| tasksFromNewFile "could be another file")
+                        (TaskListHelpers.taskListFromNewFile "could be another file")
                     |> TaskList.taskTitles
                     |> List.sort
                     |> Expect.equal (List.sort [ "n1", "n2", "g1", "g2" ])
@@ -265,8 +258,8 @@ removeForFile =
                     |> Expect.equal (List.sort [])
         , test "remove tasks from the file" <|
             \() ->
-                parsedTasks tasksFromFileG
-                    |> TaskList.append (parsedTasks <| tasksFromFile "file a")
+                TaskListHelpers.taskListFromFileG
+                    |> TaskList.append (TaskListHelpers.taskListFromFile "file a")
                     |> TaskList.removeForFile "file a"
                     |> TaskList.taskTitles
                     |> List.sort
@@ -279,12 +272,12 @@ taskContainingId =
     describe "taskContainingId"
         [ test "returns nothing if there are no tasks in the list" <|
             \() ->
-                parsedTasks ( "a", Nothing, "" )
+                TaskListHelpers.parsedTasks ( "a", Nothing, "" )
                     |> TaskList.taskContainingId ""
                     |> Expect.equal Nothing
         , test "returns nothing if there are no tasks in the list with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
 - [x] g2
 """ )
@@ -292,7 +285,7 @@ taskContainingId =
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
 - [x] g2
 """ )
@@ -301,7 +294,7 @@ taskContainingId =
                     |> Expect.equal (Just "g2")
         , test "returns the task if it contains a  subtask with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
   - [x] subtask complete
 """ )
@@ -316,12 +309,12 @@ taskFromId =
     describe "taskFromId"
         [ test "returns nothing if there are no tasks in the list" <|
             \() ->
-                parsedTasks ( "a", Nothing, "" )
+                TaskListHelpers.parsedTasks ( "a", Nothing, "" )
                     |> TaskList.taskFromId ""
                     |> Expect.equal Nothing
         , test "returns nothing if there are no tasks in the list with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
 - [x] g2
 """ )
@@ -329,7 +322,7 @@ taskFromId =
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
 - [x] g2
 """ )
@@ -338,7 +331,7 @@ taskFromId =
                     |> Expect.equal (Just "g2")
         , test "returns a subtask if there is one in the list with the given id" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
   - [x] subtask complete
 """ )
@@ -353,12 +346,12 @@ tasks =
     describe "tasks"
         [ test "returns an empty list if there are no tasks" <|
             \() ->
-                parsedTasks ( "a", Nothing, "" )
+                TaskListHelpers.parsedTasks ( "a", Nothing, "" )
                     |> TaskList.tasks
                     |> Expect.equal []
         , test "returns a list of all tasks and subtasks" <|
             \() ->
-                parsedTasks ( "a", Nothing, """
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
 - [ ] g1
   - [x] subtask complete
 """ )
