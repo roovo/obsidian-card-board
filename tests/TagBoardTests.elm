@@ -1,6 +1,7 @@
 module TagBoardTests exposing (suite)
 
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Parser
@@ -465,9 +466,9 @@ encodeDecode =
 
 defaultConfig : TagBoard.Config
 defaultConfig =
-    BoardHelpers.defaultTagBoardConfig
+    BoardConfigHelpers.defaultTagBoardConfig
 
 
 exampleConfig : TagBoard.Config
 exampleConfig =
-    BoardHelpers.exampleTagBoardConfig
+    BoardConfigHelpers.exampleTagBoardConfig

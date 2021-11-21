@@ -2,7 +2,7 @@ module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import Expect
-import Helpers.BoardHelpers as BoardHelpers
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import TagBoard
 import Test exposing (..)
@@ -41,10 +41,10 @@ encodeDecode =
     describe "encoding and decoding config"
         [ test "can decode an encoded string back to the original" <|
             \() ->
-                BoardHelpers.exampleBoardConfig
+                BoardConfigHelpers.exampleBoardConfig
                     |> TsEncode.runExample BoardConfig.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder BoardConfig.decoder
                     |> .decoded
-                    |> Expect.equal (Ok BoardHelpers.exampleBoardConfig)
+                    |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
         ]

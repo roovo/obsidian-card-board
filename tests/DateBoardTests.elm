@@ -2,6 +2,7 @@ module DateBoardTests exposing (suite)
 
 import DateBoard
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -120,9 +121,9 @@ encodeDecode =
 
 defaultConfig : DateBoard.Config
 defaultConfig =
-    BoardHelpers.defaultDateBoardConfig
+    BoardConfigHelpers.defaultDateBoardConfig
 
 
 exampleConfig : DateBoard.Config
 exampleConfig =
-    BoardHelpers.exampleDateBoardConfig
+    BoardConfigHelpers.exampleDateBoardConfig

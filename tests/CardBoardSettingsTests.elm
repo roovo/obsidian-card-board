@@ -3,6 +3,7 @@ module CardBoardSettingsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Semver
@@ -60,8 +61,8 @@ encodeDecode =
 exampleSettings : CardBoardSettings.Settings
 exampleSettings =
     { boardConfigs =
-        [ BoardConfig.TagBoardConfig BoardHelpers.exampleTagBoardConfig
-        , BoardConfig.DateBoardConfig BoardHelpers.exampleDateBoardConfig
+        [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
+        , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
         ]
     , globalSettings = exampleGlobalSettings
     , version = CardBoardSettings.currentVersion

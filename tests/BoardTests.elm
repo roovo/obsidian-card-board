@@ -5,6 +5,7 @@ import BoardConfig
 import Card
 import DateBoard
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
@@ -40,4 +41,4 @@ columnsDateBoard =
 
 defaultDateBoardConfig : DateBoard.Config
 defaultDateBoardConfig =
-    BoardHelpers.defaultDateBoardConfig
+    BoardConfigHelpers.defaultDateBoardConfig
