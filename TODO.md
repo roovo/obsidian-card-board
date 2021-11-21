@@ -1,6 +1,7 @@
 - configBeingEdited -> should include global settings
 - move TaskListTestHelpers to Helpers
 - add Board.columns tests
+- Helpers.BoardHelpers -> Helpers.BoardConfigHelpers
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks

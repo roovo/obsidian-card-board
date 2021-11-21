@@ -1,41 +1,43 @@
 module BoardTests exposing (suite)
 
--- import DateBoard
--- import Helpers.BoardHelpers as BoardHelpers
--- import Helpers.DateTimeHelpers as DateTimeHelpers
--- import Helpers.DecodeHelpers as DecodeHelpers
--- import TaskItem exposing (TaskItem)
--- import TsJson.Encode as TsEncode
-
+import Board
+import BoardConfig
+import Card
+import DateBoard
 import Expect
+import Helpers.BoardHelpers as BoardHelpers
+import Helpers.DateTimeHelpers as DateTimeHelpers
+import Helpers.TaskListHelpers as TaskListHelpers
+import TaskItem
 import Test exposing (..)
 
 
 suite : Test
 suite =
     concat
-        [ columns
+        [ columnsDateBoard
         ]
 
 
-
--- init : BoardConfig -> TaskList -> Board
--- init config taskList =
---     Board config taskList
---
---
---
--- -- INFO
---
---
--- columns : TimeWithZone -> Int -> Board -> List ( String, List Card )
-
-
-columns : Test
-columns =
-    describe "columns"
-        [ test "default columns are just today tomorrow and future" <|
+columnsDateBoard : Test
+columnsDateBoard =
+    describe "columns - dateboard"
+        [ test "puts undated tasks in the undated column" <|
             \() ->
-                True
-                    |> Expect.equal True
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init (BoardConfig.DateBoardConfig { defaultDateBoardConfig | includeUndated = True })
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
         ]
+
+
+
+-- HELPERS
+
+
+defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig =
+    BoardHelpers.defaultDateBoardConfig

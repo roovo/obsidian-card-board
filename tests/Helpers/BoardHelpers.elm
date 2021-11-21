@@ -1,5 +1,6 @@
 module Helpers.BoardHelpers exposing
-    ( defaultDateBoardConfig
+    ( cardsInColumn
+    , defaultDateBoardConfig
     , defaultTagBoardConfig
     , exampleBoardConfig
     , exampleDateBoardConfig
@@ -8,6 +9,7 @@ module Helpers.BoardHelpers exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import Card exposing (Card)
 import DateBoard
 import Filter
 import Parser
@@ -59,6 +61,13 @@ exampleTagBoardConfig =
     , includeUntagged = True
     , title = "Tag Board Title"
     }
+
+
+cardsInColumn : String -> List ( String, List Card ) -> List Card
+cardsInColumn columnName cardsInColumns =
+    cardsInColumns
+        |> List.filter (\( c, _ ) -> c == columnName)
+        |> List.concatMap Tuple.second
 
 
 tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem
