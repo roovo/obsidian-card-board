@@ -1,4 +1,5 @@
 *.LICENSE.txt
+data.*.json
 data.json
 elm-stuff/
 index.html

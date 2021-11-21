@@ -1,4 +1,4 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
 export default class CardBoardPlugin extends Plugin {
@@ -100,9 +100,23 @@ export default class CardBoardPlugin extends Plugin {
       version : string
     }
   ) {
+    await this.backupOldVersion(this.settings.version, newSettings.version);
+
     this.settings = newSettings;
     this.removeCommands();
     this.addCommands();
     await this.saveData(newSettings);
+  }
+
+  async backupOldVersion(oldVersion: string, newVersion: string) {
+    if (oldVersion != newVersion) {
+      const pathToSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data.json");
+      const pathToSavedSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data." + oldVersion + ".json");
+
+      if (await this.app.vault.adapter.exists(pathToSavedSettings)) {
+        await this.app.vault.adapter.remove(pathToSavedSettings);
+      }
+      this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
+    }
   }
 }
