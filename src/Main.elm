@@ -40,7 +40,10 @@ init flags =
 
         Ok okFlags ->
             ( Model.fromFlags okFlags
-            , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+            , Cmd.batch
+                [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+                , InteropPorts.elmInitialized
+                ]
             )
 
 
@@ -55,11 +58,11 @@ type KeyValue
 
 type Msg
     = ActiveStateUpdated Bool
+    | AllMarkdownLoaded
     | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
-    | InitCompleted
     | KeyDown KeyValue
     | ReceiveTime ( Time.Zone, Time.Posix )
     | ShowBoard Int
@@ -75,6 +78,14 @@ update msg model =
     case ( msg, model ) of
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( { model | isActiveView = isActiveView }, Cmd.none )
+
+        ( AllMarkdownLoaded, _ ) ->
+            ( Model.finishAdding model
+            , Cmd.batch
+                [ InteropPorts.displayTaskMarkdown <| Model.cards model
+                , InteropPorts.addHoverToCardEditButtons <| Model.cards model
+                ]
+            )
 
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
@@ -98,14 +109,6 @@ update msg model =
         ( GotSettingsPageMsg subMsg, _ ) ->
             SettingsPage.update subMsg model
                 |> updateWith GotSettingsPageMsg
-
-        ( InitCompleted, _ ) ->
-            ( Model.finishAdding model
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Model.cards model
-                , InteropPorts.addHoverToCardEditButtons <| Model.cards model
-                ]
-            )
 
         ( KeyDown keyValue, _ ) ->
             case ( keyValue, model.isActiveView ) of
@@ -235,8 +238,8 @@ subscriptions _ =
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile
 
-                                InteropDefinitions.InitCompleted ->
-                                    InitCompleted
+                                InteropDefinitions.AllMarkdownLoaded ->
+                                    AllMarkdownLoaded
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     BoardConfigsUpdated newSettings.boardConfigs

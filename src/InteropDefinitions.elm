@@ -19,8 +19,10 @@ import TsJson.Encode as TsEncode exposing (required)
 
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
+    | CloseView
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+    | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | UpdateSettings Settings
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
@@ -32,7 +34,7 @@ type ToElm
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
-    | InitCompleted
+    | AllMarkdownLoaded
     | SettingsUpdated Settings
     | ShowBoard Int
 
@@ -122,7 +124,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
-        , DecodeHelpers.toElmVariant "initCompleted" (always InitCompleted) (TsDecode.succeed ())
+        , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]
@@ -131,16 +133,22 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers _ vDeleteTask vDisplayTaskMarkdown vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
+
+                CloseView ->
+                    vCloseView
 
                 DeleteTask info ->
                     vDeleteTask info
 
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
+
+                ElmInitialized ->
+                    vElmInitialized
 
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
@@ -155,6 +163,7 @@ fromElm =
         |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
+        |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder

@@ -9,10 +9,10 @@ define custom boards.
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Installation
-This has not been accepted (yet - submitted Oct 31st) as an official plugin, so you will have to use the
-v.handy [obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) to install it, or manually
-install from the [releases](https://github.com/roovo/obsidian-card-board/releases/) page, or
-you can try a self-build - see the [contributing doc](CONTRIBUTING.md)).
+Please install via the regular Community Plugins setting tab within Obsidian.
+
+If you want to keep up to date with any Beta releases then add it to the v.handy
+[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) as well.
 
 ## Use
 When installed, you can launch the plugin:
@@ -111,10 +111,13 @@ I am not convinced that this is the best strategy so this may well change in a f
 If you like to apply different styles to different tags, this is now possible
 (thank you @darthmachina).  Tags now have a class that reflects the tag name.
 So if you have a tag `#foo/bar` you will be able to style it with your favorite
-color for foobars using:
+color for foo/bars (which just has to be HotPink) using:
 
-```
-div.tag-foo-bar
+```css
+.cm-s-obsidian card-board-card-tag.tag-foo-bar > span.cm-hashtag {
+  background-color: HotPink;
+  color: DimGrey;
+}
 ```
 
 ## Date boards
@@ -166,7 +169,8 @@ above the board to the left of the tabs.  You can:
 ## Alternatives
 If the way that this works isn't for for you, there are plenty of other fabulous
 plugins you can use for task management in Obsidian.
-[Kanban](https://github.com/mgmeyers/obsidian-kanban) and
+[Kanban](https://github.com/mgmeyers/obsidian-kanban),
+[Checklist](https://github.com/delashum/obsidian-checklist-plugin), and
 [Tasks](https://github.com/schemar/obsidian-tasks) are the most popular. There are
 others too, see the list on the wonderful
 [roundup site](https://www.obsidianroundup.org/plugins/).

@@ -79,6 +79,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"addFilePreviewHovers","data":[{"filePath":"a path","id":"an id"}]}"""
+        , test "encodes CloseView" <|
+            \() ->
+                InteropDefinitions.CloseView
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"closeView"}"""
         , test "encodes DeleteTask data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
@@ -93,6 +99,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"displayTaskMarkdown","data":[{"filePath":"a path","taskMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
+        , test "encodes ElmInitialized" <|
+            \() ->
+                InteropDefinitions.ElmInitialized
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"elmInitialized"}"""
         , test "encodes OpenTaskSourceFile data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
@@ -122,21 +134,6 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"updateTasks","data":{"filePath":"a path","tasks":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
-        , test "encodes the correct tsType" <|
-            \() ->
-                [ { filePath = "a path", taskMarkdown = [] } ]
-                    |> InteropDefinitions.DisplayTaskMarkdown
-                    |> TsEncode.runExample interop.fromElm
-                    |> .tsType
-                    |> Expect.equal
-                        ("""{ data : { filePath : string; tasks : { lineNumber : number; newText : string; originalText : string }[] }; tag : "updateTasks" }"""
-                            ++ """ | { data : { data : { boardConfigs : ({ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } | { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" })[] }; version : string }; tag : "updateSettings" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "openTaskSourceFile" }"""
-                            ++ """ | { data : { filePath : string; taskMarkdown : { id : string; markdown : string }[] }[]; tag : "displayTaskMarkdown" }"""
-                            ++ """ | { data : { filePath : string; lineNumber : number; originalText : string }; tag : "deleteTask" }"""
-                            ++ """ | { tag : "closeView" }"""
-                            ++ """ | { data : { filePath : string; id : string }[]; tag : "addFilePreviewHovers" }"""
-                        )
         ]
 
 
@@ -149,6 +146,12 @@ toElmTests =
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
+        , test "decodes allMarkdownLoaded" <|
+            \() ->
+                """{"tag":"allMarkdownLoaded","data":{}}"""
+                    |> runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
@@ -199,21 +202,6 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct tsType" <|
-            \() ->
-                ""
-                    |> runDecoder interop.toElm
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ data : boolean; tag : \"activeStateUpdated\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileAdded\" }"
-                            ++ " | { data : string; tag : \"fileDeleted\" }"
-                            ++ " | { data : { newPath : string; oldPath : string }; tag : \"fileRenamed\" }"
-                            ++ " | { data : { fileContents : string; fileDate : string | null; filePath : string }; tag : \"fileUpdated\" }"
-                            ++ " | { data : JsonValue; tag : \"initCompleted\" }"
-                            ++ " | { data : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); tag : \"settingsUpdated\" }"
-                            ++ " | { data : number; tag : \"showBoard\" }"
-                        )
         ]
 
 
