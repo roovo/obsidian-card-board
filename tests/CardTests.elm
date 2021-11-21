@@ -2,6 +2,7 @@ module CardTests exposing (suite)
 
 import Card exposing (Highlight(..))
 import Expect
+import Helpers.TaskHelpers as TaskHelpers
 import Parser
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
@@ -28,9 +29,9 @@ editButtonId =
         [ test "adds :editButton on to the end of the Card.id" <|
             \() ->
                 taskItem
-                    |> Maybe.map (Card.fromTaskItem "")
+                    |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.editButtonId
-                    |> Expect.equal (Just "taskItemPath:1:editButton")
+                    |> Expect.equal (Just <| "prefix:" ++ TaskHelpers.taskId "taskItemPath" 1 ++ ":editButton")
         ]
 
 
@@ -52,9 +53,9 @@ fromTaskItem =
         [ test "prefixes the Card.id with the given prefix" <|
             \() ->
                 taskItem
-                    |> Maybe.map (Card.fromTaskItem "foo:")
+                    |> Maybe.map (Card.fromTaskItem "prefixed")
                     |> Maybe.map Card.id
-                    |> Expect.equal (Just "foo:taskItemPath:1")
+                    |> Expect.equal (Just <| "prefixed:" ++ TaskHelpers.taskId "taskItemPath" 1)
         ]
 
 
@@ -123,15 +124,15 @@ markdownWithIds =
   - [ ] bar
  more notes
   """
-                    |> Parser.run (TaskItem.parser "" Nothing)
+                    |> Parser.run (TaskItem.parser "file" Nothing)
                     |> Result.toMaybe
-                    |> Maybe.map (Card.fromTaskItem "foo")
+                    |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.markdownWithIds
                     |> Expect.equal
                         (Just
-                            [ { id = "foo:1:notes", markdown = "some note\nmore notes" }
-                            , { id = "foo:3", markdown = "bar" }
-                            , { id = "foo:1", markdown = "foo" }
+                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]
                         )
         ]
@@ -143,9 +144,9 @@ notesId =
         [ test "adds :notes on to the end of the Card.id" <|
             \() ->
                 taskItem
-                    |> Maybe.map (Card.fromTaskItem "")
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
                     |> Maybe.map Card.notesId
-                    |> Expect.equal (Just "taskItemPath:1:notes")
+                    |> Expect.equal (Just <| "a_prefix:" ++ TaskHelpers.taskId "taskItemPath" 1 ++ ":notes")
         ]
 
 
@@ -165,10 +166,10 @@ subtasks =
   - [ ] bar"""
                     |> Parser.run (TaskItem.parser "" Nothing)
                     |> Result.toMaybe
-                    |> Maybe.map (Card.fromTaskItem "foo")
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
                     |> Maybe.map Card.subtasks
                     |> Maybe.map (List.map <| Tuple.mapSecond TaskItem.title)
-                    |> Expect.equal (Just [ ( "foo:3", "bar" ) ])
+                    |> Expect.equal (Just [ ( "a_prefix:2166136261:3", "bar" ) ])
         ]
 
 
@@ -180,7 +181,7 @@ taskItemId =
                 taskItem
                     |> Maybe.map (Card.fromTaskItem "foo")
                     |> Maybe.map Card.taskItemId
-                    |> Expect.equal (Just "taskItemPath:1")
+                    |> Expect.equal (Just (TaskHelpers.taskId "taskItemPath" 1))
         ]
 
 

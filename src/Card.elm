@@ -72,7 +72,7 @@ highlight timeWithZone (Card _ item) =
 
 id : Card -> String
 id ((Card idPrefix _) as card) =
-    idPrefix ++ taskItemId card
+    idPrefix ++ ":" ++ taskItemId card
 
 
 editButtonId : Card -> String
@@ -131,7 +131,7 @@ notesId card =
 subtasks : Card -> List ( String, TaskItem )
 subtasks (Card idPrefix item) =
     TaskItem.subtasks item
-        |> List.map (\sub -> ( idPrefix ++ TaskItem.id sub, sub ))
+        |> List.map (\sub -> ( idPrefix ++ ":" ++ TaskItem.id sub, sub ))
 
 
 taskItem : Card -> TaskItem

@@ -55,7 +55,7 @@ placeCardsInColumns boardIndex columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
-            String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex ++ ":"
+            String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex
 
         placeCardsInColumn : Int -> ( String, List TaskItem ) -> ( String, List Card )
         placeCardsInColumn columnIndex ( columnTitle, taskItems ) =

@@ -2,6 +2,7 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
+import Helpers.TaskHelpers as TaskHelpers
 import Parser exposing ((|=))
 import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
@@ -149,19 +150,19 @@ containsId =
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "fileA" Nothing)
-                    |> Result.map (TaskItem.containsId "fileA:4")
+                    |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 4))
                     |> Expect.equal (Ok False)
         , test "returns True if the id is for the task" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "fileA" Nothing)
-                    |> Result.map (TaskItem.containsId "fileA:1")
+                    |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 1))
                     |> Expect.equal (Ok True)
         , test "returns True if the id is for one of the subtasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "fileA" Nothing)
-                    |> Result.map (TaskItem.containsId "fileA:2")
+                    |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 2))
                     |> Expect.equal (Ok True)
         ]
 
@@ -403,12 +404,12 @@ hasTagWithSubtagWildcard =
 id : Test
 id =
     describe "id"
-        [ test "returns filePath:row" <|
+        [ test "returns FNVC1a(filePath):row" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "File A" Nothing)
                     |> Result.map TaskItem.id
-                    |> Expect.equal (Ok "File A:1")
+                    |> Expect.equal (Ok "1414514984:1")
         ]
 
 
@@ -739,62 +740,62 @@ tasksToToggle =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":3" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 3) <| { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok [])
         , test "returns the TaskItem if it matches the id" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the sub-TaskItem if it matches the id and @autocomplete is not set" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is true and all other subtasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is false and all other subtasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(false)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id and @autocomplete is set but there are other incomplete subtasks" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id, @autocomplete is set and the top level task is already completed" <|
             \() ->
                 "- [x] foo @autocomplete(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":2" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem if it is complete, matches and all subtasks are already complete" <|
             \() ->
                 "- [x] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the TaskItem if it is incomplete, matches and all subtasks are already complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.tasksToToggle ":1" <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         ]

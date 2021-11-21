@@ -1,6 +1,7 @@
 module TaskListTests exposing (suite)
 
 import Expect
+import Helpers.TaskHelpers as TaskHelpers
 import Parser
 import TaskItem
 import TaskList
@@ -217,7 +218,7 @@ not a task
                     |> Parser.run (TaskList.parser "file_a" Nothing)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskIds
-                    |> Expect.equal [ "file_a:1", "file_a:4", "file_a:6" ]
+                    |> Expect.equal [ "4275677999:1", "4275677999:4", "4275677999:6" ]
         ]
 
 
@@ -287,7 +288,7 @@ taskContainingId =
 - [ ] g1
 - [x] g2
 """ )
-                    |> TaskList.taskContainingId "a:4"
+                    |> TaskList.taskContainingId (TaskHelpers.taskId "a" 4)
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
@@ -295,7 +296,7 @@ taskContainingId =
 - [ ] g1
 - [x] g2
 """ )
-                    |> TaskList.taskContainingId "a:3"
+                    |> TaskList.taskContainingId (TaskHelpers.taskId "a" 3)
                     |> Maybe.map TaskItem.title
                     |> Expect.equal (Just "g2")
         , test "returns the task if it contains a  subtask with the given id" <|
@@ -304,7 +305,7 @@ taskContainingId =
 - [ ] g1
   - [x] subtask complete
 """ )
-                    |> TaskList.taskContainingId "a:3"
+                    |> TaskList.taskContainingId (TaskHelpers.taskId "a" 3)
                     |> Maybe.map TaskItem.title
                     |> Expect.equal (Just "g1")
         ]
@@ -324,7 +325,7 @@ taskFromId =
 - [ ] g1
 - [x] g2
 """ )
-                    |> TaskList.taskFromId "a:4"
+                    |> TaskList.taskFromId (TaskHelpers.taskId "a" 4)
                     |> Expect.equal Nothing
         , test "returns the task if there is one in the list with the given id" <|
             \() ->
@@ -332,7 +333,7 @@ taskFromId =
 - [ ] g1
 - [x] g2
 """ )
-                    |> TaskList.taskFromId "a:3"
+                    |> TaskList.taskFromId (TaskHelpers.taskId "a" 3)
                     |> Maybe.map TaskItem.title
                     |> Expect.equal (Just "g2")
         , test "returns a subtask if there is one in the list with the given id" <|
@@ -341,7 +342,7 @@ taskFromId =
 - [ ] g1
   - [x] subtask complete
 """ )
-                    |> TaskList.taskFromId "a:3"
+                    |> TaskList.taskFromId (TaskHelpers.taskId "a" 3)
                     |> Maybe.map TaskItem.title
                     |> Expect.equal (Just "subtask complete")
         ]

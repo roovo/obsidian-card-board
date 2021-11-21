@@ -35,6 +35,7 @@ module TaskItem exposing
     )
 
 import Date exposing (Date)
+import FNV1a
 import Iso8601
 import List.Extra as LE
 import Maybe.Extra as ME
@@ -42,6 +43,7 @@ import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import TaskPaperTag
 import Time
+
 
 
 -- TYPES
@@ -188,7 +190,7 @@ hasSubtasks (TaskItem _ subtasks_) =
 
 id : TaskItem -> String
 id (TaskItem fields_ _) =
-    fields_.filePath ++ ":" ++ String.fromInt fields_.lineNumber
+    String.fromInt (FNV1a.hash fields_.filePath) ++ ":" ++ String.fromInt fields_.lineNumber
 
 
 isDated : TaskItem -> Bool
@@ -375,14 +377,14 @@ removeTagFromFields tag fields_ =
         matches : String -> Bool
         matches itemTag =
             if String.endsWith "/" tag then
-                tag == itemTag
+                tag
+                    == itemTag
                     || (String.toLower itemTag == String.dropRight 1 (String.toLower tag))
 
             else
                 String.toLower itemTag == String.toLower tag
     in
-
-    { fields_ | tags  = List.filter (\t -> not (matches t)) fields_.tags }
+    { fields_ | tags = List.filter (\t -> not (matches t)) fields_.tags }
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem

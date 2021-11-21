@@ -1,5 +1,5 @@
 - configBeingEdited -> should include global settings
-- InteropPorts.updateSettings -> needs to pass on to ts the config being edited not the model!
+- move TaskListTestHelpers to Helpers
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
