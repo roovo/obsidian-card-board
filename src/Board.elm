@@ -53,13 +53,15 @@ columns timeWithZone boardIndex (Board config taskList) =
 placeCardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )
 placeCardsInColumns boardIndex columnList =
     let
-        cardIdPrefix columnTitle =
-            String.fromInt boardIndex ++ ":" ++ columnTitle ++ ":"
+        cardIdPrefix : Int -> String
+        cardIdPrefix columnIndex =
+            String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex ++ ":"
 
-        placeCardsInColumn ( columnTitle, taskItems ) =
+        placeCardsInColumn : Int -> ( String, List TaskItem ) -> ( String, List Card )
+        placeCardsInColumn columnIndex ( columnTitle, taskItems ) =
             taskItems
-                |> List.map (Card.fromTaskItem <| cardIdPrefix columnTitle)
+                |> List.map (Card.fromTaskItem <| cardIdPrefix columnIndex)
                 |> Tuple.pair columnTitle
     in
     columnList
-        |> List.map placeCardsInColumn
+        |> List.indexedMap placeCardsInColumn
