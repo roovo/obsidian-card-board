@@ -3,7 +3,8 @@ module CardBoardSettingsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
-import Filter
+import Helpers.BoardHelpers as BoardHelpers
+import Helpers.DecodeHelpers as DecodeHelpers
 import Semver
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -37,7 +38,7 @@ encodeDecode =
                 exampleSettings
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
-                    |> runDecoder CardBoardSettings.decoder
+                    |> DecodeHelpers.runDecoder CardBoardSettings.decoder
                     |> .decoded
                     |> Expect.equal (Ok exampleSettings)
         , test "fails if the version number is unsupported" <|
@@ -45,7 +46,7 @@ encodeDecode =
                 { exampleSettings | version = Semver.version 0 0 0 [] [] }
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
-                    |> runDecoder CardBoardSettings.decoder
+                    |> DecodeHelpers.runDecoder CardBoardSettings.decoder
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
@@ -59,23 +60,11 @@ encodeDecode =
 exampleSettings : CardBoardSettings.Settings
 exampleSettings =
     { boardConfigs =
-        [ BoardConfig.TagBoardConfig
-            { columns = [ { tag = "foo", displayTitle = "bar" } ]
-            , completedCount = 10
-            , filters = [ Filter.PathFilter "path1", Filter.PathFilter "path2", Filter.TagFilter "aTag", Filter.TagFilter "anotherTag" ]
-            , includeOthers = False
-            , includeUntagged = True
-            , title = "A tagboard"
-            }
-        , BoardConfig.DateBoardConfig
-            { completedCount = 15
-            , filters = [ Filter.PathFilter "date/path", Filter.TagFilter "dateTag" ]
-            , includeUndated = False
-            , title = "A dateboard"
-            }
+        [ BoardConfig.TagBoardConfig BoardHelpers.exampleTagBoardConfig
+        , BoardConfig.DateBoardConfig BoardHelpers.exampleDateBoardConfig
         ]
     , globalSettings = exampleGlobalSettings
-    , version = Semver.version 0 2 0 [] []
+    , version = CardBoardSettings.currentVersion
     }
 
 
@@ -85,14 +74,3 @@ exampleGlobalSettings =
     , ignorePaths = [ Filter.PathFilter "a/path" ]
     , subTaskDisplayLimit = Just 17
     }
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder

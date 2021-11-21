@@ -1,13 +1,13 @@
 module TagBoardTests exposing (suite)
 
 import Expect
-import Filter
+import Helpers.BoardHelpers as BoardHelpers
+import Helpers.DecodeHelpers as DecodeHelpers
 import Parser
 import TagBoard
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -105,7 +105,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags that start with the given tag" <|
@@ -120,7 +120,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags with a trailing slash if not in the config" <|
@@ -135,7 +135,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "includes tasks with tags with a trailing slash if in the config" <|
@@ -150,7 +150,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "includes tasks with a subtag if there is a trailing slash in the config" <|
@@ -165,7 +165,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "ensure only matches subtasks when using subtags" <|
@@ -181,7 +181,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
                         }
-                    |> tasksInColumn "At Tasks"
+                    |> BoardHelpers.tasksInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "removes tags that match the column's tag" <|
@@ -197,7 +197,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.concatMap TaskItem.tags
                     |> Expect.equal [ "bar/baz", "baz" ]
         , test "sorts cards by title & due date" <|
@@ -212,7 +212,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "foo", displayTitle = "Foo tasks" } ]
                         }
-                    |> tasksInColumn "Foo tasks"
+                    |> BoardHelpers.tasksInColumn "Foo tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -255,7 +255,7 @@ columnCompleted =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Completed"
+                    |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar3", "foo4" ]
         , test "sorts cards by title & completion time" <|
@@ -271,7 +271,7 @@ columnCompleted =
                             | completedCount = 99
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Completed"
+                    |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "b", "c" ]
         ]
@@ -313,7 +313,7 @@ columnOthers =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Others"
+                    |> BoardHelpers.tasksInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo2", "foo3" ]
         , test "sorts cards by title & due date" <|
@@ -329,7 +329,7 @@ columnOthers =
                             | includeOthers = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Others"
+                    |> BoardHelpers.tasksInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -371,7 +371,7 @@ columnUntagged =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Untagged"
+                    |> BoardHelpers.tasksInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "baz1" ]
         , test "sorts cards by title & due date" <|
@@ -387,7 +387,7 @@ columnUntagged =
                             | includeUntagged = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Untagged"
+                    |> BoardHelpers.tasksInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -453,7 +453,7 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample TagBoard.configEncoder
                     |> .output
-                    |> runDecoder TagBoard.configDecoder
+                    |> DecodeHelpers.runDecoder TagBoard.configDecoder
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
         ]
@@ -465,39 +465,9 @@ encodeDecode =
 
 defaultConfig : TagBoard.Config
 defaultConfig =
-    { columns = []
-    , completedCount = 0
-    , filters = []
-    , includeOthers = False
-    , includeUntagged = False
-    , title = "Tag Board Title"
-    }
+    BoardHelpers.defaultTagBoardConfig
 
 
 exampleConfig : TagBoard.Config
 exampleConfig =
-    { columns = [ { tag = "foo", displayTitle = "bar" } ]
-    , completedCount = 6
-    , filters = [ Filter.PathFilter "a", Filter.PathFilter "b", Filter.TagFilter "t1", Filter.TagFilter "t2" ]
-    , includeOthers = False
-    , includeUntagged = True
-    , title = "Tag Board Title"
-    }
-
-
-tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem
-tasksInColumn columnName tasksInColumns =
-    tasksInColumns
-        |> List.filter (\( c, _ ) -> c == columnName)
-        |> List.concatMap Tuple.second
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder
+    BoardHelpers.exampleTagBoardConfig

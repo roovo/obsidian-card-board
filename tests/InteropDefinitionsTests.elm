@@ -4,6 +4,7 @@ import BoardConfig
 import CardBoardSettings
 import Expect
 import Filter
+import Helpers.DecodeHelpers as DecodeHelpers
 import InteropDefinitions exposing (interop)
 import Semver
 import Test exposing (..)
@@ -26,7 +27,7 @@ flagsTests =
         [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
                 """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":[{"tag":"pathFilter","data":"aPathToIgnore"}],"subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
-                    |> runDecoder interop.flags
+                    |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
@@ -61,7 +62,7 @@ flagsTests =
         , test "decodes valid flags for settings version 0.1.0" <|
             \() ->
                 """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
-                    |> runDecoder interop.flags
+                    |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
@@ -83,7 +84,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = defaultGlobalSettings
+                                , globalSettings = CardBoardSettings.defaultGlobalSettings
                                 }
                             , now = 11
                             , zone = 22
@@ -92,7 +93,7 @@ flagsTests =
         , test "fails to decode flags if a field is missing" <|
             \() ->
                 """{"format":"a format","now":11,"zone":22}"""
-                    |> runDecoder interop.flags
+                    |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
@@ -158,92 +159,69 @@ toElmTests =
         [ test "decodes activeStateUpdated data" <|
             \() ->
                 """{"tag":"activeStateUpdated","data":false}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
         , test "decodes allMarkdownLoaded" <|
             \() ->
                 """{"tag":"allMarkdownLoaded","data":{}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileAdded { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
         , test "decodes fileDeleted data" <|
             \() ->
                 """{"tag":"fileDeleted","data":"a path"}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
         , test "decodes fileRenamed data" <|
             \() ->
                 """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileRenamed ( "the old path", "the new path" ))
         , test "decodes fileUpdated data" <|
             \() ->
                 """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         , test "fails to decode data with an unknown tag" <|
             \() ->
                 """{"tag":"xxxxx","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         ]
-
-
-
--- HELPERS
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-defaultGlobalSettings : CardBoardSettings.GlobalSettings
-defaultGlobalSettings =
-    { hideCompletedSubtasks = False
-    , ignorePaths = []
-    , subTaskDisplayLimit = Nothing
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder
