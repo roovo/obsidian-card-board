@@ -112,7 +112,7 @@ export class CardBoardView extends ItemView {
   }
 
   async onClose() {
-    this.elm.ports.interopToElm.send({
+    await this.elm.ports.interopToElm.send({
       tag: "activeStateUpdated",
       data: false
     });

@@ -2,6 +2,7 @@ module DateBoardTests exposing (suite)
 
 import DateBoard
 import Expect
+import Filter
 import Iso8601
 import Parser
 import TaskItem exposing (TaskItem)
@@ -123,8 +124,7 @@ encodeDecode =
 defaultConfig : DateBoard.Config
 defaultConfig =
     { completedCount = 0
-    , filterPaths = ""
-    , filterTags = ""
+    , filters = []
     , includeUndated = False
     , title = "Date Board Title"
     }
@@ -133,8 +133,7 @@ defaultConfig =
 exampleConfig : DateBoard.Config
 exampleConfig =
     { completedCount = 12
-    , filterPaths = "a/path\nb/path"
-    , filterTags = "tag1\ntag2"
+    , filters = [ Filter.PathFilter "a/path", Filter.PathFilter "b/path", Filter.TagFilter "tag1", Filter.TagFilter "tag2" ]
     , includeUndated = False
     , title = "Date Board Title"
     }

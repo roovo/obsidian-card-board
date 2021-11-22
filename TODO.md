@@ -1,3 +1,5 @@
+- gets stuck on "Loading tasks..." if flags parsing fails
+
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos

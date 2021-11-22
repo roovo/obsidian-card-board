@@ -1,6 +1,7 @@
 module TagBoardTests exposing (suite)
 
 import Expect
+import Filter
 import Parser
 import TagBoard
 import TaskItem exposing (TaskItem)
@@ -466,8 +467,7 @@ defaultConfig : TagBoard.Config
 defaultConfig =
     { columns = []
     , completedCount = 0
-    , filterPaths = ""
-    , filterTags = ""
+    , filters = []
     , includeOthers = False
     , includeUntagged = False
     , title = "Tag Board Title"
@@ -478,8 +478,7 @@ exampleConfig : TagBoard.Config
 exampleConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , completedCount = 6
-    , filterPaths = "a\nb\nc"
-    , filterTags = "t1\nt2\nt3"
+    , filters = [ Filter.PathFilter "a", Filter.PathFilter "b", Filter.TagFilter "t1", Filter.TagFilter "t2" ]
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"

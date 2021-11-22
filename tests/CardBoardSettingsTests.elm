@@ -3,6 +3,7 @@ module CardBoardSettingsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
+import Filter
 import Semver
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -61,16 +62,14 @@ exampleSettings =
         [ BoardConfig.TagBoardConfig
             { columns = [ { tag = "foo", displayTitle = "bar" } ]
             , completedCount = 10
-            , filterPaths = "path1\npath2"
-            , filterTags = "aTag\nanotherTag"
+            , filters = [ Filter.PathFilter "path1", Filter.PathFilter "path2", Filter.TagFilter "aTag", Filter.TagFilter "anotherTag" ]
             , includeOthers = False
             , includeUntagged = True
             , title = "A tagboard"
             }
         , BoardConfig.DateBoardConfig
             { completedCount = 15
-            , filterPaths = "date/path"
-            , filterTags = "dateTag"
+            , filters = [ Filter.PathFilter "date/path", Filter.TagFilter "dateTag" ]
             , includeUndated = False
             , title = "A dateboard"
             }

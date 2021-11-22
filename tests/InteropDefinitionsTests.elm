@@ -3,6 +3,7 @@ module InteropDefinitionsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
+import Filter
 import InteropDefinitions exposing (interop)
 import Semver
 import Test exposing (..)
@@ -24,7 +25,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":"pathsToIgnore","subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filterPaths":"a/path","filterTags":"tag1","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filterPaths":"b/path","filterTags":"tag2","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":"pathsToIgnore","subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -34,16 +35,14 @@ flagsTests =
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
-                                        , filterPaths = "a/path"
-                                        , filterTags = "tag1"
+                                        , filters = [ Filter.PathFilter "a/path", Filter.TagFilter "tag1" ]
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
-                                        , filterPaths = "b/path"
-                                        , filterTags = "tag2"
+                                        , filters = [ Filter.PathFilter "b/path", Filter.TagFilter "tag2" ]
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -71,16 +70,14 @@ flagsTests =
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
-                                        , filterPaths = ""
-                                        , filterTags = ""
+                                        , filters = []
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
-                                        , filterPaths = ""
-                                        , filterTags = ""
+                                        , filters = []
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"

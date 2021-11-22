@@ -77,9 +77,7 @@ export default class CardBoardPlugin extends Plugin {
       leaf.view.currentBoardIndex(index);
     }
 
-    this.app.workspace.revealLeaf(
-      this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0]
-    );
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async deactivateView() {
@@ -105,6 +103,7 @@ export default class CardBoardPlugin extends Plugin {
     this.settings = newSettings;
     this.removeCommands();
     this.addCommands();
+    this.settings = newSettings;
     await this.saveData(newSettings);
   }
 
