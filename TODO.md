@@ -1,4 +1,5 @@
-- gets stuck on "Loading tasks..." if flags parsing fails
+- configBeingEdited -> should include global settings
+- InteropPorts.updateSettings -> needs to pass on to ts the config being edited not the model!
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -7,12 +8,15 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- What should I show on the view when there are no boards defined
 - Some sort of toggle compact view - where it shows each task as a single line card
   with only the checkbox and the first line of the title.
 - I parse 'foo:w' as a tag whereas obsidian only recognises the foo part.
 - do I want to warn the user that I couldn't read settings at startup?
   are there any sensible options I can give them if I do?
--- do I want the last board who's settings I've edited to the one shown when closing settings?
+  - gets stuck on "Loading tasks..." if flags parsing fails
+  - I could use State if I added a State.Failed
+- do I want the last board who's settings I've edited to the one shown when closing settings?
 - allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
   into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete

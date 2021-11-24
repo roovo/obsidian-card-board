@@ -50,7 +50,7 @@ init flags =
             in
             ( model
             , Cmd.batch
-                [ InteropPorts.updateSettings model
+                [ InteropPorts.updateSettings model.boardConfigs
                 , InteropPorts.elmInitialized
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
@@ -290,7 +290,7 @@ view model =
                 [ Html.div [ class "card-board-container" ]
                     [ BoardPage.view model.timeWithZone model.boardConfigs taskList
                         |> Html.map GotBoardPageMsg
-                    , SettingsPage.dialogs model.configBeingEdited
+                    , SettingsPage.dialogs model.settingsEditState
                         |> Html.map GotSettingsPageMsg
                     ]
                 ]

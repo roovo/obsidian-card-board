@@ -1,15 +1,15 @@
 module Model exposing
-    ( EditState(..)
-    , Model
+    ( Model
     , addTaskList
     , cards
     , default
     , deleteItemsFromFile
     , finishAdding
     , forceAddWhenNoBoards
-    , fromAddingConfigTo
-    , fromEditingConfigTo
     , fromFlags
+    , mapBoardBeingAdded
+    , mapBoardBeingEdited
+    , mapSetingsEditState
     , taskContainingId
     , taskFromId
     , taskListLoaded
@@ -24,6 +24,7 @@ import CardBoardSettings exposing (GlobalSettings)
 import InteropDefinitions
 import Panels
 import SafeZipper exposing (SafeZipper)
+import SettingsEditState exposing (SettingsEditState)
 import State exposing (State)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -37,27 +38,20 @@ import TimeWithZone exposing (TimeWithZone)
 
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
-    , configBeingEdited : EditState
     , globalSettings : GlobalSettings
     , isActiveView : Bool
+    , settingsEditState : SettingsEditState
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
     }
 
 
-type EditState
-    = Adding (SafeZipper BoardConfig) BoardConfig
-    | Deleting (SafeZipper BoardConfig)
-    | Editing (SafeZipper BoardConfig)
-    | NotEditing
-
-
 default : Model
 default =
     { boardConfigs = SafeZipper.empty
-    , configBeingEdited = Adding SafeZipper.empty BoardConfig.default
     , globalSettings = CardBoardSettings.defaultGlobalSettings
     , isActiveView = False
+    , settingsEditState = SettingsEditState.forNoConfig
     , taskList = State.Waiting
     , timeWithZone =
         { now = Time.millisToPosix 0
@@ -68,45 +62,17 @@ default =
 
 fromFlags : InteropDefinitions.Flags -> Model
 fromFlags flags =
-    let
-        boardConfigs =
-            SafeZipper.fromList <| CardBoardSettings.boardConfigs flags.settings
-    in
-    { boardConfigs = boardConfigs
-    , configBeingEdited = NotEditing
+    { boardConfigs = SafeZipper.fromList <| CardBoardSettings.boardConfigs flags.settings
     , globalSettings = CardBoardSettings.globalSettings flags.settings
     , isActiveView = False
+    , settingsEditState = SettingsEditState.default
     , taskList = State.Waiting
     , timeWithZone =
         { now = Time.millisToPosix flags.now
         , zone = Time.customZone flags.zone []
         }
     }
-        |> forceAddWhenNoBoards boardConfigs
-
-
-
--- CONFIG BEING EDITED
-
-
-fromAddingConfigTo : (SafeZipper BoardConfig -> BoardConfig -> EditState) -> EditState -> EditState
-fromAddingConfigTo fn existingState =
-    case existingState of
-        Adding cs c ->
-            fn cs c
-
-        _ ->
-            existingState
-
-
-fromEditingConfigTo : (SafeZipper BoardConfig -> EditState) -> EditState -> EditState
-fromEditingConfigTo fn existingState =
-    case existingState of
-        Editing cs ->
-            fn cs
-
-        _ ->
-            existingState
+        |> forceAddWhenNoBoards
 
 
 
@@ -177,13 +143,34 @@ cards model =
         |> Panels.cards model.timeWithZone
 
 
-forceAddWhenNoBoards : SafeZipper BoardConfig -> Model -> Model
-forceAddWhenNoBoards config model =
-    if SafeZipper.length config == 0 then
-        { model | configBeingEdited = Adding config BoardConfig.default }
+forceAddWhenNoBoards : Model -> Model
+forceAddWhenNoBoards model =
+    if SafeZipper.length model.boardConfigs == 0 then
+        { model | settingsEditState = SettingsEditState.forNoConfig }
 
     else
         model
+
+
+mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> Model
+mapBoardBeingAdded fn model =
+    { model
+        | settingsEditState =
+            SettingsEditState.mapBoardBeingAdded fn model.settingsEditState
+    }
+
+
+mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> Model
+mapBoardBeingEdited fn model =
+    { model
+        | settingsEditState =
+            SettingsEditState.mapBoardBeingEdited fn model.settingsEditState
+    }
+
+
+mapSetingsEditState : (SettingsEditState -> SettingsEditState) -> Model -> Model
+mapSetingsEditState fn model =
+    { model | settingsEditState = fn model.settingsEditState }
 
 
 taskFromId : String -> Model -> Maybe TaskItem
@@ -217,9 +204,9 @@ taskListLoaded model =
     State.hasLoaded model.taskList
 
 
-updateConfigBeingEdited : EditState -> Model -> Model
+updateConfigBeingEdited : SettingsEditState -> Model -> Model
 updateConfigBeingEdited newConfig model =
-    { model | configBeingEdited = newConfig }
+    { model | settingsEditState = newConfig }
 
 
 updateConfigs : List BoardConfig -> Model -> Model

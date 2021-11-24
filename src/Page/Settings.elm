@@ -11,9 +11,10 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
-import Model exposing (EditState(..), Model)
+import Model exposing (Model)
 import Parser
 import SafeZipper exposing (SafeZipper)
+import SettingsEditState exposing (SettingsEditState)
 import TagBoard
 
 
@@ -43,158 +44,31 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            model
-                |> .configBeingEdited
-                |> Model.fromEditingConfigTo (\cs -> Adding cs BoardConfig.default)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+            ( Model.mapSetingsEditState SettingsEditState.moveToAdd model, Cmd.none )
 
         AddBoardConfirmed ->
-            let
-                configWithNew cs c =
-                    SafeZipper.add c cs
-                        |> SafeZipper.last
-            in
-            model
-                |> .configBeingEdited
-                |> Model.fromAddingConfigTo (\cs c -> Editing <| configWithNew cs c)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+            ( Model.mapSetingsEditState SettingsEditState.confirmAdd model, Cmd.none )
 
-        BoardTypeSelected board ->
-            let
-                updateBoardType : BoardConfig -> BoardConfig
-                updateBoardType config =
-                    BoardConfig.fromBoardType board (BoardConfig.title config)
-            in
-            model
-                |> .configBeingEdited
-                |> Model.fromAddingConfigTo (\cs c -> Adding cs <| updateBoardType c)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+        BoardTypeSelected boardType ->
+            ( Model.mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model, Cmd.none )
 
         DeleteBoardRequested ->
-            case model.configBeingEdited of
-                Model.Editing c ->
-                    ( { model | configBeingEdited = Model.Deleting c }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( Model.mapSetingsEditState SettingsEditState.moveToDelete model, Cmd.none )
 
         DeleteBoardConfirmed ->
-            case model.configBeingEdited of
-                Model.Deleting c ->
-                    let
-                        newConfig =
-                            SafeZipper.deleteCurrent c
-                    in
-                    ( { model | configBeingEdited = Model.Editing newConfig }
-                        |> Model.forceAddWhenNoBoards newConfig
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( Model.mapSetingsEditState SettingsEditState.confirmDelete model, Cmd.none )
 
         EnteredCompletedCount value ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateCompletedCount c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateCompletedCount : BoardConfig -> BoardConfig
-                updateCompletedCount config =
-                    case ( config, String.toInt value ) of
-                        ( BoardConfig.DateBoardConfig dateBoardConfig, Just newCount ) ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | completedCount = newCount }
-
-                        ( BoardConfig.TagBoardConfig tagBoardConfig, Just newCount ) ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | completedCount = newCount }
-
-                        _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model, Cmd.none )
 
         EnteredNewBoardTitle title ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Adding cs c ->
-                            Model.Adding cs (updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingAdded (BoardConfig.updateTitle title) model, Cmd.none )
 
         EnteredTags tags ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateTags c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTags : BoardConfig -> BoardConfig
-                updateTags config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            let
-                                columnsConfig =
-                                    Parser.run TagBoard.columnConfigsParser tags
-                            in
-                            case columnsConfig of
-                                Ok parsedConfig ->
-                                    BoardConfig.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
-
-                                _ ->
-                                    config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited (BoardConfig.updateTags tags) model, Cmd.none )
 
         EnteredTitle title ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited (BoardConfig.updateTitle title) model, Cmd.none )
 
         ModalCancelClicked ->
             closeDialogOrExit model
@@ -203,139 +77,63 @@ update msg model =
             closeDialogOrExit model
 
         SettingsBoardNameClicked index ->
-            case model.configBeingEdited of
-                Model.Editing boardConfigs ->
-                    ( { model | configBeingEdited = Model.Editing <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( Model.mapSetingsEditState (SettingsEditState.changeBoardBeingEdited index) model, Cmd.none )
 
         ToggleIncludeOthers ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeOthers c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeOthers : BoardConfig -> BoardConfig
-                toggleIncludeOthers config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeOthers model, Cmd.none )
 
         ToggleIncludeUndated ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeUndated c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUndated : BoardConfig -> BoardConfig
-                toggleIncludeUndated config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
-
-                        BoardConfig.TagBoardConfig _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeUndated model, Cmd.none )
 
         ToggleIncludeUntagged ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeUntagged c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUntagged : BoardConfig -> BoardConfig
-                toggleIncludeUntagged config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model, Cmd.none )
 
 
 closeDialogOrExit : Model -> ( Model, Cmd Msg )
 closeDialogOrExit model =
-    case model.configBeingEdited of
-        Model.Adding config _ ->
-            let
-                cmd =
-                    if SafeZipper.length config == 0 then
-                        Cmd.batch
-                            [ InteropPorts.updateSettings model
-                            , InteropPorts.closeView
-                            ]
+    let
+        ( newState, cancelAction ) =
+            SettingsEditState.cancelCurrentState model.settingsEditState
+    in
+    case cancelAction of
+        SettingsEditState.ExitWithConfig config ->
+            ( Model.mapSetingsEditState (always newState) model, InteropPorts.updateSettings config )
 
-                    else
-                        Cmd.none
-            in
-            ( { model | configBeingEdited = Model.Editing config }
-                |> Model.forceAddWhenNoBoards config
-            , cmd
+        SettingsEditState.ExitWithNoConfig ->
+            ( Model.mapSetingsEditState (always newState) { model | boardConfigs = SafeZipper.empty }
+            , Cmd.batch
+                [ InteropPorts.updateSettings SafeZipper.empty
+                , InteropPorts.closeView
+                ]
             )
 
-        Model.Deleting config ->
-            ( { model | configBeingEdited = Model.Editing config }
-            , Cmd.none
-            )
-
-        Model.Editing config ->
-            ( { model | configBeingEdited = Model.NotEditing }
-            , InteropPorts.updateSettings model
-            )
-
-        _ ->
-            ( { model | configBeingEdited = Model.NotEditing }
-            , Cmd.none
-            )
+        SettingsEditState.SetToState ->
+            ( Model.mapSetingsEditState (always newState) model, Cmd.none )
 
 
 
 -- VIEW
 
 
-dialogs : Model.EditState -> Html Msg
+dialogs : SettingsEditState -> Html Msg
 dialogs editState =
     case editState of
-        Model.Adding configsBeingEdited newConfig ->
+        SettingsEditState.AddingBoard configsBeingEdited newConfig ->
             Html.div []
                 [ modalSettingsView configsBeingEdited
                 , modalAddBoard newConfig
                 ]
 
-        Model.Deleting configsBeingEdited ->
+        SettingsEditState.DeletingBoard configsBeingEdited ->
             Html.div []
                 [ modalSettingsView configsBeingEdited
                 , modalConfirmDelete
                 ]
 
-        Model.Editing configsBeingEdited ->
+        SettingsEditState.EditingBoard configsBeingEdited ->
             modalSettingsView configsBeingEdited
 
-        Model.NotEditing ->
+        SettingsEditState.NotBeingEdited ->
             Html.text ""
 
 

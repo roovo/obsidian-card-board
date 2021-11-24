@@ -13,6 +13,14 @@ suite =
     concat
         [ default
         , encodeDecode
+        , toggleIncludeOthers
+
+        -- , toggleIncludeUndated
+        -- , toggleIncludeUntagged
+        -- , updateBoardType
+        -- , updateCompletedCount
+        -- , updateTags
+        -- , updateTitle
         ]
 
 

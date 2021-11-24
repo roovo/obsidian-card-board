@@ -8,10 +8,18 @@ module BoardConfig exposing
     , isForDateBoard
     , isForTagBoard
     , title
+    , toggleIncludeOthers
+    , toggleIncludeUndated
+    , toggleIncludeUntagged
+    , updateBoardType
+    , updateCompletedCount
+    , updateTags
+    , updateTitle
     )
 
 import DateBoard
 import DecodeHelpers
+import Parser
 import TagBoard
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -117,3 +125,80 @@ decoder_v_0_1_0 =
         [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_1_0
         , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_1_0
         ]
+
+
+toggleIncludeUntagged : BoardConfig -> BoardConfig
+toggleIncludeUntagged config =
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig tagBoardConfig ->
+            TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
+
+
+toggleIncludeUndated : BoardConfig -> BoardConfig
+toggleIncludeUndated config =
+    case config of
+        DateBoardConfig dateBoardConfig ->
+            DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
+
+        TagBoardConfig _ ->
+            config
+
+
+toggleIncludeOthers : BoardConfig -> BoardConfig
+toggleIncludeOthers config =
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig tagBoardConfig ->
+            TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
+
+
+updateTitle : String -> BoardConfig -> BoardConfig
+updateTitle title_ config =
+    case config of
+        DateBoardConfig dateBoardConfig ->
+            DateBoardConfig { dateBoardConfig | title = title_ }
+
+        TagBoardConfig tagBoardConfig ->
+            TagBoardConfig { tagBoardConfig | title = title_ }
+
+
+updateTags : String -> BoardConfig -> BoardConfig
+updateTags tags config =
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig tagBoardConfig ->
+            let
+                columnsConfig =
+                    Parser.run TagBoard.columnConfigsParser tags
+            in
+            case columnsConfig of
+                Ok parsedConfig ->
+                    TagBoardConfig { tagBoardConfig | columns = parsedConfig }
+
+                _ ->
+                    config
+
+
+updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
+updateCompletedCount value config =
+    case ( config, value ) of
+        ( DateBoardConfig dateBoardConfig, Just newCount ) ->
+            DateBoardConfig { dateBoardConfig | completedCount = newCount }
+
+        ( TagBoardConfig tagBoardConfig, Just newCount ) ->
+            TagBoardConfig { tagBoardConfig | completedCount = newCount }
+
+        _ ->
+            config
+
+
+updateBoardType : String -> BoardConfig -> BoardConfig
+updateBoardType boardType config =
+    fromBoardType boardType (title config)

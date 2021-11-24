@@ -18,6 +18,7 @@ import Model exposing (Model)
 import Panel exposing (Panel)
 import Panels exposing (Panels)
 import SafeZipper exposing (SafeZipper)
+import SettingsEditState
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -39,7 +40,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SettingsClicked ->
-            ( { model | configBeingEdited = Model.Editing model.boardConfigs }, Cmd.none )
+            ( { model | settingsEditState = SettingsEditState.startEditing model.boardConfigs }, Cmd.none )
 
         TabSelected tabIndex ->
             ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )

@@ -100,7 +100,6 @@ export default class CardBoardPlugin extends Plugin {
   ) {
     await this.backupOldVersion(this.settings?.version, newSettings.version);
 
-    this.settings = newSettings;
     this.removeCommands();
     this.addCommands();
     this.settings = newSettings;

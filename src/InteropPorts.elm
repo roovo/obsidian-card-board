@@ -92,11 +92,11 @@ rewriteTasks timeWithZone filePath taskItems =
         |> interopFromElm
 
 
-updateSettings : { a | boardConfigs : SafeZipper BoardConfig, globalSettings : GlobalSettings } -> Cmd msg
-updateSettings settings =
+updateSettings : SafeZipper BoardConfig -> Cmd msg
+updateSettings boardConfigs =
     { version = CardBoardSettings.currentVersion
-    , boardConfigs = SafeZipper.toList settings.boardConfigs
-    , globalSettings = settings.globalSettings
+    , boardConfigs = SafeZipper.toList boardConfigs
+    , globalSettings = CardBoardSettings.defaultGlobalSettings
     }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder
         |> interopFromElm
