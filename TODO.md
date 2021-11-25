@@ -1,7 +1,9 @@
+- filter by path
+  - file (no need for .md extension)
+  - directory
+  - test using Board.columns tests
 - configBeingEdited -> should include global settings
-- move TaskListTestHelpers to Helpers
-- add Board.columns tests
-- Helpers.BoardHelpers -> Helpers.BoardConfigHelpers
+- add Model tests
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks

@@ -16,6 +16,7 @@ suite =
         , filePath
         , fromTaskItem
         , highlight
+        , id
         , markdownWithIds
         , notesId
         , subtasks
@@ -111,6 +112,18 @@ highlight =
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
+        ]
+
+
+id : Test
+id =
+    describe "id"
+        [ test "returns the id of the taskItem with the card prefix" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "the_prefix")
+                    |> Maybe.map Card.id
+                    |> Expect.equal (Just "the_prefix:1754873316:1")
         ]
 
 

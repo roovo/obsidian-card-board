@@ -1,8 +1,11 @@
 module ModelTests exposing (suite)
 
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import Model
+import Model exposing (Model)
+import SafeZipper
+import SettingsEditState
 import State
 import TaskList
 import Test exposing (..)
@@ -15,6 +18,7 @@ suite =
         , default
         , deleteItemsFromFile
         , finishAdding
+        , forceAddWhenNoBoards
         , updateTaskItems
         ]
 
@@ -120,6 +124,26 @@ finishAdding =
         ]
 
 
+forceAddWhenNoBoards : Test
+forceAddWhenNoBoards =
+    describe "forceAddWhenNoBoards"
+        [ test "sets the edit state for no config if there are no boardConfigs" <|
+            \() ->
+                Model.default
+                    |> Model.mapSetingsEditState (always <| SettingsEditState.EditingBoard SafeZipper.empty)
+                    |> Model.forceAddWhenNoBoards
+                    |> .settingsEditState
+                    |> Expect.equal SettingsEditState.forNoConfig
+        , test "does not change the edit state if there are boardConfigs" <|
+            \() ->
+                { defaultModel | boardConfigs = SafeZipper.fromList [ BoardConfigHelpers.exampleBoardConfig ] }
+                    |> Model.mapSetingsEditState (always <| SettingsEditState.EditingBoard SafeZipper.empty)
+                    |> Model.forceAddWhenNoBoards
+                    |> .settingsEditState
+                    |> Expect.equal (SettingsEditState.EditingBoard SafeZipper.empty)
+        ]
+
+
 updateTaskItems : Test
 updateTaskItems =
     describe "updateTaskItems"
@@ -150,3 +174,12 @@ updateTaskItems =
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loaded [ "n1", "n2", "a1", "a2" ])
         ]
+
+
+
+-- HELPERS
+
+
+defaultModel : Model
+defaultModel =
+    Model.default
