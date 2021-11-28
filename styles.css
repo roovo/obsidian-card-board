@@ -69,6 +69,10 @@ li.is-after-active .card-board-tabs-inner {
   cursor: pointer;
 }
 
+.card-board-tab-icon {
+  cursor: pointer;
+}
+
 .card-board-tab-title.is-active .card-board-tabs-inner {
   background-color: var(--background-secondary-alt);
   border-radius: 5px 5px 0 0 ;

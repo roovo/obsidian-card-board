@@ -16,9 +16,8 @@ import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
-import Model exposing (Model)
 import SafeZipper exposing (SafeZipper)
-import SettingsEditState
+import Session exposing (Session)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -36,40 +35,60 @@ type Msg
     | TaskItemToggled String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
+update msg session =
     case msg of
         SettingsClicked ->
-            ( { model | settingsEditState = SettingsEditState.startEditing model.boardConfigs }, Cmd.none )
+            ( session
+            , Cmd.none
+            , Session.SettingsClicked
+            )
 
         TabSelected tabIndex ->
-            ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
+            ( Session.mapConfig (\c -> { c | boardConfigs = SafeZipper.atIndex tabIndex (Session.boardConfigs session) }) session
+            , Cmd.none
+            , Session.NoOp
+            )
 
         TaskItemDeleteClicked id ->
-            ( model, cmdIfHasTask id model InteropPorts.deleteTask )
+            ( session
+            , cmdIfHasTask id session InteropPorts.deleteTask
+            , Session.NoOp
+            )
 
         TaskItemEditClicked id ->
-            ( model, cmdIfHasTask id model InteropPorts.openTaskSourceFile )
+            ( session
+            , cmdIfHasTask id session InteropPorts.openTaskSourceFile
+            , Session.NoOp
+            )
 
         TaskItemToggled id ->
             let
+                timeWithZone =
+                    Session.timeWithZone session
+
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        model.timeWithZone
+                        timeWithZone
                         (TaskItem.filePath taskItem)
-                        (TaskItem.tasksToToggle id model.timeWithZone taskItem)
+                        (TaskItem.tasksToToggle id timeWithZone taskItem)
+
+                cmd =
+                    session
+                        |> Session.taskContainingId id
+                        |> Maybe.map toggleCmd
+                        |> Maybe.withDefault Cmd.none
             in
-            model
-                |> Model.taskContainingId id
-                |> Maybe.map toggleCmd
-                |> Maybe.withDefault Cmd.none
-                |> Tuple.pair model
+            ( session
+            , cmd
+            , Session.NoOp
+            )
 
 
-cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
-cmdIfHasTask id model cmd =
-    model
-        |> Model.taskFromId id
+cmdIfHasTask : String -> Session -> (TaskItemFields -> Cmd b) -> Cmd b
+cmdIfHasTask id session cmd =
+    session
+        |> Session.taskFromId id
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
         |> Maybe.withDefault Cmd.none
@@ -79,24 +98,31 @@ cmdIfHasTask id model cmd =
 -- VIEW
 
 
-view : TimeWithZone -> SafeZipper BoardConfig -> TaskList -> Html Msg
-view timeWithZone boardConfigs taskList =
-    let
-        boards =
-            Boards.init boardConfigs taskList
+view : Session -> Html Msg
+view session =
+    if SafeZipper.length (Session.boardConfigs session) == 0 then
+        Html.text "Loading tasks...."
 
-        currentIndex =
-            Boards.currentIndex boards
-    in
-    Html.div []
-        [ Html.ul [ class "card-board-tab-list" ]
-            (tabHeaders currentIndex boards)
-        , Html.div [ class "card-board-boards" ]
-            (Boards.boardZipper boards
-                |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
-                |> SafeZipper.toList
-            )
-        ]
+    else
+        let
+            boards =
+                Boards.init (Session.boardConfigs session) (Session.currentTaskList session)
+
+            currentIndex =
+                Boards.currentIndex boards
+
+            timeWithZone =
+                Session.timeWithZone session
+        in
+        Html.div []
+            [ Html.ul [ class "card-board-tab-list" ]
+                (tabHeaders currentIndex boards)
+            , Html.div [ class "card-board-boards" ]
+                (Boards.boardZipper boards
+                    |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
+                    |> SafeZipper.toList
+                )
+            ]
 
 
 tabHeaders : Maybe Int -> Boards -> List (Html Msg)
@@ -108,7 +134,7 @@ tabHeaders currentIndex boards =
         beforeFirst =
             Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
                 [ Html.div
-                    [ class "card-board-tabs-inner"
+                    [ class "card-board-tabs-inner card-board-tab-icon"
                     , onClick SettingsClicked
                     ]
                     [ FeatherIcons.settings

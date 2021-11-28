@@ -1,7 +1,12 @@
 module Page.Settings exposing
-    ( Msg(..)
-    , dialogs
+    ( Model
+    , Msg(..)
+    , init
+    , mapSession
+    , mapSessionConfig
+    , toSession
     , update
+    , view
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -11,11 +16,66 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
-import Model exposing (Model)
 import Parser
 import SafeZipper exposing (SafeZipper)
-import SettingsEditState exposing (SettingsEditState)
+import Session exposing (Session)
+import SettingsState exposing (SettingsState)
 import TagBoard
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { session : Session
+    , settingsState : SettingsState
+    }
+
+
+init : Session -> Model
+init session =
+    let
+        settingsState =
+            if SafeZipper.length (Session.boardConfigs session) == 0 then
+                SettingsState.forNoConfig
+
+            else
+                SettingsState.startEditing (Session.boardConfigs session)
+    in
+    { session = session
+    , settingsState = settingsState
+    }
+
+
+toSession : Model -> Session
+toSession =
+    .session
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    { model | session = fn model.session }
+
+
+mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
+mapSessionConfig fn model =
+    { model | session = Session.mapConfig fn model.session }
+
+
+mapSetingsEditState : (SettingsState -> SettingsState) -> Model -> Model
+mapSetingsEditState fn model =
+    { model | settingsState = fn model.settingsState }
+
+
+mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> Model
+mapBoardBeingAdded fn model =
+    { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
+
+
+mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> Model
+mapBoardBeingEdited fn model =
+    { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
 
@@ -40,35 +100,62 @@ type Msg
     | ToggleIncludeUntagged
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            ( Model.mapSetingsEditState SettingsEditState.moveToAdd model, Cmd.none )
+            ( mapSetingsEditState SettingsState.moveToAdd model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         AddBoardConfirmed ->
-            ( Model.mapSetingsEditState SettingsEditState.confirmAdd model, Cmd.none )
+            ( mapSetingsEditState SettingsState.confirmAdd model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         BoardTypeSelected boardType ->
-            ( Model.mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model, Cmd.none )
+            ( mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         DeleteBoardRequested ->
-            ( Model.mapSetingsEditState SettingsEditState.moveToDelete model, Cmd.none )
+            ( mapSetingsEditState SettingsState.moveToDelete model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         DeleteBoardConfirmed ->
-            ( Model.mapSetingsEditState SettingsEditState.confirmDelete model, Cmd.none )
+            ( mapSetingsEditState SettingsState.confirmDelete model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         EnteredCompletedCount value ->
-            ( Model.mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model, Cmd.none )
+            ( mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         EnteredNewBoardTitle title ->
-            ( Model.mapBoardBeingAdded (BoardConfig.updateTitle title) model, Cmd.none )
+            ( mapBoardBeingAdded (BoardConfig.updateTitle title) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         EnteredTags tags ->
-            ( Model.mapBoardBeingEdited (BoardConfig.updateTags tags) model, Cmd.none )
+            ( mapBoardBeingEdited (BoardConfig.updateTags tags) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         EnteredTitle title ->
-            ( Model.mapBoardBeingEdited (BoardConfig.updateTitle title) model, Cmd.none )
+            ( mapBoardBeingEdited (BoardConfig.updateTitle title) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         ModalCancelClicked ->
             closeDialogOrExit model
@@ -77,64 +164,80 @@ update msg model =
             closeDialogOrExit model
 
         SettingsBoardNameClicked index ->
-            ( Model.mapSetingsEditState (SettingsEditState.changeBoardBeingEdited index) model, Cmd.none )
+            ( mapSetingsEditState (SettingsState.changeBoardBeingEdited index) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         ToggleIncludeOthers ->
-            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeOthers model, Cmd.none )
+            ( mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         ToggleIncludeUndated ->
-            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeUndated model, Cmd.none )
+            ( mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         ToggleIncludeUntagged ->
-            ( Model.mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model, Cmd.none )
+            ( mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+            , Cmd.none
+            , Session.NoOp
+            )
 
 
-closeDialogOrExit : Model -> ( Model, Cmd Msg )
+closeDialogOrExit : Model -> ( Model, Cmd Msg, Session.Msg )
 closeDialogOrExit model =
     let
         ( newState, cancelAction ) =
-            SettingsEditState.cancelCurrentState model.settingsEditState
+            SettingsState.cancelCurrentState model.settingsState
     in
     case cancelAction of
-        SettingsEditState.ExitWithConfig config ->
-            ( Model.mapSetingsEditState (always newState) model, InteropPorts.updateSettings config )
+        SettingsState.ExitWithConfig config ->
+            ( mapSessionConfig (\c -> { c | boardConfigs = config }) model
+            , InteropPorts.updateSettings config
+            , Session.SettingsClosed
+            )
 
-        SettingsEditState.ExitWithNoConfig ->
-            ( Model.mapSetingsEditState (always newState) { model | boardConfigs = SafeZipper.empty }
+        SettingsState.ExitWithNoConfig ->
+            ( mapSessionConfig (\c -> { c | boardConfigs = SafeZipper.empty }) model
             , Cmd.batch
                 [ InteropPorts.updateSettings SafeZipper.empty
                 , InteropPorts.closeView
                 ]
+            , Session.SettingsClosed
             )
 
-        SettingsEditState.SetToState ->
-            ( Model.mapSetingsEditState (always newState) model, Cmd.none )
+        SettingsState.SetToState ->
+            ( mapSetingsEditState (always newState) model
+            , Cmd.none
+            , Session.NoOp
+            )
 
 
 
 -- VIEW
 
 
-dialogs : SettingsEditState -> Html Msg
-dialogs editState =
-    case editState of
-        SettingsEditState.AddingBoard configsBeingEdited newConfig ->
+view : Model -> Html Msg
+view model =
+    case model.settingsState of
+        SettingsState.AddingBoard configsBeingEdited newConfig ->
             Html.div []
                 [ modalSettingsView configsBeingEdited
                 , modalAddBoard newConfig
                 ]
 
-        SettingsEditState.DeletingBoard configsBeingEdited ->
+        SettingsState.DeletingBoard configsBeingEdited ->
             Html.div []
                 [ modalSettingsView configsBeingEdited
                 , modalConfirmDelete
                 ]
 
-        SettingsEditState.EditingBoard configsBeingEdited ->
+        SettingsState.EditingBoard configsBeingEdited ->
             modalSettingsView configsBeingEdited
-
-        SettingsEditState.NotBeingEdited ->
-            Html.text ""
 
 
 modalAddBoard : BoardConfig -> Html Msg

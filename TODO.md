@@ -2,8 +2,22 @@
   - file (no need for .md extension)
   - directory
   - test using Board.columns tests
-- configBeingEdited -> should include global settings
+
+# Cleanups
 - add Model tests
+- add ts declarations to replace @ts-ignores:
+    https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
+- translator pattern for child -> parent comms ??
+  https://medium.com/@alex.lew/the-translator-pattern-a-model-for-child-to-parent-communication-in-elm-f4bfaa1d3f98
+- refactor: (String, List a) -> Column a
+- make it so if you click outside the modal it closes it
+- I end up with multiple copies of the app running
+  - in dev mode, open cardboard
+  - then close the view
+  - then click the ribbon icon
+  - you'll see the tickes double up
+  - and tripple up if you do it again
+  - ...
 
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
@@ -99,6 +113,7 @@
   For a date picker.
 
 # Misc
+- look at obsidian://show-plugin?id=card-boardw
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?
 - do I want to rename Panel -> Board ??
