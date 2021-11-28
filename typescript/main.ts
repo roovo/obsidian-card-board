@@ -98,7 +98,7 @@ export default class CardBoardPlugin extends Plugin {
       version : string
     }
   ) {
-    await this.backupOldVersion(this.settings.version, newSettings.version);
+    await this.backupOldVersion(this.settings?.version, newSettings.version);
 
     this.settings = newSettings;
     this.removeCommands();
@@ -107,8 +107,8 @@ export default class CardBoardPlugin extends Plugin {
     await this.saveData(newSettings);
   }
 
-  async backupOldVersion(oldVersion: string, newVersion: string) {
-    if (oldVersion != newVersion) {
+  async backupOldVersion(oldVersion: string | null, newVersion: string) {
+    if (oldVersion && (oldVersion != newVersion)) {
       const pathToSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data.json");
       const pathToSavedSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data." + oldVersion + ".json");
 
