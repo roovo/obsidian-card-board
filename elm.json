@@ -20,6 +20,7 @@
             "elm-community/string-extra": "4.0.1",
             "justinmimbs/date": "3.2.1",
             "pilatch/flip": "1.0.0",
+            "pzp1997/assoc-list": "1.0.0",
             "robinheghan/fnv1a": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4"
         },

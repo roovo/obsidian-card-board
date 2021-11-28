@@ -16,6 +16,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
+import Page.Helper.Multiselect as Multiselect
 import Parser
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
