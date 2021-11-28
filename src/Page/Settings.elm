@@ -9,6 +9,7 @@ module Page.Settings exposing
     , view
     )
 
+import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
 import Flip
@@ -16,7 +17,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
-import Page.Helper.Multiselect as Multiselect
+import Page.Helper.Multiselect as MultiSelect
 import Parser
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -30,6 +31,7 @@ import TagBoard
 
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
+    , multiSelect : MultiSelect.Model Msg String
     , session : Session
     , settingsState : SettingsState
     }
@@ -38,6 +40,7 @@ type alias Model =
 init : Session -> Model
 init session =
     { boardConfigs = Session.boardConfigs session
+    , multiSelect = MultiSelect.init multiSelectConfig Dict.empty
     , session = session
     , settingsState = SettingsState.init (Session.boardConfigs session)
     }
@@ -58,6 +61,15 @@ mapSessionConfig fn model =
     { model | session = Session.mapConfig fn model.session }
 
 
+multiSelectConfig : MultiSelect.Config Msg String
+multiSelectConfig =
+    { delayMs = 300
+    , tagger = GotMultiSelectMsg
+    , fetchMsg = PathsRequested
+    , notFoundText = "Nothing Found"
+    }
+
+
 
 -- UPDATE
 
@@ -72,8 +84,10 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
+    | GotMultiSelectMsg (MultiSelect.Msg Msg String)
     | ModalCancelClicked
     | ModalCloseClicked
+    | PathsRequested Int String
     | SettingsBoardNameClicked Int
     | ToggleIncludeOthers
     | ToggleIncludeUndated
@@ -110,11 +124,28 @@ update msg model =
         EnteredTitle title ->
             updateBoardBeingEdited (BoardConfig.updateTitle title) model
 
+        GotMultiSelectMsg mulSelMsg ->
+            let
+                ( newModel, cmd ) =
+                    MultiSelect.update mulSelMsg model.multiSelect
+            in
+            ( { model | multiSelect = newModel }
+            , cmd
+            , Session.NoOp
+            )
+
         ModalCancelClicked ->
             processsAction (SettingsState.cancelCurrentState model.settingsState) model
 
         ModalCloseClicked ->
             processsAction (SettingsState.cancelCurrentState model.settingsState) model
+
+        PathsRequested page searchTerm ->
+            let
+                _ =
+                    Debug.log "PathsRequested" page
+            in
+            wrap model
 
         SettingsBoardNameClicked index ->
             wrap { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }
@@ -214,18 +245,18 @@ view model =
     case model.settingsState of
         SettingsState.AddingBoard newConfig ->
             Html.div []
-                [ modalSettingsView model.boardConfigs
+                [ modalSettingsView model.boardConfigs model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
         SettingsState.DeletingBoard ->
             Html.div []
-                [ modalSettingsView model.boardConfigs
+                [ modalSettingsView model.boardConfigs model.multiSelect
                 , modalConfirmDelete
                 ]
 
         SettingsState.EditingBoard ->
-            modalSettingsView model.boardConfigs
+            modalSettingsView model.boardConfigs model.multiSelect
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -321,8 +352,8 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper BoardConfig -> Html Msg
-modalSettingsView configs =
+modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg String -> Html Msg
+modalSettingsView configs multiselect =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal mod-settings" ]
@@ -350,14 +381,14 @@ modalSettingsView configs =
                                 |> SafeZipper.toList
                            )
                     )
-                , settingsFormView <| SafeZipper.current configs
+                , settingsFormView (SafeZipper.current configs) multiselect
                 ]
             ]
         ]
 
 
-settingsFormView : Maybe BoardConfig -> Html Msg
-settingsFormView boardConfig =
+settingsFormView : Maybe BoardConfig -> MultiSelect.Model Msg String -> Html Msg
+settingsFormView boardConfig multiselect =
     case boardConfig of
         Just (BoardConfig.DateBoardConfig config) ->
             let
@@ -384,6 +415,17 @@ settingsFormView boardConfig =
                                 , onInput EnteredTitle
                                 ]
                                 []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Filters" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Limit the board to the chosen paths" ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ MultiSelect.view multiselect
                             ]
                         ]
                     , Html.div [ class "setting-item" ]

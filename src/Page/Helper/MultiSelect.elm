@@ -22,8 +22,8 @@ module Page.Helper.Multiselect exposing
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
 import Html exposing (Html)
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (class)
+import Html.Events as Events
 import Json.Decode as Decode exposing (Decoder)
 import Process
 import Task
@@ -430,7 +430,11 @@ delayedSend milli msg =
 
 view : Model msg a -> Html msg
 view model =
-    Html.text ""
+    Html.div
+        [ class "multiselect-values"
+        , Events.onClick (SelectClicked |> tagger model)
+        ]
+        [ Html.text "foo" ]
 
 
 

@@ -383,3 +383,14 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   min-height: 10em;
   min-width: 22em;
 }
+
+.multiselect-values {
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color : var(--text-normal);
+  padding: 5px 14px;
+  font-size: 16px;
+  height: 30px;
+  width: 217px;
+}
