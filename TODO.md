@@ -1,4 +1,5 @@
 - filter by path
+  - use fuzzy search with multi-select input
   - file (no need for .md extension)
   - directory
   - test using Board.columns tests
@@ -12,10 +13,11 @@
 - refactor: (String, List a) -> Column a
 - make it so if you click outside the modal it closes it
 - I end up with multiple copies of the app running
+  - add a debug to print a string each time update is called
   - in dev mode, open cardboard
   - then close the view
   - then click the ribbon icon
-  - you'll see the tickes double up
+  - you'll see the debug messaged double up
   - and tripple up if you do it again
   - ...
 

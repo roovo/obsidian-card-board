@@ -28,23 +28,17 @@ import TagBoard
 
 
 type alias Model =
-    { session : Session
+    { boardConfigs : SafeZipper BoardConfig
+    , session : Session
     , settingsState : SettingsState
     }
 
 
 init : Session -> Model
 init session =
-    let
-        settingsState =
-            if SafeZipper.length (Session.boardConfigs session) == 0 then
-                SettingsState.forNoConfig
-
-            else
-                SettingsState.startEditing (Session.boardConfigs session)
-    in
-    { session = session
-    , settingsState = settingsState
+    { boardConfigs = Session.boardConfigs session
+    , session = session
+    , settingsState = SettingsState.init (Session.boardConfigs session)
     }
 
 
@@ -61,21 +55,6 @@ mapSession fn model =
 mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
 mapSessionConfig fn model =
     { model | session = Session.mapConfig fn model.session }
-
-
-mapSetingsEditState : (SettingsState -> SettingsState) -> Model -> Model
-mapSetingsEditState fn model =
-    { model | settingsState = fn model.settingsState }
-
-
-mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> Model
-mapBoardBeingAdded fn model =
-    { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
-
-
-mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> Model
-mapBoardBeingEdited fn model =
-    { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
 
@@ -104,117 +83,125 @@ update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            ( mapSetingsEditState SettingsState.moveToAdd model
-            , Cmd.none
-            , Session.NoOp
-            )
+            wrap { model | settingsState = SettingsState.addState }
 
         AddBoardConfirmed ->
-            ( mapSetingsEditState SettingsState.confirmAdd model
-            , Cmd.none
-            , Session.NoOp
-            )
+            processsAction (SettingsState.confirmAdd model.settingsState) model
 
         BoardTypeSelected boardType ->
-            ( mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingAdded (BoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
-            ( mapSetingsEditState SettingsState.moveToDelete model
-            , Cmd.none
-            , Session.NoOp
-            )
+            wrap { model | settingsState = SettingsState.deleteState }
 
         DeleteBoardConfirmed ->
-            ( mapSetingsEditState SettingsState.confirmDelete model
-            , Cmd.none
-            , Session.NoOp
-            )
+            processsAction (SettingsState.confirmDelete model.settingsState) model
 
         EnteredCompletedCount value ->
-            ( mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
 
         EnteredNewBoardTitle title ->
-            ( mapBoardBeingAdded (BoardConfig.updateTitle title) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingAdded (BoardConfig.updateTitle title) model
 
         EnteredTags tags ->
-            ( mapBoardBeingEdited (BoardConfig.updateTags tags) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited (BoardConfig.updateTags tags) model
 
         EnteredTitle title ->
-            ( mapBoardBeingEdited (BoardConfig.updateTitle title) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited (BoardConfig.updateTitle title) model
 
         ModalCancelClicked ->
-            closeDialogOrExit model
+            processsAction (SettingsState.cancelCurrentState model.settingsState) model
 
         ModalCloseClicked ->
-            closeDialogOrExit model
+            processsAction (SettingsState.cancelCurrentState model.settingsState) model
 
         SettingsBoardNameClicked index ->
-            ( mapSetingsEditState (SettingsState.changeBoardBeingEdited index) model
-            , Cmd.none
-            , Session.NoOp
-            )
+            wrap { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }
 
         ToggleIncludeOthers ->
-            ( mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
 
         ToggleIncludeUndated ->
-            ( mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited BoardConfig.toggleIncludeUndated model
 
         ToggleIncludeUntagged ->
-            ( mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
-            , Cmd.none
-            , Session.NoOp
-            )
+            updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
 
 
-closeDialogOrExit : Model -> ( Model, Cmd Msg, Session.Msg )
-closeDialogOrExit model =
-    let
-        ( newState, cancelAction ) =
-            SettingsState.cancelCurrentState model.settingsState
-    in
-    case cancelAction of
-        SettingsState.ExitWithConfig config ->
-            ( mapSessionConfig (\c -> { c | boardConfigs = config }) model
-            , InteropPorts.updateSettings config
-            , Session.SettingsClosed
+updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+updateBoardBeingAdded fn model =
+    wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
+
+
+updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+updateBoardBeingEdited fn model =
+    wrap { model | boardConfigs = SafeZipper.mapCurrent fn model.boardConfigs }
+
+
+processsAction : SettingsState.Action -> Model -> ( Model, Cmd Msg, Session.Msg )
+processsAction action model =
+    case action of
+        SettingsState.AddBoard newConfig newState ->
+            let
+                newConfigs =
+                    SafeZipper.add newConfig model.boardConfigs
+                        |> SafeZipper.last
+            in
+            wrap { model | boardConfigs = newConfigs, settingsState = newState }
+
+        SettingsState.AddCancelled newState ->
+            let
+                sessionMsg =
+                    if SafeZipper.length model.boardConfigs == 0 then
+                        Session.SettingsClosed model.boardConfigs
+
+                    else
+                        Session.NoOp
+            in
+            ( { model | settingsState = newState }
+            , exitCmdOr Cmd.none model.boardConfigs
+            , sessionMsg
             )
 
-        SettingsState.ExitWithNoConfig ->
-            ( mapSessionConfig (\c -> { c | boardConfigs = SafeZipper.empty }) model
-            , Cmd.batch
-                [ InteropPorts.updateSettings SafeZipper.empty
-                , InteropPorts.closeView
-                ]
-            , Session.SettingsClosed
+        SettingsState.DeleteCurrent ->
+            let
+                newConfigs =
+                    SafeZipper.deleteCurrent model.boardConfigs
+            in
+            wrap
+                { model
+                    | boardConfigs = newConfigs
+                    , settingsState = SettingsState.init newConfigs
+                }
+
+        SettingsState.SetToState newState ->
+            wrap { model | settingsState = newState }
+
+        SettingsState.Exit ->
+            ( model
+            , exitCmdOr (InteropPorts.updateSettings model.boardConfigs) model.boardConfigs
+            , Session.SettingsClosed model.boardConfigs
             )
 
-        SettingsState.SetToState ->
-            ( mapSetingsEditState (always newState) model
-            , Cmd.none
-            , Session.NoOp
-            )
+        SettingsState.NoAction ->
+            wrap model
+
+
+exitCmdOr : Cmd Msg -> SafeZipper BoardConfig -> Cmd Msg
+exitCmdOr orCmd boardConfigs =
+    if SafeZipper.length boardConfigs == 0 then
+        Cmd.batch
+            [ InteropPorts.updateSettings boardConfigs
+            , InteropPorts.closeView
+            ]
+
+    else
+        orCmd
+
+
+wrap : Model -> ( Model, Cmd Msg, Session.Msg )
+wrap model =
+    ( model, Cmd.none, Session.NoOp )
 
 
 
@@ -224,20 +211,20 @@ closeDialogOrExit model =
 view : Model -> Html Msg
 view model =
     case model.settingsState of
-        SettingsState.AddingBoard configsBeingEdited newConfig ->
+        SettingsState.AddingBoard newConfig ->
             Html.div []
-                [ modalSettingsView configsBeingEdited
+                [ modalSettingsView model.boardConfigs
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.DeletingBoard configsBeingEdited ->
+        SettingsState.DeletingBoard ->
             Html.div []
-                [ modalSettingsView configsBeingEdited
+                [ modalSettingsView model.boardConfigs
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard configsBeingEdited ->
-            modalSettingsView configsBeingEdited
+        SettingsState.EditingBoard ->
+            modalSettingsView model.boardConfigs
 
 
 modalAddBoard : BoardConfig -> Html Msg

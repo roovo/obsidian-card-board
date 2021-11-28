@@ -36,7 +36,7 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err _ ->
-            ( StartupError Session.default
+            ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 , InteropPorts.elmInitialized
@@ -149,16 +149,6 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        _ =
-            model
-                |> toSession
-                |> Session.boardConfigs
-                |> SafeZipper.toList
-                |> List.map BoardConfig.title
-                |> String.join ", "
-                |> Debug.log "Boards"
-    in
     case ( msg, model ) of
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( mapSessionConfig (\c -> { c | isActiveView = isActiveView }) model
@@ -316,9 +306,10 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
                 |> SettingsPage.init
                 |> Settings
 
-        Session.SettingsClosed ->
+        Session.SettingsClosed newConfigs ->
             toModel subModel
                 |> toSession
+                |> Session.mapConfig (\c -> { c | boardConfigs = newConfigs })
                 |> Boards
     , Cmd.map toMsg subCmd
     )

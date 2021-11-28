@@ -58,7 +58,7 @@ type alias Config =
 type Msg
     = NoOp
     | SettingsClicked
-    | SettingsClosed
+    | SettingsClosed (SafeZipper BoardConfig)
 
 
 default : Session

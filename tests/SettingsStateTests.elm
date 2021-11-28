@@ -13,37 +13,29 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ forNoConfig
-        , startEditing
+        [ init
         , mapBoardBeingAdded
-        , mapBoardBeingEdited
-        , moveToAdd
+        , addState
         , confirmAdd
         , confirmDelete
-        , moveToDelete
-        , changeBoardBeingEdited
+        , deleteState
         , cancelCurrentState
         ]
 
 
-forNoConfig : Test
-forNoConfig =
-    describe "forNoConfig"
+init : Test
+init =
+    describe "init"
         [ test "returns AddingBoard SafeZipper.empty BoardConfig.default" <|
             \() ->
-                SettingsState.forNoConfig
-                    |> Expect.equal (SettingsState.AddingBoard SafeZipper.empty BoardConfig.default)
-        ]
-
-
-startEditing : Test
-startEditing =
-    describe "startEditing"
-        [ test "returns EditingBoard boardConfig" <|
+                SafeZipper.empty
+                    |> SettingsState.init
+                    |> Expect.equal (SettingsState.AddingBoard BoardConfig.default)
+        , test "returns EditingBoard boardConfig" <|
             \() ->
                 exampleBoardConfigsDateBoard
-                    |> SettingsState.startEditing
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsDateBoard)
+                    |> SettingsState.init
+                    |> Expect.equal SettingsState.EditingBoard
         ]
 
 
@@ -52,61 +44,30 @@ mapBoardBeingAdded =
     describe "mapBoardBeingAdded"
         [ test "maps the board being added if it is in the AddingBoard state" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard
+                SafeZipper.empty
+                    |> SettingsState.init
                     |> SettingsState.mapBoardBeingAdded (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigTagBoard)
+                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigTagBoard)
         , test "does nothing if it is in the EditingBoard state" <|
             \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
+                SettingsState.EditingBoard
                     |> SettingsState.mapBoardBeingAdded (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsDateBoard)
+                    |> Expect.equal SettingsState.EditingBoard
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
+                SettingsState.DeletingBoard
                     |> SettingsState.mapBoardBeingAdded (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
+                    |> Expect.equal SettingsState.DeletingBoard
         ]
 
 
-mapBoardBeingEdited : Test
-mapBoardBeingEdited =
-    describe "mapBoardBeingEdited"
-        [ test "does nothing if it is in the AddingBoard state" <|
+addState : Test
+addState =
+    describe "addState"
+        [ test "returns the AddingBoard state with a default config" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard
-                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard)
-        , test "maps the current board if it is in the EditingBoard state" <|
-            \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsTagBoard)
-        , test "does nothing if it is in the DeletingBoard state" <|
-            \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigTagBoard)
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
-        ]
-
-
-moveToAdd : Test
-moveToAdd =
-    describe "moveToAdd"
-        [ test "does nothing if it is in the AddingBoard state" <|
-            \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard
-                    |> SettingsState.moveToAdd
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard)
-        , test "moves to the AddingBoard state if it is in Editing state" <|
-            \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.moveToAdd
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard BoardConfig.default)
-        , test "does nothing if it is in the DeletingBoard state" <|
-            \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.moveToAdd
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
+                SettingsState.addState
+                    |> Expect.equal (SettingsState.AddingBoard BoardConfig.default)
         ]
 
 
@@ -115,125 +76,71 @@ confirmAdd =
     describe "confirmAdd"
         [ test "adds the config and moves to EditingBoard (focussed on the last board) if it is in the AddingBoard state" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigTagBoard
+                SettingsState.AddingBoard exampleBoardConfigTagBoard
                     |> SettingsState.confirmAdd
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last exampleBoardConfigsBoth))
-        , test "does nothing if it is in Editing state" <|
+                    |> Expect.equal (SettingsState.AddBoard exampleBoardConfigTagBoard SettingsState.EditingBoard)
+        , test "does nothing if it is in EditingBoard state" <|
             \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
+                SettingsState.EditingBoard
                     |> SettingsState.confirmAdd
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsDateBoard)
+                    |> Expect.equal SettingsState.NoAction
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
+                SettingsState.DeletingBoard
                     |> SettingsState.confirmAdd
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
+                    |> Expect.equal SettingsState.NoAction
         ]
 
 
-moveToDelete : Test
-moveToDelete =
-    describe "moveToDelete"
-        [ test "does nothing if it is in the AddingBoard state" <|
+deleteState : Test
+deleteState =
+    describe "deleteState"
+        [ test "returns the DeletingBoard state" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard
-                    |> SettingsState.moveToDelete
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigDateBoard)
-        , test "moves to the DeletingBoard state if it is in Editing state" <|
-            \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.moveToDelete
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
-        , test "does nothing if it is in the DeletingBoard state" <|
-            \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
-                    |> SettingsState.moveToDelete
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsDateBoard)
+                SettingsState.deleteState
+                    |> Expect.equal SettingsState.DeletingBoard
         ]
 
 
 confirmDelete : Test
 confirmDelete =
     describe "confirmDelete"
-        [ test "does nothing if it is in the AddingBoard state" <|
+        [ test "returns NoAction if it is in the AddingBoard state" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigTagBoard
+                SettingsState.AddingBoard exampleBoardConfigTagBoard
                     |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsDateBoard exampleBoardConfigTagBoard)
-        , test "does nothing if it is in Editing state" <|
+                    |> Expect.equal SettingsState.NoAction
+        , test "returns NoAction if it is in EditingBoard state" <|
             \() ->
-                SettingsState.EditingBoard exampleBoardConfigsDateBoard
+                SettingsState.EditingBoard
                     |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsDateBoard)
-        , test "sets it to Adding a default board if it is in the DeletingBoard state and is the last board" <|
+                    |> Expect.equal SettingsState.NoAction
+        , test "returns DeleteCurrent if in the DeletingBoard state" <|
             \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsDateBoard
+                SettingsState.DeletingBoard
                     |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.AddingBoard SafeZipper.empty BoardConfig.default)
-        , test "sets it to Editing with the board deleted if it is in the DeletingBoard state and is NOT the last board" <|
-            \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsBoth
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsTagBoard)
-        ]
-
-
-changeBoardBeingEdited : Test
-changeBoardBeingEdited =
-    describe "changeBoardBeingEdited"
-        [ test "does nothing if it is in the AddingBoard state" <|
-            \() ->
-                SettingsState.AddingBoard exampleBoardConfigsBoth exampleBoardConfigTagBoard
-                    |> SettingsState.changeBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.AddingBoard exampleBoardConfigsBoth exampleBoardConfigTagBoard)
-        , test "changes to the board at the given index if it is in Editing state" <|
-            \() ->
-                SettingsState.EditingBoard exampleBoardConfigsBoth
-                    |> SettingsState.changeBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last exampleBoardConfigsBoth))
-        , test "does nothing if it is in the DeletingBoard state" <|
-            \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsBoth
-                    |> SettingsState.changeBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.DeletingBoard exampleBoardConfigsBoth)
+                    |> Expect.equal SettingsState.DeleteCurrent
         ]
 
 
 cancelCurrentState : Test
 cancelCurrentState =
     describe "cancelCurrentState"
-        [ test "says to change to Editing state if it is in the AddingBoard state and there are some configs" <|
+        [ test "says to change to AddCancelled state if it is in the AddingBoard state" <|
             \() ->
-                SettingsState.AddingBoard exampleBoardConfigsBoth exampleBoardConfigTagBoard
+                SettingsState.AddingBoard exampleBoardConfigTagBoard
                     |> SettingsState.cancelCurrentState
-                    |> Expect.equal
-                        ( SettingsState.EditingBoard exampleBoardConfigsBoth
-                        , SettingsState.SetToState
-                        )
-        , test "says to exit with no config if it is in the AddingBoard state and there are no configs" <|
-            \() ->
-                SettingsState.AddingBoard SafeZipper.empty exampleBoardConfigTagBoard
-                    |> SettingsState.cancelCurrentState
-                    |> Expect.equal
-                        ( SettingsState.EditingBoard SafeZipper.empty
-                        , SettingsState.ExitWithNoConfig
-                        )
-        , test "says to exit with the current config it is in Editing state" <|
-            \() ->
-                SettingsState.EditingBoard exampleBoardConfigsBoth
-                    |> SettingsState.cancelCurrentState
-                    |> Expect.equal
-                        ( SettingsState.EditingBoard exampleBoardConfigsBoth
-                        , SettingsState.ExitWithConfig exampleBoardConfigsBoth
-                        )
+                    |> Expect.equal (SettingsState.AddCancelled SettingsState.EditingBoard)
         , test "says to change to EditingBoard state if it is in the DeletingBoard state" <|
             \() ->
-                SettingsState.DeletingBoard exampleBoardConfigsBoth
+                SettingsState.DeletingBoard
                     |> SettingsState.cancelCurrentState
-                    |> Expect.equal
-                        ( SettingsState.EditingBoard exampleBoardConfigsBoth
-                        , SettingsState.SetToState
-                        )
+                    |> Expect.equal (SettingsState.SetToState SettingsState.EditingBoard)
+        , test "says to exit if it is in Editing state" <|
+            \() ->
+                SettingsState.EditingBoard
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal SettingsState.Exit
         ]
 
 
