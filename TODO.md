@@ -1,8 +1,9 @@
 - filter by path
   - use fuzzy search with multi-select input
-  - file (no need for .md extension)
   - directory
+  - file (no need for .md extension)
   - test using Board.columns tests
+- filter by tag
 
 # Cleanups
 - add Model tests
@@ -28,6 +29,7 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- What about tags in front matter
 - What should I show on the view when there are no boards defined
 - Some sort of toggle compact view - where it shows each task as a single line card
   with only the checkbox and the first line of the title.

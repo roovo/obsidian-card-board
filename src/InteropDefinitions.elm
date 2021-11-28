@@ -24,6 +24,7 @@ type FromElm
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
+    | RequestPaths
     | UpdateSettings Settings
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
@@ -34,6 +35,7 @@ type ToElm
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
+    | FolderPaths (List String)
     | AllMarkdownLoaded
     | SettingsUpdated Settings
     | ShowBoard Int
@@ -124,6 +126,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
+        , DecodeHelpers.toElmVariant "folderPaths" FolderPaths (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
@@ -133,7 +136,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vUpdateConfig vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -153,6 +156,9 @@ fromElm =
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
 
+                RequestPaths ->
+                    vRequestPaths
+
                 UpdateSettings info ->
                     vUpdateConfig info
 
@@ -165,6 +171,7 @@ fromElm =
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
+        |> TsEncode.variant0 "requestPaths"
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion

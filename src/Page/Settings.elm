@@ -22,6 +22,7 @@ import Parser
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
 import SettingsState exposing (SettingsState)
+import State exposing (State)
 import TagBoard
 
 
@@ -32,6 +33,7 @@ import TagBoard
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
     , multiSelect : MultiSelect.Model Msg String
+    , pathCache : State (List String)
     , session : Session
     , settingsState : SettingsState
     }
@@ -41,6 +43,7 @@ init : Session -> Model
 init session =
     { boardConfigs = Session.boardConfigs session
     , multiSelect = MultiSelect.init multiSelectConfig Dict.empty
+    , pathCache = State.Waiting
     , session = session
     , settingsState = SettingsState.init (Session.boardConfigs session)
     }
@@ -84,6 +87,7 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
+    | FolderPathsReceived (List String)
     | GotMultiSelectMsg (MultiSelect.Msg Msg String)
     | ModalCancelClicked
     | ModalCloseClicked
@@ -124,6 +128,13 @@ update msg model =
         EnteredTitle title ->
             updateBoardBeingEdited (BoardConfig.updateTitle title) model
 
+        FolderPathsReceived folderPaths ->
+            let
+                _ =
+                    Debug.log "Received paths" folderPaths
+            in
+            wrap { model | pathCache = State.Loaded folderPaths }
+
         GotMultiSelectMsg mulSelMsg ->
             let
                 ( newModel, cmd ) =
@@ -142,10 +153,21 @@ update msg model =
 
         PathsRequested page searchTerm ->
             let
-                _ =
-                    Debug.log "PathsRequested" page
+                cmd =
+                    case model.pathCache of
+                        State.Waiting ->
+                            InteropPorts.requestPaths
+
+                        State.Loading paths ->
+                            Cmd.none
+
+                        State.Loaded paths ->
+                            Cmd.none
             in
-            wrap model
+            ( model
+            , cmd
+            , Session.NoOp
+            )
 
         SettingsBoardNameClicked index ->
             wrap { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }

@@ -135,6 +135,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
+    | FolderPathsReceived (List String)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
@@ -177,6 +178,13 @@ update msg model =
                 , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession newModel)
                 ]
             )
+
+        ( FolderPathsReceived folderPaths, Settings subModel ) ->
+            SettingsPage.update (SettingsPage.FolderPathsReceived folderPaths) subModel
+                |> updateWith Settings GotSettingsPageMsg
+
+        ( FolderPathsReceived folderPaths, _ ) ->
+            ( model, Cmd.none )
 
         ( GotBoardPageMsg subMsg, Boards subModel ) ->
             BoardPage.update subMsg subModel
@@ -344,6 +352,9 @@ subscriptions _ =
 
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile
+
+                                InteropDefinitions.FolderPaths folderPaths ->
+                                    FolderPathsReceived folderPaths
 
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded

@@ -6,6 +6,7 @@ port module InteropPorts exposing
     , displayTaskMarkdown
     , elmInitialized
     , openTaskSourceFile
+    , requestPaths
     , rewriteTasks
     , toElm
     , updateSettings
@@ -75,6 +76,12 @@ openTaskSourceFile : { a | filePath : String, lineNumber : Int, originalText : S
 openTaskSourceFile info =
     info
         |> encodeVariant "openTaskSourceFile" InteropDefinitions.openTaskSourceFileEncoder
+        |> interopFromElm
+
+
+requestPaths : Cmd msg
+requestPaths =
+    encodeVariant "requestPaths" (TsEncode.object []) ()
         |> interopFromElm
 
 

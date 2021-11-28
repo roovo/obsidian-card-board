@@ -143,6 +143,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
+        , test "encodes RequestPaths" <|
+            \() ->
+                InteropDefinitions.RequestPaths
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"requestPaths"}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -192,6 +198,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
+        , test "decodes folderPaths data" <|
+            \() ->
+                """{"tag":"folderPaths","data":["a path","another path"]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.FolderPaths [ "a path", "another path" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

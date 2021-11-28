@@ -6,6 +6,7 @@ import {
   MarkdownView,
   TAbstractFile,
   TFile,
+  TFolder,
   Vault,
   WorkspaceLeaf
 } from 'obsidian';
@@ -85,6 +86,9 @@ export class CardBoardView extends ItemView {
           break;
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
+          break;
+        case "requestPaths":
+          that.handleRequestPaths();
           break;
         case "updateSettings":
           that.handleUpdateSettings(fromElm.data);
@@ -259,6 +263,22 @@ export class CardBoardView extends ItemView {
     }
   ) {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
+  }
+
+  async handleRequestPaths() {
+    const loadedFiles = this.app.vault.getAllLoadedFiles();
+    const folderPaths: string[] = [];
+
+    loadedFiles.forEach((folder: TAbstractFile) => {
+      if (folder instanceof TFolder) {
+        folderPaths.push(folder.path);
+      }
+    });
+
+    this.elm.ports.interopToElm.send({
+      tag: "folderPaths",
+      data: folderPaths
+    });
   }
 
   async handleUpdateSettings(
