@@ -36,7 +36,12 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err _ ->
-            ( Model.default, Cmd.none )
+            ( Model.default
+            , Cmd.batch
+                [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+                , InteropPorts.elmInitialized
+                ]
+            )
 
         Ok okFlags ->
             ( Model.fromFlags okFlags
