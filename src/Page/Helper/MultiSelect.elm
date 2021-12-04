@@ -11,19 +11,11 @@ module Page.Helper.Multiselect exposing
     , view
     )
 
--- import Element exposing (Element)
--- import Element.Background as Background
--- import Element.Border as Border
--- import Element.Events as Events exposing (onClick)
--- import Element.Font as Font
--- import Element.Input as Input
--- import Page.Helper.Style as Style
-
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Html.Events as Events
 import Json.Decode as Decode exposing (Decoder)
 import Process
@@ -55,6 +47,7 @@ type alias Status a =
     , searchTerm : String
     , page : Int
     , dropdownItems : List (SelectionItem a)
+    , showDropDown : Bool
     , itemWasPressed : Bool
     }
 
@@ -72,6 +65,7 @@ init initialConfig selected =
         , searchTerm = ""
         , page = 0
         , dropdownItems = []
+        , showDropDown = False
         , itemWasPressed = False
         }
 
@@ -143,6 +137,11 @@ dropdownItems =
     .dropdownItems << status
 
 
+showDropDown : Model msg a -> Bool
+showDropDown =
+    .showDropDown << status
+
+
 itemWasPressed : Model msg a -> Bool
 itemWasPressed =
     .itemWasPressed << status
@@ -183,6 +182,7 @@ recieveItems model items =
                 { selectStatus
                     | dropdownItems = items
                     , itemWasPressed = False
+                    , showDropDown = True
                 }
 
         AddingItems conf selectStatus ->
@@ -267,6 +267,7 @@ update msg model =
                     { selectedItems = selectedItems model
                     , searchTerm = delayedTerm
                     , dropdownItems = dropdownItems model
+                    , showDropDown = showDropDown model
                     , itemWasPressed = False
                     , page = 0
                     }
@@ -295,7 +296,7 @@ update msg model =
 
             else
                 ( model
-                    |> mapStatus (\s -> { s | itemWasPressed = False })
+                    |> mapStatus (\s -> { s | itemWasPressed = False, showDropDown = True })
                 , Cmd.none
                 )
 
@@ -351,6 +352,7 @@ reset model =
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
+                        , showDropDown = False
                         , itemWasPressed = False
                         }
 
@@ -360,15 +362,17 @@ reset model =
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
+                        , showDropDown = False
                         , itemWasPressed = False
                         }
 
                 ReceivedItems conf selectStatus ->
-                    Ready conf
+                    ReceivedItems conf
                         { selectedItems = selectStatus.selectedItems
                         , searchTerm = ""
                         , page = 0
-                        , dropdownItems = []
+                        , dropdownItems = selectStatus.dropdownItems
+                        , showDropDown = False
                         , itemWasPressed = False
                         }
 
@@ -378,6 +382,7 @@ reset model =
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
+                        , showDropDown = False
                         , itemWasPressed = False
                         }
     in
@@ -391,6 +396,7 @@ primeRequest searchFor model =
         { selectedItems = selectedItems model
         , searchTerm = searchFor
         , dropdownItems = dropdownItems model
+        , showDropDown = showDropDown model
         , itemWasPressed = False
         , page = page model
         }
@@ -412,6 +418,7 @@ fetchMore model =
         { selectedItems = selectedItems model
         , searchTerm = searchTerm model
         , dropdownItems = dropdownItems model
+        , showDropDown = showDropDown model
         , itemWasPressed = False
         , page = page model + 1
         }
@@ -474,15 +481,9 @@ chosenItem itemText =
 input : (Msg msg a -> msg) -> String -> Html msg
 input msgTagger currentSearchTerm =
     Html.div []
-        [ Html.input [ Events.onBlur (FocusLost |> msgTagger) ]
+        [ Html.input [ id "multiSelectInput", Events.onBlur (FocusLost |> msgTagger) ]
             []
 
-        -- [ Element.htmlAttribute <|
-        --     Html.Attributes.attribute "id" "multiSelectInput"
-        -- , Element.width <| Element.minimum 100 Element.fill
-        -- , Element.paddingXY 5 2
-        -- , Border.width 0
-        -- , inputBackground
         -- , Element.focused
         --     [ Border.shadow
         --         { offset = ( 0, 0 )
@@ -491,7 +492,6 @@ input msgTagger currentSearchTerm =
         --         , color = Element.rgba 0 0 0 0.25
         --         }
         --     ]
-        -- , Events.onLoseFocus (FocusLost |> msgTagger)
         -- ]
         -- { onChange = SearchTermChanged >> msgTagger
         -- , text = currentSearchTerm
@@ -530,11 +530,14 @@ dropDownMenu model =
 
 itemsOrDefault : Config msg a -> Status a -> (Msg msg a -> msg) -> Html msg -> Html msg
 itemsOrDefault conf selectStatus msgTagger element =
-    case selectStatus.dropdownItems of
-        [] ->
+    case ( selectStatus.showDropDown, selectStatus.dropdownItems ) of
+        ( False, _ ) ->
+            Html.text ""
+
+        ( True, [] ) ->
             element
 
-        _ ->
+        ( True, _ ) ->
             showSelections conf selectStatus.dropdownItems
                 |> wrapInDropDown msgTagger
 
@@ -543,15 +546,8 @@ wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg
 wrapInDropDown msgTagger content =
     Html.div
         [ class "suggestion-container" ]
-        [ Html.div
-            [-- , Element.htmlAttribute <|
-             --     Html.Events.on "scroll" <|
-             --         scrollPosition (DropdownScroll >> msgTagger)
-            ]
-            [ Html.div
-                []
-                content
-            ]
+        [ Html.div []
+            [ Html.div [] content ]
         ]
 
 

@@ -393,10 +393,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   color : var(--text-normal);
-  padding: 2px 5px;
+  padding: 4px 5px;
   font-size: var(--font-small);
   width: 217px;
-  gap: 5px;
+  gap: 3px;
 }
 
 .multiselect-items input {
@@ -406,6 +406,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .multiselect-item {
   cursor: pointer;
+  vertical-align: middle;
 }
 
 .multiselect-item-key {
@@ -432,6 +433,11 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   padding-bottom: 2px;
   line-height: 1.5em;
   vertical-align: middle;
+}
+
+.card-board .suggestion-item {
+  text-align: left;
+  padding-left: 15px
 }
 
 .setting-item-control .suggestion-item:hover {
