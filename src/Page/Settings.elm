@@ -130,10 +130,16 @@ update msg model =
 
         FolderPathsReceived folderPaths ->
             let
-                _ =
-                    Debug.log "Received paths" folderPaths
+                multiSelectModel =
+                    folderPaths
+                        |> List.map (\p -> { label = p, value = p })
+                        |> MultiSelect.recieveItems model.multiSelect
             in
-            wrap { model | pathCache = State.Loaded folderPaths }
+            wrap
+                { model
+                    | pathCache = State.Loaded folderPaths
+                    , multiSelect = multiSelectModel
+                }
 
         GotMultiSelectMsg mulSelMsg ->
             let

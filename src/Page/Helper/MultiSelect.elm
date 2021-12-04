@@ -21,6 +21,7 @@ module Page.Helper.Multiselect exposing
 
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
+import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events as Events
@@ -430,183 +431,152 @@ delayedSend milli msg =
 
 view : Model msg a -> Html msg
 view model =
-    Html.div
-        [ class "multiselect-values"
-        , Events.onClick (SelectClicked |> tagger model)
+    Html.div []
+        [ Html.div
+            [ class "multiselect-items"
+            , Events.onClick (SelectClicked |> tagger model)
+            ]
+            (chosenItems (selectedItems model) (tagger model)
+                ++ [ input (tagger model) (searchTerm model) ]
+            )
+        , dropDownMenu model
         ]
-        [ Html.text "foo" ]
+
+
+chosenItems : Dict String a -> (Msg msg a -> msg) -> List (Html msg)
+chosenItems selected msgTagger =
+    selected
+        |> Dict.foldr
+            (\label _ acc ->
+                chosenItem label :: acc
+             -- Html.div []
+             --     [ Html.div
+             --         [ Events.onClick (ItemDeleteClicked label |> msgTagger)
+             --         , Events.onMouseDown (ItemMouseDown |> msgTagger)
+             --         ]
+             --         [ Html.text "x" ]
+             --     , Html.div [] [ Html.text label ]
+             --     ]
+            )
+            []
+
+
+chosenItem : String -> Html msg
+chosenItem itemText =
+    Html.div [ class "multiselect-item" ]
+        [ Html.span [ class "multiselect-item-key" ]
+            [ Html.text "path" ]
+        , Html.span [ class "multiselect-item-value" ]
+            [ Html.text itemText ]
+        ]
+
+
+input : (Msg msg a -> msg) -> String -> Html msg
+input msgTagger currentSearchTerm =
+    Html.div []
+        [ Html.input [ Events.onBlur (FocusLost |> msgTagger) ]
+            []
+
+        -- [ Element.htmlAttribute <|
+        --     Html.Attributes.attribute "id" "multiSelectInput"
+        -- , Element.width <| Element.minimum 100 Element.fill
+        -- , Element.paddingXY 5 2
+        -- , Border.width 0
+        -- , inputBackground
+        -- , Element.focused
+        --     [ Border.shadow
+        --         { offset = ( 0, 0 )
+        --         , size = 0
+        --         , blur = 0
+        --         , color = Element.rgba 0 0 0 0.25
+        --         }
+        --     ]
+        -- , Events.onLoseFocus (FocusLost |> msgTagger)
+        -- ]
+        -- { onChange = SearchTermChanged >> msgTagger
+        -- , text = currentSearchTerm
+        -- , placeholder = Nothing
+        -- , label = Input.labelHidden "Location Multiselect"
+        -- }
+        ]
+
+
+dropDownMenu : Model msg a -> Html msg
+dropDownMenu model =
+    case model of
+        Ready conf selectStatus ->
+            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
+
+        SettingItems conf selectStatus ->
+            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
+
+        AddingItems conf selectStatus ->
+            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
+
+        ReceivedItems conf selectStatus ->
+            itemsOrDefault
+                conf
+                selectStatus
+                (tagger model)
+                (wrapInDropDown (tagger model) <| showStatic conf.notFoundText)
+
+        ReceivedError conf selectStatus error ->
+            itemsOrDefault
+                conf
+                selectStatus
+                (tagger model)
+                (wrapInDropDown (tagger model) <| showStatic error)
+
+
+itemsOrDefault : Config msg a -> Status a -> (Msg msg a -> msg) -> Html msg -> Html msg
+itemsOrDefault conf selectStatus msgTagger element =
+    case selectStatus.dropdownItems of
+        [] ->
+            element
+
+        _ ->
+            showSelections conf selectStatus.dropdownItems
+                |> wrapInDropDown msgTagger
+
+
+wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg
+wrapInDropDown msgTagger content =
+    Html.div
+        [ class "suggestion-container" ]
+        [ Html.div
+            [-- , Element.htmlAttribute <|
+             --     Html.Events.on "scroll" <|
+             --         scrollPosition (DropdownScroll >> msgTagger)
+            ]
+            [ Html.div
+                []
+                content
+            ]
+        ]
+
+
+showStatic : String -> List (Html msg)
+showStatic content =
+    [ Html.div []
+        [ Html.text content ]
+    ]
+
+
+showSelections : Config msg a -> List (SelectionItem a) -> List (Html msg)
+showSelections conf selections =
+    selections
+        |> List.map
+            (\s ->
+                Html.div
+                    [ class "suggestion-item"
+                    , Events.onMouseDown (ItemMouseDown |> conf.tagger)
+                    , Events.onClick <| (ItemSelected s |> conf.tagger)
+                    ]
+                    [ Html.text s.label ]
+            )
 
 
 
--- view : Html.Attribute msg -> Model msg a -> Html msg
--- view inputBackground model =
---     Element.el
---         [ Element.below <| dropDownMenu model ]
---         (Element.el
---             [ Element.width <| Element.px 300
---             , Element.paddingXY 10 5
---             , Border.width 1
---             , Border.rounded 2
---             , Border.color Style.colors.greyMedium
---             , inputBackground
---             , Events.onClick (SelectClicked |> tagger model)
---             ]
---             (Element.wrappedRow
---                 [ Element.spacing 5 ]
---                 [ Element.paragraph
---                     [ Element.htmlAttribute <| Html.Attributes.attribute "id" "ie-flex-fix" ]
---                     (chosenItems (selectedItems model) (tagger model)
---                         ++ [ input inputBackground (tagger model) (searchTerm model) ]
---                     )
---                 ]
---             )
---         )
---
---
--- chosenItems : Dict String a -> (Msg msg a -> msg) -> List (Element msg)
--- chosenItems selected msgTagger =
---     selected
---         |> Dict.foldr
---             (\label _ acc ->
---                 Element.row
---                     [ Element.paddingXY 5 1
---                     , Element.spacing 3
---                     , Border.width 1
---                     , Border.rounded 5
---                     , Border.color Style.colors.greyMedium
---                     , Background.color Style.colors.greyBackground
---                     ]
---                     [ Element.el
---                         [ Events.onClick (ItemDeleteClicked label |> msgTagger)
---                         , Events.onMouseDown (ItemMouseDown |> msgTagger)
---                         , Element.pointer
---                         ]
---                         (Element.text "x")
---                     , Element.el [] (Element.text label)
---                     ]
---                     :: acc
---             )
---             []
---
---
--- input : Element.Attribute msg -> (Msg msg a -> msg) -> String -> Element msg
--- input inputBackground msgTagger currentSearchTerm =
---     Element.row
---         [ Element.width <| Element.minimum 100 Element.fill ]
---         [ Input.text
---             [ Element.htmlAttribute <|
---                 Html.Attributes.attribute "id" "multiSelectInput"
---             , Element.width <| Element.minimum 100 Element.fill
---             , Element.paddingXY 5 2
---             , Border.width 0
---             , inputBackground
---             , Element.focused
---                 [ Border.shadow
---                     { offset = ( 0, 0 )
---                     , size = 0
---                     , blur = 0
---                     , color = Element.rgba 0 0 0 0.25
---                     }
---                 ]
---             , Events.onLoseFocus (FocusLost |> msgTagger)
---             ]
---             { onChange = SearchTermChanged >> msgTagger
---             , text = currentSearchTerm
---             , placeholder = Nothing
---             , label = Input.labelHidden "Location Multiselect"
---             }
---         ]
---
---
--- dropDownMenu : Model msg a -> Element msg
--- dropDownMenu model =
---     case model of
---         Ready conf selectStatus ->
---             itemsOrDefault conf selectStatus (tagger model) (Element.column [] [])
---
---         SettingItems conf selectStatus ->
---             itemsOrDefault conf selectStatus (tagger model) (Element.column [] [])
---
---         AddingItems conf selectStatus ->
---             itemsOrDefault conf selectStatus (tagger model) (Element.column [] [])
---
---         ReceivedItems conf selectStatus ->
---             itemsOrDefault
---                 conf
---                 selectStatus
---                 (tagger model)
---                 (wrapInDropDown (tagger model) <| showStatic conf.notFoundText)
---
---         ReceivedError conf selectStatus error ->
---             itemsOrDefault
---                 conf
---                 selectStatus
---                 (tagger model)
---                 (wrapInDropDown (tagger model) <| showStatic error)
---
---
--- itemsOrDefault : Config msg a -> Status a -> (Msg msg a -> msg) -> Element msg -> Element msg
--- itemsOrDefault conf selectStatus msgTagger element =
---     case selectStatus.dropdownItems of
---         [] ->
---             element
---
---         _ ->
---             showSelections conf selectStatus.dropdownItems
---                 |> wrapInDropDown msgTagger
---
---
--- wrapInDropDown : (Msg msg a -> msg) -> List (Element msg) -> Element msg
--- wrapInDropDown msgTagger content =
---     Element.el
---         []
---         (Element.el
---             [ Element.paddingXY 0 5
---             , Element.moveDown 5
---             , Element.height (Element.maximum 200 Element.fill)
---             , Element.scrollbarY
---             , Element.width <| Element.px 300
---             , Element.htmlAttribute <|
---                 Html.Events.on "scroll" <|
---                     scrollPosition (DropdownScroll >> msgTagger)
---             , Border.widthEach { top = 0, left = 1, right = 1, bottom = 1 }
---             , Border.color Style.colors.greyBackground
---             , Background.color Style.colors.white
---             , Font.color Style.colors.menuText
---             ]
---             (Element.column
---                 [ Element.width Element.fill ]
---                 content
---             )
---         )
---
---
--- showStatic : String -> List (Element msg)
--- showStatic content =
---     [ Element.el [ Element.paddingXY 10 5 ]
---         (Element.text content)
---     ]
---
---
--- showSelections : Config msg a -> List (SelectionItem a) -> List (Element msg)
--- showSelections conf selections =
---     selections
---         |> List.map
---             (\s ->
---                 Element.el
---                     [ Element.paddingXY 10 5
---                     , Element.width Element.fill
---                     , Background.color Style.colors.white
---                     , Element.pointer
---                     , Font.color Style.colors.text
---                     , Element.mouseOver
---                         [ Background.color Style.colors.veryLightBlue ]
---                     , Events.onMouseDown (ItemMouseDown |> conf.tagger)
---                     , Events.onClick <| (ItemSelected s |> conf.tagger)
---                     ]
---                     (Element.text s.label)
---             )
---
 -- SCROLLING
 
 
