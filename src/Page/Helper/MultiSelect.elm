@@ -599,6 +599,7 @@ showSelectionSection conf ( title, selections ) =
 showSelections : Config msg a -> List (SelectionItem a) -> List (Html msg)
 showSelections conf selections =
     selections
+        |> List.take 5
         |> List.map
             (\s ->
                 Html.div

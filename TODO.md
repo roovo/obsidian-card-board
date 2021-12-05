@@ -1,5 +1,5 @@
 - filter by path
-  - limit the number of results per section
+  - improve look of dropdown
   - delete a filter by clicking on it and hitting backspace
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
