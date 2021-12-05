@@ -547,14 +547,14 @@ fuzzyMatch needle selectionItems =
         score : SelectionItem a -> Maybe ( Int, SelectionItem a )
         score selectionItem =
             let
-                _ =
-                    Debug.log "Scoring" (String.fromInt result.score ++ " : " ++ selectionItem.label)
-
                 result : Fuzzy.Result
                 result =
                     Fuzzy.match [] [] (String.toLower needle) (String.toLower selectionItem.label)
             in
-            if result.score > 3000 then
+            if String.isEmpty needle then
+                Just ( 0, selectionItem )
+
+            else if result.score > 3000 then
                 Nothing
 
             else
@@ -562,7 +562,7 @@ fuzzyMatch needle selectionItems =
     in
     selectionItems
         |> List.filterMap score
-        |> Debug.log "scored"
+        |> List.sortBy (\i -> String.toLower (Tuple.second i).label)
         |> List.sortBy Tuple.first
         |> List.map Tuple.second
 
