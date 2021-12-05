@@ -438,21 +438,35 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 }
 
 .card-board .suggestion-container {
+  display: grid;
+  grid-auto-flow: row;
+  grid-gap: 0.5em;
   padding: 5px 8px;
   font-size: var(--font-small);
   text-align: left;
   line-height: 1em;
 }
 
+.card-board .suggestion-section {
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 0.5em;
+}
+
+.card-board .suggestion-section:first-child {
+  border-top: none;
+}
+
 .card-board .suggestion-section-heading {
-  color: var(--text-muted);
+  color: var(--text-faint);
   font-size: var(--font-smaller);
   font-weight: var(--bold-weight);
+  margin-bottom: 3px;
 }
 
 .card-board .suggestion-item {
   padding-left: 5px;
   font-size: var(--font-small);
+  line-height: 0.9em;
 }
 
 .setting-item-control .suggestion-item:hover {

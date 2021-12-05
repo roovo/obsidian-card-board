@@ -1,11 +1,9 @@
 - filter by path
-  - improve look of dropdown
   - delete a filter by clicking on it and hitting backspace
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
   - handle switching between boards in settings & persist in settings
   - test using Board.columns tests
-- filter by tag
 - what about tags in front matter
 - don't expose Filter(..)
 
