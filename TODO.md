@@ -1,11 +1,10 @@
 - filter by path
-  - add to tagboard
   - add fuzzy search
   - put sections in dropdown
   - new filter: file (do I want to include the .md extension?)
   - new filter: tag
   - delete a filter by clicking on it and hitting backspace
-  - persist in settings
+  - handle switching between boards in settings & persist in settings
   - test using Board.columns tests
 - filter by tag
 
