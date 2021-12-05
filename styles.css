@@ -402,6 +402,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .multiselect-items input {
   border: 0;
   min-width: 100px;
+  font-size: var(--font-small);
 }
 
 .multiselect-item {

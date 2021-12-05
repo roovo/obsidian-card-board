@@ -14,8 +14,9 @@ module Page.Helper.Multiselect exposing
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
 import FeatherIcons
+import Fuzzy
 import Html exposing (Html)
-import Html.Attributes exposing (class, id)
+import Html.Attributes exposing (class, id, type_, value)
 import Html.Events as Events
 import Json.Decode as Decode exposing (Decoder)
 import Process
@@ -313,7 +314,9 @@ update msg model =
             )
 
         SearchTermChanged newSearchTerm ->
-            primeRequest newSearchTerm model
+            ( mapStatus (\s -> { s | searchTerm = newSearchTerm }) model
+            , Cmd.none
+            )
 
         SelectClicked ->
             ( model
@@ -481,23 +484,14 @@ chosenItem itemText =
 input : (Msg msg a -> msg) -> String -> Html msg
 input msgTagger currentSearchTerm =
     Html.div []
-        [ Html.input [ id "multiSelectInput", Events.onBlur (FocusLost |> msgTagger) ]
+        [ Html.input
+            [ id "multiSelectInput"
+            , type_ "text"
+            , value currentSearchTerm
+            , Events.onInput (SearchTermChanged >> msgTagger)
+            , Events.onBlur (FocusLost |> msgTagger)
+            ]
             []
-
-        -- , Element.focused
-        --     [ Border.shadow
-        --         { offset = ( 0, 0 )
-        --         , size = 0
-        --         , blur = 0
-        --         , color = Element.rgba 0 0 0 0.25
-        --         }
-        --     ]
-        -- ]
-        -- { onChange = SearchTermChanged >> msgTagger
-        -- , text = currentSearchTerm
-        -- , placeholder = Nothing
-        -- , label = Input.labelHidden "Location Multiselect"
-        -- }
         ]
 
 
@@ -538,8 +532,32 @@ itemsOrDefault conf selectStatus msgTagger element =
             element
 
         ( True, _ ) ->
-            showSelections conf selectStatus.dropdownItems
+            selectStatus.dropdownItems
+                |> fuzzyMatch selectStatus.searchTerm
+                |> showSelections conf
                 |> wrapInDropDown msgTagger
+
+
+fuzzyMatch : String -> List (SelectionItem a) -> List (SelectionItem a)
+fuzzyMatch needle selectionItems =
+    let
+        foo : SelectionItem a -> Maybe ( Int, SelectionItem a )
+        foo selectionItem =
+            let
+                result : Fuzzy.Result
+                result =
+                    Fuzzy.match [] [] needle (String.toLower selectionItem.label)
+            in
+            if result.score > 3000 then
+                Nothing
+
+            else
+                Just ( result.score, selectionItem )
+    in
+    selectionItems
+        |> List.filterMap foo
+        |> List.sortBy Tuple.first
+        |> List.map Tuple.second
 
 
 wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg

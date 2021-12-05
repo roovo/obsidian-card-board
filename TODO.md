@@ -1,5 +1,4 @@
 - filter by path
-  - add fuzzy search
   - put sections in dropdown
   - new filter: file (do I want to include the .md extension?)
   - new filter: tag
@@ -9,6 +8,7 @@
 - filter by tag
 
 # Cleanups
+- why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add Model tests
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
