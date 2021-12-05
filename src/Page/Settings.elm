@@ -18,6 +18,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
+import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
 import Parser
 import SafeZipper exposing (SafeZipper)
@@ -71,6 +72,8 @@ multiSelectConfig =
     , tagger = GotMultiSelectMsg
     , fetchMsg = PathsRequested
     , notFoundText = "Nothing Found"
+    , grouper = groupedSelections
+    , selectedItemLabel = selectedItemLabel
     }
 
 
@@ -88,7 +91,7 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
-    | FolderPathsReceived (List Filter)
+    | FilterCandidatesReceived (List Filter)
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
@@ -129,16 +132,16 @@ update msg model =
         EnteredTitle title ->
             updateBoardBeingEdited (BoardConfig.updateTitle title) model
 
-        FolderPathsReceived folderPaths ->
+        FilterCandidatesReceived filterCandidates ->
             let
                 multiSelectModel =
-                    folderPaths
+                    filterCandidates
                         |> List.map (\p -> { label = Filter.value p, value = p })
                         |> MultiSelect.recieveItems model.multiSelect
             in
             wrap
                 { model
-                    | pathCache = State.Loaded folderPaths
+                    | pathCache = State.Loaded filterCandidates
                     , multiSelect = multiSelectModel
                 }
 
@@ -163,7 +166,7 @@ update msg model =
                 cmd =
                     case model.pathCache of
                         State.Waiting ->
-                            InteropPorts.requestPaths
+                            InteropPorts.requestFilterCandidates
 
                         State.Loading paths ->
                             Cmd.none
@@ -187,6 +190,47 @@ update msg model =
 
         ToggleIncludeUntagged ->
             updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+
+
+selectedItemLabel : Filter -> String
+selectedItemLabel filter =
+    filter
+        |> Filter.filterType
+        |> String.toLower
+        |> String.dropRight 1
+
+
+groupedSelections : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+groupedSelections selectionItems =
+    let
+        baz : ( MultiSelect.SelectionItem Filter, List (MultiSelect.SelectionItem Filter) ) -> ( String, List (MultiSelect.SelectionItem Filter) )
+        baz ( i, is ) =
+            ( Filter.filterType i.value, i :: is )
+
+        grouped : List ( String, List (MultiSelect.SelectionItem Filter) )
+        grouped =
+            selectionItems
+                |> List.sortBy (\item -> Filter.filterType item.value)
+                |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
+                |> List.map baz
+    in
+    grouped
+        |> ensureAllTypes
+
+
+ensureAllTypes : List ( String, List (MultiSelect.SelectionItem Filter) ) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+ensureAllTypes list =
+    let
+        hasType : String -> ( String, List (MultiSelect.SelectionItem Filter) ) -> Bool
+        hasType filterType ( itemFilterType, items ) =
+            filterType == itemFilterType
+
+        typeOrDefault : String -> ( String, List (MultiSelect.SelectionItem Filter) )
+        typeOrDefault filterType =
+            LE.find (hasType filterType) list
+                |> Maybe.withDefault ( filterType, [] )
+    in
+    List.map typeOrDefault Filter.filterTypes
 
 
 updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )

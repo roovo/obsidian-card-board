@@ -14,6 +14,7 @@ module Page.Helper.Multiselect exposing
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
 import FeatherIcons
+import Filter exposing (Filter)
 import Fuzzy
 import Html exposing (Html)
 import Html.Attributes exposing (class, id, type_, value)
@@ -40,6 +41,8 @@ type alias Config msg a =
     , tagger : Msg msg a -> msg
     , fetchMsg : Int -> String -> msg
     , notFoundText : String
+    , grouper : List (SelectionItem a) -> List ( String, List (SelectionItem a) )
+    , selectedItemLabel : a -> String
     }
 
 
@@ -446,19 +449,19 @@ view model =
             [ class "multiselect-items"
             , Events.onClick (SelectClicked |> tagger model)
             ]
-            (chosenItems (selectedItems model) (tagger model)
+            (chosenItems (config model) (selectedItems model) (tagger model)
                 ++ [ input (tagger model) (searchTerm model) ]
             )
         , dropDownMenu model
         ]
 
 
-chosenItems : Dict String a -> (Msg msg a -> msg) -> List (Html msg)
-chosenItems selected msgTagger =
+chosenItems : Config msg a -> Dict String a -> (Msg msg a -> msg) -> List (Html msg)
+chosenItems conf selected msgTagger =
     selected
         |> Dict.foldr
-            (\label _ acc ->
-                chosenItem label :: acc
+            (\label filter acc ->
+                chosenItem conf filter label :: acc
              -- Html.div []
              --     [ Html.div
              --         [ Events.onClick (ItemDeleteClicked label |> msgTagger)
@@ -471,11 +474,11 @@ chosenItems selected msgTagger =
             []
 
 
-chosenItem : String -> Html msg
-chosenItem itemText =
+chosenItem : Config msg a -> a -> String -> Html msg
+chosenItem conf item itemText =
     Html.div [ class "multiselect-item" ]
         [ Html.span [ class "multiselect-item-key" ]
-            [ Html.text "path" ]
+            [ Html.text (conf.selectedItemLabel item) ]
         , Html.span [ class "multiselect-item-value" ]
             [ Html.text itemText ]
         ]
@@ -534,7 +537,7 @@ itemsOrDefault conf selectStatus msgTagger element =
         ( True, _ ) ->
             selectStatus.dropdownItems
                 |> fuzzyMatch selectStatus.searchTerm
-                |> showSelections conf
+                |> showSelectionSections conf
                 |> wrapInDropDown msgTagger
 
 
@@ -544,9 +547,12 @@ fuzzyMatch needle selectionItems =
         score : SelectionItem a -> Maybe ( Int, SelectionItem a )
         score selectionItem =
             let
+                _ =
+                    Debug.log "Scoring" (String.fromInt result.score ++ " : " ++ selectionItem.label)
+
                 result : Fuzzy.Result
                 result =
-                    Fuzzy.match [] [] needle (String.toLower selectionItem.label)
+                    Fuzzy.match [] [] (String.toLower needle) (String.toLower selectionItem.label)
             in
             if result.score > 3000 then
                 Nothing
@@ -556,21 +562,14 @@ fuzzyMatch needle selectionItems =
     in
     selectionItems
         |> List.filterMap score
+        |> Debug.log "scored"
         |> List.sortBy Tuple.first
         |> List.map Tuple.second
 
 
 wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg
 wrapInDropDown msgTagger content =
-    Html.div
-        [ class "suggestion-container" ]
-        [ Html.div [ class "suggestion-section" ]
-            [ Html.div [ class "suggestion-section-heading" ]
-                [ Html.text "Paths" ]
-            , Html.div []
-                content
-            ]
-        ]
+    Html.div [ class "suggestion-container" ] content
 
 
 showStatic : String -> List (Html msg)
@@ -578,6 +577,23 @@ showStatic content =
     [ Html.div []
         [ Html.text content ]
     ]
+
+
+showSelectionSections : Config msg a -> List (SelectionItem a) -> List (Html msg)
+showSelectionSections conf selections =
+    selections
+        |> conf.grouper
+        |> List.map (showSelectionSection conf)
+
+
+showSelectionSection : Config msg a -> ( String, List (SelectionItem a) ) -> Html msg
+showSelectionSection conf ( title, selections ) =
+    Html.div [ class "suggestion-section" ]
+        [ Html.div [ class "suggestion-section-heading" ]
+            [ Html.text title ]
+        , Html.div []
+            (showSelections conf selections)
+        ]
 
 
 showSelections : Config msg a -> List (SelectionItem a) -> List (Html msg)

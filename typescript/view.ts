@@ -87,8 +87,8 @@ export class CardBoardView extends ItemView {
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
           break;
-        case "requestPaths":
-          that.handleRequestPaths();
+        case "requestFilterCandidates":
+          that.handleRequestFilterCandidates();
           break;
         case "updateSettings":
           that.handleUpdateSettings(fromElm.data);
@@ -265,19 +265,25 @@ export class CardBoardView extends ItemView {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
   }
 
-  async handleRequestPaths() {
+  async handleRequestFilterCandidates() {
     const loadedFiles = this.app.vault.getAllLoadedFiles();
-    const folderPaths: { tag : "pathFilter", data : string }[] = [];
+    const filterCandidates: { tag : "pathFilter" | "fileFilter", data : string }[] = [];
 
     loadedFiles.forEach((folder: TAbstractFile) => {
       if (folder instanceof TFolder) {
-        folderPaths.push({ tag : "pathFilter", data : folder.path});
+        filterCandidates.push({ tag : "pathFilter", data : folder.path});
+      }
+    });
+
+    loadedFiles.forEach((file: TAbstractFile) => {
+      if (file instanceof TFile && file.extension === "md") {
+        filterCandidates.push({ tag : "fileFilter", data : file.path.slice(0, -3)});
       }
     });
 
     this.elm.ports.interopToElm.send({
-      tag: "folderPaths",
-      data: folderPaths
+      tag: "filterCandidates",
+      data: filterCandidates
     });
   }
 

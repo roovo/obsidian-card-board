@@ -143,12 +143,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
-        , test "encodes RequestPaths" <|
+        , test "encodes RequestFilterCandidates" <|
             \() ->
-                InteropDefinitions.RequestPaths
+                InteropDefinitions.RequestFilterCandidates
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"requestPaths"}"""
+                    |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -198,12 +198,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
-        , test "decodes folderPaths data" <|
+        , test "decodes filterCandidates data" <|
             \() ->
-                """{"tag":"folderPaths","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
+                """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FolderPaths [ Filter.PathFilter "a path", Filter.PathFilter "another path" ])
+                    |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ Filter.PathFilter "a path", Filter.PathFilter "another path" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

@@ -1,11 +1,13 @@
 - filter by path
-  - new filter: file (do I want to include the .md extension?)
   - new filter: tag
+  - handle filters that overflow the input box
   - limit the number of results per section
   - delete a filter by clicking on it and hitting backspace
   - handle switching between boards in settings & persist in settings
   - test using Board.columns tests
 - filter by tag
+- what about tags in front matter
+- don't expose Filter(..)
 
 # Cleanups
 - why is the case of the filename for MultiSelect.elm not being recognised properly?

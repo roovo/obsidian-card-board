@@ -136,7 +136,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
-    | FolderPathsReceived (List Filter)
+    | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
@@ -180,11 +180,11 @@ update msg model =
                 ]
             )
 
-        ( FolderPathsReceived folderPaths, Settings subModel ) ->
-            SettingsPage.update (SettingsPage.FolderPathsReceived folderPaths) subModel
+        ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
+            SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
                 |> updateWith Settings GotSettingsPageMsg
 
-        ( FolderPathsReceived folderPaths, _ ) ->
+        ( FilterCandidatesReceived filterCandidates, _ ) ->
             ( model, Cmd.none )
 
         ( GotBoardPageMsg subMsg, Boards subModel ) ->
@@ -354,8 +354,8 @@ subscriptions _ =
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile
 
-                                InteropDefinitions.FolderPaths folderPaths ->
-                                    FolderPathsReceived folderPaths
+                                InteropDefinitions.FilterCandidates filterCandidates ->
+                                    FilterCandidatesReceived filterCandidates
 
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded
