@@ -48,6 +48,7 @@ type alias Config msg a =
 
 type alias Status a =
     { selectedItems : Dict String a
+    , highlightedItem : String
     , searchTerm : String
     , page : Int
     , dropdownItems : List (SelectionItem a)
@@ -66,6 +67,7 @@ init : Config msg a -> Dict String a -> Model msg a
 init initialConfig selected =
     Ready initialConfig
         { selectedItems = selected
+        , highlightedItem = ""
         , searchTerm = ""
         , page = 0
         , dropdownItems = []
@@ -124,6 +126,11 @@ status model =
 selectedItems : Model msg a -> Dict String a
 selectedItems =
     .selectedItems << status
+
+
+highlightedItem : Model msg a -> String
+highlightedItem =
+    .highlightedItem << status
 
 
 searchTerm : Model msg a -> String
@@ -245,7 +252,7 @@ type Msg msg a
     | FocusLost
     | ItemMouseDown
     | ItemSelected (SelectionItem a)
-    | ItemDeleteClicked String
+    | ChosenItemClicked String
     | SearchTermChanged String
     | SelectClicked
     | SendRequest
@@ -259,16 +266,20 @@ update msg model =
             , setFocus <| tagger model
             )
 
-        ItemDeleteClicked label ->
-            ( deleteFromSelected label model
+        ChosenItemClicked label ->
+            ( mapStatus (\s -> { s | highlightedItem = label }) model
             , Cmd.none
             )
 
+        -- ( deleteFromSelected label model
+        -- , Cmd.none
+        -- )
         DelayedRequest delayedTerm ->
             if delayedTerm == searchTerm model then
                 ( SettingItems
                     (config model)
                     { selectedItems = selectedItems model
+                    , highlightedItem = highlightedItem model
                     , searchTerm = delayedTerm
                     , dropdownItems = dropdownItems model
                     , showDropDown = showDropDown model
@@ -355,6 +366,7 @@ reset model =
                 SettingItems conf selectStatus ->
                     Ready conf
                         { selectedItems = selectStatus.selectedItems
+                        , highlightedItem = ""
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
@@ -365,6 +377,7 @@ reset model =
                 AddingItems conf selectStatus ->
                     Ready conf
                         { selectedItems = selectStatus.selectedItems
+                        , highlightedItem = ""
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
@@ -375,6 +388,7 @@ reset model =
                 ReceivedItems conf selectStatus ->
                     ReceivedItems conf
                         { selectedItems = selectStatus.selectedItems
+                        , highlightedItem = ""
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = selectStatus.dropdownItems
@@ -385,6 +399,7 @@ reset model =
                 ReceivedError conf selectStatus _ ->
                     Ready conf
                         { selectedItems = selectStatus.selectedItems
+                        , highlightedItem = ""
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = []
@@ -400,6 +415,7 @@ primeRequest searchFor model =
     ( SettingItems
         (config model)
         { selectedItems = selectedItems model
+        , highlightedItem = ""
         , searchTerm = searchFor
         , dropdownItems = dropdownItems model
         , showDropDown = showDropDown model
@@ -422,6 +438,7 @@ fetchMore model =
     ( AddingItems
         (config model)
         { selectedItems = selectedItems model
+        , highlightedItem = highlightedItem model
         , searchTerm = searchTerm model
         , dropdownItems = dropdownItems model
         , showDropDown = showDropDown model
@@ -449,34 +466,38 @@ view model =
             [ class "multiselect-items"
             , Events.onClick (SelectClicked |> tagger model)
             ]
-            (chosenItems (config model) (selectedItems model) (tagger model)
+            (chosenItems (config model) (selectedItems model) (highlightedItem model) (tagger model)
                 ++ [ input (tagger model) (searchTerm model) ]
             )
         , dropDownMenu model
         ]
 
 
-chosenItems : Config msg a -> Dict String a -> (Msg msg a -> msg) -> List (Html msg)
-chosenItems conf selected msgTagger =
+chosenItems : Config msg a -> Dict String a -> String -> (Msg msg a -> msg) -> List (Html msg)
+chosenItems conf selected highlighted msgTagger =
     selected
         |> Dict.foldr
             (\label filter acc ->
-                chosenItem conf filter label :: acc
-             -- Html.div []
-             --     [ Html.div
-             --         [ Events.onClick (ItemDeleteClicked label |> msgTagger)
-             --         , Events.onMouseDown (ItemMouseDown |> msgTagger)
-             --         ]
-             --         [ Html.text "x" ]
-             --     , Html.div [] [ Html.text label ]
-             --     ]
+                chosenItem conf highlighted msgTagger filter label :: acc
             )
             []
 
 
-chosenItem : Config msg a -> a -> String -> Html msg
-chosenItem conf item itemText =
-    Html.div [ class "multiselect-item" ]
+chosenItem : Config msg a -> String -> (Msg msg a -> msg) -> a -> String -> Html msg
+chosenItem conf highlighted msgTagger item itemText =
+    let
+        itemClass =
+            if itemText == highlighted then
+                "multiselect-item selected"
+
+            else
+                "multiselect-item"
+    in
+    Html.div
+        [ class itemClass
+        , Events.onMouseDown (ItemMouseDown |> msgTagger)
+        , Events.onClick (ChosenItemClicked itemText |> msgTagger)
+        ]
         [ Html.span [ class "multiselect-item-key" ]
             [ Html.text (conf.selectedItemLabel item) ]
         , Html.span [ class "multiselect-item-value" ]

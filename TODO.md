@@ -1,8 +1,14 @@
 - filter by path
   - delete a filter by clicking on it and hitting backspace
+  - handle switching between boards in settings & persist in settings
+  - tidy up clearing of highlighted selected item
+    - when clicking a new item in the dropdown
+    - when clicking in the invisible input
+  - can I move the cursor in the invisible input so it is in line with the chosen items
+  - MultiSelect.Status.selectedItems needs to include the type in the key
+    as there could be an edge case where a tag and a (path or file) have the same key
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
-  - handle switching between boards in settings & persist in settings
   - test using Board.columns tests
 - what about tags in front matter
 - don't expose Filter(..)

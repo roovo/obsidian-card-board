@@ -393,7 +393,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   background: var(--background-modifier-form-field);
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
-  color : var(--text-normal);
+  color: var(--text-normal);
   padding: 4px 5px;
   font-size: var(--font-small);
   width: 217px;
@@ -406,7 +406,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   font-size: var(--font-small);
 }
 
-.multiselect-item {
+.multiselect-item.selected {
   cursor: pointer;
   vertical-align: middle;
 }
@@ -422,6 +422,17 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   padding-bottom: 2px;
   line-height: 1.5em;
   vertical-align: middle;
+}
+
+.multiselect-item.selected .multiselect-item-key {
+  background-color: var(--text-muted);
+  color: var(--text-on-accent);
+  border-right: 0.5px solid var(--text-on-accent);
+}
+
+.multiselect-item.selected .multiselect-item-value {
+  background-color: var(--text-muted);
+  color: var(--text-on-accent);
 }
 
 .multiselect-item-value {
