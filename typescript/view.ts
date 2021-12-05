@@ -267,7 +267,10 @@ export class CardBoardView extends ItemView {
 
   async handleRequestFilterCandidates() {
     const loadedFiles = this.app.vault.getAllLoadedFiles();
-    const filterCandidates: { tag : "pathFilter" | "fileFilter", data : string }[] = [];
+    const filterCandidates: { tag : "pathFilter" | "fileFilter" | "tagFilter", data : string }[] = [];
+    // @ts-ignore
+    const tagsWithCounts = this.app.metadataCache.getTags();
+    const tags = Object.keys(tagsWithCounts).map(x => x.slice(1));
 
     loadedFiles.forEach((folder: TAbstractFile) => {
       if (folder instanceof TFolder) {
@@ -279,6 +282,10 @@ export class CardBoardView extends ItemView {
       if (file instanceof TFile && file.extension === "md") {
         filterCandidates.push({ tag : "fileFilter", data : file.path.slice(0, -3)});
       }
+    });
+
+    tags.forEach((tag: string) => {
+      filterCandidates.push({ tag : "tagFilter", data : tag});
     });
 
     this.elm.ports.interopToElm.send({
