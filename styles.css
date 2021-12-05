@@ -1,6 +1,7 @@
 :root {
   --font-normal:16px;
   --font-small:13px;
+  --font-smaller:12px;
 
   --normal-weight:400;   /* Switch to 300 if you want thinner default text */
   --bold-weight:600;     /* Switch to 700 if you want thicker bold text */
@@ -436,9 +437,22 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   vertical-align: middle;
 }
 
-.card-board .suggestion-item {
+.card-board .suggestion-container {
+  padding: 5px 8px;
+  font-size: var(--font-small);
   text-align: left;
-  padding-left: 15px
+  line-height: 1em;
+}
+
+.card-board .suggestion-section-heading {
+  color: var(--text-muted);
+  font-size: var(--font-smaller);
+  font-weight: var(--bold-weight);
+}
+
+.card-board .suggestion-item {
+  padding-left: 5px;
+  font-size: var(--font-small);
 }
 
 .setting-item-control .suggestion-item:hover {

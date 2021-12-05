@@ -1,7 +1,7 @@
 - filter by path
-  - put sections in dropdown
   - new filter: file (do I want to include the .md extension?)
   - new filter: tag
+  - limit the number of results per section
   - delete a filter by clicking on it and hitting backspace
   - handle switching between boards in settings & persist in settings
   - test using Board.columns tests

@@ -541,8 +541,8 @@ itemsOrDefault conf selectStatus msgTagger element =
 fuzzyMatch : String -> List (SelectionItem a) -> List (SelectionItem a)
 fuzzyMatch needle selectionItems =
     let
-        foo : SelectionItem a -> Maybe ( Int, SelectionItem a )
-        foo selectionItem =
+        score : SelectionItem a -> Maybe ( Int, SelectionItem a )
+        score selectionItem =
             let
                 result : Fuzzy.Result
                 result =
@@ -555,7 +555,7 @@ fuzzyMatch needle selectionItems =
                 Just ( result.score, selectionItem )
     in
     selectionItems
-        |> List.filterMap foo
+        |> List.filterMap score
         |> List.sortBy Tuple.first
         |> List.map Tuple.second
 
@@ -564,8 +564,12 @@ wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg
 wrapInDropDown msgTagger content =
     Html.div
         [ class "suggestion-container" ]
-        [ Html.div []
-            [ Html.div [] content ]
+        [ Html.div [ class "suggestion-section" ]
+            [ Html.div [ class "suggestion-section-heading" ]
+                [ Html.text "Paths" ]
+            , Html.div []
+                content
+            ]
         ]
 
 
