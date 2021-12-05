@@ -2,6 +2,7 @@ module Filter exposing
     ( Filter(..)
     , decoder
     , encoder
+    , value
     )
 
 import DecodeHelpers
@@ -21,8 +22,8 @@ type Filter
 encoder : TsEncode.Encoder Filter
 encoder =
     TsEncode.union
-        (\vPathFilter vTagFilter value ->
-            case value of
+        (\vPathFilter vTagFilter v ->
+            case v of
                 PathFilter path ->
                     vPathFilter path
 
@@ -40,3 +41,13 @@ decoder =
         [ DecodeHelpers.toElmVariant "pathFilter" PathFilter TsDecode.string
         , DecodeHelpers.toElmVariant "tagFilter" TagFilter TsDecode.string
         ]
+
+
+value : Filter -> String
+value filter =
+    case filter of
+        PathFilter f ->
+            f
+
+        TagFilter f ->
+            f

@@ -2,6 +2,7 @@ module FilterTests exposing (suite)
 
 import Expect
 import Filter exposing (Filter)
+import Helpers.DecodeHelpers as DecodeHelpers
 import Parser
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -23,7 +24,7 @@ encodeDecode =
                 exampleFilters
                     |> TsEncode.runExample (TsEncode.list Filter.encoder)
                     |> .output
-                    |> runDecoder (TsDecode.list Filter.decoder)
+                    |> DecodeHelpers.runDecoder (TsDecode.list Filter.decoder)
                     |> .decoded
                     |> Expect.equal (Ok exampleFilters)
         ]
@@ -38,14 +39,3 @@ exampleFilters =
     [ Filter.PathFilter "a/path"
     , Filter.TagFilter "a_tag"
     ]
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder

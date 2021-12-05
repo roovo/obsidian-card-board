@@ -267,11 +267,11 @@ export class CardBoardView extends ItemView {
 
   async handleRequestPaths() {
     const loadedFiles = this.app.vault.getAllLoadedFiles();
-    const folderPaths: string[] = [];
+    const folderPaths: { tag : "pathFilter", data : string }[] = [];
 
     loadedFiles.forEach((folder: TAbstractFile) => {
       if (folder instanceof TFolder) {
-        folderPaths.push(folder.path);
+        folderPaths.push({ tag : "pathFilter", data : folder.path});
       }
     });
 

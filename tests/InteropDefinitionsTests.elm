@@ -200,10 +200,10 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
         , test "decodes folderPaths data" <|
             \() ->
-                """{"tag":"folderPaths","data":["a path","another path"]}"""
+                """{"tag":"folderPaths","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FolderPaths [ "a path", "another path" ])
+                    |> Expect.equal (Ok <| InteropDefinitions.FolderPaths [ Filter.PathFilter "a path", Filter.PathFilter "another path" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

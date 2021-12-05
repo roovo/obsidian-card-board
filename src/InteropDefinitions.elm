@@ -12,6 +12,7 @@ module InteropDefinitions exposing
 
 import CardBoardSettings exposing (Settings)
 import DecodeHelpers
+import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
@@ -35,7 +36,7 @@ type ToElm
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
-    | FolderPaths (List String)
+    | FolderPaths (List Filter)
     | AllMarkdownLoaded
     | SettingsUpdated Settings
     | ShowBoard Int
@@ -126,7 +127,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
-        , DecodeHelpers.toElmVariant "folderPaths" FolderPaths (TsDecode.list TsDecode.string)
+        , DecodeHelpers.toElmVariant "folderPaths" FolderPaths (TsDecode.list Filter.decoder)
         , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int

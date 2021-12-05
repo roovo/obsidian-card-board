@@ -1,7 +1,11 @@
 - filter by path
-  - use fuzzy search with multi-select input
-  - directory
-  - file (no need for .md extension)
+  - add to tagboard
+  - add fuzzy search
+  - put sections in dropdown
+  - new filter: file (do I want to include the .md extension?)
+  - new filter: tag
+  - delete a filter by clicking on it and hitting backspace
+  - persist in settings
   - test using Board.columns tests
 - filter by tag
 

@@ -12,6 +12,7 @@ module Page.Settings exposing
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
+import Filter exposing (Filter)
 import Flip
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
@@ -32,8 +33,8 @@ import TagBoard
 
 type alias Model =
     { boardConfigs : SafeZipper BoardConfig
-    , multiSelect : MultiSelect.Model Msg String
-    , pathCache : State (List String)
+    , multiSelect : MultiSelect.Model Msg Filter
+    , pathCache : State (List Filter)
     , session : Session
     , settingsState : SettingsState
     }
@@ -64,7 +65,7 @@ mapSessionConfig fn model =
     { model | session = Session.mapConfig fn model.session }
 
 
-multiSelectConfig : MultiSelect.Config Msg String
+multiSelectConfig : MultiSelect.Config Msg Filter
 multiSelectConfig =
     { delayMs = 300
     , tagger = GotMultiSelectMsg
@@ -87,8 +88,8 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
-    | FolderPathsReceived (List String)
-    | GotMultiSelectMsg (MultiSelect.Msg Msg String)
+    | FolderPathsReceived (List Filter)
+    | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
     | PathsRequested Int String
@@ -132,7 +133,7 @@ update msg model =
             let
                 multiSelectModel =
                     folderPaths
-                        |> List.map (\p -> { label = p, value = p })
+                        |> List.map (\p -> { label = Filter.value p, value = p })
                         |> MultiSelect.recieveItems model.multiSelect
             in
             wrap
@@ -380,7 +381,7 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg String -> Html Msg
+modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
 modalSettingsView configs multiselect =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
@@ -415,7 +416,7 @@ modalSettingsView configs multiselect =
         ]
 
 
-settingsFormView : Maybe BoardConfig -> MultiSelect.Model Msg String -> Html Msg
+settingsFormView : Maybe BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
 settingsFormView boardConfig multiselect =
     case boardConfig of
         Just (BoardConfig.DateBoardConfig config) ->

@@ -4,6 +4,7 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import Browser
 import Browser.Events as Browser
+import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
 import InteropPorts
@@ -135,7 +136,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
-    | FolderPathsReceived (List String)
+    | FolderPathsReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
