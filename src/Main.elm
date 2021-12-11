@@ -203,6 +203,10 @@ update msg model =
 
         ( KeyDown keyValue, Settings subModel ) ->
             case ( keyValue, Session.isActiveView (toSession model) ) of
+                ( Control "Backspace", True ) ->
+                    SettingsPage.update SettingsPage.BackspacePressed subModel
+                        |> updateWith Settings GotSettingsPageMsg
+
                 ( Control "Escape", True ) ->
                     SettingsPage.update SettingsPage.ModalCloseClicked subModel
                         |> updateWith Settings GotSettingsPageMsg

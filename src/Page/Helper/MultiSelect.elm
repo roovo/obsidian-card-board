@@ -3,6 +3,7 @@ module Page.Helper.Multiselect exposing
     , Model
     , Msg
     , SelectionItem
+    , deleteHighlightedItem
     , init
     , receiveError
     , recieveItems
@@ -229,13 +230,14 @@ addToSelected item model =
         |> mapStatus (\s -> { s | itemWasPressed = False })
 
 
-deleteFromSelected : String -> Model msg a -> Model msg a
-deleteFromSelected label model =
+deleteHighlightedItem : Model msg a -> Model msg a
+deleteHighlightedItem model =
     mapStatus
         (\s ->
             { s
                 | selectedItems =
-                    Dict.remove label s.selectedItems
+                    Dict.remove (highlightedItem model) s.selectedItems
+                , highlightedItem = ""
             }
         )
         model
@@ -271,9 +273,6 @@ update msg model =
             , Cmd.none
             )
 
-        -- ( deleteFromSelected label model
-        -- , Cmd.none
-        -- )
         DelayedRequest delayedTerm ->
             if delayedTerm == searchTerm model then
                 ( SettingItems

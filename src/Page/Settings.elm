@@ -84,6 +84,7 @@ multiSelectConfig =
 type Msg
     = AddBoardClicked
     | AddBoardConfirmed
+    | BackspacePressed
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
@@ -110,6 +111,9 @@ update msg model =
 
         AddBoardConfirmed ->
             processsAction (SettingsState.confirmAdd model.settingsState) model
+
+        BackspacePressed ->
+            wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
 
         BoardTypeSelected boardType ->
             updateBoardBeingAdded (BoardConfig.updateBoardType boardType) model

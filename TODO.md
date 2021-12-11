@@ -1,5 +1,4 @@
 - filter by path
-  - delete a filter by clicking on it and hitting backspace
   - handle switching between boards in settings & persist in settings
   - tidy up clearing of highlighted selected item
     - when clicking a new item in the dropdown
@@ -12,6 +11,7 @@
   - test using Board.columns tests
 - what about tags in front matter
 - don't expose Filter(..)
+- can I track renames/deletes etc for path/file filters?
 
 # Cleanups
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
