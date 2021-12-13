@@ -3,6 +3,7 @@ module FilterTests exposing (suite)
 import Expect
 import Filter exposing (Filter)
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Parser
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -25,12 +26,12 @@ encodeDecode =
     describe "encoding and decoding filters"
         [ test "can decode the encoded string back to the original" <|
             \() ->
-                exampleFilters
+                FilterHelpers.exampleFilters
                     |> TsEncode.runExample (TsEncode.list Filter.encoder)
                     |> .output
                     |> DecodeHelpers.runDecoder (TsDecode.list Filter.decoder)
                     |> .decoded
-                    |> Expect.equal (Ok exampleFilters)
+                    |> Expect.equal (Ok FilterHelpers.exampleFilters)
         ]
 
 
@@ -39,17 +40,17 @@ ofType =
     describe "ofType"
         [ test "extracts FileFilters" <|
             \() ->
-                exampleFilters
+                FilterHelpers.exampleFilters
                     |> Filter.ofType "fileFilter"
                     |> Expect.equal [ Filter.FileFilter "a/file.md" ]
         , test "extracts PathFilters" <|
             \() ->
-                exampleFilters
+                FilterHelpers.exampleFilters
                     |> Filter.ofType "pathFilter"
                     |> Expect.equal [ Filter.PathFilter "a/path" ]
         , test "extracts TagFilters" <|
             \() ->
-                exampleFilters
+                FilterHelpers.exampleFilters
                     |> Filter.ofType "tagFilter"
                     |> Expect.equal [ Filter.TagFilter "a_tag" ]
         ]
@@ -105,15 +106,3 @@ value =
                     |> Filter.value
                     |> Expect.equal "some tag"
         ]
-
-
-
--- HELPERS
-
-
-exampleFilters : List Filter
-exampleFilters =
-    [ Filter.PathFilter "a/path"
-    , Filter.TagFilter "a_tag"
-    , Filter.FileFilter "a/file.md"
-    ]

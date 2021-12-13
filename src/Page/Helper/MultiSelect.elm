@@ -9,6 +9,7 @@ module Page.Helper.Multiselect exposing
     , recieveItems
     , selectedItems
     , update
+    , updateSelectedItems
     , view
     )
 
@@ -241,6 +242,11 @@ deleteHighlightedItem model =
             }
         )
         model
+
+
+updateSelectedItems : Dict String a -> Model msg a -> Model msg a
+updateSelectedItems selectedItems_ model =
+    mapStatus (\s -> { s | selectedItems = selectedItems_ }) model
 
 
 

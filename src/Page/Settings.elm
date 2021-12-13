@@ -43,12 +43,45 @@ type alias Model =
 
 init : Session -> Model
 init session =
-    { boardConfigs = Session.boardConfigs session
-    , multiSelect = MultiSelect.init multiSelectConfig Dict.empty
+    let
+        boardConfigs =
+            Session.boardConfigs session
+    in
+    { boardConfigs = boardConfigs
+    , multiSelect = MultiSelect.init multiSelectConfig (currentFilters boardConfigs)
     , pathCache = State.Waiting
     , session = session
     , settingsState = SettingsState.init (Session.boardConfigs session)
     }
+
+
+currentFilters : SafeZipper BoardConfig -> Dict String Filter
+currentFilters boardConfigs =
+    SafeZipper.current boardConfigs
+        |> Maybe.map BoardConfig.filters
+        |> Maybe.map (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
+        |> Maybe.withDefault []
+        |> Dict.fromList
+
+
+switchBoardConfig : (SafeZipper BoardConfig -> SafeZipper BoardConfig) -> Model -> Model
+switchBoardConfig fn model =
+    let
+        selectedFilters : List Filter
+        selectedFilters =
+            Dict.values <| MultiSelect.selectedItems model.multiSelect
+
+        newBoardConfigs : SafeZipper BoardConfig
+        newBoardConfigs =
+            model.boardConfigs
+                |> SafeZipper.mapCurrent (BoardConfig.updateFilters selectedFilters)
+                |> fn
+
+        newMultiSelect : MultiSelect.Model Msg Filter
+        newMultiSelect =
+            MultiSelect.updateSelectedItems (currentFilters newBoardConfigs) model.multiSelect
+    in
+    { model | boardConfigs = newBoardConfigs, multiSelect = newMultiSelect }
 
 
 toSession : Model -> Session
@@ -184,7 +217,7 @@ update msg model =
             )
 
         SettingsBoardNameClicked index ->
-            wrap { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }
+            wrap <| switchBoardConfig (SafeZipper.atIndex index) model
 
         ToggleIncludeOthers ->
             updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
@@ -206,19 +239,10 @@ selectedItemLabel filter =
 
 groupedSelections : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
 groupedSelections selectionItems =
-    let
-        baz : ( MultiSelect.SelectionItem Filter, List (MultiSelect.SelectionItem Filter) ) -> ( String, List (MultiSelect.SelectionItem Filter) )
-        baz ( i, is ) =
-            ( Filter.filterType i.value, i :: is )
-
-        grouped : List ( String, List (MultiSelect.SelectionItem Filter) )
-        grouped =
-            selectionItems
-                |> List.sortBy (\item -> Filter.filterType item.value)
-                |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
-                |> List.map baz
-    in
-    grouped
+    selectionItems
+        |> List.sortBy (\item -> Filter.filterType item.value)
+        |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
+        |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
         |> ensureAllTypes
 
 
@@ -252,11 +276,10 @@ processsAction action model =
     case action of
         SettingsState.AddBoard newConfig newState ->
             let
-                newConfigs =
-                    SafeZipper.add newConfig model.boardConfigs
-                        |> SafeZipper.last
+                newModel =
+                    switchBoardConfig (SafeZipper.add newConfig >> SafeZipper.last) model
             in
-            wrap { model | boardConfigs = newConfigs, settingsState = newState }
+            wrap { newModel | settingsState = newState }
 
         SettingsState.AddCancelled newState ->
             let
@@ -274,22 +297,22 @@ processsAction action model =
 
         SettingsState.DeleteCurrent ->
             let
-                newConfigs =
-                    SafeZipper.deleteCurrent model.boardConfigs
+                newModel =
+                    switchBoardConfig SafeZipper.deleteCurrent model
             in
-            wrap
-                { model
-                    | boardConfigs = newConfigs
-                    , settingsState = SettingsState.init newConfigs
-                }
+            wrap { newModel | settingsState = SettingsState.init newModel.boardConfigs }
 
         SettingsState.SetToState newState ->
             wrap { model | settingsState = newState }
 
         SettingsState.Exit ->
-            ( model
-            , exitCmdOr (InteropPorts.updateSettings model.boardConfigs) model.boardConfigs
-            , Session.SettingsClosed model.boardConfigs
+            let
+                newModel =
+                    switchBoardConfig identity model
+            in
+            ( newModel
+            , exitCmdOr (InteropPorts.updateSettings newModel.boardConfigs) newModel.boardConfigs
+            , Session.SettingsClosed newModel.boardConfigs
             )
 
         SettingsState.NoAction ->

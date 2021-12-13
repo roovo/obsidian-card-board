@@ -1,5 +1,5 @@
 - filter by path
-  - handle switching between boards in settings & persist in settings
+  - use the filters when drawing boards
   - tidy up clearing of highlighted selected item
     - when clicking a new item in the dropdown
     - when clicking in the invisible input
@@ -9,9 +9,13 @@
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
   - test using Board.columns tests
+  - update the wording in the settings dialog - paths, files, and tags
 - what about tags in front matter
 - don't expose Filter(..)
 - can I track renames/deletes etc for path/file filters?
+- would it be cleaner to have separate multiselects for each board and share
+  the dropdown items?
+
 
 # Cleanups
 - why is the case of the filename for MultiSelect.elm not being recognised properly?

@@ -5,6 +5,7 @@ import DateBoard
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import TagBoard
 import Test exposing (..)
 import TsJson.Encode as TsEncode
@@ -21,6 +22,7 @@ suite =
         , toggleIncludeUntagged
         , updateBoardType
         , updateCompletedCount
+        , updateFilters
         , updateTags
         , updateTitle
         ]
@@ -181,6 +183,24 @@ updateCompletedCount =
                     |> extractTagBoardConfig
                     |> Maybe.map .completedCount
                     |> Expect.equal (Just 33)
+        ]
+
+
+updateFilters : Test
+updateFilters =
+    describe "updateFilters"
+        [ test "updates the filters for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" "a title"
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.filters
+                    |> Expect.equal FilterHelpers.exampleFilters
+        , test "updates the filters for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" "a title"
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.filters
+                    |> Expect.equal FilterHelpers.exampleFilters
         ]
 
 

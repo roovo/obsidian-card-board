@@ -4,6 +4,7 @@ module BoardConfig exposing
     , decoder_v_0_1_0
     , default
     , encoder
+    , filters
     , fromBoardType
     , isForDateBoard
     , isForTagBoard
@@ -13,12 +14,14 @@ module BoardConfig exposing
     , toggleIncludeUntagged
     , updateBoardType
     , updateCompletedCount
+    , updateFilters
     , updateTags
     , updateTitle
     )
 
 import DateBoard
 import DecodeHelpers
+import Filter exposing (Filter)
 import Parser
 import TagBoard
 import TsJson.Decode as TsDecode
@@ -81,14 +84,24 @@ isForTagBoard config =
             False
 
 
+filters : BoardConfig -> List Filter
+filters config =
+    case config of
+        DateBoardConfig boardConfig ->
+            boardConfig.filters
+
+        TagBoardConfig boardConfig ->
+            boardConfig.filters
+
+
 title : BoardConfig -> String
 title config =
     case config of
-        DateBoardConfig dateBoardConfig ->
-            dateBoardConfig.title
+        DateBoardConfig boardConfig ->
+            boardConfig.title
 
-        TagBoardConfig tagBoardConfig ->
-            tagBoardConfig.title
+        TagBoardConfig boardConfig ->
+            boardConfig.title
 
 
 
@@ -137,15 +150,15 @@ toggleIncludeUntagged config =
         DateBoardConfig _ ->
             config
 
-        TagBoardConfig tagBoardConfig ->
-            TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
 
 
 toggleIncludeUndated : BoardConfig -> BoardConfig
 toggleIncludeUndated config =
     case config of
-        DateBoardConfig dateBoardConfig ->
-            DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | includeUndated = not boardConfig.includeUndated }
 
         TagBoardConfig _ ->
             config
@@ -157,18 +170,28 @@ toggleIncludeOthers config =
         DateBoardConfig _ ->
             config
 
-        TagBoardConfig tagBoardConfig ->
-            TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
 
 
 updateTitle : String -> BoardConfig -> BoardConfig
 updateTitle title_ config =
     case config of
-        DateBoardConfig dateBoardConfig ->
-            DateBoardConfig { dateBoardConfig | title = title_ }
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | title = title_ }
 
-        TagBoardConfig tagBoardConfig ->
-            TagBoardConfig { tagBoardConfig | title = title_ }
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | title = title_ }
+
+
+updateFilters : List Filter -> BoardConfig -> BoardConfig
+updateFilters filters_ config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filters = filters_ }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filters = filters_ }
 
 
 updateTags : String -> BoardConfig -> BoardConfig
@@ -177,14 +200,14 @@ updateTags tags config =
         DateBoardConfig _ ->
             config
 
-        TagBoardConfig tagBoardConfig ->
+        TagBoardConfig boardConfig ->
             let
                 columnsConfig =
                     Parser.run TagBoard.columnConfigsParser tags
             in
             case columnsConfig of
                 Ok parsedConfig ->
-                    TagBoardConfig { tagBoardConfig | columns = parsedConfig }
+                    TagBoardConfig { boardConfig | columns = parsedConfig }
 
                 _ ->
                     config
@@ -193,11 +216,11 @@ updateTags tags config =
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
 updateCompletedCount value config =
     case ( config, value ) of
-        ( DateBoardConfig dateBoardConfig, Just newCount ) ->
-            DateBoardConfig { dateBoardConfig | completedCount = newCount }
+        ( DateBoardConfig boardConfig, Just newCount ) ->
+            DateBoardConfig { boardConfig | completedCount = newCount }
 
-        ( TagBoardConfig tagBoardConfig, Just newCount ) ->
-            TagBoardConfig { tagBoardConfig | completedCount = newCount }
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            TagBoardConfig { boardConfig | completedCount = newCount }
 
         _ ->
             config
