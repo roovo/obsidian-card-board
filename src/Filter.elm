@@ -4,11 +4,13 @@ module Filter exposing
     , encoder
     , filterType
     , filterTypes
+    , isAllowed
     , ofType
     , value
     )
 
 import DecodeHelpers
+import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -102,3 +104,16 @@ value filter =
 
         TagFilter f ->
             f
+
+
+isAllowed : TaskItem -> Filter -> Bool
+isAllowed taskItem filter =
+    case filter of
+        FileFilter f ->
+            TaskItem.isFromFile f taskItem
+
+        PathFilter f ->
+            True
+
+        TagFilter f ->
+            True

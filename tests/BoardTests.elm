@@ -5,6 +5,7 @@ import BoardConfig
 import Card
 import DateBoard
 import Expect
+import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
@@ -32,6 +33,36 @@ columnsDateBoard =
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
+        , test "restricts tasks in the undated column to be from a given file" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters = [ Filter.FileFilter "g" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "an undated incomplete" ]
+        , test "treats the file filters as OR'd" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters = [ Filter.FileFilter "g", Filter.FileFilter "another" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "an undated incomplete" ]
         ]
 
 

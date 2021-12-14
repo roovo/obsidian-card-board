@@ -130,6 +130,7 @@
   For a date picker.
 
 # Misc
+- no need to track blockLink in TaskItem
 - look at obsidian://show-plugin?id=card-boardw
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?

@@ -2,9 +2,12 @@ module TaskList exposing
     ( TaskList
     , append
     , concat
+    , cons
     , empty
     , filter
+    , foldl
     , fromMarkdown
+    , isEmpty
     , map
     , parser
     , removeForFile
@@ -66,8 +69,18 @@ concat =
     List.foldr append empty
 
 
+cons : TaskItem -> TaskList -> TaskList
+cons taskItem (TaskList taskItems) =
+    TaskList <| taskItem :: taskItems
+
+
 
 -- MANIPULATE
+
+
+foldl : (TaskItem -> b -> b) -> b -> TaskList -> b
+foldl fn acc (TaskList taskItems) =
+    List.foldl fn acc taskItems
 
 
 map : (TaskItem -> TaskItem) -> TaskList -> TaskList
@@ -99,6 +112,11 @@ filter : (TaskItem -> Bool) -> TaskList -> TaskList
 filter fn (TaskList taskItems) =
     List.filter fn taskItems
         |> TaskList
+
+
+isEmpty : TaskList -> Bool
+isEmpty (TaskList taskItems) =
+    List.isEmpty taskItems
 
 
 taskTitles : TaskList -> List String

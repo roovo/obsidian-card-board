@@ -522,7 +522,7 @@ settingsFormView boardConfig multiselect =
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen paths" ]
+                                [ Html.text "Limit the board to the chosen files/paths/tags" ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ MultiSelect.view multiselect
@@ -614,7 +614,7 @@ settingsFormView boardConfig multiselect =
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen paths" ]
+                                [ Html.text "Limit the board to the chosen files/paths/tags" ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ MultiSelect.view multiselect

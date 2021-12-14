@@ -4,6 +4,7 @@ import Expect
 import Filter exposing (Filter)
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -14,6 +15,7 @@ suite : Test
 suite =
     concat
         [ encodeDecode
+        , isAllowed
         , ofType
         , filterType
         , filterTypes
@@ -32,6 +34,22 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder (TsDecode.list Filter.decoder)
                     |> .decoded
                     |> Expect.equal (Ok FilterHelpers.exampleFilters)
+        ]
+
+
+isAllowed : Test
+isAllowed =
+    describe "isAllowed"
+        [ test "returns True for a matching file filter" <|
+            \() ->
+                Filter.FileFilter "a/b/c.ext"
+                    |> Filter.isAllowed (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal True
+        , test "returns False for a non-matching file filter" <|
+            \() ->
+                Filter.FileFilter "a/b/c.diff"
+                    |> Filter.isAllowed (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal False
         ]
 
 

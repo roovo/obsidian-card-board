@@ -2,9 +2,11 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
+import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
-import TaskItem exposing (AutoCompletion(..), Completion(..))
+import TaskItem exposing (AutoCompletion(..), Completion(..), TaskItem)
 import Test exposing (..)
 import Time
 
@@ -938,16 +940,16 @@ transformation =
             \() ->
                 "- [ ] foo"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion { now = now })
+                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
                     |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt now)
+                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
         , test "toggling a incomplete task with a @completed date updates the @completed date" <|
             \() ->
                 "- [ ] foo @completed(2020-01-01)"
                     |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.toggleCompletion { now = now })
+                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
                     |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt now)
+                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
         ]
 
 
@@ -956,26 +958,14 @@ updateFilePath =
     describe "updateFilePath"
         [ test "sets the filePath if it didn't have one" <|
             \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing)
-                    |> Result.map (TaskItem.updateFilePath "new/path")
-                    |> Result.map TaskItem.filePath
-                    |> Expect.equal (Ok "new/path")
+                TaskItemHelpers.exampleTaskItem "- [x] foo" ""
+                    |> TaskItem.updateFilePath "new/path"
+                    |> TaskItem.filePath
+                    |> Expect.equal "new/path"
         , test "updates an existing filePath" <|
             \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser "old/path" Nothing)
-                    |> Result.map (TaskItem.updateFilePath "new/path")
-                    |> Result.map TaskItem.filePath
-                    |> Expect.equal (Ok "new/path")
+                TaskItemHelpers.exampleTaskItem "- [x] foo" "old/path"
+                    |> TaskItem.updateFilePath "new/path"
+                    |> TaskItem.filePath
+                    |> Expect.equal "new/path"
         ]
-
-
-
--- HELPERS
-
-
-now : Time.Posix
-now =
-    -- 2020-01-01
-    Time.millisToPosix 1577836800000

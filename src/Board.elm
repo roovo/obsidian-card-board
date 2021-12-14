@@ -7,6 +7,7 @@ module Board exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import DateBoard
+import Filter
 import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -38,7 +39,9 @@ columns : TimeWithZone -> Int -> Board -> List ( String, List Card )
 columns timeWithZone boardIndex (Board config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
-            DateBoard.columns timeWithZone dateBoardConfig taskList
+            taskList
+                |> filterTasks config
+                |> DateBoard.columns timeWithZone dateBoardConfig
                 |> placeCardsInColumns boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
@@ -48,6 +51,31 @@ columns timeWithZone boardIndex (Board config taskList) =
 
 
 -- PRIVATE
+
+
+filterTasks : BoardConfig -> TaskList -> TaskList
+filterTasks config taskList =
+    if TaskList.isEmpty taskList then
+        taskList
+
+    else
+        TaskList.foldl (filterTask config) TaskList.empty taskList
+
+
+filterTask : BoardConfig -> TaskItem -> TaskList -> TaskList
+filterTask config taskItem taskList =
+    let
+        filters =
+            BoardConfig.filters config
+    in
+    if List.isEmpty filters then
+        TaskList.cons taskItem taskList
+
+    else if List.any (Filter.isAllowed taskItem) filters then
+        TaskList.cons taskItem taskList
+
+    else
+        taskList
 
 
 placeCardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )

@@ -9,6 +9,7 @@ module TaskItem exposing
     , containsId
     , due
     , dueRataDie
+    , dummy
     , fields
     , filePath
     , hasNotes
@@ -62,6 +63,24 @@ type alias TaskItemFields =
     , tags : List String
     , title : String
     }
+
+
+dummy : TaskItem
+dummy =
+    TaskItem
+        { autoComplete = NotSpecifed
+        , blockLink = Nothing
+        , completion = Incomplete
+        , dueFile = Nothing
+        , dueTag = Nothing
+        , filePath = ""
+        , lineNumber = 0
+        , notes = ""
+        , originalText = ""
+        , tags = []
+        , title = ""
+        }
+        []
 
 
 type TaskItem

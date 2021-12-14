@@ -5,6 +5,7 @@ module Helpers.DateTimeHelpers exposing
     , nowWithZone
     , today
     , tomorrow
+    , yearStart
     , yesterday
     , zone
     )
@@ -53,6 +54,12 @@ now =
         |> Result.map Time.posixToMillis
         |> Result.withDefault 0
         |> Time.millisToPosix
+
+
+yearStart : Time.Posix
+yearStart =
+    -- 2020-01-01
+    Time.millisToPosix 1577836800000
 
 
 zone : Time.Zone
