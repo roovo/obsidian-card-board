@@ -88,6 +88,7 @@ tasksFromNewFile path =
 exampleDateBoardTasks : List ( String, Maybe String, String )
 exampleDateBoardTasks =
     [ undatedTasks
+    , moreUndatedTasks
     , ( "d", Just DateTimeHelpers.farFuture, """
 - [ ] zapping into the future
 - [ ] far future incomplete
@@ -108,7 +109,7 @@ exampleDateBoardTasks =
 """ )
     , yesterdaysTasks
     , ( "f", Just "invalid date", """
-- [ ] invalid date incomplete
+- [ ] invalid date incomplete #aTag
 - [x] invalid date complete
 """ )
     ]
@@ -116,9 +117,19 @@ exampleDateBoardTasks =
 
 undatedTasks : ( String, Maybe String, String )
 undatedTasks =
-    ( "g", Nothing, """
-- [ ] an undated incomplete
+    ( "gg/xx/yy.md", Nothing, """
+- [ ] an undated incomplete #bTag
+- [ ] incomplete with cTag #cTag
+- [ ] untagged incomplete
 - [x] undated complete @completed(2020-06-02)
+""" )
+
+
+moreUndatedTasks : ( String, Maybe String, String )
+moreUndatedTasks =
+    ( "x", Nothing, """
+- [ ] more undated incomplete #bTag
+- [x] more undated complete @completed(2020-06-03)
 """ )
 
 

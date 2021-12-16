@@ -7,7 +7,7 @@ module Board exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import DateBoard
-import Filter
+import Filter exposing (Filter)
 import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -40,7 +40,7 @@ columns timeWithZone boardIndex (Board config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             taskList
-                |> filterTasks config
+                |> filterTaskList config
                 |> DateBoard.columns timeWithZone dateBoardConfig
                 |> placeCardsInColumns boardIndex
 
@@ -53,29 +53,36 @@ columns timeWithZone boardIndex (Board config taskList) =
 -- PRIVATE
 
 
-filterTasks : BoardConfig -> TaskList -> TaskList
-filterTasks config taskList =
-    if TaskList.isEmpty taskList then
-        taskList
-
-    else
-        TaskList.foldl (filterTask config) TaskList.empty taskList
-
-
-filterTask : BoardConfig -> TaskItem -> TaskList -> TaskList
-filterTask config taskItem taskList =
+filterTaskList : BoardConfig -> TaskList -> TaskList
+filterTaskList config taskList =
     let
         filters =
             BoardConfig.filters config
     in
-    if List.isEmpty filters then
-        TaskList.cons taskItem taskList
+    taskList
+        |> filterByFilesystem filters
+        |> filterByTag filters
 
-    else if List.any (Filter.isAllowed taskItem) filters then
-        TaskList.cons taskItem taskList
+
+filterByFilesystem : List Filter -> TaskList -> TaskList
+filterByFilesystem filters taskList =
+    List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths") filters
+        |> applyFilters taskList
+
+
+filterByTag : List Filter -> TaskList -> TaskList
+filterByTag filters taskList =
+    List.filter (\f -> Filter.filterType f == "Tags") filters
+        |> applyFilters taskList
+
+
+applyFilters : TaskList -> List Filter -> TaskList
+applyFilters taskList filters =
+    if List.isEmpty filters then
+        taskList
 
     else
-        taskList
+        TaskList.filter (\x -> List.any (Filter.isAllowed x) filters) taskList
 
 
 placeCardsInColumns : Int -> List ( String, List TaskItem ) -> List ( String, List Card )

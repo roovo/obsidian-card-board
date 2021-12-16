@@ -10,6 +10,7 @@ module Filter exposing
     )
 
 import DecodeHelpers
+import List.Extra as LE
 import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -109,11 +110,39 @@ value filter =
 isAllowed : TaskItem -> Filter -> Bool
 isAllowed taskItem filter =
     case filter of
-        FileFilter f ->
-            TaskItem.isFromFile f taskItem
+        FileFilter filePath ->
+            TaskItem.isFromFile filePath taskItem
 
-        PathFilter f ->
-            True
+        PathFilter path ->
+            fileIsFromPath (TaskItem.filePath taskItem) path
 
-        TagFilter f ->
-            True
+        TagFilter tag ->
+            TaskItem.hasTag tag taskItem
+
+
+fileIsFromPath : String -> String -> Bool
+fileIsFromPath file path =
+    let
+        pathComponents =
+            String.split "/" path
+                |> List.filter (not << String.isEmpty)
+
+        filePathComponents =
+            String.split "/" file
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+                |> List.filter (not << String.isEmpty)
+
+        isComponentMatching : Int -> String -> Bool
+        isComponentMatching index pathComponent =
+            case LE.getAt index filePathComponents of
+                Nothing ->
+                    False
+
+                Just filePathComponent ->
+                    filePathComponent == pathComponent
+    in
+    pathComponents
+        |> List.indexedMap isComponentMatching
+        |> List.all identity

@@ -24,45 +24,78 @@ suite =
 columnsDateBoard : Test
 columnsDateBoard =
     describe "columns - dateboard"
-        [ test "puts undated tasks in the undated column" <|
-            \() ->
-                TaskListHelpers.exampleDateBoardTaskList
-                    |> Board.init (BoardConfig.DateBoardConfig { defaultDateBoardConfig | includeUndated = True })
-                    |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Undated"
-                    |> List.map Card.taskItem
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
-        , test "restricts tasks in the undated column to be from a given file" <|
+        [ test "can filter tasks to be from a given file" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
-                                , filters = [ Filter.FileFilter "g" ]
+                                , filters = [ Filter.FileFilter "gg/xx/yy.md" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
                     |> BoardHelpers.cardsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "an undated incomplete" ]
-        , test "treats the file filters as OR'd" <|
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "incomplete with cTag"
+                        , "untagged incomplete"
+                        ]
+        , test "can filter tasks to be from a given path" <|
+            \() ->
+                TaskListHelpers.taskListFromFile "aa/bb/c.ext"
+                    |> Board.init
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters = [ Filter.PathFilter "aa/bb" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "c1" ]
+        , test "can filter tasks to have a given tag" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
-                                , filters = [ Filter.FileFilter "g", Filter.FileFilter "another" ]
+                                , filters = [ Filter.TagFilter "aTag" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
                     |> BoardHelpers.cardsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "an undated incomplete" ]
+                    |> Expect.equal [ "invalid date incomplete" ]
+        , test "filters tasks that are either in a file or path AND have one of the given tags" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters =
+                                    [ Filter.FileFilter "f"
+                                    , Filter.PathFilter "gg"
+                                    , Filter.TagFilter "aTag"
+                                    , Filter.TagFilter "bTag"
+                                    ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "invalid date incomplete"
+                        ]
         ]
 
 

@@ -1,5 +1,7 @@
 - filter by path
   - use the filters when drawing boards
+  - would my path filtering work on windows?
+  - support tags and subtags/
   - tidy up clearing of highlighted selected item
     - when clicking a new item in the dropdown
     - when clicking in the invisible input

@@ -71,7 +71,8 @@ columnCompleted =
                     |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
-                        [ "future complete"
+                        [ "more undated complete"
+                        , "future complete"
                         , "today complete"
                         , "tomorrow complete"
                         , "undated complete"
@@ -97,7 +98,13 @@ columnUndated =
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> BoardHelpers.tasksInColumn "Undated"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "incomplete with cTag"
+                        , "invalid date incomplete"
+                        , "more undated incomplete"
+                        , "untagged incomplete"
+                        ]
         ]
 
 
