@@ -124,11 +124,15 @@ fileIsFromPath : String -> String -> Bool
 fileIsFromPath file path =
     let
         pathComponents =
-            String.split "/" path
+            path
+                |> String.replace "\\" "/"
+                |> String.split "/"
                 |> List.filter (not << String.isEmpty)
 
         filePathComponents =
-            String.split "/" file
+            file
+                |> String.replace "\\" "/"
+                |> String.split "/"
                 |> List.reverse
                 |> List.drop 1
                 |> List.reverse

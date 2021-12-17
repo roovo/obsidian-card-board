@@ -1,5 +1,4 @@
 - filter by path
-  - would my path filtering work on windows?
 - what about tags in front matter
 - don't expose Filter(..)
 - can I track renames/deletes etc for path/file filters?
