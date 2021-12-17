@@ -1,11 +1,10 @@
 - filter by path
-  - support tags and subtags/
-  - tidy up clearing of highlighted selected item
-    - when clicking a new item in the dropdown
-    - when clicking in the invisible input
   - can I move the cursor in the invisible input so it is in line with the chosen items
   - MultiSelect.Status.selectedItems needs to include the type in the key
     as there could be an edge case where a tag and a (path or file) have the same key
+  - tidy up clearing of highlighted selected item
+    - when clicking a new item in the dropdown
+    - when clicking in the invisible input
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
   - update the wording in the settings dialog - paths, files, and tags
@@ -43,6 +42,8 @@
 
 # UI Improvements
 - What about tags in front matter
+- should I support reverse subtags, i.e. /todo would match #todo or #project1/todo or #a/b/todo
+- should I support both ends subtags, i.e. /todo/ would match #todo or #project1/todo or #todo/foo or #a/todo/b
 - What should I show on the view when there are no boards defined
 - Some sort of toggle compact view - where it shows each task as a single line card
   with only the checkbox and the first line of the title.

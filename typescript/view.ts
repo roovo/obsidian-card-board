@@ -286,6 +286,7 @@ export class CardBoardView extends ItemView {
 
     tags.forEach((tag: string) => {
       filterCandidates.push({ tag : "tagFilter", data : tag});
+      filterCandidates.push({ tag : "tagFilter", data : tag + "/"});
     });
 
     this.elm.ports.interopToElm.send({
