@@ -515,6 +515,7 @@ input msgTagger currentSearchTerm =
     Html.div []
         [ Html.input
             [ id "multiSelectInput"
+            , class "multiselect-input"
             , type_ "text"
             , value currentSearchTerm
             , Events.onInput (SearchTermChanged >> msgTagger)
