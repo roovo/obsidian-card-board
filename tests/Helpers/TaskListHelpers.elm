@@ -1,5 +1,6 @@
 module Helpers.TaskListHelpers exposing
     ( exampleDateBoardTaskList
+    , exampleTagBoardTaskList
     , parsedTasks
     , taskListFromFile
     , taskListFromFileA
@@ -45,6 +46,13 @@ taskListFromNewFile path =
 exampleDateBoardTaskList : TaskList
 exampleDateBoardTaskList =
     exampleDateBoardTasks
+        |> List.map parsedTasks
+        |> TaskList.concat
+
+
+exampleTagBoardTaskList : TaskList
+exampleTagBoardTaskList =
+    exampleTagBoardTasks
         |> List.map parsedTasks
         |> TaskList.concat
 
@@ -140,3 +148,29 @@ yesterdaysTasks =
 - [ ] another yesterday incomplete
 - [x] yesterday complete @completed(2020-06-01)
 """ )
+
+
+exampleTagBoardTasks : List ( String, Maybe String, String )
+exampleTagBoardTasks =
+    [ ( "a", Nothing, """
+- [ ] a.untagged
+- [ ] a.tag1 #tag1
+- [ ] a.tag2 #tag2
+- [ ] a.tag3 #tag3
+- [x] a.tag4 #tag4
+""" )
+    , ( "b", Nothing, """
+- [ ] b.untagged
+- [ ] b.tag1 #tag1
+- [ ] b.tag2 #tag2
+- [ ] b.tag3 #tag3
+- [x] b.tag4 #tag4
+""" )
+    , ( "aa/bb/c", Nothing, """
+- [ ] c.untagged
+- [ ] c.tag1 #tag1
+- [ ] c.tag2 #tag2
+- [ ] c.tag3 #tag3
+- [x] c.tag4 #tag4
+""" )
+    ]

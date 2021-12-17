@@ -1,6 +1,4 @@
 - filter by path
-  - use the filters when drawing boards
-  - would my path filtering work on windows?
   - support tags and subtags/
   - tidy up clearing of highlighted selected item
     - when clicking a new item in the dropdown
@@ -10,8 +8,8 @@
     as there could be an edge case where a tag and a (path or file) have the same key
   - handle filters that overflow the input box
   - handle scrolling of the settings dialog (dropdown doesn't move with it)
-  - test using Board.columns tests
   - update the wording in the settings dialog - paths, files, and tags
+  - would my path filtering work on windows?
 - what about tags in front matter
 - don't expose Filter(..)
 - can I track renames/deletes etc for path/file filters?

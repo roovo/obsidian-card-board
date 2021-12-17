@@ -45,7 +45,9 @@ columns timeWithZone boardIndex (Board config taskList) =
                 |> placeCardsInColumns boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
-            TagBoard.columns tagBoardConfig taskList
+            taskList
+                |> filterTaskList config
+                |> TagBoard.columns tagBoardConfig
                 |> placeCardsInColumns boardIndex
 
 

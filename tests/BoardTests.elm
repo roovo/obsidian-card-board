@@ -10,6 +10,7 @@ import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import TagBoard
 import TaskItem
 import Test exposing (..)
 
@@ -18,6 +19,7 @@ suite : Test
 suite =
     concat
         [ columnsDateBoard
+        , columnsTagBoard
         ]
 
 
@@ -99,6 +101,94 @@ columnsDateBoard =
         ]
 
 
+columnsTagBoard : Test
+columnsTagBoard =
+    describe "columns - tagboard"
+        [ test "can filter tasks to be from a given file" <|
+            \() ->
+                TaskListHelpers.exampleTagBoardTaskList
+                    |> Board.init
+                        (BoardConfig.TagBoardConfig
+                            { defaultTagBoardConfig
+                                | includeOthers = True
+                                , filters = [ Filter.FileFilter "a" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Others"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "a.tag1"
+                        , "a.tag2"
+                        , "a.tag3"
+                        ]
+        , test "can filter tasks to be from a given path" <|
+            \() ->
+                TaskListHelpers.exampleTagBoardTaskList
+                    |> Board.init
+                        (BoardConfig.TagBoardConfig
+                            { defaultTagBoardConfig
+                                | includeOthers = True
+                                , filters = [ Filter.PathFilter "aa" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Others"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "c.tag1"
+                        , "c.tag2"
+                        , "c.tag3"
+                        ]
+        , test "can filter tasks to have a given tag" <|
+            \() ->
+                TaskListHelpers.exampleTagBoardTaskList
+                    |> Board.init
+                        (BoardConfig.TagBoardConfig
+                            { defaultTagBoardConfig
+                                | includeOthers = True
+                                , filters = [ Filter.TagFilter "tag1" ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Others"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "a.tag1"
+                        , "b.tag1"
+                        , "c.tag1"
+                        ]
+        , test "filters tasks that are either in a file or path AND have one of the given tags" <|
+            \() ->
+                TaskListHelpers.exampleTagBoardTaskList
+                    |> Board.init
+                        (BoardConfig.TagBoardConfig
+                            { defaultTagBoardConfig
+                                | includeOthers = True
+                                , filters =
+                                    [ Filter.FileFilter "a"
+                                    , Filter.PathFilter "aa"
+                                    , Filter.TagFilter "tag1"
+                                    , Filter.TagFilter "tag2"
+                                    ]
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.cardsInColumn "Others"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "a.tag1"
+                        , "a.tag2"
+                        , "c.tag1"
+                        , "c.tag2"
+                        ]
+        ]
+
+
 
 -- HELPERS
 
@@ -106,3 +196,8 @@ columnsDateBoard =
 defaultDateBoardConfig : DateBoard.Config
 defaultDateBoardConfig =
     BoardConfigHelpers.defaultDateBoardConfig
+
+
+defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig =
+    BoardConfigHelpers.defaultTagBoardConfig
