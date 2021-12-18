@@ -1,6 +1,7 @@
 module Filter exposing
-    ( Filter(..)
+    ( Filter
     , decoder
+    , dummy
     , encoder
     , filterType
     , filterTypes
@@ -20,6 +21,11 @@ type Filter
     = FileFilter String
     | PathFilter String
     | TagFilter String
+
+
+dummy : Filter
+dummy =
+    TagFilter ""
 
 
 filterTypes : List String

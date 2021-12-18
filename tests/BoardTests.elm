@@ -9,6 +9,7 @@ import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import TagBoard
 import TaskItem
@@ -33,7 +34,7 @@ columnsDateBoard =
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
-                                , filters = [ Filter.FileFilter "gg/xx/yy.md" ]
+                                , filters = [ FilterHelpers.fileFilter "gg/xx/yy.md" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -52,7 +53,7 @@ columnsDateBoard =
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
-                                , filters = [ Filter.PathFilter "aa/bb" ]
+                                , filters = [ FilterHelpers.pathFilter "aa/bb" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -67,7 +68,7 @@ columnsDateBoard =
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
-                                , filters = [ Filter.TagFilter "aTag" ]
+                                , filters = [ FilterHelpers.tagFilter "aTag" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -83,10 +84,10 @@ columnsDateBoard =
                             { defaultDateBoardConfig
                                 | includeUndated = True
                                 , filters =
-                                    [ Filter.FileFilter "f"
-                                    , Filter.PathFilter "gg"
-                                    , Filter.TagFilter "aTag"
-                                    , Filter.TagFilter "bTag"
+                                    [ FilterHelpers.fileFilter "f"
+                                    , FilterHelpers.pathFilter "gg"
+                                    , FilterHelpers.tagFilter "aTag"
+                                    , FilterHelpers.tagFilter "bTag"
                                     ]
                             }
                         )
@@ -111,7 +112,7 @@ columnsTagBoard =
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
-                                , filters = [ Filter.FileFilter "a" ]
+                                , filters = [ FilterHelpers.fileFilter "a" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -130,7 +131,7 @@ columnsTagBoard =
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
-                                , filters = [ Filter.PathFilter "aa" ]
+                                , filters = [ FilterHelpers.pathFilter "aa" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -149,7 +150,7 @@ columnsTagBoard =
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
-                                , filters = [ Filter.TagFilter "tag1" ]
+                                , filters = [ FilterHelpers.tagFilter "tag1" ]
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -169,10 +170,10 @@ columnsTagBoard =
                             { defaultTagBoardConfig
                                 | includeOthers = True
                                 , filters =
-                                    [ Filter.FileFilter "a"
-                                    , Filter.PathFilter "aa"
-                                    , Filter.TagFilter "tag1"
-                                    , Filter.TagFilter "tag2"
+                                    [ FilterHelpers.fileFilter "a"
+                                    , FilterHelpers.pathFilter "aa"
+                                    , FilterHelpers.tagFilter "tag1"
+                                    , FilterHelpers.tagFilter "tag2"
                                     ]
                             }
                         )

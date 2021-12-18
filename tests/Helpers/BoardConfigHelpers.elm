@@ -10,6 +10,7 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import DateBoard
 import Filter
+import Helpers.FilterHelpers as FilterHelpers
 import Parser
 import TagBoard
 import TaskItem exposing (TaskItem)
@@ -33,7 +34,7 @@ exampleBoardConfig =
 exampleDateBoardConfig : DateBoard.Config
 exampleDateBoardConfig =
     { completedCount = 12
-    , filters = [ Filter.PathFilter "a/path", Filter.PathFilter "b/path", Filter.TagFilter "tag1", Filter.TagFilter "tag2" ]
+    , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
     , includeUndated = False
     , title = "Date Board Title"
     }
@@ -54,7 +55,7 @@ exampleTagBoardConfig : TagBoard.Config
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , completedCount = 6
-    , filters = [ Filter.PathFilter "a", Filter.PathFilter "b", Filter.TagFilter "t1", Filter.TagFilter "t2" ]
+    , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"

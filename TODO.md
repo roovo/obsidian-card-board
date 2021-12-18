@@ -1,9 +1,8 @@
-- filter by path
-- what about tags in front matter
-- don't expose Filter(..)
 - can I track renames/deletes etc for path/file filters?
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
+- what about tags in front matter
+- update readme (on a branch)
 
 
 # Cleanups

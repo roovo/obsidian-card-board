@@ -5,6 +5,7 @@ import CardBoardSettings
 import Expect
 import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
 import Semver
 import Test exposing (..)
@@ -36,14 +37,14 @@ flagsTests =
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
-                                        , filters = [ Filter.PathFilter "a/path", Filter.TagFilter "tag1" ]
+                                        , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
-                                        , filters = [ Filter.PathFilter "b/path", Filter.TagFilter "tag2" ]
+                                        , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -203,7 +204,7 @@ toElmTests =
                 """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ Filter.PathFilter "a path", Filter.PathFilter "another path" ])
+                    |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

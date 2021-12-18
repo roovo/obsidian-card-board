@@ -4,6 +4,7 @@ import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Expect
 import Filter
+import Helpers.FilterHelpers as FilterHelpers
 import SafeZipper exposing (SafeZipper)
 import SettingsState
 import TagBoard
@@ -186,7 +187,7 @@ exampleTagBoardConfig : TagBoard.Config
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , completedCount = 6
-    , filters = [ Filter.PathFilter "a", Filter.PathFilter "b", Filter.TagFilter "t1", Filter.TagFilter "t2" ]
+    , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"
