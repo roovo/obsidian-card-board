@@ -12,13 +12,14 @@ module Session exposing
     , fromFlags
     , isActiveView
     , mapConfig
+    , replaceTaskItems
     , taskContainingId
     , taskFromId
     , taskList
     , taskListLoaded
     , timeWithZone
     , updateConfigs
-    , updateTaskItems
+    , updatePath
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -157,17 +158,31 @@ finishAdding ((Session config) as session) =
             session
 
 
-updateTaskItems : String -> TaskList -> Session -> Session
-updateTaskItems filePath updatedList ((Session config) as session) =
+replaceTaskItems : String -> TaskList -> Session -> Session
+replaceTaskItems filePath updatedList ((Session config) as session) =
     case config.taskList of
         State.Waiting ->
-            mapConfig (\c -> { c | taskList = State.Loading updatedList }) session
+            session
 
         State.Loading currentList ->
             mapConfig (\c -> { c | taskList = State.Loading (TaskList.replaceForFile filePath updatedList currentList) }) session
 
         State.Loaded currentList ->
             mapConfig (\c -> { c | taskList = State.Loaded (TaskList.replaceForFile filePath updatedList currentList) }) session
+
+
+updatePath : String -> String -> Session -> Session
+updatePath oldPath newPath session =
+    let
+        updateConfig : Config -> Config
+        updateConfig config =
+            { config | taskList = State.map updateTaskListPaths config.taskList }
+
+        updateTaskListPaths : TaskList -> TaskList
+        updateTaskListPaths tasks =
+            TaskList.map (TaskItem.updateFilePath oldPath newPath) tasks
+    in
+    mapConfig updateConfig session
 
 
 

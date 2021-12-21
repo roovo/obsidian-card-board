@@ -236,9 +236,12 @@ update msg model =
             let
                 newTasks =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+
+                newModel =
+                    mapSession (\s -> Session.addTaskList newTasks s) model
             in
-            ( mapSession (\s -> Session.addTaskList newTasks s) model
-            , cmdForTaskRedraws newTasks (toSession model)
+            ( newModel
+            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
             )
 
         ( VaultFileDeleted filePath, _ ) ->
@@ -248,63 +251,47 @@ update msg model =
 
         ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
             let
-                updatedTaskItems =
-                    rePathedTaskItems oldPath newPath (Session.taskList <| toSession model)
+                newModel =
+                    mapSession (Session.updatePath oldPath newPath) model
+
+                redrawCommands =
+                    Cmd.none
             in
-            ( mapSession (\s -> Session.updateTaskItems oldPath updatedTaskItems s) model
-            , cmdForTaskRedraws updatedTaskItems (toSession model)
+            ( newModel
+            , cmdForTaskRedraws newPath (toSession newModel)
             )
 
         ( VaultFileUpdated markdownFile, _ ) ->
             let
-                updatedTaskItems =
+                newTaskItems =
                     TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+
+                newModel =
+                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
             in
-            ( mapSession (\s -> Session.updateTaskItems markdownFile.filePath updatedTaskItems s) model
-            , cmdForTaskRedraws updatedTaskItems (toSession model)
+            ( newModel
+            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
             )
 
 
-cmdForTaskRedraws : TaskList -> Session -> Cmd Msg
-cmdForTaskRedraws newTasks session =
+cmdForTaskRedraws : String -> Session -> Cmd Msg
+cmdForTaskRedraws newPath session =
     let
         cards =
-            newTasks
+            Session.taskList session
+                |> State.withDefault TaskList.empty
+                |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
                 |> Boards.init (Session.boardConfigs session)
                 |> Boards.cards (Session.timeWithZone session)
     in
-    if Session.taskListLoaded session then
+    if List.isEmpty cards then
+        Cmd.none
+
+    else
         Cmd.batch
             [ InteropPorts.displayTaskMarkdown cards
             , InteropPorts.addHoverToCardEditButtons cards
             ]
-
-    else
-        Cmd.none
-
-
-rePathedTaskItems : String -> String -> State TaskList -> TaskList
-rePathedTaskItems oldPath newPath taskList =
-    let
-        rePathedItems : TaskList -> TaskList
-        rePathedItems list =
-            list
-                |> TaskList.filter needsRename
-                |> TaskList.map (TaskItem.updateFilePath newPath)
-
-        needsRename : TaskItem -> Bool
-        needsRename item =
-            TaskItem.filePath item == oldPath
-    in
-    case taskList of
-        State.Waiting ->
-            TaskList.empty
-
-        State.Loading currentList ->
-            rePathedItems currentList
-
-        State.Loaded currentList ->
-            rePathedItems currentList
 
 
 updateWith : (subModel -> Model) -> (subMsg -> Msg) -> ( subModel, Cmd subMsg, Session.Msg ) -> ( Model, Cmd Msg )

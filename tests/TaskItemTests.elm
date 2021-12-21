@@ -956,16 +956,22 @@ transformation =
 updateFilePath : Test
 updateFilePath =
     describe "updateFilePath"
-        [ test "sets the filePath if it didn't have one" <|
+        [ test "sets the filePath if it didn't have one and the old path is blank" <|
             \() ->
                 TaskItemHelpers.exampleTaskItem "- [x] foo" ""
-                    |> TaskItem.updateFilePath "new/path"
+                    |> TaskItem.updateFilePath "" "new/path"
                     |> TaskItem.filePath
                     |> Expect.equal "new/path"
         , test "updates an existing filePath" <|
             \() ->
                 TaskItemHelpers.exampleTaskItem "- [x] foo" "old/path"
-                    |> TaskItem.updateFilePath "new/path"
+                    |> TaskItem.updateFilePath "old/path" "new/path"
                     |> TaskItem.filePath
                     |> Expect.equal "new/path"
+        , test "does not update the filePath if the oldPath does not match" <|
+            \() ->
+                TaskItemHelpers.exampleTaskItem "- [x] foo" "old/path"
+                    |> TaskItem.updateFilePath "other/path" "new/path"
+                    |> TaskItem.filePath
+                    |> Expect.equal "old/path"
         ]

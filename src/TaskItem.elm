@@ -419,9 +419,13 @@ toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
             TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
 
 
-updateFilePath : String -> TaskItem -> TaskItem
-updateFilePath newPath (TaskItem fields_ subtasks_) =
-    TaskItem { fields_ | filePath = newPath } subtasks_
+updateFilePath : String -> String -> TaskItem -> TaskItem
+updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
+    if fields_.filePath == oldPath then
+        TaskItem { fields_ | filePath = newPath } subtasks_
+
+    else
+        taskItem
 
 
 

@@ -1,7 +1,10 @@
 - can I track renames/deletes etc for path/file filters?
+- de-bounce rewrites of settings file on rename
+- I commented out some tests..... TaskListTests.map
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - what about tags in front matter
+- update global settings to use filters instead of ignorePaths
 - update readme (on a branch)
 
 

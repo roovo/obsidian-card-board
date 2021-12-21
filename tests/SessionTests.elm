@@ -7,6 +7,7 @@ import SafeZipper
 import Session exposing (Session)
 import SettingsState
 import State
+import TaskItem
 import TaskList
 import Test exposing (..)
 
@@ -18,7 +19,8 @@ suite =
         , default
         , deleteItemsFromFile
         , finishAdding
-        , updateTaskItems
+        , replaceTaskItems
+        , updatePath
         ]
 
 
@@ -123,22 +125,36 @@ finishAdding =
         ]
 
 
-updateTaskItems : Test
-updateTaskItems =
-    describe "updateTaskItems"
-        [ test "if Waiting, sets to Loading with the given tasks" <|
+updatePath : Test
+updatePath =
+    describe "updatePath"
+        [ test "updates taskList paths" <|
             \() ->
                 Session.default
-                    |> Session.updateTaskItems "" TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.updatePath "a" "b"
+                    |> Session.taskList
+                    |> State.map (\tl -> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) [] tl)
+                    |> Expect.equal (State.Loading [ "b", "b" ])
+        ]
+
+
+replaceTaskItems : Test
+replaceTaskItems =
+    describe "replaceTaskItems"
+        [ test "if Waiting, leave as Waiting" <|
+            \() ->
+                Session.default
+                    |> Session.replaceTaskItems "" TaskListHelpers.taskListFromFileA
                     |> Session.taskList
                     |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loading [ "a1", "a2" ])
+                    |> Expect.equal State.Waiting
         , test "if Loading, replaces tasks from the file with those given" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.updateTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
                     |> Session.taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loading [ "n1", "n2", "g1", "g2" ])
@@ -148,7 +164,7 @@ updateTaskItems =
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.finishAdding
-                    |> Session.updateTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
                     |> Session.taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loaded [ "n1", "n2", "a1", "a2" ])
