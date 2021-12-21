@@ -1,4 +1,3 @@
-- I commented out some tests..... TaskListTests.map
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - what about tags in front matter

@@ -14,8 +14,7 @@ suite =
     concat
         [ combine
         , filter
-
-        -- , map
+        , map
         , parsing
         , replaceForFile
         , removeForFile
@@ -67,28 +66,27 @@ filter =
         ]
 
 
-
--- map : Test
--- map =
---     describe "map"
---         [ test "returns an empty TaskList if given an one" <|
---             \() ->
---                 ""
---                     |> Parser.run (TaskList.parser "" Nothing)
---                     |> Result.map (TaskList.map identity)
---                     |> Result.map TaskList.taskTitles
---                     |> Expect.equal (Ok [])
---         , test "maps the contents of a TaskList throgh a function" <|
---             \() ->
---                 """- [ ] foo
--- - [x] bar #tag1
--- """
---                     |> Parser.run (TaskList.parser "old/path" Nothing)
---                     |> Result.map (TaskList.map <| TaskItem.updateFilePath "new/path")
---                     |> Result.map TaskList.topLevelTasks
---                     |> Result.map (List.map TaskItem.filePath)
---                     |> Expect.equal (Ok [ "new/path", "new/path" ])
---         ]
+map : Test
+map =
+    describe "map"
+        [ test "returns an empty TaskList if given an one" <|
+            \() ->
+                ""
+                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Result.map (TaskList.map identity)
+                    |> Result.map TaskList.taskTitles
+                    |> Expect.equal (Ok [])
+        , test "maps the contents of a TaskList throgh a function" <|
+            \() ->
+                """- [ ] foo
+- [x] bar #tag1
+"""
+                    |> Parser.run (TaskList.parser "old/path" Nothing)
+                    |> Result.map (TaskList.map <| TaskItem.updateFilePath "old/path" "new/path")
+                    |> Result.map TaskList.topLevelTasks
+                    |> Result.map (List.map TaskItem.filePath)
+                    |> Expect.equal (Ok [ "new/path", "new/path" ])
+        ]
 
 
 parsing : Test
