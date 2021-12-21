@@ -280,7 +280,7 @@ export class CardBoardView extends ItemView {
 
     loadedFiles.forEach((file: TAbstractFile) => {
       if (file instanceof TFile && file.extension === "md") {
-        filterCandidates.push({ tag : "fileFilter", data : file.path.slice(0, -3)});
+        filterCandidates.push({ tag : "fileFilter", data : file.path});
       }
     });
 
