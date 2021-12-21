@@ -52,7 +52,7 @@ flagsTests =
                                     ]
                                 , globalSettings =
                                     { hideCompletedSubtasks = True
-                                    , ignorePaths = [ Filter.PathFilter "aPathToIgnore" ]
+                                    , ignorePaths = [ FilterHelpers.pathFilter "aPathToIgnore" ]
                                     , subTaskDisplayLimit = Just 7
                                     }
                                 }

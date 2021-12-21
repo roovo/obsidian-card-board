@@ -1,7 +1,6 @@
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - what about tags in front matter
-- update global settings to use filters instead of ignorePaths
 - update readme (on a branch)
 
 

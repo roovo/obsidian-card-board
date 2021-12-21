@@ -6,6 +6,7 @@ import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Semver
 import Test exposing (..)
 import TsJson.Decode as TsDecode
@@ -72,6 +73,6 @@ exampleSettings =
 exampleGlobalSettings : CardBoardSettings.GlobalSettings
 exampleGlobalSettings =
     { hideCompletedSubtasks = True
-    , ignorePaths = [ Filter.PathFilter "a/path" ]
+    , ignorePaths = [ FilterHelpers.pathFilter "a/path" ]
     , subTaskDisplayLimit = Just 17
     }
