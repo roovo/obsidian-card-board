@@ -10,6 +10,7 @@ module CardBoardSettings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import Filter exposing (Filter)
 import Semver
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -33,7 +34,7 @@ type alias Settings =
 
 type alias GlobalSettings =
     { hideCompletedSubtasks : Bool
-    , ignorePaths : String
+    , ignorePaths : List Filter
     , subTaskDisplayLimit : Maybe Int
     }
 
@@ -41,7 +42,7 @@ type alias GlobalSettings =
 defaultGlobalSettings : GlobalSettings
 defaultGlobalSettings =
     { hideCompletedSubtasks = False
-    , ignorePaths = ""
+    , ignorePaths = []
     , subTaskDisplayLimit = Nothing
     }
 
@@ -94,7 +95,7 @@ globalSettingsEncoder : TsEncode.Encoder GlobalSettings
 globalSettingsEncoder =
     TsEncode.object
         [ TsEncode.required "hideCompletedSubtasks" .hideCompletedSubtasks TsEncode.bool
-        , TsEncode.required "ignorePaths" .ignorePaths TsEncode.string
+        , TsEncode.required "ignorePaths" .ignorePaths (TsEncode.list Filter.encoder)
         , TsEncode.required "subTaskDisplayLimit" .subTaskDisplayLimit (TsEncode.maybe TsEncode.int)
         ]
 
@@ -153,7 +154,7 @@ globalSettingsDecoder : TsDecode.Decoder GlobalSettings
 globalSettingsDecoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "hideCompletedSubtasks" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "ignorePaths" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "ignorePaths" (TsDecode.list Filter.decoder))
         |> TsDecode.andMap (TsDecode.field "subTaskDisplayLimit" (TsDecode.maybe TsDecode.int))
 
 

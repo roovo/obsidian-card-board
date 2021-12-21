@@ -25,7 +25,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":"pathsToIgnore","subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":[{"tag":"pathFilter","data":"aPathToIgnore"}],"subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -50,7 +50,7 @@ flagsTests =
                                     ]
                                 , globalSettings =
                                     { hideCompletedSubtasks = True
-                                    , ignorePaths = "pathsToIgnore"
+                                    , ignorePaths = [ Filter.PathFilter "aPathToIgnore" ]
                                     , subTaskDisplayLimit = Just 7
                                     }
                                 }
@@ -199,7 +199,7 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
         , test "decodes version 0.2.0 settings data" <|
             \() ->
-                """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":"","subTaskDisplayLimit":null}}}}"""
+                """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = defaultGlobalSettings })
@@ -239,7 +239,7 @@ type alias DecodeResult value =
 defaultGlobalSettings : CardBoardSettings.GlobalSettings
 defaultGlobalSettings =
     { hideCompletedSubtasks = False
-    , ignorePaths = ""
+    , ignorePaths = []
     , subTaskDisplayLimit = Nothing
     }
 

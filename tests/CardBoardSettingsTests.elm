@@ -82,7 +82,7 @@ exampleSettings =
 exampleGlobalSettings : CardBoardSettings.GlobalSettings
 exampleGlobalSettings =
     { hideCompletedSubtasks = True
-    , ignorePaths = "a/path"
+    , ignorePaths = [ Filter.PathFilter "a/path" ]
     , subTaskDisplayLimit = Just 17
     }
 
