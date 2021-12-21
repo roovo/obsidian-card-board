@@ -258,7 +258,10 @@ update msg model =
                     Cmd.none
             in
             ( newModel
-            , cmdForTaskRedraws newPath (toSession newModel)
+            , Cmd.batch
+                [ cmdForTaskRedraws newPath (toSession newModel)
+                , cmdForFilterPathRename newPath (toSession newModel)
+                ]
             )
 
         ( VaultFileUpdated markdownFile, _ ) ->
@@ -272,6 +275,23 @@ update msg model =
             ( newModel
             , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
             )
+
+
+cmdForFilterPathRename : String -> Session -> Cmd msg
+cmdForFilterPathRename newPath session =
+    let
+        anyUpdatedFilters =
+            Session.boardConfigs session
+                |> SafeZipper.toList
+                |> List.concatMap BoardConfig.filters
+                |> List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths")
+                |> List.any (\f -> Filter.value f == newPath)
+    in
+    if anyUpdatedFilters then
+        InteropPorts.updateSettings (Session.boardConfigs session)
+
+    else
+        Cmd.none
 
 
 cmdForTaskRedraws : String -> Session -> Cmd Msg

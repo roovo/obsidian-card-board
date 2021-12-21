@@ -26,6 +26,7 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
 import CardBoardSettings exposing (GlobalSettings)
+import Filter
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
 import State exposing (State)
@@ -176,7 +177,14 @@ updatePath oldPath newPath session =
     let
         updateConfig : Config -> Config
         updateConfig config =
-            { config | taskList = State.map updateTaskListPaths config.taskList }
+            { config
+                | taskList = State.map updateTaskListPaths config.taskList
+                , boardConfigs = SafeZipper.map updateFilters config.boardConfigs
+            }
+
+        updateFilters : BoardConfig -> BoardConfig
+        updateFilters config =
+            BoardConfig.mapFilters (Filter.updatePath oldPath newPath) config
 
         updateTaskListPaths : TaskList -> TaskList
         updateTaskListPaths tasks =

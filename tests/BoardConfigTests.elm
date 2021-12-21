@@ -3,6 +3,7 @@ module BoardConfigTests exposing (suite)
 import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Expect
+import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
@@ -17,6 +18,7 @@ suite =
         [ default
         , encodeDecode
         , fromBoardType
+        , mapFilters
         , toggleIncludeOthers
         , toggleIncludeUndated
         , toggleIncludeUntagged
@@ -76,6 +78,28 @@ fromBoardType =
                 BoardConfig.fromBoardType "NOT dateBoard" "some title"
                     |> BoardConfig.title
                     |> Expect.equal "some title"
+        ]
+
+
+mapFilters : Test
+mapFilters =
+    describe "mapFilters"
+        [ test "updates the filters for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" "a title"
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.mapFilters (always Filter.dummy)
+                    |> BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "", "", "" ]
+        , test "updates the filters for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" "a title"
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.mapFilters (always Filter.dummy)
+                    |> BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "", "", "" ]
         ]
 
 

@@ -7,6 +7,7 @@ module Filter exposing
     , filterTypes
     , isAllowed
     , ofType
+    , updatePath
     , value
     )
 
@@ -124,6 +125,35 @@ isAllowed taskItem filter =
 
         TagFilter tag ->
             TaskItem.hasTag tag taskItem
+
+
+
+-- MODIFICATION
+
+
+updatePath : String -> String -> Filter -> Filter
+updatePath oldPath newPath filter =
+    case filter of
+        FileFilter filePath ->
+            if filePath == oldPath then
+                FileFilter newPath
+
+            else
+                filter
+
+        PathFilter path ->
+            if path == oldPath then
+                PathFilter newPath
+
+            else
+                filter
+
+        TagFilter tag ->
+            filter
+
+
+
+-- HELPERS
 
 
 fileIsFromPath : String -> String -> Bool

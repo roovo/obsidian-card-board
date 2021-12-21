@@ -8,6 +8,7 @@ module BoardConfig exposing
     , fromBoardType
     , isForDateBoard
     , isForTagBoard
+    , mapFilters
     , title
     , toggleIncludeOthers
     , toggleIncludeUndated
@@ -142,6 +143,16 @@ decoder_v_0_1_0 =
 
 
 -- MODIFICATION
+
+
+mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig
+mapFilters fn config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
 
 
 toggleIncludeUntagged : BoardConfig -> BoardConfig

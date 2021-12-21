@@ -1,4 +1,6 @@
+- do file filters work (.md extension)
 - can I track renames/deletes etc for path/file filters?
+- do I want to track deletes??
 - de-bounce rewrites of settings file on rename
 - I commented out some tests..... TaskListTests.map
 - would it be cleaner to have separate multiselects for each board and share

@@ -19,6 +19,7 @@ suite =
         , ofType
         , filterType
         , filterTypes
+        , updatePath
         , value
         ]
 
@@ -192,6 +193,42 @@ filterTypes =
             \() ->
                 Filter.filterTypes
                     |> Expect.equal [ "Files", "Paths", "Tags" ]
+        ]
+
+
+updatePath : Test
+updatePath =
+    describe "updatePath"
+        [ test "updates a matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.ext"
+                    |> Filter.updatePath "a/b/c.ext" "c.ext"
+                    |> Filter.value
+                    |> Expect.equal "c.ext"
+        , test "does not update a non-matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.ext"
+                    |> Filter.updatePath "a/b/c" "c.ext"
+                    |> Filter.value
+                    |> Expect.equal "a/b/c.ext"
+        , test "updates a matching path filter" <|
+            \() ->
+                FilterHelpers.pathFilter "a/b/c"
+                    |> Filter.updatePath "a/b/c" "/"
+                    |> Filter.value
+                    |> Expect.equal "/"
+        , test "does not update a non-matching path filter" <|
+            \() ->
+                FilterHelpers.pathFilter "a/b/c"
+                    |> Filter.updatePath "a/b/c/d" "c.ext"
+                    |> Filter.value
+                    |> Expect.equal "a/b/c"
+        , test "does not update a tag filter" <|
+            \() ->
+                FilterHelpers.tagFilter "a/b/c"
+                    |> Filter.updatePath "a/b/c" "newTag"
+                    |> Filter.value
+                    |> Expect.equal "a/b/c"
         ]
 
 

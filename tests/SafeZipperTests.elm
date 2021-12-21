@@ -19,6 +19,7 @@ suite =
         , indexedMapSelectedAndRest
         , last
         , length
+        , map
         , mapCurrent
         , next
         , selectedIndex
@@ -261,6 +262,19 @@ length =
                 SafeZipper.fromList randomList
                     |> SafeZipper.length
                     |> Expect.equal (List.length randomList)
+        ]
+
+
+map : Test
+map =
+    describe "map"
+        [ test "applies the map function to all the zipper items" <|
+            \() ->
+                SafeZipper.fromList [ 1, 2, 3 ]
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.map ((+) 10)
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 11, 12, 13 ]
         ]
 
 

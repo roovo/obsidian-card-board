@@ -1,6 +1,8 @@
 module SessionTests exposing (suite)
 
+import BoardConfig
 import Expect
+import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
@@ -136,6 +138,17 @@ updatePath =
                     |> Session.taskList
                     |> State.map (\tl -> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) [] tl)
                     |> Expect.equal (State.Loading [ "b", "b" ])
+        , test "updates filter paths" <|
+            \() ->
+                Session.default
+                    |> Session.mapConfig (\c -> { c | boardConfigs = SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ] })
+                    |> Session.updatePath "a/path" "a"
+                    |> Session.updatePath "b/path" "b"
+                    |> Session.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.concatMap BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "a", "b", "tag1", "tag2" ]
         ]
 
 
