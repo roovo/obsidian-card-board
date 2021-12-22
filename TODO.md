@@ -1,6 +1,8 @@
+- what about tags in front matter
+- don't hide tags for the containing column on tagboards
+- update type definitions in view/main.ts
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
-- what about tags in front matter
 - update readme (on a branch)
 
 
