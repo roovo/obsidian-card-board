@@ -1,7 +1,7 @@
 {
   "name": "cardboard",
-  "version": "0.2.4",
-  "description": "Card based view for your obsidian TODOs",
+  "version": "0.3.2",
+  "description": "Card based view for your obsidian Tasks",
   "main": "main.js",
   "scripts": {
     "build": "webpack --progress --color --mode=production",
