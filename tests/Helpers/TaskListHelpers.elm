@@ -1,5 +1,6 @@
 module Helpers.TaskListHelpers exposing
-    ( exampleDateBoardTaskList
+    ( basicParser
+    , exampleDateBoardTaskList
     , exampleTagBoardTaskList
     , parsedTasks
     , taskListFromFile
@@ -9,13 +10,18 @@ module Helpers.TaskListHelpers exposing
     )
 
 import Helpers.DateTimeHelpers as DateTimeHelpers
-import Parser
+import Parser exposing (Parser)
 import TaskList exposing (TaskList)
+
+
+basicParser : Parser TaskList
+basicParser =
+    TaskList.parser "" Nothing [] 0
 
 
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d []) ts
+    Parser.run (TaskList.parser p d [] 0) ts
         |> Result.withDefault TaskList.empty
 
 

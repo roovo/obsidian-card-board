@@ -73,13 +73,14 @@ frontMatterAndBodyFrom contents =
     else if hasFrontMatter splitContents then
         let
             bodyOffset =
-                List.head splitContents
-                    |> Maybe.map String.lines
-                    |> Maybe.map List.length
-                    |> Maybe.withDefault 0
+                splitContents
+                    |> List.take 2
+                    |> String.join ""
+                    |> String.lines
+                    |> List.length
         in
         ( (List.head << List.drop 1) splitContents
-        , bodyOffset + 2
+        , bodyOffset
         , Just <| (String.dropLeft 1 << String.join "" << List.drop 2) splitContents
         )
 

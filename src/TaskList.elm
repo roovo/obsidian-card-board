@@ -44,16 +44,21 @@ empty =
 -- PARSING
 
 
-parser : String -> Maybe String -> List String -> Parser TaskList
-parser filePath fileDate frontMatterTags =
-    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags)
+parser : String -> Maybe String -> List String -> Int -> Parser TaskList
+parser filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
         |> P.map (\ts -> TaskList ts)
 
 
 fromMarkdown : MarkdownFile -> TaskList
 fromMarkdown markdownFile =
     P.run
-        (parser markdownFile.filePath markdownFile.fileDate markdownFile.frontMatterTags)
+        (parser
+            markdownFile.filePath
+            markdownFile.fileDate
+            markdownFile.frontMatterTags
+            markdownFile.bodyOffset
+        )
         (markdownFile.body ++ "\n")
         |> Result.withDefault empty
 
@@ -170,11 +175,11 @@ itemsNotFromFile pathToFile taskItems =
         |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> List String -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
-taskItemsHelp filePath fileDate frontMatterTags revTaskItems =
+taskItemsHelp : String -> Maybe String -> List String -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
+taskItemsHelp filePath fileDate frontMatterTags bodyOffset revTaskItems =
     P.oneOf
         [ P.backtrackable
-            (TaskItem.parser filePath fileDate frontMatterTags
+            (TaskItem.parser filePath fileDate frontMatterTags bodyOffset
                 |> P.map (\taskItem -> P.Loop (taskItem :: revTaskItems))
             )
         , anyLineParser

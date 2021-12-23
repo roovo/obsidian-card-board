@@ -3,6 +3,7 @@ module CardTests exposing (suite)
 import Card exposing (Highlight(..))
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
@@ -66,49 +67,49 @@ highlight =
         [ test "returns HighlightNone for a task with no due date" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightImportant for a task that is due today" <|
             \() ->
                 "- [ ] foo @due(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightImportant)
         , test "returns HighlightNone for a completed task that is due today" <|
             \() ->
                 "- [x] foo @due(2020-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightCritical for a task that is overdue" <|
             \() ->
                 "- [ ] foo @due(2019-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightCritical)
         , test "returns HighlightNone for a completed task that is overdue" <|
             \() ->
                 "- [x] foo @due(2019-01-01)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightGood for a task that is due in the future" <|
             \() ->
                 "- [ ] foo @due(2020-01-02)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightGood)
         , test "returns HighlightNone for a completed task that is due in the future" <|
             \() ->
                 "- [x] foo @due(2020-01-02)"
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
                     |> Result.map (Card.highlight { now = now, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
@@ -137,7 +138,7 @@ markdownWithIds =
   - [ ] bar
  more notes
   """
-                    |> Parser.run (TaskItem.parser "file" Nothing [])
+                    |> Parser.run (TaskItem.parser "file" Nothing [] 0)
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.markdownWithIds
@@ -177,7 +178,7 @@ subtasks =
                 """- [ ] foo
 
   - [ ] bar"""
-                    |> Parser.run (TaskItem.parser "" Nothing [])
+                    |> Parser.run TaskItemHelpers.basicParser
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "a_prefix")
                     |> Maybe.map Card.subtasks
@@ -211,5 +212,5 @@ now =
 taskItem : Maybe TaskItem
 taskItem =
     "- [ ] foo"
-        |> Parser.run (TaskItem.parser "taskItemPath" Nothing [])
+        |> Parser.run (TaskItem.parser "taskItemPath" Nothing [] 0)
         |> Result.toMaybe

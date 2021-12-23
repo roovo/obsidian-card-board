@@ -93,7 +93,6 @@ rewriteTasks timeWithZone filePath taskItems =
             , originalText = TaskItem.originalText taskItem
             , newText = taskItem |> TaskItem.toggleCompletion timeWithZone |> TaskItem.toString
             }
-                |> Debug.log "rewrite details"
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder

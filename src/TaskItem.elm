@@ -413,13 +413,14 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 -- SERIALIZATION
 
 
-parser : String -> Maybe String -> List String -> Parser TaskItem
-parser pathToFile fileDate frontMatterTags =
+parser : String -> Maybe String -> List String -> Int -> Parser TaskItem
+parser pathToFile fileDate frontMatterTags bodyOffset =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
         |= P.succeed pathToFile
         |= P.succeed frontMatterTags
+        |= P.succeed bodyOffset
         |= P.getRow
         |= prefixParser
         |. P.chompWhile isSpaceOrTab
@@ -430,11 +431,11 @@ parser pathToFile fileDate frontMatterTags =
         |= P.getSource
     )
         |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags)
+        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset)
 
 
-taskItemFieldsBuilder : Int -> Int -> String -> List String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
-taskItemFieldsBuilder startOffset startColumn path frontMatterTags row completion_ dueFromFile contents endOffset source =
+taskItemFieldsBuilder : Int -> Int -> String -> List String -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
         sourceText =
@@ -553,7 +554,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags row completio
     , dueTag = tagDueDate
     , filePath = path
     , frontMatterTags = frontMatterTags
-    , lineNumber = row
+    , lineNumber = bodyOffset + row
     , notes = ""
     , originalText = sourceText
     , tags = obsidianTags
@@ -618,8 +619,8 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-addAnySubtasksAndNotes : String -> Maybe String -> List String -> TaskItemFields -> Parser TaskItem
-addAnySubtasksAndNotes pathToFile fileDate frontMatterTags fields_ =
+addAnySubtasksAndNotes : String -> Maybe String -> List String -> Int -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
         buildTaskItem indentedItems =
@@ -653,14 +654,14 @@ addAnySubtasksAndNotes pathToFile fileDate frontMatterTags fields_ =
                 |> String.join "\n"
     in
     P.succeed identity
-        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags)
+        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags bodyOffset)
         |> P.andThen buildTaskItem
 
 
-indentedItemParser : String -> Maybe String -> List String -> Parser IndentedItem
-indentedItemParser pathToFile fileDate frontMatterTags =
+indentedItemParser : String -> Maybe String -> List String -> Int -> Parser IndentedItem
+indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
     P.oneOf
-        [ subTaskParser pathToFile fileDate frontMatterTags
+        [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
         , notesParser
         ]
 
@@ -671,13 +672,14 @@ notesParser =
         |= ParserHelper.anyLineParser
 
 
-subTaskParser : String -> Maybe String -> List String -> Parser IndentedItem
-subTaskParser pathToFile fileDate frontMatterTags =
+subTaskParser : String -> Maybe String -> List String -> Int -> Parser IndentedItem
+subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
         |= P.succeed pathToFile
         |= P.succeed frontMatterTags
+        |= P.succeed bodyOffset
         |= P.getRow
         |= prefixParser
         |. P.chompWhile isSpaceOrTab
