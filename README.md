@@ -2,9 +2,16 @@
 An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 (hopefully anyway).
 
-If you're like me and have tasks dotted all around your vault, then CardBoard is built
-to help you keep track of them.  Daily notes support built in, plus you can use `#tags` to
-define custom boards.
+- Keep your tasks wherever you like in your vault.
+- View them on kanban style boards.
+- Use regular tasks and subtasks.
+- Two board types supported:
+  - Date based (with daily/periodic notes support).
+  - Tag based (use `#tags` to define your boards).
+
+## New
+- Per-board filtering using file, path, and tag filters.
+- Front matter tag support.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -12,7 +19,7 @@ define custom boards.
 Please install via the regular Community Plugins setting tab within Obsidian.
 
 If you want to keep up to date with any Beta releases then add it to the v.handy
-[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat) as well.
+[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
 
 ## Use
 When installed, you can launch the plugin:
@@ -27,9 +34,9 @@ board.  There are 2 types of board:
 
 - **Date based**: looks like the main screenshot above.
 - **Tag based**: uses tags to define the columns (you need to include tags on
-  your tasks for this to work).
+  your tasks or in front matter for this to work).
 
-Name and configure your board and you are good to go.
+Name and configure your boards and you are good to go.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
@@ -44,7 +51,8 @@ What appears on the card depends on what your task looks like:
 - Anything that is indented under a task will appear in the body of the task.
   - Indented tasks will appear as subtasks (all subtasks are grouped together).
   - Indented text will appear as notes.
-- #tags on the line of the task (or any subtasks) will appear at the top of the card.
+- `#tags` in front matter or on the line of the task (or any subtasks) will
+  appear at the top of the card.
 - Due date (if given) will appear at the bottom of the card.
 
 So, if you had the following in one of your markdown files:
@@ -110,8 +118,8 @@ The current behaviour for the different columns is:
 I am not convinced that this is the best strategy so this may well change in a future release.
 
 ### Customising Tags
-If you like to apply different styles to different tags, this is now possible
-(thank you @darthmachina).  Tags now have a class that reflects the tag name.
+If you like to apply custom styles to your tags, this is now possible
+(thank you @darthmachina).  Tags have a class that reflects the tag name.
 So if you have a tag `#foo/bar` you will be able to style it with your favorite
 color for foo/bars (which just has to be HotPink) using:
 
@@ -123,8 +131,8 @@ color for foo/bars (which just has to be HotPink) using:
 ```
 
 ## Date boards
-You will get the best out of these if you are using the (Core) Daily Notes
-or the (Community) Periodic Notes plugins, as any tasks you place on a daily
+You will get the best out of these if you are using the (core) Daily Notes
+or the (community) Periodic Notes plugins, as any tasks you place on a daily
 note will be assigned to the day of the note.
 
 You can also assign a date to any task using the format:
@@ -150,10 +158,38 @@ you can define a board that shows tasks tagged with these in separate columns:
 
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
 
-
 ### Subtags
 If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
 
+## Front Matter Tags
+If you want to give all the tasks on a page the same tag, you can put it in the
+page front matter:
+
+```
+---
+tags: [ project1 ]
+---
+
+# Project 1
+
+- [ ] this task will automatically have a project1 tag
+```
+
+## Board Filters
+You can filter what appears on each board in the board settings.  There are 3
+types of filter:
+
+- **file**: will only include tasks from the chosen files.
+- **path**: will only include tasks from files in the chosen paths.
+- **tag**: will only include tasks with the chosen tags (including front matter tags).
+
+You can use multiple filters of each type:
+- If you have multiple file and path filters then only tasks from the chosen
+  files or paths will be shown.
+- If you use multiple tag filters then tasks with any of the chosen tags will
+  be included.
+- If you use file/path filters as well as tag filters then only tasks from
+  the chosen files or paths which also have any of the chosen tags will be shown.
 
 ## Settings
 Plugin settings are accessible from the plugin view itself, via the settings icon
