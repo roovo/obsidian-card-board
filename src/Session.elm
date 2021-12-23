@@ -16,7 +16,6 @@ module Session exposing
     , taskContainingId
     , taskFromId
     , taskList
-    , taskListLoaded
     , timeWithZone
     , updateConfigs
     , updatePath
@@ -231,11 +230,6 @@ taskContainingId id (Session config) =
             Nothing
 
 
-taskListLoaded : Session -> Bool
-taskListLoaded (Session config) =
-    State.hasLoaded config.taskList
-
-
 updateConfigs : List BoardConfig -> Session -> Session
 updateConfigs newConfigs ((Session config) as session) =
     case config.taskList of
@@ -247,10 +241,12 @@ updateConfigs newConfigs ((Session config) as session) =
 
         State.Loaded _ ->
             let
+                configs : SafeZipper BoardConfig
                 configs =
                     SafeZipper.fromList newConfigs
                         |> SafeZipper.atIndex newIndex
 
+                newIndex : Int
                 newIndex =
                     config.boardConfigs
                         |> SafeZipper.currentIndex

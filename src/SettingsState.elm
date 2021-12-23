@@ -11,7 +11,6 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import InteropPorts
 import SafeZipper exposing (SafeZipper)
 
 
@@ -104,7 +103,7 @@ confirmAdd settingsState =
 confirmDelete : SettingsState -> Action
 confirmDelete settingsState =
     case settingsState of
-        AddingBoard c ->
+        AddingBoard _ ->
             NoAction
 
         EditingBoard ->

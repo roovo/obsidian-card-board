@@ -5,7 +5,6 @@ import BoardConfig
 import Card
 import DateBoard
 import Expect
-import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers

@@ -265,12 +265,14 @@ tags ((TaskItem fields_ _) as taskItem) =
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
 tasksToToggle id_ timeWithZone taskItem =
     let
+        idBelongsToSubtask : Bool
         idBelongsToSubtask =
             taskItem
                 |> subtasks
                 |> List.map id
                 |> List.member id_
 
+        resultIsAllSubtasksCompleted : Bool
         resultIsAllSubtasksCompleted =
             subtasks taskItem
                 |> List.map
@@ -283,13 +285,16 @@ tasksToToggle id_ timeWithZone taskItem =
                     )
                 |> List.all isCompleted
 
+        matchingTaskItem : List TaskItem
         matchingTaskItem =
             (taskItem :: subtasks taskItem)
                 |> List.filter (\t -> id t == id_)
 
+        topLevelTaskIsNotAlreadyComplete : Bool
         topLevelTaskIsNotAlreadyComplete =
             not <| isCompleted taskItem
 
+        shouldAutoComplete : Bool
         shouldAutoComplete =
             case autoComplete taskItem of
                 TrueSpecified ->
@@ -313,12 +318,14 @@ title =
 toString : TaskItem -> String
 toString (TaskItem fields_ _) =
     let
+        leadingWhiteSpace : String
         leadingWhiteSpace =
             fields_.originalText
                 |> String.toList
-                |> LE.takeWhile ParserHelper.isSpaceOrTab
+                |> LE.takeWhile isSpaceOrTab
                 |> String.fromList
 
+        checkbox : String
         checkbox =
             case fields_.completion of
                 Incomplete ->
@@ -327,6 +334,7 @@ toString (TaskItem fields_ _) =
                 _ ->
                     "- [x] "
 
+        fieldTags : String
         fieldTags =
             if List.length fields_.tags > 0 then
                 fields_.tags
@@ -337,6 +345,7 @@ toString (TaskItem fields_ _) =
             else
                 ""
 
+        dueTag : String
         dueTag =
             case fields_.dueTag of
                 Just date ->
@@ -345,10 +354,12 @@ toString (TaskItem fields_ _) =
                 _ ->
                     ""
 
+        completionTag : String
         completionTag =
             case fields_.completion of
                 CompletedAt completionTime ->
                     let
+                        completionString : String
                         completionString =
                             completionTime
                                 |> Iso8601.fromTime
@@ -359,6 +370,7 @@ toString (TaskItem fields_ _) =
                 _ ->
                     ""
 
+        autoCompleteTag : String
         autoCompleteTag =
             case fields_.autoComplete of
                 NotSpecifed ->

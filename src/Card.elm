@@ -13,7 +13,7 @@ module Card exposing
     , taskItemId
     )
 
-import Date
+import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 
@@ -49,6 +49,7 @@ fromTaskItem =
 highlight : TimeWithZone -> Card -> Highlight
 highlight timeWithZone (Card _ item) =
     let
+        datestamp : Date
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
@@ -88,19 +89,23 @@ filePath (Card _ item) =
 markdownWithIds : Card -> List { id : String, markdown : String }
 markdownWithIds card =
     let
+        item : TaskItem
         item =
             taskItem card
 
+        subtaskMarkdownWithId : ( String, TaskItem ) -> { id : String, markdown : String }
         subtaskMarkdownWithId ( subtaskId, subtask ) =
             { id = subtaskId
             , markdown = TaskItem.title subtask
             }
 
+        subtasksWithIds : List { id : String, markdown : String }
         subtasksWithIds =
             card
                 |> subtasks
                 |> List.map subtaskMarkdownWithId
 
+        notesWithId : List { id : String, markdown : String }
         notesWithId =
             if TaskItem.hasNotes item then
                 [ { id = notesId card
@@ -111,6 +116,7 @@ markdownWithIds card =
             else
                 []
 
+        markdownWithId : Card -> List { id : String, markdown : String }
         markdownWithId c =
             [ { id = id c
               , markdown = TaskItem.title item

@@ -7,7 +7,7 @@ import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import TaskItem exposing (TaskItem)
+import TaskItem
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 

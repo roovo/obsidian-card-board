@@ -5,7 +5,6 @@ module Page.Helper.Multiselect exposing
     , SelectionItem
     , deleteHighlightedItem
     , init
-    , receiveError
     , recieveItems
     , selectedItems
     , update
@@ -15,13 +14,10 @@ module Page.Helper.Multiselect exposing
 
 import AssocList as Dict exposing (Dict)
 import Browser.Dom as Dom
-import FeatherIcons
-import Filter exposing (Filter)
 import Fuzzy
 import Html exposing (Html)
 import Html.Attributes exposing (class, id, type_, value)
 import Html.Events as Events
-import Json.Decode as Decode exposing (Decoder)
 import Process
 import Task
 
@@ -33,9 +29,7 @@ import Task
 type Model msg a
     = Ready (Config msg a) (Status a)
     | SettingItems (Config msg a) (Status a)
-    | AddingItems (Config msg a) (Status a)
     | ReceivedItems (Config msg a) (Status a)
-    | ReceivedError (Config msg a) (Status a) String
 
 
 type alias Config msg a =
@@ -91,13 +85,7 @@ config model =
         SettingItems conf _ ->
             conf
 
-        AddingItems conf _ ->
-            conf
-
         ReceivedItems conf _ ->
-            conf
-
-        ReceivedError conf _ _ ->
             conf
 
 
@@ -115,13 +103,7 @@ status model =
         SettingItems _ selectStatus ->
             selectStatus
 
-        AddingItems _ selectStatus ->
-            selectStatus
-
         ReceivedItems _ selectStatus ->
-            selectStatus
-
-        ReceivedError _ selectStatus _ ->
             selectStatus
 
 
@@ -173,14 +155,8 @@ mapStatus transform model =
         SettingItems conf selectStatus ->
             SettingItems conf (transform selectStatus)
 
-        AddingItems conf selectStatus ->
-            AddingItems conf (transform selectStatus)
-
         ReceivedItems conf selectStatus ->
             ReceivedItems conf (transform selectStatus)
-
-        ReceivedError conf selectStatus error ->
-            ReceivedError conf (transform selectStatus) error
 
 
 recieveItems : Model msg a -> List (SelectionItem a) -> Model msg a
@@ -198,24 +174,8 @@ recieveItems model items =
                     , showDropDown = True
                 }
 
-        AddingItems conf selectStatus ->
-            ReceivedItems
-                conf
-                { selectStatus
-                    | dropdownItems = selectStatus.dropdownItems ++ items
-                    , itemWasPressed = False
-                }
-
         ReceivedItems _ _ ->
             model
-
-        ReceivedError _ _ _ ->
-            model
-
-
-receiveError : Model msg a -> String -> Model msg a
-receiveError model error =
-    ReceivedError (config model) (status model) error
 
 
 addToSelected : SelectionItem a -> Model msg a -> Model msg a
@@ -255,8 +215,7 @@ updateSelectedItems selectedItems_ model =
 
 type Msg msg a
     = DelayedRequest String
-    | DropdownScroll ScrollInfo
-    | FocusGained (Result Dom.Error ())
+    | FocusGained
     | FocusLost
     | ItemMouseDown
     | ItemSelected (SelectionItem a)
@@ -297,14 +256,7 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        DropdownScroll { scrollHeight, scrollTop } ->
-            if ifShouldFetchMore scrollTop scrollHeight model then
-                fetchMore model
-
-            else
-                ( model, Cmd.none )
-
-        FocusGained _ ->
+        FocusGained ->
             if itemWasPressed model && not (Dict.isEmpty (selectedItems model)) then
                 ( model
                     |> mapStatus (\s -> { s | itemWasPressed = False })
@@ -344,6 +296,7 @@ update msg model =
 
         SendRequest ->
             let
+                fetchMsg : Int -> String -> msg
                 fetchMsg =
                     (.fetchMsg << config) model
             in
@@ -357,29 +310,19 @@ update msg model =
 setFocus : (Msg msg a -> msg) -> Cmd msg
 setFocus msgTagger =
     Dom.focus "multiSelectInput"
-        |> Task.attempt (FocusGained >> msgTagger)
+        |> Task.attempt (always FocusGained >> msgTagger)
 
 
 reset : Model msg a -> ( Model msg a, Cmd msg )
 reset model =
     let
+        newModel : Model msg a
         newModel =
             case model of
                 Ready _ _ ->
                     model
 
                 SettingItems conf selectStatus ->
-                    Ready conf
-                        { selectedItems = selectStatus.selectedItems
-                        , highlightedItem = ""
-                        , searchTerm = ""
-                        , page = 0
-                        , dropdownItems = []
-                        , showDropDown = False
-                        , itemWasPressed = False
-                        }
-
-                AddingItems conf selectStatus ->
                     Ready conf
                         { selectedItems = selectStatus.selectedItems
                         , highlightedItem = ""
@@ -397,17 +340,6 @@ reset model =
                         , searchTerm = ""
                         , page = 0
                         , dropdownItems = selectStatus.dropdownItems
-                        , showDropDown = False
-                        , itemWasPressed = False
-                        }
-
-                ReceivedError conf selectStatus _ ->
-                    Ready conf
-                        { selectedItems = selectStatus.selectedItems
-                        , highlightedItem = ""
-                        , searchTerm = ""
-                        , page = 0
-                        , dropdownItems = []
                         , showDropDown = False
                         , itemWasPressed = False
                         }
@@ -436,22 +368,6 @@ performRequest msgTagger =
     (SendRequest |> msgTagger)
         |> Task.succeed
         |> Task.perform identity
-
-
-fetchMore : Model msg a -> ( Model msg a, Cmd msg )
-fetchMore model =
-    ( AddingItems
-        (config model)
-        { selectedItems = selectedItems model
-        , highlightedItem = highlightedItem model
-        , searchTerm = searchTerm model
-        , dropdownItems = dropdownItems model
-        , showDropDown = showDropDown model
-        , itemWasPressed = False
-        , page = page model + 1
-        }
-    , performRequest <| tagger model
-    )
 
 
 delayedSend : Float -> msg -> Cmd msg
@@ -491,6 +407,7 @@ chosenItems conf selected highlighted msgTagger =
 chosenItem : Config msg a -> String -> (Msg msg a -> msg) -> a -> String -> Html msg
 chosenItem conf highlighted msgTagger item itemText =
     let
+        itemClass : String
         itemClass =
             if itemText == highlighted then
                 "multiselect-item selected"
@@ -529,31 +446,20 @@ dropDownMenu : Model msg a -> Html msg
 dropDownMenu model =
     case model of
         Ready conf selectStatus ->
-            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
+            itemsOrDefault conf selectStatus (Html.div [] [])
 
         SettingItems conf selectStatus ->
-            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
-
-        AddingItems conf selectStatus ->
-            itemsOrDefault conf selectStatus (tagger model) (Html.div [] [])
+            itemsOrDefault conf selectStatus (Html.div [] [])
 
         ReceivedItems conf selectStatus ->
             itemsOrDefault
                 conf
                 selectStatus
-                (tagger model)
-                (wrapInDropDown (tagger model) <| showStatic conf.notFoundText)
-
-        ReceivedError conf selectStatus error ->
-            itemsOrDefault
-                conf
-                selectStatus
-                (tagger model)
-                (wrapInDropDown (tagger model) <| showStatic error)
+                (wrapInDropDown <| showStatic conf.notFoundText)
 
 
-itemsOrDefault : Config msg a -> Status a -> (Msg msg a -> msg) -> Html msg -> Html msg
-itemsOrDefault conf selectStatus msgTagger element =
+itemsOrDefault : Config msg a -> Status a -> Html msg -> Html msg
+itemsOrDefault conf selectStatus element =
     case ( selectStatus.showDropDown, selectStatus.dropdownItems ) of
         ( False, _ ) ->
             Html.text ""
@@ -565,7 +471,7 @@ itemsOrDefault conf selectStatus msgTagger element =
             selectStatus.dropdownItems
                 |> fuzzyMatch selectStatus.searchTerm
                 |> showSelectionSections conf
-                |> wrapInDropDown msgTagger
+                |> wrapInDropDown
 
 
 fuzzyMatch : String -> List (SelectionItem a) -> List (SelectionItem a)
@@ -594,8 +500,8 @@ fuzzyMatch needle selectionItems =
         |> List.map Tuple.second
 
 
-wrapInDropDown : (Msg msg a -> msg) -> List (Html msg) -> Html msg
-wrapInDropDown msgTagger content =
+wrapInDropDown : List (Html msg) -> Html msg
+wrapInDropDown content =
     Html.div [ class "suggestion-container" ] content
 
 
@@ -640,46 +546,3 @@ showSelections conf selections =
 
 
 -- SCROLLING
-
-
-type alias ScrollInfo =
-    { scrollHeight : Int
-    , scrollTop : Int
-    }
-
-
-scrollPosition : (ScrollInfo -> a) -> Decoder a
-scrollPosition wrapper =
-    Decode.map2 ScrollInfo
-        (Decode.at [ "target", "scrollHeight" ] Decode.int)
-        (Decode.map2 (+)
-            (Decode.at [ "target", "scrollTop" ] Decode.int)
-            (Decode.at [ "target", "clientHeight" ] Decode.int)
-        )
-        |> Decode.map wrapper
-
-
-ifShouldFetchMore : Int -> Int -> Model msg a -> Bool
-ifShouldFetchMore scrollTop scrollHeight model =
-    case model of
-        Ready _ _ ->
-            False
-
-        SettingItems _ _ ->
-            False
-
-        AddingItems _ _ ->
-            False
-
-        ReceivedItems _ selectStatus ->
-            let
-                scrollPageHeight =
-                    toFloat scrollHeight / toFloat (selectStatus.page + 1)
-
-                scrollPageTop =
-                    toFloat scrollTop - toFloat scrollHeight + scrollPageHeight
-            in
-            scrollPageTop / scrollPageHeight > 0.7
-
-        ReceivedError _ _ _ ->
-            False

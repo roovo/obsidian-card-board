@@ -3,7 +3,6 @@ module SettingsStateTests exposing (suite)
 import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Expect
-import Filter
 import Helpers.FilterHelpers as FilterHelpers
 import SafeZipper exposing (SafeZipper)
 import SettingsState
@@ -162,16 +161,6 @@ exampleBoardConfigTagBoard =
 exampleBoardConfigsDateBoard : SafeZipper BoardConfig
 exampleBoardConfigsDateBoard =
     SafeZipper.fromList <| [ exampleBoardConfigDateBoard ]
-
-
-exampleBoardConfigsTagBoard : SafeZipper BoardConfig
-exampleBoardConfigsTagBoard =
-    SafeZipper.fromList <| [ exampleBoardConfigTagBoard ]
-
-
-exampleBoardConfigsBoth : SafeZipper BoardConfig
-exampleBoardConfigsBoth =
-    SafeZipper.fromList <| [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]
 
 
 exampleDateBoardConfig : DateBoard.Config

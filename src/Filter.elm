@@ -74,7 +74,8 @@ decoder =
 ofType : String -> List Filter -> List Filter
 ofType typeString filters =
     let
-        foo filter =
+        isMatchingType : Filter -> Bool
+        isMatchingType filter =
             case filter of
                 FileFilter _ ->
                     typeString == "fileFilter"
@@ -85,19 +86,19 @@ ofType typeString filters =
                 TagFilter _ ->
                     typeString == "tagFilter"
     in
-    List.filter foo filters
+    List.filter isMatchingType filters
 
 
 filterType : Filter -> String
 filterType filter =
     case filter of
-        FileFilter f ->
+        FileFilter _ ->
             "Files"
 
-        PathFilter f ->
+        PathFilter _ ->
             "Paths"
 
-        TagFilter f ->
+        TagFilter _ ->
             "Tags"
 
 
@@ -148,7 +149,7 @@ updatePath oldPath newPath filter =
             else
                 filter
 
-        TagFilter tag ->
+        TagFilter _ ->
             filter
 
 
@@ -159,12 +160,14 @@ updatePath oldPath newPath filter =
 fileIsFromPath : String -> String -> Bool
 fileIsFromPath file path =
     let
+        pathComponents : List String
         pathComponents =
             path
                 |> String.replace "\\" "/"
                 |> String.split "/"
                 |> List.filter (not << String.isEmpty)
 
+        filePathComponents : List String
         filePathComponents =
             file
                 |> String.replace "\\" "/"

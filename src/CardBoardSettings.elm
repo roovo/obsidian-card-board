@@ -156,8 +156,3 @@ globalSettingsDecoder =
         |> TsDecode.andMap (TsDecode.field "hideCompletedSubtasks" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "ignorePaths" (TsDecode.list Filter.decoder))
         |> TsDecode.andMap (TsDecode.field "subTaskDisplayLimit" (TsDecode.maybe TsDecode.int))
-
-
-defaultGlobalSettingsDecoder : TsDecode.Decoder GlobalSettings
-defaultGlobalSettingsDecoder =
-    TsDecode.succeed defaultGlobalSettings

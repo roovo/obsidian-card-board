@@ -26,7 +26,6 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
-    | UpdateSettings Settings
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -43,7 +42,7 @@ type ToElm
 
 
 type alias Flags =
-    { settings : CardBoardSettings.Settings
+    { settings : Settings
     , now : Int
     , zone : Int
     }
@@ -137,7 +136,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths _ vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -159,9 +158,6 @@ fromElm =
 
                 RequestFilterCandidates ->
                     vRequestPaths
-
-                UpdateSettings info ->
-                    vUpdateConfig info
 
                 UpdateTasks info ->
                     vUpdateTasks info

@@ -58,6 +58,7 @@ columns timeWithZone boardIndex (Board config taskList) =
 filterTaskList : BoardConfig -> TaskList -> TaskList
 filterTaskList config taskList =
     let
+        filters : List Filter
         filters =
             BoardConfig.filters config
     in

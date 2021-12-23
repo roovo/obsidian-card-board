@@ -4,7 +4,6 @@ import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
 import MarkdownFile exposing (decoder)
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 
 
 suite : Test

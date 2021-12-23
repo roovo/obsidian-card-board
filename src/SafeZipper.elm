@@ -168,18 +168,22 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
 
         SafeZipper ls c rs ->
             let
+                beforeLength : Int
                 beforeLength =
                     List.length ls
 
+                mappedBefore : List b
                 mappedBefore =
                     ls
                         |> List.reverse
                         |> List.indexedMap restFn
                         |> List.reverse
 
+                mappedCurrent : b
                 mappedCurrent =
                     selectedFn beforeLength c
 
+                mappedAfter : List b
                 mappedAfter =
                     List.indexedMap (\i item -> restFn (beforeLength + 1 + i) item) rs
             in
@@ -213,6 +217,7 @@ mapCurrent fn zipper =
 deleteCurrent : SafeZipper a -> SafeZipper a
 deleteCurrent zipper =
     let
+        index : Int
         index =
             zipper
                 |> currentIndex

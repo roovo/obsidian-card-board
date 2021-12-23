@@ -1,11 +1,10 @@
 module FilterTests exposing (suite)
 
 import Expect
-import Filter exposing (Filter)
+import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
-import Parser
 import Test exposing (..)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode

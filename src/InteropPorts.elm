@@ -14,12 +14,11 @@ port module InteropPorts exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardSettings exposing (GlobalSettings)
+import CardBoardSettings
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
 import SafeZipper exposing (SafeZipper)
-import Semver
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
@@ -88,6 +87,7 @@ requestFilterCandidates =
 rewriteTasks : TimeWithZone -> String -> List TaskItem -> Cmd msg
 rewriteTasks timeWithZone filePath taskItems =
     let
+        rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem

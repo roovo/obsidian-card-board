@@ -111,9 +111,11 @@ indentParser parser =
 step : Parser a -> List a -> Parser (P.Step (List a) (List a))
 step parser_ values =
     let
+        finish : P.Step (List a) (List a)
         finish =
             P.Done (List.reverse values)
 
+        next : a -> P.Step (List a) (List a)
         next value_ =
             P.Loop (value_ :: values)
     in
@@ -138,17 +140,17 @@ step parser_ values =
 
 
 type alias NextParser a =
-    { smaller : P.Parser a
-    , exactly : P.Parser a
-    , larger : P.Parser a
-    , ending : P.Parser a
+    { smaller : Parser a
+    , exactly : Parser a
+    , larger : Parser a
+    , ending : Parser a
     }
 
 
-indented : NextParser a -> P.Parser a
+indented : NextParser a -> Parser a
 indented next =
     let
-        proceed : ( Int, Int ) -> P.Parser a
+        proceed : ( Int, Int ) -> Parser a
         proceed ( minimal, actual ) =
             P.oneOf
                 [ P.andThen (\_ -> next.ending) P.end
@@ -201,6 +203,7 @@ nonEmptyLineParser =
 dateParser : Parser Date
 dateParser =
     let
+        convertToDate : String -> Parser Date
         convertToDate dateString =
             dateString
                 |> Date.fromIsoString
@@ -214,6 +217,7 @@ dateParser =
 timeParser : Parser Time.Posix
 timeParser =
     let
+        convertToTime : String -> Parser Time.Posix
         convertToTime timeString =
             timeString
                 |> Iso8601.toTime

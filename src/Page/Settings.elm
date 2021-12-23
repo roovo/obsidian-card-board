@@ -13,19 +13,16 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
 import Filter exposing (Filter)
-import Flip
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
 import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
-import Parser
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
 import SettingsState exposing (SettingsState)
 import State exposing (State)
-import TagBoard
 
 
 
@@ -44,6 +41,7 @@ type alias Model =
 init : Session -> Model
 init session =
     let
+        boardConfigs : SafeZipper BoardConfig
         boardConfigs =
             Session.boardConfigs session
     in
@@ -171,6 +169,7 @@ update msg model =
 
         FilterCandidatesReceived filterCandidates ->
             let
+                multiSelectModel : MultiSelect.Model Msg Filter
                 multiSelectModel =
                     filterCandidates
                         |> List.map (\p -> { label = Filter.value p, value = p })
@@ -200,15 +199,16 @@ update msg model =
 
         PathsRequested page searchTerm ->
             let
+                cmd : Cmd Msg
                 cmd =
                     case model.pathCache of
                         State.Waiting ->
                             InteropPorts.requestFilterCandidates
 
-                        State.Loading paths ->
+                        State.Loading _ ->
                             Cmd.none
 
-                        State.Loaded paths ->
+                        State.Loaded _ ->
                             Cmd.none
             in
             ( model
@@ -250,7 +250,7 @@ ensureAllTypes : List ( String, List (MultiSelect.SelectionItem Filter) ) -> Lis
 ensureAllTypes list =
     let
         hasType : String -> ( String, List (MultiSelect.SelectionItem Filter) ) -> Bool
-        hasType filterType ( itemFilterType, items ) =
+        hasType filterType ( itemFilterType, _ ) =
             filterType == itemFilterType
 
         typeOrDefault : String -> ( String, List (MultiSelect.SelectionItem Filter) )
@@ -276,6 +276,7 @@ processsAction action model =
     case action of
         SettingsState.AddBoard newConfig newState ->
             let
+                newModel : Model
                 newModel =
                     switchBoardConfig (SafeZipper.add newConfig >> SafeZipper.last) model
             in
@@ -283,6 +284,7 @@ processsAction action model =
 
         SettingsState.AddCancelled newState ->
             let
+                sessionMsg : Session.Msg
                 sessionMsg =
                     if SafeZipper.length model.boardConfigs == 0 then
                         Session.SettingsClosed model.boardConfigs
@@ -297,6 +299,7 @@ processsAction action model =
 
         SettingsState.DeleteCurrent ->
             let
+                newModel : Model
                 newModel =
                     switchBoardConfig SafeZipper.deleteCurrent model
             in
@@ -307,6 +310,7 @@ processsAction action model =
 
         SettingsState.Exit ->
             let
+                newModel : Model
                 newModel =
                     switchBoardConfig identity model
             in
@@ -492,6 +496,7 @@ settingsFormView boardConfig multiselect =
     case boardConfig of
         Just (BoardConfig.DateBoardConfig config) ->
             let
+                includeUndatedStyle : String
                 includeUndatedStyle =
                     if config.includeUndated then
                         " is-enabled"
@@ -572,6 +577,7 @@ settingsFormView boardConfig multiselect =
 
         Just (BoardConfig.TagBoardConfig config) ->
             let
+                includeOthersStyle : String
                 includeOthersStyle =
                     if config.includeOthers then
                         " is-enabled"
@@ -579,6 +585,7 @@ settingsFormView boardConfig multiselect =
                     else
                         ""
 
+                includeUntaggedStyle : String
                 includeUntaggedStyle =
                     if config.includeUntagged then
                         " is-enabled"
@@ -586,6 +593,7 @@ settingsFormView boardConfig multiselect =
                     else
                         ""
 
+                tagText : String
                 tagText =
                     config.columns
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)

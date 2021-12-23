@@ -6,8 +6,7 @@ import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
-import Session exposing (Session)
-import SettingsState
+import Session
 import State
 import TaskItem
 import TaskList
@@ -186,8 +185,3 @@ replaceTaskItems =
 
 
 -- HELPERS
-
-
-defaultSession : Session
-defaultSession =
-    Session.default

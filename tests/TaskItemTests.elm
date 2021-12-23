@@ -6,7 +6,7 @@ import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
-import TaskItem exposing (AutoCompletion(..), Completion(..), TaskItem)
+import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
 import Time
 

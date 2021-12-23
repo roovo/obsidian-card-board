@@ -64,6 +64,7 @@ frontMatterDecoder =
 frontMatterAndBodyFrom : String -> ( Maybe String, Int, Maybe String )
 frontMatterAndBodyFrom contents =
     let
+        splitContents : List String
         splitContents =
             String.split "---" contents
     in
@@ -72,6 +73,7 @@ frontMatterAndBodyFrom contents =
 
     else if hasFrontMatter splitContents then
         let
+            bodyOffset : Int
             bodyOffset =
                 splitContents
                     |> List.take 2

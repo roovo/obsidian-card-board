@@ -76,6 +76,7 @@ configDecoder_v_0_1_0 =
 columns : TimeWithZone -> Config -> TaskList -> List ( String, List TaskItem )
 columns timeWithZone config taskList =
     let
+        datestamp : Date
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
@@ -96,6 +97,7 @@ columns timeWithZone config taskList =
 prependUndated : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 prependUndated taskList config columnList =
     let
+        undatedtasks : List TaskItem
         undatedtasks =
             TaskList.topLevelTasks taskList
                 |> List.filter (\t -> (not <| TaskItem.isCompleted t) && (not <| TaskItem.isDated t))
@@ -111,6 +113,7 @@ prependUndated taskList config columnList =
 todaysItems : Date -> TaskList -> List TaskItem
 todaysItems today taskList =
     let
+        isToday : TaskItem -> Bool
         isToday t =
             case TaskItem.due t of
                 Nothing ->
@@ -132,9 +135,11 @@ todaysItems today taskList =
 tomorrowsItems : Date -> TaskList -> List TaskItem
 tomorrowsItems today taskList =
     let
+        tomorrow : Date
         tomorrow =
             Date.add Date.Days 1 today
 
+        isTomorrow : TaskItem -> Bool
         isTomorrow t =
             case TaskItem.due t of
                 Nothing ->
@@ -155,9 +160,11 @@ tomorrowsItems today taskList =
 futureItems : Date -> TaskList -> List TaskItem
 futureItems today taskList =
     let
+        tomorrow : Date
         tomorrow =
             Date.add Date.Days 1 today
 
+        isToday : TaskItem -> Bool
         isToday t =
             case TaskItem.due t of
                 Nothing ->

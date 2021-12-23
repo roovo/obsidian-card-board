@@ -5,7 +5,6 @@ module Page.Board exposing
     )
 
 import Board exposing (Board)
-import BoardConfig exposing (BoardConfig)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Date exposing (Date)
@@ -16,10 +15,9 @@ import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
-import SafeZipper exposing (SafeZipper)
+import SafeZipper
 import Session exposing (Session)
 import TaskItem exposing (TaskItem, TaskItemFields)
-import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -64,15 +62,18 @@ update msg session =
 
         TaskItemToggled id ->
             let
+                timeWithZone : TimeWithZone
                 timeWithZone =
                     Session.timeWithZone session
 
+                toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
 
+                cmd : Cmd Msg
                 cmd =
                     session
                         |> Session.taskContainingId id
@@ -105,12 +106,15 @@ view session =
 
     else
         let
+            boards : Boards
             boards =
                 Boards.init (Session.boardConfigs session) (Session.currentTaskList session)
 
+            currentIndex : Maybe Int
             currentIndex =
                 Boards.currentIndex boards
 
+            timeWithZone : TimeWithZone
             timeWithZone =
                 Session.timeWithZone session
         in
@@ -128,9 +132,11 @@ view session =
 tabHeaders : Maybe Int -> Boards -> List (Html Msg)
 tabHeaders currentIndex boards =
     let
+        beforeHeaderClass : String
         beforeHeaderClass =
             tabHeaderClass currentIndex -1
 
+        beforeFirst : Html Msg
         beforeFirst =
             Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
                 [ Html.div
@@ -144,15 +150,18 @@ tabHeaders currentIndex boards =
                     ]
                 ]
 
+        afterHeaderClass : String
         afterHeaderClass =
             tabHeaderClass currentIndex (Boards.length boards)
 
+        afterLast : Html Msg
         afterLast =
             Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
                 [ Html.div [ class "card-board-tabs-inner" ]
                     [ Html.text "" ]
                 ]
 
+        tabs : List (Html Msg)
         tabs =
             Boards.titles boards
                 |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentIndex)
@@ -172,6 +181,7 @@ selectedTabHeader _ title =
 tabHeader : Maybe Int -> Int -> String -> Html Msg
 tabHeader currentIndex index title =
     let
+        headerClass : String
         headerClass =
             tabHeaderClass currentIndex index
     in
@@ -239,15 +249,19 @@ column timeWithZone title cards =
 cardView : TimeWithZone -> Card -> ( String, Html Msg )
 cardView timeWithZone card =
     let
+        cardId : String
         cardId =
             Card.id card
 
+        taskItem : TaskItem
         taskItem =
             Card.taskItem card
 
+        taskItemId : String
         taskItemId =
             Card.taskItemId card
 
+        highlightAreaClass : String
         highlightAreaClass =
             case Card.highlight timeWithZone card of
                 Card.HighlightCritical ->

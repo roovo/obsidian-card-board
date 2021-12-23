@@ -144,6 +144,7 @@ columnConfigParser =
         buildColumnConfig : ( String, Maybe String ) -> Parser ColumnConfig
         buildColumnConfig ( tag, title ) =
             let
+                cleanedTag : String
                 cleanedTag =
                     if String.startsWith "#" tag then
                         String.dropLeft 1 tag
@@ -151,12 +152,14 @@ columnConfigParser =
                     else
                         tag
 
+                displayTitle : String
                 displayTitle =
                     title
                         |> Maybe.withDefault defaultTitle
                         |> String.words
                         |> String.join " "
 
+                defaultTitle : String
                 defaultTitle =
                     cleanedTag
                         |> String.replace "/" " "
@@ -182,6 +185,7 @@ columnConfigParser =
 appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 appendCompleted config taskList columnList =
     let
+        completedTasks : List TaskItem
         completedTasks =
             taskList
                 |> TaskList.filter isCompleteWithTags
@@ -195,6 +199,7 @@ appendCompleted config taskList columnList =
         isCompleteWithTags item =
             TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
 
+        uniqueColumnTags : List String
         uniqueColumnTags =
             config.columns
                 |> LE.uniqueBy .tag
@@ -210,6 +215,7 @@ appendCompleted config taskList columnList =
 prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 prependOthers config taskList columnList =
     let
+        cards : List TaskItem
         cards =
             taskList
                 |> TaskList.filter isIncompleteWithoutTags
@@ -221,6 +227,7 @@ prependOthers config taskList columnList =
         isIncompleteWithoutTags item =
             not (TaskItem.isCompleted item) && TaskItem.hasTags item && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
 
+        uniqueColumnTags : List String
         uniqueColumnTags =
             config.columns
                 |> LE.uniqueBy .tag
@@ -236,6 +243,7 @@ prependOthers config taskList columnList =
 prependUntagged : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 prependUntagged config taskList columnList =
     let
+        cards : List TaskItem
         cards =
             taskList
                 |> TaskList.filter isIncompleteWithNoTags

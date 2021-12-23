@@ -3,13 +3,11 @@ module InteropDefinitionsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
-import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
 import Semver
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 

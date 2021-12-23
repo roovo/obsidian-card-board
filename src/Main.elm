@@ -1,9 +1,10 @@
-module Main exposing (main)
+module Main exposing (Model, Msg, main)
 
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Browser
 import Browser.Events as Browser
+import Card exposing (Card)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -15,9 +16,9 @@ import Page.Board as BoardPage
 import Page.Settings as SettingsPage
 import SafeZipper
 import Session exposing (Session)
-import State exposing (State)
+import State
 import Task
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList exposing (TaskList)
 import Time
 import TimeWithZone
@@ -46,6 +47,7 @@ init flags =
 
         Ok okFlags ->
             let
+                session : Session
                 session =
                     Session.fromFlags okFlags
             in
@@ -80,7 +82,6 @@ forceAddWhenNoBoards model =
 type Model
     = Boards Session
     | Settings SettingsPage.Model
-    | StartupError Session
 
 
 mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
@@ -92,9 +93,6 @@ mapSessionConfig fn model =
         Settings settingsPageModel ->
             Settings <| SettingsPage.mapSessionConfig fn settingsPageModel
 
-        StartupError session ->
-            StartupError <| Session.mapConfig fn session
-
 
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
@@ -104,9 +102,6 @@ mapSession fn model =
 
         Settings settingsPageModel ->
             Settings <| SettingsPage.mapSession fn settingsPageModel
-
-        StartupError session ->
-            StartupError <| fn session
 
 
 toSession : Model -> Session
@@ -118,16 +113,13 @@ toSession model =
         Settings settingsPageModel ->
             SettingsPage.toSession settingsPageModel
 
-        StartupError session ->
-            session
-
 
 
 -- UPDATE
 
 
 type KeyValue
-    = Character Char
+    = Character
     | Control String
 
 
@@ -170,6 +162,7 @@ update msg model =
 
         ( BoardConfigsUpdated newConfigs, _ ) ->
             let
+                newModel : Model
                 newModel =
                     mapSession (Session.updateConfigs newConfigs) model
             in
@@ -184,7 +177,7 @@ update msg model =
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
                 |> updateWith Settings GotSettingsPageMsg
 
-        ( FilterCandidatesReceived filterCandidates, _ ) ->
+        ( FilterCandidatesReceived _, _ ) ->
             ( model, Cmd.none )
 
         ( GotBoardPageMsg subMsg, Boards subModel ) ->
@@ -234,9 +227,11 @@ update msg model =
 
         ( VaultFileAdded markdownFile, _ ) ->
             let
+                newTasks : TaskList
                 newTasks =
                     TaskList.fromMarkdown markdownFile
 
+                newModel : Model
                 newModel =
                     mapSession (\s -> Session.addTaskList newTasks s) model
             in
@@ -251,11 +246,9 @@ update msg model =
 
         ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
             let
+                newModel : Model
                 newModel =
                     mapSession (Session.updatePath oldPath newPath) model
-
-                redrawCommands =
-                    Cmd.none
             in
             ( newModel
             , Cmd.batch
@@ -266,9 +259,11 @@ update msg model =
 
         ( VaultFileUpdated markdownFile, _ ) ->
             let
+                newTaskItems : TaskList
                 newTaskItems =
                     TaskList.fromMarkdown markdownFile
 
+                newModel : Model
                 newModel =
                     mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
             in
@@ -280,6 +275,7 @@ update msg model =
 cmdForFilterPathRename : String -> Session -> Cmd msg
 cmdForFilterPathRename newPath session =
     let
+        anyUpdatedFilters : Bool
         anyUpdatedFilters =
             Session.boardConfigs session
                 |> SafeZipper.toList
@@ -297,6 +293,7 @@ cmdForFilterPathRename newPath session =
 cmdForTaskRedraws : String -> Session -> Cmd Msg
 cmdForTaskRedraws newPath session =
     let
+        cards : List Card
         cards =
             Session.taskList session
                 |> State.withDefault TaskList.empty
@@ -391,8 +388,8 @@ keyDecoder =
 toKeyValue : String -> KeyValue
 toKeyValue string =
     case String.uncons string of
-        Just ( char, "" ) ->
-            Character char
+        Just ( _, "" ) ->
+            Character
 
         _ ->
             Control string
@@ -406,7 +403,7 @@ view : Model -> Html Msg
 view model =
     case model of
         Boards session ->
-            viewPage model
+            viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
                 { content = BoardPage.view session
@@ -414,28 +411,17 @@ view model =
                 }
 
         Settings settingsPageModel ->
-            viewPage model
+            viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
                 { content = BoardPage.view (SettingsPage.toSession settingsPageModel)
                 , modal = Just <| SettingsPage.view settingsPageModel
                 }
 
-        StartupError session ->
-            viewPage model
-                GotBoardPageMsg
-                GotSettingsPageMsg
-                { content = BoardPage.view session
-                , modal = Nothing
-                }
 
-
-viewPage : Model -> (contentMsg -> Msg) -> (modalMsg -> Msg) -> { content : Html contentMsg, modal : Maybe (Html modalMsg) } -> Html Msg
-viewPage model toMsgContent toMsgModal pageView =
-    let
-        mappedView =
-            { content = Html.map toMsgContent pageView.content
-            , modal = Maybe.map (Html.map toMsgModal) pageView.modal
-            }
-    in
-    Page.view (toSession model) mappedView
+viewPage : (contentMsg -> Msg) -> (modalMsg -> Msg) -> { content : Html contentMsg, modal : Maybe (Html modalMsg) } -> Html Msg
+viewPage toMsgContent toMsgModal pageView =
+    Page.view
+        { content = Html.map toMsgContent pageView.content
+        , modal = Maybe.map (Html.map toMsgModal) pageView.modal
+        }

@@ -1,6 +1,5 @@
 module State exposing
     ( State(..)
-    , hasLoaded
     , map
     , withDefault
     )
@@ -12,16 +11,6 @@ type State a
     = Waiting
     | Loading a
     | Loaded a
-
-
-hasLoaded : State a -> Bool
-hasLoaded a =
-    case a of
-        Loaded _ ->
-            True
-
-        _ ->
-            False
 
 
 map : (a -> b) -> State a -> State b

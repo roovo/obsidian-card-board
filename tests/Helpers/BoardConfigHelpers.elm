@@ -7,14 +7,9 @@ module Helpers.BoardConfigHelpers exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Card exposing (Card)
 import DateBoard
-import Filter
 import Helpers.FilterHelpers as FilterHelpers
-import Parser
 import TagBoard
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
 
 
 defaultDateBoardConfig : DateBoard.Config

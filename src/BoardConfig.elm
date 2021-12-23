@@ -48,6 +48,7 @@ fromBoardType boardType title_ =
     case boardType of
         "dateBoard" ->
             let
+                newBoardConfig : DateBoard.Config
                 newBoardConfig =
                     DateBoard.defaultConfig
             in
@@ -55,6 +56,7 @@ fromBoardType boardType title_ =
 
         _ ->
             let
+                newBoardConfig : TagBoard.Config
                 newBoardConfig =
                     TagBoard.defaultConfig
             in
@@ -213,6 +215,7 @@ updateTags tags config =
 
         TagBoardConfig boardConfig ->
             let
+                columnsConfig : Result (List Parser.DeadEnd) (List TagBoard.ColumnConfig)
                 columnsConfig =
                     Parser.run TagBoard.columnConfigsParser tags
             in

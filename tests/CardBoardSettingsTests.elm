@@ -4,12 +4,10 @@ import BoardConfig
 import CardBoardSettings
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
-import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Semver
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
