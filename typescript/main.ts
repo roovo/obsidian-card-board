@@ -4,12 +4,33 @@ import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
   settings: {
-    data :
-      { boardConfigs : (
-        { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } |
-        { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }
-      )[] };
-    version : string
+      data : {
+        boardConfigs : (
+          { data : {
+              columns : { displayTitle : string; tag : string }[];
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeOthers : boolean;
+              includeUntagged : boolean;
+              title : string
+            };
+            tag : "tagBoardConfig" }
+          | { data : {
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeUndated : boolean;
+              title : string
+            };
+            tag : "dateBoardConfig"
+          }
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
+      };
+      version : string
   };
 
   async onload() {
@@ -90,11 +111,32 @@ export default class CardBoardPlugin extends Plugin {
 
   async saveSettings(
     newSettings: {
-      data :
-        { boardConfigs : (
-          { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } |
-          { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }
-        )[] };
+      data : {
+        boardConfigs : (
+          { data : {
+              columns : { displayTitle : string; tag : string }[];
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeOthers : boolean;
+              includeUntagged : boolean;
+              title : string
+            };
+            tag : "tagBoardConfig" }
+          | { data : {
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeUndated : boolean;
+              title : string
+            };
+            tag : "dateBoardConfig"
+          }
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
+      };
       version : string
     }
   ) {

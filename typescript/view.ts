@@ -302,6 +302,7 @@ export class CardBoardView extends ItemView {
           { data : {
               columns : { displayTitle : string; tag : string }[];
               completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -309,12 +310,18 @@ export class CardBoardView extends ItemView {
             tag : "tagBoardConfig" }
           | { data : {
               completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               includeUndated : boolean;
               title : string
             };
             tag : "dateBoardConfig"
           }
-        )[]
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
       };
       version : string
   }) {

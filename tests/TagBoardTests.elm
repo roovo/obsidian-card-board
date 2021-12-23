@@ -458,6 +458,13 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder TagBoard.configDecoder
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         ""
+        --             |> DecodeHelpers.runDecoder TagBoard.configDecoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 

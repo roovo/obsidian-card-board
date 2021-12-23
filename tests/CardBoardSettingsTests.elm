@@ -52,6 +52,13 @@ encodeDecode =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         exampleSettings
+        --             |> TsEncode.runExample CardBoardSettings.encoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 

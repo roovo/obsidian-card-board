@@ -119,6 +119,13 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder DateBoard.configDecoder
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         ""
+        --             |> DecodeHelpers.runDecoder DateBoard.configDecoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 
