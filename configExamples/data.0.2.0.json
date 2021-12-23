@@ -1,0 +1,46 @@
+{
+  "version": "0.2.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 10,
+          "filters": [],
+          "includeUndated": true,
+          "title": "Dated"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "foo",
+              "displayTitle": "Foo"
+            },
+            {
+              "tag": "bar",
+              "displayTitle": "Bar"
+            }
+          ],
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "pathFilter",
+              "data": "example_tasks"
+            }
+          ],
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "Tagged"
+        }
+      }
+    ],
+    "globalSettings": {
+      "hideCompletedSubtasks": false,
+      "ignorePaths": [],
+      "subTaskDisplayLimit": null
+    }
+  }
+}

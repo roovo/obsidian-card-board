@@ -1,6 +1,6 @@
 *.LICENSE.txt
-data.*.json
-data.json
+/data.*.json
+/data.json
 elm-stuff/
 index.html
 main.js
