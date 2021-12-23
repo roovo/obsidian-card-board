@@ -48,7 +48,7 @@ filter =
         [ test "returns an empty TaskList if given an one" <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.map (TaskList.filter (always True))
                     |> Result.map TaskList.taskTitles
                     |> Expect.equal (Ok [])
@@ -59,7 +59,7 @@ filter =
 - [X] baz #tag2
 - [X] boo
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.map (TaskList.filter TaskItem.hasTags)
                     |> Result.map TaskList.taskTitles
                     |> Expect.equal (Ok [ "bar", "baz" ])
@@ -72,7 +72,7 @@ map =
         [ test "returns an empty TaskList if given an one" <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.map (TaskList.map identity)
                     |> Result.map TaskList.taskTitles
                     |> Expect.equal (Ok [])
@@ -81,7 +81,7 @@ map =
                 """- [ ] foo
 - [x] bar #tag1
 """
-                    |> Parser.run (TaskList.parser "old/path" Nothing)
+                    |> Parser.run (TaskList.parser "old/path" Nothing [])
                     |> Result.map (TaskList.map <| TaskItem.updateFilePath "old/path" "new/path")
                     |> Result.map TaskList.topLevelTasks
                     |> Result.map (List.map TaskItem.filePath)
@@ -95,14 +95,14 @@ parsing =
         [ test "parses an empty file" <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal []
         , test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo" ]
@@ -112,7 +112,7 @@ parsing =
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -126,7 +126,7 @@ parsing =
 - [X] baz
 
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -141,7 +141,7 @@ not a task
 - [X] baz
 
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -157,7 +157,7 @@ not a task
   - [ ] a subtask
 
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -168,7 +168,7 @@ not a task
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -180,21 +180,21 @@ not a task
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the last line is a task and has NO line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar"
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar" ]
         , test "parses tasks when the last line is a non-task and has a line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar\n\n## Log\n"
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar" ]
@@ -208,10 +208,20 @@ not a task
 - [X] baz
 
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Parser.run (TaskList.parser "file_a" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskIds
                     |> Expect.equal [ "4275677999:1", "4275677999:4", "4275677999:6" ]
+        , test "adds frontmatter tags to the tasks" <|
+            \() ->
+                """- [ ] foo
+- [x] bar
+"""
+                    |> Parser.run (TaskList.parser "file_a" Nothing [ "fm_tag1", "fm_tag2" ])
+                    |> Result.withDefault TaskList.empty
+                    |> TaskList.tasks
+                    |> List.map TaskItem.tags
+                    |> Expect.equal [ [ "fm_tag1", "fm_tag2" ], [ "fm_tag1", "fm_tag2" ] ]
         ]
 
 

@@ -6,5 +6,5 @@ import TaskItem exposing (TaskItem)
 
 exampleTaskItem : String -> String -> TaskItem
 exampleTaskItem markdown path =
-    Parser.run (TaskItem.parser path Nothing) markdown
+    Parser.run (TaskItem.parser path Nothing []) markdown
         |> Result.withDefault TaskItem.dummy

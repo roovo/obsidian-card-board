@@ -21,6 +21,7 @@ module TaskList exposing
     )
 
 import List.Extra as LE
+import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (TaskItem)
@@ -43,15 +44,17 @@ empty =
 -- PARSING
 
 
-parser : String -> Maybe String -> Parser TaskList
-parser filePath fileDate =
-    P.loop [] (taskItemsHelp filePath fileDate)
+parser : String -> Maybe String -> List String -> Parser TaskList
+parser filePath fileDate frontMatterTags =
+    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags)
         |> P.map (\ts -> TaskList ts)
 
 
-fromMarkdown : String -> Maybe String -> String -> TaskList
-fromMarkdown filePath fileDate fileContents =
-    P.run (parser filePath fileDate) (fileContents ++ "\n")
+fromMarkdown : MarkdownFile -> TaskList
+fromMarkdown markdownFile =
+    P.run
+        (parser markdownFile.filePath markdownFile.fileDate markdownFile.frontMatterTags)
+        (markdownFile.fileContents ++ "\n")
         |> Result.withDefault empty
 
 
@@ -167,11 +170,11 @@ itemsNotFromFile pathToFile taskItems =
         |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
-taskItemsHelp filePath fileDate revTaskItems =
+taskItemsHelp : String -> Maybe String -> List String -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
+taskItemsHelp filePath fileDate frontMatterTags revTaskItems =
     P.oneOf
         [ P.backtrackable
-            (TaskItem.parser filePath fileDate
+            (TaskItem.parser filePath fileDate frontMatterTags
                 |> P.map (\taskItem -> P.Loop (taskItem :: revTaskItems))
             )
         , anyLineParser

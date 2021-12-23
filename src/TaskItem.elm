@@ -57,6 +57,7 @@ type alias TaskItemFields =
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
+    , frontMatterTags : List String
     , lineNumber : Int
     , notes : String
     , originalText : String
@@ -74,6 +75,7 @@ dummy =
         , dueFile = Nothing
         , dueTag = Nothing
         , filePath = ""
+        , frontMatterTags = []
         , lineNumber = 0
         , notes = ""
         , originalText = ""
@@ -259,6 +261,7 @@ tags ((TaskItem fields_ _) as taskItem) =
     subtasks taskItem
         |> List.concatMap (\(TaskItem fs _) -> fs.tags)
         |> List.append fields_.tags
+        |> List.append fields_.frontMatterTags
         |> LE.unique
 
 
@@ -432,12 +435,13 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 -- SERIALIZATION
 
 
-parser : String -> Maybe String -> Parser TaskItem
-parser pathToFile fileDate =
+parser : String -> Maybe String -> List String -> Parser TaskItem
+parser pathToFile fileDate frontMatterTags =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
         |= P.succeed pathToFile
+        |= P.succeed frontMatterTags
         |= P.getRow
         |= prefixParser
         |. P.chompWhile isSpaceOrTab
@@ -448,11 +452,11 @@ parser pathToFile fileDate =
         |= P.getSource
     )
         |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate)
+        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags)
 
 
-taskItemFieldsBuilder : Int -> Int -> String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
-taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile contents endOffset source =
+taskItemFieldsBuilder : Int -> Int -> String -> List String -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder startOffset startColumn path frontMatterTags row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
         sourceText =
@@ -570,6 +574,7 @@ taskItemFieldsBuilder startOffset startColumn path row completion_ dueFromFile c
     , dueFile = dueFromFile
     , dueTag = tagDueDate
     , filePath = path
+    , frontMatterTags = frontMatterTags
     , lineNumber = row
     , notes = ""
     , originalText = sourceText
@@ -635,8 +640,8 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-addAnySubtasksAndNotes : String -> Maybe String -> TaskItemFields -> Parser TaskItem
-addAnySubtasksAndNotes pathToFile fileDate fields_ =
+addAnySubtasksAndNotes : String -> Maybe String -> List String -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes pathToFile fileDate frontMatterTags fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
         buildTaskItem indentedItems =
@@ -670,14 +675,14 @@ addAnySubtasksAndNotes pathToFile fileDate fields_ =
                 |> String.join "\n"
     in
     P.succeed identity
-        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate)
+        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags)
         |> P.andThen buildTaskItem
 
 
-indentedItemParser : String -> Maybe String -> Parser IndentedItem
-indentedItemParser pathToFile fileDate =
+indentedItemParser : String -> Maybe String -> List String -> Parser IndentedItem
+indentedItemParser pathToFile fileDate frontMatterTags =
     P.oneOf
-        [ subTaskParser pathToFile fileDate
+        [ subTaskParser pathToFile fileDate frontMatterTags
         , notesParser
         ]
 
@@ -688,12 +693,13 @@ notesParser =
         |= ParserHelper.anyLineParser
 
 
-subTaskParser : String -> Maybe String -> Parser IndentedItem
-subTaskParser pathToFile fileDate =
+subTaskParser : String -> Maybe String -> List String -> Parser IndentedItem
+subTaskParser pathToFile fileDate frontMatterTags =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
         |= P.succeed pathToFile
+        |= P.succeed frontMatterTags
         |= P.getRow
         |= prefixParser
         |. P.chompWhile isSpaceOrTab

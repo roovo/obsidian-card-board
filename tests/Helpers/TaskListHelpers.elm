@@ -15,7 +15,7 @@ import TaskList exposing (TaskList)
 
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d) ts
+    Parser.run (TaskList.parser p d []) ts
         |> Result.withDefault TaskList.empty
 
 

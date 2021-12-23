@@ -235,7 +235,7 @@ update msg model =
         ( VaultFileAdded markdownFile, _ ) ->
             let
                 newTasks =
-                    TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+                    TaskList.fromMarkdown markdownFile
 
                 newModel =
                     mapSession (\s -> Session.addTaskList newTasks s) model
@@ -267,7 +267,7 @@ update msg model =
         ( VaultFileUpdated markdownFile, _ ) ->
             let
                 newTaskItems =
-                    TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+                    TaskList.fromMarkdown markdownFile
 
                 newModel =
                     mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model

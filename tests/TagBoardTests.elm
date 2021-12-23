@@ -33,7 +33,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -47,7 +47,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -65,7 +65,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -85,7 +85,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -100,7 +100,7 @@ columnsBasic =
 - [x] bar1 #bar
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -115,7 +115,7 @@ columnsBasic =
 - [ ] bar1 #bart
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -130,7 +130,7 @@ columnsBasic =
 - [ ] bar1 #bar/
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -145,7 +145,7 @@ columnsBasic =
 - [ ] bar1 #bar/
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -160,7 +160,7 @@ columnsBasic =
 - [ ] bar1 #bar/one
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -176,7 +176,7 @@ columnsBasic =
 - [ ] bar3 #matt
 - [ ] bar4 #atHome
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -192,7 +192,7 @@ columnsBasic =
   - [ ] bar1.1 #bar/baz
 - [ ] bar2 #bar #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -207,7 +207,7 @@ columnsBasic =
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Parser.run (TaskList.parser "file_a" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -225,7 +225,7 @@ columnCompleted =
         [ test "adds a 'Completed' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -246,7 +246,7 @@ columnCompleted =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -265,7 +265,7 @@ columnCompleted =
 - [x] a #foo @completed(2020-01-01)
 - [x] b #foo @completed(2020-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -284,7 +284,7 @@ columnOthers =
         [ test "adds an 'Other' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -304,7 +304,7 @@ columnOthers =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -323,7 +323,7 @@ columnOthers =
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -342,7 +342,7 @@ columnUntagged =
         [ test "adds an 'Untagged' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -362,7 +362,7 @@ columnUntagged =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -381,7 +381,7 @@ columnUntagged =
 - [ ] a @due(2020-01-01)
 - [ ] c @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run (TaskList.parser "" Nothing [])
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
