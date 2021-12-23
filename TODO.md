@@ -1,5 +1,3 @@
-- update readme (on a branch)
-
 # Cleanups
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add Model tests

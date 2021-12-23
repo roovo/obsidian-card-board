@@ -488,7 +488,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .card-board .suggestion-item {
   padding-left: 5px;
   font-size: var(--font-small);
-  line-height: 0.9em;
+  line-height: 1.3em;
 }
 
 .setting-item-control .suggestion-item:hover {
