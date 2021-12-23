@@ -185,7 +185,7 @@ columnsBasic =
                     |> BoardHelpers.tasksInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
-        , test "removes tags that match the column's tag" <|
+        , test "does not remove tags that match the column's tag" <|
             \() ->
                 """- [ ] foo #foo
 - [ ] bar1 #bar/
@@ -200,7 +200,7 @@ columnsBasic =
                         }
                     |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.concatMap TaskItem.tags
-                    |> Expect.equal [ "bar/baz", "baz" ]
+                    |> Expect.equal [ "bar/", "bar/baz", "bar", "baz" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)

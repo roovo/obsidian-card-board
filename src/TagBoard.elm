@@ -263,7 +263,6 @@ fillColumn taskList columnConfig acc =
     in
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
         |> TaskList.topLevelTasks
-        |> List.map (TaskItem.removeTag columnConfig.tag)
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
         |> Tuple.pair columnConfig.displayTitle

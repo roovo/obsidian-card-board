@@ -1,5 +1,7 @@
-- don't hide tags for the containing column on tagboards
+- why can't I mark tasks as complete any more?
 - update type definitions in view/main.ts
+- check all works with no config
+- check all works with old config
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - update readme (on a branch)
