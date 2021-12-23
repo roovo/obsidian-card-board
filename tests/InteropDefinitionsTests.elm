@@ -180,7 +180,16 @@ toElmTests =
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileAdded { filePath = "a path", fileDate = Just "a date", frontMatterTags = [ "a_tag" ], fileContents = "some contents" })
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.FileAdded
+                                { filePath = "a path"
+                                , fileDate = Just "a date"
+                                , frontMatterTags = [ "a_tag" ]
+                                , bodyOffset = 3
+                                , body = "some contents"
+                                }
+                        )
         , test "decodes fileDeleted data" <|
             \() ->
                 """{"tag":"fileDeleted","data":"a path"}"""
@@ -198,7 +207,16 @@ toElmTests =
                 """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","frontMatterTags":["a_tag"],"fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", frontMatterTags = [ "a_tag" ], fileContents = "some contents" })
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.FileUpdated
+                                { filePath = "a path"
+                                , fileDate = Just "a date"
+                                , frontMatterTags = [ "a_tag" ]
+                                , bodyOffset = 3
+                                , body = "some contents"
+                                }
+                        )
         , test "decodes filterCandidates data" <|
             \() ->
                 """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""

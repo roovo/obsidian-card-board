@@ -1,4 +1,5 @@
 - why can't I mark tasks as complete any more?
+  - the line number is wrong if there is front matter
 - update type definitions in view/main.ts
 - check all works with no config
 - check all works with old config

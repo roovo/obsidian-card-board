@@ -8,7 +8,8 @@ type alias MarkdownFile =
     { filePath : String
     , fileDate : Maybe String
     , frontMatterTags : List String
-    , fileContents : String
+    , bodyOffset : Int
+    , body : String
     }
 
 
@@ -24,35 +25,35 @@ decoder =
 -- INTERNAL
 
 
-markdownFileBuilder : String -> Maybe String -> ( List String, String ) -> MarkdownFile
-markdownFileBuilder filePath fileDate ( tags, content ) =
-    MarkdownFile filePath fileDate tags content
+markdownFileBuilder : String -> Maybe String -> ( List String, Int, String ) -> MarkdownFile
+markdownFileBuilder filePath fileDate ( tags, bodyOffset, body ) =
+    MarkdownFile filePath fileDate tags bodyOffset body
 
 
-tagsAndContentsDecoder : TsDecode.Decoder ( List String, String )
+tagsAndContentsDecoder : TsDecode.Decoder ( List String, Int, String )
 tagsAndContentsDecoder =
     TsDecode.andThen (TsDecode.andThenInit contentDecoder) TsDecode.string
 
 
-contentDecoder : String -> TsDecode.Decoder ( List String, String )
+contentDecoder : String -> TsDecode.Decoder ( List String, Int, String )
 contentDecoder contents =
-    case extractFrontMatter contents of
-        ( Just frontMatter, Just body ) ->
+    case frontMatterAndBodyFrom contents of
+        ( Just frontMatter, bodyOffset, Just body ) ->
             case YD.fromString frontMatterDecoder frontMatter of
                 Ok tags ->
-                    TsDecode.succeed ( tags, body )
+                    TsDecode.succeed ( tags, bodyOffset, body )
 
                 Err _ ->
-                    TsDecode.succeed ( [], body )
+                    TsDecode.succeed ( [], bodyOffset, body )
 
-        ( Nothing, Just _ ) ->
-            TsDecode.succeed ( [], contents )
+        ( Nothing, _, Just _ ) ->
+            TsDecode.succeed ( [], 0, contents )
 
-        ( Just _, Nothing ) ->
-            TsDecode.succeed ( [], "" )
+        ( Just _, _, Nothing ) ->
+            TsDecode.succeed ( [], 0, "" )
 
-        ( Nothing, Nothing ) ->
-            TsDecode.succeed ( [], "" )
+        ( Nothing, _, Nothing ) ->
+            TsDecode.succeed ( [], 0, "" )
 
 
 frontMatterDecoder : YD.Decoder (List String)
@@ -60,22 +61,30 @@ frontMatterDecoder =
     YD.field "tags" (YD.list YD.string)
 
 
-extractFrontMatter : String -> ( Maybe String, Maybe String )
-extractFrontMatter contents =
+frontMatterAndBodyFrom : String -> ( Maybe String, Int, Maybe String )
+frontMatterAndBodyFrom contents =
     let
         splitContents =
             String.split "---" contents
     in
     if noFrontMatter splitContents then
-        ( Nothing, Just contents )
+        ( Nothing, 0, Just contents )
 
     else if hasFrontMatter splitContents then
+        let
+            bodyOffset =
+                List.head splitContents
+                    |> Maybe.map String.lines
+                    |> Maybe.map List.length
+                    |> Maybe.withDefault 0
+        in
         ( (List.head << List.drop 1) splitContents
-        , Just <| (String.trim << String.join "" << List.drop 2) splitContents
+        , bodyOffset + 2
+        , Just <| (String.dropLeft 1 << String.join "" << List.drop 2) splitContents
         )
 
     else
-        ( Nothing, Nothing )
+        ( Nothing, 0, Nothing )
 
 
 hasFrontMatter : List String -> Bool

@@ -64,6 +64,9 @@ update msg session =
 
         TaskItemToggled id ->
             let
+                _ =
+                    Debug.log "toggle" id
+
                 timeWithZone =
                     Session.timeWithZone session
 

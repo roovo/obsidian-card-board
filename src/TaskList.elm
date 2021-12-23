@@ -54,7 +54,7 @@ fromMarkdown : MarkdownFile -> TaskList
 fromMarkdown markdownFile =
     P.run
         (parser markdownFile.filePath markdownFile.fileDate markdownFile.frontMatterTags)
-        (markdownFile.fileContents ++ "\n")
+        (markdownFile.body ++ "\n")
         |> Result.withDefault empty
 
 
