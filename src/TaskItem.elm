@@ -51,7 +51,6 @@ import Time
 
 type alias TaskItemFields =
     { autoComplete : AutoCompletion
-    , blockLink : Maybe String
     , completion : Completion
     , dueFile : Maybe Date
     , dueTag : Maybe Date
@@ -69,7 +68,6 @@ dummy : TaskItem
 dummy =
     TaskItem
         { autoComplete = NotSpecifed
-        , blockLink = Nothing
         , completion = Incomplete
         , dueFile = Nothing
         , dueTag = Nothing
@@ -371,16 +369,8 @@ toString (TaskItem fields_ _) =
 
                 TrueSpecified ->
                     " @autocomplete(true)"
-
-        blockLinkText =
-            case fields_.blockLink of
-                Just blockLink_ ->
-                    " " ++ blockLink_
-
-                _ ->
-                    ""
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag ++ blockLinkText
+    leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
 
 
 
@@ -533,22 +523,8 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
             wordsWithoutBlockLink
                 |> List.foldr extractWords []
                 |> String.join " "
-
-        parsedBlockLink : Maybe String
-        parsedBlockLink =
-            case List.reverse contents of
-                (Word endWord) :: _ ->
-                    if String.startsWith "^" endWord then
-                        Just endWord
-
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
     in
     { autoComplete = autoCompletefromTag
-    , blockLink = parsedBlockLink
     , completion = completion_
     , dueFile = dueFromFile
     , dueTag = tagDueDate

@@ -852,12 +852,6 @@ toString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar")
-        , test "outputs a blockLink at the end of the TaskList if in the original" <|
-            \() ->
-                "- [X] foo @autocomplete(false) bar ^1234"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @autocomplete(false) ^1234")
         , test "removes excess whitespace between the title and the ']'" <|
             \() ->
                 "- [X]      the task"
