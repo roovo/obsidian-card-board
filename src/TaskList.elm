@@ -22,6 +22,7 @@ import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
+import Set exposing (Set)
 import TaskItem exposing (TaskItem)
 
 
@@ -42,7 +43,7 @@ empty =
 -- PARSING
 
 
-parser : String -> Maybe String -> List String -> Int -> Parser TaskList
+parser : String -> Maybe String -> Set String -> Int -> Parser TaskList
 parser filePath fileDate frontMatterTags bodyOffset =
     P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
         |> P.map (\ts -> TaskList ts)
@@ -163,7 +164,7 @@ itemsNotFromFile pathToFile taskItems =
         |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> List String -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
+taskItemsHelp : String -> Maybe String -> Set String -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
 taskItemsHelp filePath fileDate frontMatterTags bodyOffset revTaskItems =
     P.oneOf
         [ P.backtrackable
