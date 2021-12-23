@@ -42,8 +42,8 @@ works best if you set up with editor to format on save.
 
 ### Find/remove dead elm code
 ```
-npx elm-review --template jfmengels/elm-review-unused/example
-npx elm-review --template jfmengels/elm-review-unused/example --fix-all
+npx elm-review
+npx elm-review --fix-all
 ```
 
 
