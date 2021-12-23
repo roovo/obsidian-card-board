@@ -380,6 +380,16 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   border-top: 1px solid var(--background-modifier-border);
 }
 
+.card-board .setting-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.card-board .setting-item {
+  padding: 18px 0 18px 0;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
 .setting-item-control textarea {
   min-height: 10em;
   min-width: 22em;
@@ -402,10 +412,15 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   gap: 3px;
 }
 
-.multiselect-items input {
+.multiselect-items input.multiselect-input {
   border: 0;
   min-width: 100px;
   font-size: var(--font-small);
+}
+
+.multiselect-items input.multiselect-input:focus {
+  border: 0;
+  box-shadow: none;
 }
 
 .multiselect-item {
