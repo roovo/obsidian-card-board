@@ -1,3 +1,23 @@
+- update readme (on a branch)
+
+# Cleanups
+- why is the case of the filename for MultiSelect.elm not being recognised properly?
+- add Model tests
+- add ts declarations to replace @ts-ignores:
+    https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
+- translator pattern for child -> parent comms ??
+  https://medium.com/@alex.lew/the-translator-pattern-a-model-for-child-to-parent-communication-in-elm-f4bfaa1d3f98
+- refactor: (String, List a) -> Column a
+- make it so if you click outside the modal it closes it
+- I end up with multiple copies of the app running
+  - add a debug to print a string each time update is called
+  - in dev mode, open cardboard
+  - then close the view
+  - then click the ribbon icon
+  - you'll see the debug messaged double up
+  - and tripple up if you do it again
+  - ...
+
 # Task Formats
 - https://github.com/schemar/obsidian-tasks
 - https://logseq.github.io/#/page/tasks%20%26%20todos
@@ -5,12 +25,17 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- should I support reverse subtags, i.e. /todo would match #todo or #project1/todo or #a/b/todo
+- should I support both ends subtags, i.e. /todo/ would match #todo or #project1/todo or #todo/foo or #a/todo/b
+- What should I show on the view when there are no boards defined
 - Some sort of toggle compact view - where it shows each task as a single line card
   with only the checkbox and the first line of the title.
 - I parse 'foo:w' as a tag whereas obsidian only recognises the foo part.
 - do I want to warn the user that I couldn't read settings at startup?
   are there any sensible options I can give them if I do?
--- do I want the last board who's settings I've edited to the one shown when closing settings?
+  - gets stuck on "Loading tasks..." if flags parsing fails
+  - I could use State if I added a State.Failed
+- do I want the last board who's settings I've edited to the one shown when closing settings?
 - allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
   into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete
@@ -89,6 +114,10 @@
   For a date picker.
 
 # Misc
+- would it be cleaner to have separate multiselects for each board and share
+  the dropdown items?
+- I could de-bounce the rewrites of filters in the settings file on rename of path or file
+- look at obsidian://show-plugin?id=card-boardw
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?
 - do I want to rename Panel -> Board ??
@@ -129,114 +158,3 @@ hovering over the edit button to show the details of the todo in the original do
 if you do this, it will only show the single line of the todo and not any subtasks or content.
 
 https://forum.obsidian.md/t/see-context-in-hover-preview-of-block-reference/10232
-
-# Done
-
-- make README.md a proper readme (and have a separate contributing/dev page?)
-- add a licence
-- remove jest as I am not using it
-- run elm review
-- check it works with the default setup for the daily notes plugin
-- check it works in a virgin vault with no plugins
-- bump settings version to 0.1.0
-- handle renames - make sure I cope with both directory and file renames
-- persist settings in the plugin when they are updated
-- use the excellent advice at:  https://marcus.se.net/obsidian-plugin-docs/guides/custom-views
-  for guidance on creating views
-- plugin settings
-- display multiple boards
-- I'm often passing Time.Posix and Time.Zone around together -> make a type
-- don't store functions on the model (board is stored as a function at the moment)
-- don't use elm-typescript-interop (as it won't install so I can't build project from new)
-- leave column title at the top when scrolling cards
-- California Coast Theme: why are the ticks in checboxes
-  (in the Completed column) not in the checkboxes?
-- UI: style task title (color) as if it is a h1 (can I make it a h1)
-- make @autodone @autocomplete and make all done's completed's?
-- do I want to use text-muted for the due date?
-- highlight overdue tasks, (flagged tasks - not implemented yet) and those due today
-- dateboard: secondary sort should be card title
-- option to include done and undated for DateBoard
-- always show tags as tag pills whatever the theme
-- define boards by #tags
-- bugfix: if parent taks has no tags then the child tags aren't picked up
-- use a kanban icon for the sidebar
-- add a timestamp to done for better ordering
-  ensure that just a date is valid too
-  update the time every second
-  add a test for ParserHelper.timeParser as it will not parse a valid time string
-- order done tasks by done date
-- order future tasks by due date
-- script to generate some files containing example/test todos
-- ensure it still works if there is no daily notes plugin installed (just uses @due tags)
-  - it does!
-- make it so the board actually fits vertically in the display view without needing scrollbars
-- use elm review
-- bring up preview of the card when hovering over the edit icon
-- when click on edit link on card go to the right place on the page
-- bugs
-  - why is the checkbox smaller for the main task than subtasks in the test vault?
-  - Q: why is the task in the test vault not parsing?
-    A: cause it is using tabs not spaces
-- why don't links in card titles work? (and why don't they show a linked card on hover) - now implemented
-- bugfix: why did the checkin for dispaying notes make all the Done tasks show as one-liners?
-- indented text as markdown task notes
-  - including invalid/incomplete subtasks
-  - including blank lines
-- include any subtask tags in the card tag list
-- bug - tags aren't written on re-write of a TaskItem (after toggling)
-- support @autodone(bool) taskpaper tag
-- show indented tasks as subtasks
-- TaskItem - use a record internally (for ease of understanding)
-- only display 2 lines of task title
-- render card title as markdown
-  - pass filePath with card title to ts for use in RenderMarkdown call
-  - render titles in ts when card content is edited inside Obsidian
-  - render titles in ts when card content is edited outside Obsidian
-- check the date periodically (say every minute) so the board updates around midnight
-- display on card
-  - tags
-  - due date
-- #-tag support
-- ensure "- [ ] foo @done(2020-01-01)x" doesn't extract the @done tag
-- add @due(date) - overrides the day of the daily note it appears on
-- on completion add a @done(date) to the task
-  - use the original source text the TaskItem was derived from to verify before re-writing
-- do I want to keep trailing spaces when parsing TaskItem title?
-  no need as toString removes them
-- loose all reference to kanban - call it card board
-- make it switch to the kanban window when ribbon icon clicked
-- make it look nicer!
-- on edit in file, jump to and highlight the relevant line
-  - https://codepen.io/Ratia/pen/gwNNgX
-- click on some icon to jump to location in file
-- use a trash icon for delete
-- Delete todos
-- Implement mark as done (add Pending Completion to type)
-- Show checkbox to mark as done
-- Ordering when reading files and displaying tasks
-  - specially for today, future, and done columns
-  - this is relevant when someone is updating a file as I don't want the tasks from that file
-    to move around the column they are in.
-- Update board as files are updated in the app vault
-  - updated, created, deleted
-- add some testing around adding, updating, removing tasks from a list of TaskItems
-- add some tests for filtering for taskItems not from a given path
-- bug
-  parsing fails if there is a task list that contains a task prefix with nothing after it, so:
-
-- [ ] bar task
-- [ ] this is a new task that I am adding right now :)
-- [ ]<only a single space here>
-
-  will not parse the task list!!
-- Work out why some cards are not appearing in tomorrow and future?
-- Add some tests for card filtering
-- filter into 2 groups: incomplete and done
-- display on simple 2 colum board: todo & done
-- build todos from markdown content
-- factor out common parser helpers
-- pass pages into elm for parsing for todo
-- elm typescript interop
-- elm format
-- put an elm application in the Kanban window

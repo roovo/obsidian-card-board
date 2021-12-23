@@ -6,6 +6,7 @@ port module InteropPorts exposing
     , displayTaskMarkdown
     , elmInitialized
     , openTaskSourceFile
+    , requestFilterCandidates
     , rewriteTasks
     , toElm
     , updateSettings
@@ -18,16 +19,10 @@ import InteropDefinitions
 import Json.Decode
 import Json.Encode
 import SafeZipper exposing (SafeZipper)
-import Semver
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
-
-
-currentSettingsVersion : Semver.Version
-currentSettingsVersion =
-    Semver.version 0 1 0 [] []
 
 
 toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
@@ -83,9 +78,16 @@ openTaskSourceFile info =
         |> interopFromElm
 
 
+requestFilterCandidates : Cmd msg
+requestFilterCandidates =
+    encodeVariant "requestFilterCandidates" (TsEncode.object []) ()
+        |> interopFromElm
+
+
 rewriteTasks : TimeWithZone -> String -> List TaskItem -> Cmd msg
 rewriteTasks timeWithZone filePath taskItems =
     let
+        rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
@@ -98,8 +100,11 @@ rewriteTasks timeWithZone filePath taskItems =
 
 
 updateSettings : SafeZipper BoardConfig -> Cmd msg
-updateSettings configs =
-    { version = currentSettingsVersion, boardConfigs = SafeZipper.toList configs }
+updateSettings boardConfigs =
+    { version = CardBoardSettings.currentVersion
+    , boardConfigs = SafeZipper.toList boardConfigs
+    , globalSettings = CardBoardSettings.defaultGlobalSettings
+    }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder
         |> interopFromElm
 

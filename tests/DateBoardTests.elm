@@ -2,14 +2,13 @@ module DateBoardTests exposing (suite)
 
 import DateBoard
 import Expect
-import Iso8601
-import Parser
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
+import Helpers.BoardHelpers as BoardHelpers
+import Helpers.DateTimeHelpers as DateTimeHelpers
+import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.TaskListHelpers as TaskListHelpers
+import TaskItem
 import Test exposing (..)
-import Time
-import TimeWithZone exposing (TimeWithZone)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -28,29 +27,29 @@ columns =
     describe "columns"
         [ test "default columns are just today tomorrow and future" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone defaultConfig
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "todaysItems are sorted by due date (then task title ascending)" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone defaultConfig
-                    |> tasksInColumn "Today"
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> BoardHelpers.tasksInColumn "Today"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "another yesterday incomplete", "yesterday incomplete", "today incomplete" ]
         , test "tommorrowsItems are sorted by task title ascending" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone defaultConfig
-                    |> tasksInColumn "Tomorrow"
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> BoardHelpers.tasksInColumn "Tomorrow"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a task for tomorrow", "tomorrow incomplete" ]
         , test "futureItems are sorted by due date ascending (then task title)" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone defaultConfig
-                    |> tasksInColumn "Future"
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> BoardHelpers.tasksInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete", "zapping into the future" ]
         ]
@@ -61,18 +60,19 @@ columnCompleted =
     describe "columnCompleted"
         [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | completedCount = 1 }
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | completedCount = 99 }
-                    |> tasksInColumn "Completed"
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 99 }
+                    |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
-                        [ "future complete"
+                        [ "more undated complete"
+                        , "future complete"
                         , "today complete"
                         , "tomorrow complete"
                         , "undated complete"
@@ -88,43 +88,44 @@ columnUndated =
     describe "columnUndated"
         [ test "an Undated column is prepended if config sets includeUndated" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | includeUndated = True }
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> List.map Tuple.first
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by title ascending" <|
             \() ->
-                parsedFiles
-                    |> DateBoard.columns timeWithZone { defaultConfig | includeUndated = True }
-                    |> tasksInColumn "Undated"
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
+                    |> BoardHelpers.tasksInColumn "Undated"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "an undated incomplete", "invalid date incomplete" ]
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "incomplete with cTag"
+                        , "invalid date incomplete"
+                        , "more undated incomplete"
+                        , "untagged incomplete"
+                        ]
         ]
 
 
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding config"
-        [ test "encodes config correctly" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
-                defaultConfig
+                exampleConfig
                     |> TsEncode.runExample DateBoard.configEncoder
                     |> .output
-                    |> Expect.equal """{"completedCount":0,"includeUndated":false,"title":"Date Board Title"}"""
-        , test "produces the expected type" <|
-            \() ->
-                defaultConfig
-                    |> TsEncode.runExample DateBoard.configEncoder
-                    |> .tsType
-                    |> Expect.equal "{ completedCount : number; includeUndated : boolean; title : string }"
-        , test "can decode the encoded string back to the original" <|
-            \() ->
-                defaultConfig
-                    |> TsEncode.runExample DateBoard.configEncoder
-                    |> .output
-                    |> runDecoder DateBoard.configDecoder
+                    |> DecodeHelpers.runDecoder DateBoard.configDecoder
                     |> .decoded
-                    |> Expect.equal (Ok defaultConfig)
+                    |> Expect.equal (Ok exampleConfig)
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         ""
+        --             |> DecodeHelpers.runDecoder DateBoard.configDecoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 
@@ -134,130 +135,9 @@ encodeDecode =
 
 defaultConfig : DateBoard.Config
 defaultConfig =
-    { completedCount = 0
-    , includeUndated = False
-    , title = "Date Board Title"
-    }
+    BoardConfigHelpers.defaultDateBoardConfig
 
 
-tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem
-tasksInColumn columnName tasksInColumns =
-    tasksInColumns
-        |> List.filter (\( c, _ ) -> c == columnName)
-        |> List.concatMap Tuple.second
-
-
-yesterday : String
-yesterday =
-    "2020-06-19"
-
-
-today : String
-today =
-    "2020-06-20"
-
-
-tomorrow : String
-tomorrow =
-    "2020-06-21"
-
-
-future : String
-future =
-    "2020-06-22"
-
-
-farFuture : String
-farFuture =
-    "2020-06-23"
-
-
-timeWithZone : TimeWithZone
-timeWithZone =
-    { now = now
-    , zone = zone
-    }
-
-
-now : Time.Posix
-now =
-    today
-        |> Iso8601.toTime
-        |> Result.map Time.posixToMillis
-        |> Result.withDefault 0
-        |> Time.millisToPosix
-
-
-zone : Time.Zone
-zone =
-    Time.utc
-
-
-parsedFiles : TaskList
-parsedFiles =
-    taskFiles
-        |> List.map parsedTasks
-        |> TaskList.concat
-
-
-parsedTasks : ( String, Maybe String, String ) -> TaskList
-parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d) ts
-        |> Result.withDefault TaskList.empty
-
-
-taskFiles : List ( String, Maybe String, String )
-taskFiles =
-    [ undatedTasks
-    , ( "d", Just farFuture, """
-- [ ] zapping into the future
-- [ ] far future incomplete
-- [x] far future complete
-""" )
-    , ( "e", Just future, """
-- [ ] future incomplete
-- [x] future complete @completed(2020-06-02)
-""" )
-    , ( "c", Just tomorrow, """
-- [ ] tomorrow incomplete
-- [ ] a task for tomorrow
-- [x] tomorrow complete @completed(2020-06-02)
-""" )
-    , ( "b", Just today, """
-- [ ] today incomplete
-- [x] today complete @completed(2020-06-02)
-""" )
-    , yesterdaysTasks
-    , ( "f", Just "invalid date", """
-- [ ] invalid date incomplete
-- [x] invalid date complete
-""" )
-    ]
-
-
-undatedTasks : ( String, Maybe String, String )
-undatedTasks =
-    ( "g", Nothing, """
-- [ ] an undated incomplete
-- [x] undated complete @completed(2020-06-02)
-""" )
-
-
-yesterdaysTasks : ( String, Maybe String, String )
-yesterdaysTasks =
-    ( "a", Just yesterday, """
-- [ ] yesterday incomplete
-- [ ] another yesterday incomplete
-- [x] yesterday complete @completed(2020-06-01)
-""" )
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder
+exampleConfig : DateBoard.Config
+exampleConfig =
+    BoardConfigHelpers.exampleDateBoardConfig

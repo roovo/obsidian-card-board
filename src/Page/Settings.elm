@@ -1,20 +1,111 @@
 module Page.Settings exposing
-    ( Msg(..)
-    , dialogs
+    ( Model
+    , Msg(..)
+    , init
+    , mapSession
+    , mapSessionConfig
+    , toSession
     , update
+    , view
     )
 
+import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
-import Flip
+import Filter exposing (Filter)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import InteropPorts
-import Model exposing (EditState(..), Model)
-import Parser
+import List.Extra as LE
+import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
-import TagBoard
+import Session exposing (Session)
+import SettingsState exposing (SettingsState)
+import State exposing (State)
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { boardConfigs : SafeZipper BoardConfig
+    , multiSelect : MultiSelect.Model Msg Filter
+    , pathCache : State (List Filter)
+    , session : Session
+    , settingsState : SettingsState
+    }
+
+
+init : Session -> Model
+init session =
+    let
+        boardConfigs : SafeZipper BoardConfig
+        boardConfigs =
+            Session.boardConfigs session
+    in
+    { boardConfigs = boardConfigs
+    , multiSelect = MultiSelect.init multiSelectConfig (currentFilters boardConfigs)
+    , pathCache = State.Waiting
+    , session = session
+    , settingsState = SettingsState.init (Session.boardConfigs session)
+    }
+
+
+currentFilters : SafeZipper BoardConfig -> Dict String Filter
+currentFilters boardConfigs =
+    SafeZipper.current boardConfigs
+        |> Maybe.map BoardConfig.filters
+        |> Maybe.map (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
+        |> Maybe.withDefault []
+        |> Dict.fromList
+
+
+switchBoardConfig : (SafeZipper BoardConfig -> SafeZipper BoardConfig) -> Model -> Model
+switchBoardConfig fn model =
+    let
+        selectedFilters : List Filter
+        selectedFilters =
+            Dict.values <| MultiSelect.selectedItems model.multiSelect
+
+        newBoardConfigs : SafeZipper BoardConfig
+        newBoardConfigs =
+            model.boardConfigs
+                |> SafeZipper.mapCurrent (BoardConfig.updateFilters selectedFilters)
+                |> fn
+
+        newMultiSelect : MultiSelect.Model Msg Filter
+        newMultiSelect =
+            MultiSelect.updateSelectedItems (currentFilters newBoardConfigs) model.multiSelect
+    in
+    { model | boardConfigs = newBoardConfigs, multiSelect = newMultiSelect }
+
+
+toSession : Model -> Session
+toSession =
+    .session
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    { model | session = fn model.session }
+
+
+mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
+mapSessionConfig fn model =
+    { model | session = Session.mapConfig fn model.session }
+
+
+multiSelectConfig : MultiSelect.Config Msg Filter
+multiSelectConfig =
+    { delayMs = 300
+    , tagger = GotMultiSelectMsg
+    , fetchMsg = PathsRequested
+    , notFoundText = "Nothing Found"
+    , grouper = groupedSelections
+    , selectedItemLabel = selectedItemLabel
+    }
 
 
 
@@ -24,6 +115,7 @@ import TagBoard
 type Msg
     = AddBoardClicked
     | AddBoardConfirmed
+    | BackspacePressed
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
@@ -31,312 +123,244 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredTags String
     | EnteredTitle String
+    | FilterCandidatesReceived (List Filter)
+    | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
+    | PathsRequested Int String
     | SettingsBoardNameClicked Int
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            model
-                |> .configBeingEdited
-                |> Model.fromEditingConfigTo (\cs -> Adding cs BoardConfig.default)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+            wrap { model | settingsState = SettingsState.addState }
 
         AddBoardConfirmed ->
-            let
-                configWithNew cs c =
-                    SafeZipper.add c cs
-                        |> SafeZipper.last
-            in
-            model
-                |> .configBeingEdited
-                |> Model.fromAddingConfigTo (\cs c -> Editing <| configWithNew cs c)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+            processsAction (SettingsState.confirmAdd model.settingsState) model
 
-        BoardTypeSelected board ->
-            let
-                updateBoardType : BoardConfig -> BoardConfig
-                updateBoardType config =
-                    BoardConfig.fromBoardType board (BoardConfig.title config)
-            in
-            model
-                |> .configBeingEdited
-                |> Model.fromAddingConfigTo (\cs c -> Adding cs <| updateBoardType c)
-                |> Flip.flip Model.updateConfigBeingEdited model
-                |> Flip.flip Tuple.pair Cmd.none
+        BackspacePressed ->
+            wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
+
+        BoardTypeSelected boardType ->
+            updateBoardBeingAdded (BoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
-            case model.configBeingEdited of
-                Model.Editing c ->
-                    ( { model | configBeingEdited = Model.Deleting c }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            wrap { model | settingsState = SettingsState.deleteState }
 
         DeleteBoardConfirmed ->
-            case model.configBeingEdited of
-                Model.Deleting c ->
-                    let
-                        newConfig =
-                            SafeZipper.deleteCurrent c
-                    in
-                    ( { model | configBeingEdited = Model.Editing newConfig }
-                        |> Model.forceAddWhenNoBoards newConfig
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            processsAction (SettingsState.confirmDelete model.settingsState) model
 
         EnteredCompletedCount value ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateCompletedCount c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateCompletedCount : BoardConfig -> BoardConfig
-                updateCompletedCount config =
-                    case ( config, String.toInt value ) of
-                        ( BoardConfig.DateBoardConfig dateBoardConfig, Just newCount ) ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | completedCount = newCount }
-
-                        ( BoardConfig.TagBoardConfig tagBoardConfig, Just newCount ) ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | completedCount = newCount }
-
-                        _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            updateBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
 
         EnteredNewBoardTitle title ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Adding cs c ->
-                            Model.Adding cs (updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            updateBoardBeingAdded (BoardConfig.updateTitle title) model
 
         EnteredTags tags ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateTags c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTags : BoardConfig -> BoardConfig
-                updateTags config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            let
-                                columnsConfig =
-                                    Parser.run TagBoard.columnConfigsParser tags
-                            in
-                            case columnsConfig of
-                                Ok parsedConfig ->
-                                    BoardConfig.TagBoardConfig { tagBoardConfig | columns = parsedConfig }
-
-                                _ ->
-                                    config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            updateBoardBeingEdited (BoardConfig.updateTags tags) model
 
         EnteredTitle title ->
+            updateBoardBeingEdited (BoardConfig.updateTitle title) model
+
+        FilterCandidatesReceived filterCandidates ->
             let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent updateTitle c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                updateTitle : BoardConfig -> BoardConfig
-                updateTitle config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | title = title }
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | title = title }
+                multiSelectModel : MultiSelect.Model Msg Filter
+                multiSelectModel =
+                    filterCandidates
+                        |> List.map (\p -> { label = Filter.value p, value = p })
+                        |> MultiSelect.recieveItems model.multiSelect
             in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            wrap
+                { model
+                    | pathCache = State.Loaded filterCandidates
+                    , multiSelect = multiSelectModel
+                }
+
+        GotMultiSelectMsg mulSelMsg ->
+            let
+                ( newModel, cmd ) =
+                    MultiSelect.update mulSelMsg model.multiSelect
+            in
+            ( { model | multiSelect = newModel }
+            , cmd
+            , Session.NoOp
+            )
 
         ModalCancelClicked ->
-            closeDialogOrExit model
+            processsAction (SettingsState.cancelCurrentState model.settingsState) model
 
         ModalCloseClicked ->
-            closeDialogOrExit model
+            processsAction (SettingsState.cancelCurrentState model.settingsState) model
+
+        PathsRequested page searchTerm ->
+            let
+                cmd : Cmd Msg
+                cmd =
+                    case model.pathCache of
+                        State.Waiting ->
+                            InteropPorts.requestFilterCandidates
+
+                        State.Loading _ ->
+                            Cmd.none
+
+                        State.Loaded _ ->
+                            Cmd.none
+            in
+            ( model
+            , cmd
+            , Session.NoOp
+            )
 
         SettingsBoardNameClicked index ->
-            case model.configBeingEdited of
-                Model.Editing boardConfigs ->
-                    ( { model | configBeingEdited = Model.Editing <| SafeZipper.atIndex index boardConfigs }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            wrap <| switchBoardConfig (SafeZipper.atIndex index) model
 
         ToggleIncludeOthers ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeOthers c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeOthers : BoardConfig -> BoardConfig
-                toggleIncludeOthers config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeOthers = not tagBoardConfig.includeOthers }
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
 
         ToggleIncludeUndated ->
-            let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeUndated c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUndated : BoardConfig -> BoardConfig
-                toggleIncludeUndated config =
-                    case config of
-                        BoardConfig.DateBoardConfig dateBoardConfig ->
-                            BoardConfig.DateBoardConfig { dateBoardConfig | includeUndated = not dateBoardConfig.includeUndated }
-
-                        BoardConfig.TagBoardConfig _ ->
-                            config
-            in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            updateBoardBeingEdited BoardConfig.toggleIncludeUndated model
 
         ToggleIncludeUntagged ->
+            updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+
+
+selectedItemLabel : Filter -> String
+selectedItemLabel filter =
+    filter
+        |> Filter.filterType
+        |> String.toLower
+        |> String.dropRight 1
+
+
+groupedSelections : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+groupedSelections selectionItems =
+    selectionItems
+        |> List.sortBy (\item -> Filter.filterType item.value)
+        |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
+        |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
+        |> ensureAllTypes
+
+
+ensureAllTypes : List ( String, List (MultiSelect.SelectionItem Filter) ) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+ensureAllTypes list =
+    let
+        hasType : String -> ( String, List (MultiSelect.SelectionItem Filter) ) -> Bool
+        hasType filterType ( itemFilterType, _ ) =
+            filterType == itemFilterType
+
+        typeOrDefault : String -> ( String, List (MultiSelect.SelectionItem Filter) )
+        typeOrDefault filterType =
+            LE.find (hasType filterType) list
+                |> Maybe.withDefault ( filterType, [] )
+    in
+    List.map typeOrDefault Filter.filterTypes
+
+
+updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+updateBoardBeingAdded fn model =
+    wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
+
+
+updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+updateBoardBeingEdited fn model =
+    wrap { model | boardConfigs = SafeZipper.mapCurrent fn model.boardConfigs }
+
+
+processsAction : SettingsState.Action -> Model -> ( Model, Cmd Msg, Session.Msg )
+processsAction action model =
+    case action of
+        SettingsState.AddBoard newConfig newState ->
             let
-                newConfig : Model.EditState
-                newConfig =
-                    case model.configBeingEdited of
-                        Model.Editing c ->
-                            Model.Editing (SafeZipper.mapCurrent toggleIncludeUntagged c)
-
-                        _ ->
-                            model.configBeingEdited
-
-                toggleIncludeUntagged : BoardConfig -> BoardConfig
-                toggleIncludeUntagged config =
-                    case config of
-                        BoardConfig.DateBoardConfig _ ->
-                            config
-
-                        BoardConfig.TagBoardConfig tagBoardConfig ->
-                            BoardConfig.TagBoardConfig { tagBoardConfig | includeUntagged = not tagBoardConfig.includeUntagged }
+                newModel : Model
+                newModel =
+                    switchBoardConfig (SafeZipper.add newConfig >> SafeZipper.last) model
             in
-            ( { model | configBeingEdited = newConfig }, Cmd.none )
+            wrap { newModel | settingsState = newState }
 
-
-closeDialogOrExit : Model -> ( Model, Cmd Msg )
-closeDialogOrExit model =
-    case model.configBeingEdited of
-        Model.Adding config _ ->
+        SettingsState.AddCancelled newState ->
             let
-                cmd =
-                    if SafeZipper.length config == 0 then
-                        Cmd.batch
-                            [ InteropPorts.updateSettings config
-                            , InteropPorts.closeView
-                            ]
+                sessionMsg : Session.Msg
+                sessionMsg =
+                    if SafeZipper.length model.boardConfigs == 0 then
+                        Session.SettingsClosed model.boardConfigs
 
                     else
-                        Cmd.none
+                        Session.NoOp
             in
-            ( { model | configBeingEdited = Model.Editing config }
-                |> Model.forceAddWhenNoBoards config
-            , cmd
+            ( { model | settingsState = newState }
+            , exitCmdOr Cmd.none model.boardConfigs
+            , sessionMsg
             )
 
-        Model.Deleting config ->
-            ( { model | configBeingEdited = Model.Editing config }
-            , Cmd.none
+        SettingsState.DeleteCurrent ->
+            let
+                newModel : Model
+                newModel =
+                    switchBoardConfig SafeZipper.deleteCurrent model
+            in
+            wrap { newModel | settingsState = SettingsState.init newModel.boardConfigs }
+
+        SettingsState.SetToState newState ->
+            wrap { model | settingsState = newState }
+
+        SettingsState.Exit ->
+            let
+                newModel : Model
+                newModel =
+                    switchBoardConfig identity model
+            in
+            ( newModel
+            , exitCmdOr (InteropPorts.updateSettings newModel.boardConfigs) newModel.boardConfigs
+            , Session.SettingsClosed newModel.boardConfigs
             )
 
-        Model.Editing config ->
-            ( { model | configBeingEdited = Model.NotEditing }
-            , InteropPorts.updateSettings config
-            )
+        SettingsState.NoAction ->
+            wrap model
 
-        _ ->
-            ( { model | configBeingEdited = Model.NotEditing }
-            , Cmd.none
-            )
+
+exitCmdOr : Cmd Msg -> SafeZipper BoardConfig -> Cmd Msg
+exitCmdOr orCmd boardConfigs =
+    if SafeZipper.length boardConfigs == 0 then
+        Cmd.batch
+            [ InteropPorts.updateSettings boardConfigs
+            , InteropPorts.closeView
+            ]
+
+    else
+        orCmd
+
+
+wrap : Model -> ( Model, Cmd Msg, Session.Msg )
+wrap model =
+    ( model, Cmd.none, Session.NoOp )
 
 
 
 -- VIEW
 
 
-dialogs : Model.EditState -> Html Msg
-dialogs editState =
-    case editState of
-        Model.Adding configsBeingEdited newConfig ->
+view : Model -> Html Msg
+view model =
+    case model.settingsState of
+        SettingsState.AddingBoard newConfig ->
             Html.div []
-                [ modalSettingsView configsBeingEdited
+                [ modalSettingsView model.boardConfigs model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
-        Model.Deleting configsBeingEdited ->
+        SettingsState.DeletingBoard ->
             Html.div []
-                [ modalSettingsView configsBeingEdited
+                [ modalSettingsView model.boardConfigs model.multiSelect
                 , modalConfirmDelete
                 ]
 
-        Model.Editing configsBeingEdited ->
-            modalSettingsView configsBeingEdited
-
-        Model.NotEditing ->
-            Html.text ""
+        SettingsState.EditingBoard ->
+            modalSettingsView model.boardConfigs model.multiSelect
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -432,8 +456,8 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper BoardConfig -> Html Msg
-modalSettingsView configs =
+modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
+modalSettingsView configs multiselect =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal mod-settings" ]
@@ -461,17 +485,18 @@ modalSettingsView configs =
                                 |> SafeZipper.toList
                            )
                     )
-                , settingsFormView <| SafeZipper.current configs
+                , settingsFormView (SafeZipper.current configs) multiselect
                 ]
             ]
         ]
 
 
-settingsFormView : Maybe BoardConfig -> Html Msg
-settingsFormView boardConfig =
+settingsFormView : Maybe BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
+settingsFormView boardConfig multiselect =
     case boardConfig of
         Just (BoardConfig.DateBoardConfig config) ->
             let
+                includeUndatedStyle : String
                 includeUndatedStyle =
                     if config.includeUndated then
                         " is-enabled"
@@ -495,6 +520,17 @@ settingsFormView boardConfig =
                                 , onInput EnteredTitle
                                 ]
                                 []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Filters" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ MultiSelect.view multiselect
                             ]
                         ]
                     , Html.div [ class "setting-item" ]
@@ -541,6 +577,7 @@ settingsFormView boardConfig =
 
         Just (BoardConfig.TagBoardConfig config) ->
             let
+                includeOthersStyle : String
                 includeOthersStyle =
                     if config.includeOthers then
                         " is-enabled"
@@ -548,6 +585,7 @@ settingsFormView boardConfig =
                     else
                         ""
 
+                includeUntaggedStyle : String
                 includeUntaggedStyle =
                     if config.includeUntagged then
                         " is-enabled"
@@ -555,6 +593,7 @@ settingsFormView boardConfig =
                     else
                         ""
 
+                tagText : String
                 tagText =
                     config.columns
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
@@ -576,6 +615,17 @@ settingsFormView boardConfig =
                                 , onInput EnteredTitle
                                 ]
                                 []
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Filters" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ MultiSelect.view multiselect
                             ]
                         ]
                     , Html.div [ class "setting-item" ]

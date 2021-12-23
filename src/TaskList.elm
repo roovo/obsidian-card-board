@@ -4,6 +4,7 @@ module TaskList exposing
     , concat
     , empty
     , filter
+    , foldl
     , fromMarkdown
     , map
     , parser
@@ -18,6 +19,7 @@ module TaskList exposing
     )
 
 import List.Extra as LE
+import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TaskItem exposing (TaskItem)
@@ -40,15 +42,22 @@ empty =
 -- PARSING
 
 
-parser : String -> Maybe String -> Parser TaskList
-parser filePath fileDate =
-    P.loop [] (taskItemsHelp filePath fileDate)
+parser : String -> Maybe String -> List String -> Int -> Parser TaskList
+parser filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
         |> P.map (\ts -> TaskList ts)
 
 
-fromMarkdown : String -> Maybe String -> String -> TaskList
-fromMarkdown filePath fileDate fileContents =
-    P.run (parser filePath fileDate) (fileContents ++ "\n")
+fromMarkdown : MarkdownFile -> TaskList
+fromMarkdown markdownFile =
+    P.run
+        (parser
+            markdownFile.filePath
+            markdownFile.fileDate
+            markdownFile.frontMatterTags
+            markdownFile.bodyOffset
+        )
+        (markdownFile.body ++ "\n")
         |> Result.withDefault empty
 
 
@@ -68,6 +77,11 @@ concat =
 
 
 -- MANIPULATE
+
+
+foldl : (TaskItem -> b -> b) -> b -> TaskList -> b
+foldl fn acc (TaskList taskItems) =
+    List.foldl fn acc taskItems
 
 
 map : (TaskItem -> TaskItem) -> TaskList -> TaskList
@@ -149,11 +163,11 @@ itemsNotFromFile pathToFile taskItems =
         |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
-taskItemsHelp filePath fileDate revTaskItems =
+taskItemsHelp : String -> Maybe String -> List String -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
+taskItemsHelp filePath fileDate frontMatterTags bodyOffset revTaskItems =
     P.oneOf
         [ P.backtrackable
-            (TaskItem.parser filePath fileDate
+            (TaskItem.parser filePath fileDate frontMatterTags bodyOffset
                 |> P.map (\taskItem -> P.Loop (taskItem :: revTaskItems))
             )
         , anyLineParser

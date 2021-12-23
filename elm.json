@@ -7,6 +7,7 @@
     "dependencies": {
         "direct": {
             "1602/elm-feather": "2.3.5",
+            "MaybeJustJames/yaml": "2.1.0",
             "dillonkearns/elm-ts-json": "2.1.0",
             "dividat/elm-semver": "2.0.0",
             "elm/browser": "1.0.2",
@@ -19,8 +20,10 @@
             "elm-community/maybe-extra": "5.2.0",
             "elm-community/string-extra": "4.0.1",
             "justinmimbs/date": "3.2.1",
-            "pilatch/flip": "1.0.0",
-            "rtfeldman/elm-iso8601-date-strings": "1.1.4"
+            "pzp1997/assoc-list": "1.0.0",
+            "robinheghan/fnv1a": "1.0.0",
+            "rtfeldman/elm-iso8601-date-strings": "1.1.4",
+            "tripokey/elm-fuzzy": "5.2.1"
         },
         "indirect": {
             "elm/regex": "1.0.0",

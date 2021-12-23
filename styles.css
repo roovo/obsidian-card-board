@@ -1,6 +1,7 @@
 :root {
   --font-normal:16px;
   --font-small:13px;
+  --font-smaller:12px;
 
   --normal-weight:400;   /* Switch to 300 if you want thinner default text */
   --bold-weight:600;     /* Switch to 700 if you want thicker bold text */
@@ -69,13 +70,17 @@ li.is-after-active .card-board-tabs-inner {
   cursor: pointer;
 }
 
+.card-board-tab-icon {
+  cursor: pointer;
+}
+
 .card-board-tab-title.is-active .card-board-tabs-inner {
   background-color: var(--background-secondary-alt);
   border-radius: 5px 5px 0 0 ;
   color: var(--text-normal);
 }
 
-.card-board-panels {
+.card-board-boards {
   display: grid;
   padding: 1em;
   padding-bottom: 0.5em;
@@ -84,7 +89,7 @@ li.is-after-active .card-board-tabs-inner {
   overflow-x: auto;
 }
 
-.card-board-panel {
+.card-board-board {
   grid-column-start: 1;
   grid-row-start: 1;
 }
@@ -378,4 +383,114 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .setting-item-control textarea {
   min-height: 10em;
   min-width: 22em;
+}
+
+.multiselect-items {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-normal);
+  padding: 4px 5px;
+  font-size: var(--font-small);
+  min-width: 217px;
+  max-width: 417px;
+  overflow-x: auto;
+  gap: 3px;
+}
+
+.multiselect-items input {
+  border: 0;
+  min-width: 100px;
+  font-size: var(--font-small);
+}
+
+.multiselect-item {
+  white-space: nowrap;
+}
+
+.multiselect-item.selected {
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.multiselect-item-key {
+  background-color: var(--background-secondary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-right: 0px;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-bottom: 2px;
+  line-height: 1.5em;
+  vertical-align: middle;
+}
+
+.multiselect-item.selected .multiselect-item-key {
+  background-color: var(--text-muted);
+  color: var(--text-on-accent);
+  border-right: 0.5px solid var(--text-on-accent);
+}
+
+.multiselect-item.selected .multiselect-item-value {
+  background-color: var(--text-muted);
+  color: var(--text-on-accent);
+}
+
+.multiselect-items input.multiselect-input {
+  padding: 2px;
+}
+
+.multiselect-item-value {
+  background-color: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 0px;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-bottom: 2px;
+  line-height: 1.5em;
+  vertical-align: middle;
+}
+
+.card-board .suggestion-container {
+  display: grid;
+  grid-auto-flow: row;
+  grid-gap: 0.5em;
+  position: relative;
+  padding: 5px 8px;
+  font-size: var(--font-small);
+  text-align: left;
+  line-height: 1em;
+}
+
+.card-board .suggestion-section {
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: 0.5em;
+}
+
+.card-board .suggestion-section:first-child {
+  border-top: none;
+}
+
+.card-board .suggestion-section-heading {
+  color: var(--text-faint);
+  font-size: var(--font-smaller);
+  font-weight: var(--bold-weight);
+  margin-bottom: 3px;
+}
+
+.card-board .suggestion-item {
+  padding-left: 5px;
+  font-size: var(--font-small);
+  line-height: 0.9em;
+}
+
+.setting-item-control .suggestion-item:hover {
+  background-color: var(--background-secondary);
 }

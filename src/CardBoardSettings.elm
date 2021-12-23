@@ -1,11 +1,16 @@
 module CardBoardSettings exposing
-    ( Settings
+    ( GlobalSettings
+    , Settings
     , boardConfigs
+    , currentVersion
     , decoder
+    , defaultGlobalSettings
     , encoder
+    , globalSettings
     )
 
 import BoardConfig exposing (BoardConfig)
+import Filter exposing (Filter)
 import Semver
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -13,7 +18,7 @@ import TsJson.Encode as TsEncode
 
 currentVersion : Semver.Version
 currentVersion =
-    Semver.version 0 1 0 [] []
+    Semver.version 0 2 0 [] []
 
 
 
@@ -22,7 +27,23 @@ currentVersion =
 
 type alias Settings =
     { boardConfigs : List BoardConfig
+    , globalSettings : GlobalSettings
     , version : Semver.Version
+    }
+
+
+type alias GlobalSettings =
+    { hideCompletedSubtasks : Bool
+    , ignorePaths : List Filter
+    , subTaskDisplayLimit : Maybe Int
+    }
+
+
+defaultGlobalSettings : GlobalSettings
+defaultGlobalSettings =
+    { hideCompletedSubtasks = False
+    , ignorePaths = []
+    , subTaskDisplayLimit = Nothing
     }
 
 
@@ -35,6 +56,11 @@ boardConfigs =
     .boardConfigs
 
 
+globalSettings : Settings -> GlobalSettings
+globalSettings =
+    .globalSettings
+
+
 
 -- SERIALIZATION
 
@@ -43,7 +69,7 @@ encoder : TsEncode.Encoder Settings
 encoder =
     TsEncode.object
         [ TsEncode.required "version" .version semverEncoder
-        , TsEncode.required "data" .boardConfigs boardConfigsEncoder
+        , TsEncode.required "data" identity dataEncoder
         ]
 
 
@@ -54,7 +80,24 @@ decoder =
 
 
 
--- HELPERS
+-- HELPERS - ENCODERS
+
+
+dataEncoder : TsEncode.Encoder { a | boardConfigs : List BoardConfig, globalSettings : GlobalSettings }
+dataEncoder =
+    TsEncode.object
+        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list BoardConfig.encoder)
+        , TsEncode.required "globalSettings" .globalSettings globalSettingsEncoder
+        ]
+
+
+globalSettingsEncoder : TsEncode.Encoder GlobalSettings
+globalSettingsEncoder =
+    TsEncode.object
+        [ TsEncode.required "hideCompletedSubtasks" .hideCompletedSubtasks TsEncode.bool
+        , TsEncode.required "ignorePaths" .ignorePaths (TsEncode.list Filter.encoder)
+        , TsEncode.required "subTaskDisplayLimit" .subTaskDisplayLimit (TsEncode.maybe TsEncode.int)
+        ]
 
 
 semverEncoder : TsEncode.Encoder Semver.Version
@@ -63,25 +106,26 @@ semverEncoder =
         |> TsEncode.map Semver.print
 
 
-boardConfigsEncoder : TsEncode.Encoder (List BoardConfig)
-boardConfigsEncoder =
-    TsEncode.object
-        [ TsEncode.required "boardConfigs" identity (TsEncode.list BoardConfig.encoder)
-        ]
+
+-- HELPERS - DECODERS
 
 
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
-        (\current unsupportedVersion version_ ->
+        (\current v_0_1_0 unsupportedVersion version_ ->
             case version_ of
-                "0.1.0" ->
+                "0.2.0" ->
                     current
+
+                "0.1.0" ->
+                    v_0_1_0
 
                 _ ->
                     unsupportedVersion
         )
         |> TsDecode.andThenDecoder (TsDecode.field "data" currentVersionDecoder)
+        |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_1_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
 
 
@@ -89,9 +133,26 @@ currentVersionDecoder : TsDecode.Decoder Settings
 currentVersionDecoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder))
+        |> TsDecode.andMap (TsDecode.field "globalSettings" globalSettingsDecoder)
+        |> TsDecode.andMap (TsDecode.succeed currentVersion)
+
+
+v_0_1_0_Decoder : TsDecode.Decoder Settings
+v_0_1_0_Decoder =
+    TsDecode.succeed Settings
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_1_0))
+        |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings
 unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
+
+
+globalSettingsDecoder : TsDecode.Decoder GlobalSettings
+globalSettingsDecoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "hideCompletedSubtasks" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "ignorePaths" (TsDecode.list Filter.decoder))
+        |> TsDecode.andMap (TsDecode.field "subTaskDisplayLimit" (TsDecode.maybe TsDecode.int))

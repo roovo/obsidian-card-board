@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 5,
+          "includeUndated": true,
+          "title": "Dated"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/",
+              "displayTitle": "Home/"
+            },
+            {
+              "tag": "home",
+              "displayTitle": "Home"
+            },
+            {
+              "tag": "wellbeing",
+              "displayTitle": "Wellbeing"
+            },
+            {
+              "tag": "town",
+              "displayTitle": "Town"
+            }
+          ],
+          "completedCount": 10,
+          "includeOthers": true,
+          "includeUntagged": true,
+          "title": "Tagged"
+        }
+      }
+    ]
+  }
+}

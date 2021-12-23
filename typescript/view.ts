@@ -6,6 +6,7 @@ import {
   MarkdownView,
   TAbstractFile,
   TFile,
+  TFolder,
   Vault,
   WorkspaceLeaf
 } from 'obsidian';
@@ -86,6 +87,9 @@ export class CardBoardView extends ItemView {
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
           break;
+        case "requestFilterCandidates":
+          that.handleRequestFilterCandidates();
+          break;
         case "updateSettings":
           that.handleUpdateSettings(fromElm.data);
           break;
@@ -112,7 +116,7 @@ export class CardBoardView extends ItemView {
   }
 
   async onClose() {
-    this.elm.ports.interopToElm.send({
+    await this.elm.ports.interopToElm.send({
       tag: "activeStateUpdated",
       data: false
     });
@@ -261,6 +265,36 @@ export class CardBoardView extends ItemView {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
   }
 
+  async handleRequestFilterCandidates() {
+    const loadedFiles = this.app.vault.getAllLoadedFiles();
+    const filterCandidates: { tag : "pathFilter" | "fileFilter" | "tagFilter", data : string }[] = [];
+    // @ts-ignore
+    const tagsWithCounts = this.app.metadataCache.getTags();
+    const tags = Object.keys(tagsWithCounts).map(x => x.slice(1));
+
+    loadedFiles.forEach((folder: TAbstractFile) => {
+      if (folder instanceof TFolder) {
+        filterCandidates.push({ tag : "pathFilter", data : folder.path});
+      }
+    });
+
+    loadedFiles.forEach((file: TAbstractFile) => {
+      if (file instanceof TFile && file.extension === "md") {
+        filterCandidates.push({ tag : "fileFilter", data : file.path});
+      }
+    });
+
+    tags.forEach((tag: string) => {
+      filterCandidates.push({ tag : "tagFilter", data : tag});
+      filterCandidates.push({ tag : "tagFilter", data : tag + "/"});
+    });
+
+    this.elm.ports.interopToElm.send({
+      tag: "filterCandidates",
+      data: filterCandidates
+    });
+  }
+
   async handleUpdateSettings(
     data: {
       data : {
@@ -268,6 +302,7 @@ export class CardBoardView extends ItemView {
           { data : {
               columns : { displayTitle : string; tag : string }[];
               completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -275,12 +310,18 @@ export class CardBoardView extends ItemView {
             tag : "tagBoardConfig" }
           | { data : {
               completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               includeUndated : boolean;
               title : string
             };
             tag : "dateBoardConfig"
           }
-        )[]
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
       };
       version : string
   }) {

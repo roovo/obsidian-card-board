@@ -12,6 +12,7 @@ module InteropDefinitions exposing
 
 import CardBoardSettings exposing (Settings)
 import DecodeHelpers
+import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
@@ -24,7 +25,7 @@ type FromElm
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
-    | UpdateSettings Settings
+    | RequestFilterCandidates
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -34,13 +35,14 @@ type ToElm
     | FileDeleted String
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
+    | FilterCandidates (List Filter)
     | AllMarkdownLoaded
     | SettingsUpdated Settings
     | ShowBoard Int
 
 
 type alias Flags =
-    { settings : CardBoardSettings.Settings
+    { settings : Settings
     , now : Int
     , zone : Int
     }
@@ -124,6 +126,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
+        , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
         , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
@@ -133,7 +136,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vUpdateConfig vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths _ vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -153,8 +156,8 @@ fromElm =
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
 
-                UpdateSettings info ->
-                    vUpdateConfig info
+                RequestFilterCandidates ->
+                    vRequestPaths
 
                 UpdateTasks info ->
                     vUpdateTasks info
@@ -165,6 +168,7 @@ fromElm =
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
+        |> TsEncode.variant0 "requestFilterCandidates"
         |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion

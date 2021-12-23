@@ -1,22 +1,24 @@
-module Main exposing (main)
+module Main exposing (Model, Msg, main)
 
 import BoardConfig exposing (BoardConfig)
+import Boards
 import Browser
 import Browser.Events as Browser
+import Card exposing (Card)
+import Filter exposing (Filter)
 import Html exposing (Html)
-import Html.Attributes exposing (class)
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
-import Model exposing (Model)
+import Page
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
-import Panels
 import SafeZipper
-import State exposing (State)
+import Session exposing (Session)
+import State
 import Task
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList exposing (TaskList)
 import Time
 import TimeWithZone
@@ -36,7 +38,7 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err _ ->
-            ( Model.default
+            ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 , InteropPorts.elmInitialized
@@ -44,12 +46,72 @@ init flags =
             )
 
         Ok okFlags ->
-            ( Model.fromFlags okFlags
+            let
+                session : Session
+                session =
+                    Session.fromFlags okFlags
+            in
+            ( Boards session
+                |> forceAddWhenNoBoards
             , Cmd.batch
-                [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
+                [ InteropPorts.updateSettings (Session.boardConfigs session)
                 , InteropPorts.elmInitialized
+                , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
             )
+
+
+forceAddWhenNoBoards : Model -> Model
+forceAddWhenNoBoards model =
+    case model of
+        Boards session ->
+            if SafeZipper.length (Session.boardConfigs session) == 0 then
+                Settings (SettingsPage.init session)
+
+            else
+                model
+
+        _ ->
+            model
+
+
+
+-- MODEL
+
+
+type Model
+    = Boards Session
+    | Settings SettingsPage.Model
+
+
+mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
+mapSessionConfig fn model =
+    case model of
+        Boards session ->
+            Boards <| Session.mapConfig fn session
+
+        Settings settingsPageModel ->
+            Settings <| SettingsPage.mapSessionConfig fn settingsPageModel
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    case model of
+        Boards session ->
+            Boards <| fn session
+
+        Settings settingsPageModel ->
+            Settings <| SettingsPage.mapSession fn settingsPageModel
+
+
+toSession : Model -> Session
+toSession model =
+    case model of
+        Boards session ->
+            session
+
+        Settings settingsPageModel ->
+            SettingsPage.toSession settingsPageModel
 
 
 
@@ -57,7 +119,7 @@ init flags =
 
 
 type KeyValue
-    = Character Char
+    = Character
     | Control String
 
 
@@ -66,6 +128,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | BoardConfigsUpdated (List BoardConfig)
+    | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
@@ -82,13 +145,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ActiveStateUpdated isActiveView, _ ) ->
-            ( { model | isActiveView = isActiveView }, Cmd.none )
+            ( mapSessionConfig (\c -> { c | isActiveView = isActiveView }) model
+            , Cmd.none
+            )
 
         ( AllMarkdownLoaded, _ ) ->
-            ( Model.finishAdding model
+            ( mapSession Session.finishAdding model
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Model.cards model
-                , InteropPorts.addHoverToCardEditButtons <| Model.cards model
+                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession model)
+                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession model)
                 ]
             )
 
@@ -97,120 +162,174 @@ update msg model =
 
         ( BoardConfigsUpdated newConfigs, _ ) ->
             let
+                newModel : Model
                 newModel =
-                    Model.updateConfigs newConfigs model
+                    mapSession (Session.updateConfigs newConfigs) model
             in
             ( newModel
             , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Model.cards newModel
-                , InteropPorts.addHoverToCardEditButtons <| Model.cards newModel
+                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession newModel)
+                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession newModel)
                 ]
             )
 
-        ( GotBoardPageMsg subMsg, _ ) ->
-            BoardPage.update subMsg model
-                |> updateWith GotBoardPageMsg
+        ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
+            SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
+                |> updateWith Settings GotSettingsPageMsg
 
-        ( GotSettingsPageMsg subMsg, _ ) ->
-            SettingsPage.update subMsg model
-                |> updateWith GotSettingsPageMsg
+        ( FilterCandidatesReceived _, _ ) ->
+            ( model, Cmd.none )
 
-        ( KeyDown keyValue, _ ) ->
-            case ( keyValue, model.isActiveView ) of
+        ( GotBoardPageMsg subMsg, Boards subModel ) ->
+            BoardPage.update subMsg subModel
+                |> updateWith Boards GotBoardPageMsg
+
+        ( GotBoardPageMsg _, _ ) ->
+            ( model, Cmd.none )
+
+        ( GotSettingsPageMsg subMsg, Settings subModel ) ->
+            SettingsPage.update subMsg subModel
+                |> updateWith Settings GotSettingsPageMsg
+
+        ( GotSettingsPageMsg _, _ ) ->
+            ( model, Cmd.none )
+
+        ( KeyDown keyValue, Settings subModel ) ->
+            case ( keyValue, Session.isActiveView (toSession model) ) of
+                ( Control "Backspace", True ) ->
+                    SettingsPage.update SettingsPage.BackspacePressed subModel
+                        |> updateWith Settings GotSettingsPageMsg
+
                 ( Control "Escape", True ) ->
-                    SettingsPage.update SettingsPage.ModalCloseClicked model
-                        |> updateWith GotSettingsPageMsg
+                    SettingsPage.update SettingsPage.ModalCloseClicked subModel
+                        |> updateWith Settings GotSettingsPageMsg
 
                 _ ->
                     ( model, Cmd.none )
 
+        ( KeyDown _, _ ) ->
+            ( model, Cmd.none )
+
         ( ReceiveTime ( zone, posix ), _ ) ->
-            ( { model | timeWithZone = { zone = zone, now = posix } }, Cmd.none )
+            ( mapSessionConfig (\c -> { c | timeWithZone = { zone = zone, now = posix } }) model
+            , Cmd.none
+            )
 
         ( ShowBoard index, _ ) ->
-            ( { model | boardConfigs = SafeZipper.atIndex index model.boardConfigs }, Cmd.none )
+            ( mapSessionConfig (\c -> { c | boardConfigs = SafeZipper.atIndex index c.boardConfigs }) model
+            , Cmd.none
+            )
 
         ( Tick time, _ ) ->
-            ( { model | timeWithZone = TimeWithZone.now time model.timeWithZone }
+            ( mapSessionConfig (\c -> { c | timeWithZone = TimeWithZone.now time c.timeWithZone }) model
             , Cmd.none
             )
 
         ( VaultFileAdded markdownFile, _ ) ->
             let
+                newTasks : TaskList
                 newTasks =
-                    TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+                    TaskList.fromMarkdown markdownFile
+
+                newModel : Model
+                newModel =
+                    mapSession (\s -> Session.addTaskList newTasks s) model
             in
-            ( Model.addTaskList newTasks model
-            , cmdForTaskRedraws newTasks model
+            ( newModel
+            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
             )
 
         ( VaultFileDeleted filePath, _ ) ->
-            ( Model.deleteItemsFromFile filePath model, Cmd.none )
+            ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
+            , Cmd.none
+            )
 
         ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
             let
-                updatedTaskItems =
-                    rePathedTaskItems oldPath newPath model.taskList
+                newModel : Model
+                newModel =
+                    mapSession (Session.updatePath oldPath newPath) model
             in
-            ( Model.updateTaskItems oldPath updatedTaskItems model
-            , cmdForTaskRedraws updatedTaskItems model
+            ( newModel
+            , Cmd.batch
+                [ cmdForTaskRedraws newPath (toSession newModel)
+                , cmdForFilterPathRename newPath (toSession newModel)
+                ]
             )
 
         ( VaultFileUpdated markdownFile, _ ) ->
             let
-                updatedTaskItems =
-                    TaskList.fromMarkdown markdownFile.filePath markdownFile.fileDate markdownFile.fileContents
+                newTaskItems : TaskList
+                newTaskItems =
+                    TaskList.fromMarkdown markdownFile
+
+                newModel : Model
+                newModel =
+                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
             in
-            ( Model.updateTaskItems markdownFile.filePath updatedTaskItems model
-            , cmdForTaskRedraws updatedTaskItems model
+            ( newModel
+            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
             )
 
 
-cmdForTaskRedraws : TaskList -> Model -> Cmd Msg
-cmdForTaskRedraws newTasks model =
+cmdForFilterPathRename : String -> Session -> Cmd msg
+cmdForFilterPathRename newPath session =
     let
-        cards =
-            newTasks
-                |> Panels.init model.boardConfigs
-                |> Panels.cards model.timeWithZone
+        anyUpdatedFilters : Bool
+        anyUpdatedFilters =
+            Session.boardConfigs session
+                |> SafeZipper.toList
+                |> List.concatMap BoardConfig.filters
+                |> List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths")
+                |> List.any (\f -> Filter.value f == newPath)
     in
-    if Model.taskListLoaded model then
-        Cmd.batch
-            [ InteropPorts.displayTaskMarkdown cards
-            , InteropPorts.addHoverToCardEditButtons cards
-            ]
+    if anyUpdatedFilters then
+        InteropPorts.updateSettings (Session.boardConfigs session)
 
     else
         Cmd.none
 
 
-rePathedTaskItems : String -> String -> State TaskList -> TaskList
-rePathedTaskItems oldPath newPath taskList =
+cmdForTaskRedraws : String -> Session -> Cmd Msg
+cmdForTaskRedraws newPath session =
     let
-        rePathedItems : TaskList -> TaskList
-        rePathedItems list =
-            list
-                |> TaskList.filter needsRename
-                |> TaskList.map (TaskItem.updateFilePath newPath)
-
-        needsRename : TaskItem -> Bool
-        needsRename item =
-            TaskItem.filePath item == oldPath
+        cards : List Card
+        cards =
+            Session.taskList session
+                |> State.withDefault TaskList.empty
+                |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
+                |> Boards.init (Session.boardConfigs session)
+                |> Boards.cards (Session.timeWithZone session)
     in
-    case taskList of
-        State.Waiting ->
-            TaskList.empty
+    if List.isEmpty cards then
+        Cmd.none
 
-        State.Loading currentList ->
-            rePathedItems currentList
+    else
+        Cmd.batch
+            [ InteropPorts.displayTaskMarkdown cards
+            , InteropPorts.addHoverToCardEditButtons cards
+            ]
 
-        State.Loaded currentList ->
-            rePathedItems currentList
 
+updateWith : (subModel -> Model) -> (subMsg -> Msg) -> ( subModel, Cmd subMsg, Session.Msg ) -> ( Model, Cmd Msg )
+updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
+    ( case sessionMsg of
+        Session.NoOp ->
+            toModel subModel
 
-updateWith : (subMsg -> Msg) -> ( Model, Cmd subMsg ) -> ( Model, Cmd Msg )
-updateWith toMsg ( model, subCmd ) =
-    ( model, Cmd.map toMsg subCmd )
+        Session.SettingsClicked ->
+            toModel subModel
+                |> toSession
+                |> SettingsPage.init
+                |> Settings
+
+        Session.SettingsClosed newConfigs ->
+            toModel subModel
+                |> toSession
+                |> Session.mapConfig (\c -> { c | boardConfigs = newConfigs })
+                |> Boards
+    , Cmd.map toMsg subCmd
+    )
 
 
 
@@ -243,6 +362,9 @@ subscriptions _ =
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile
 
+                                InteropDefinitions.FilterCandidates filterCandidates ->
+                                    FilterCandidatesReceived filterCandidates
+
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded
 
@@ -266,8 +388,8 @@ keyDecoder =
 toKeyValue : String -> KeyValue
 toKeyValue string =
     case String.uncons string of
-        Just ( char, "" ) ->
-            Character char
+        Just ( _, "" ) ->
+            Character
 
         _ ->
             Control string
@@ -279,16 +401,27 @@ toKeyValue string =
 
 view : Model -> Html Msg
 view model =
-    case model.taskList of
-        State.Loaded taskList ->
-            Html.div [ class "card-board" ]
-                [ Html.div [ class "card-board-container" ]
-                    [ BoardPage.view model.timeWithZone model.boardConfigs taskList
-                        |> Html.map GotBoardPageMsg
-                    , SettingsPage.dialogs model.configBeingEdited
-                        |> Html.map GotSettingsPageMsg
-                    ]
-                ]
+    case model of
+        Boards session ->
+            viewPage
+                GotBoardPageMsg
+                GotSettingsPageMsg
+                { content = BoardPage.view session
+                , modal = Nothing
+                }
 
-        _ ->
-            Html.text "Loading tasks...."
+        Settings settingsPageModel ->
+            viewPage
+                GotBoardPageMsg
+                GotSettingsPageMsg
+                { content = BoardPage.view (SettingsPage.toSession settingsPageModel)
+                , modal = Just <| SettingsPage.view settingsPageModel
+                }
+
+
+viewPage : (contentMsg -> Msg) -> (modalMsg -> Msg) -> { content : Html contentMsg, modal : Maybe (Html modalMsg) } -> Html Msg
+viewPage toMsgContent toMsgModal pageView =
+    Page.view
+        { content = Html.map toMsgContent pageView.content
+        , modal = Maybe.map (Html.map toMsgModal) pageView.modal
+        }

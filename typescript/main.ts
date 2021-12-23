@@ -1,15 +1,36 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
   settings: {
-    data :
-      { boardConfigs : (
-        { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } |
-        { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }
-      )[] };
-    version : string
+      data : {
+        boardConfigs : (
+          { data : {
+              columns : { displayTitle : string; tag : string }[];
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeOthers : boolean;
+              includeUntagged : boolean;
+              title : string
+            };
+            tag : "tagBoardConfig" }
+          | { data : {
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeUndated : boolean;
+              title : string
+            };
+            tag : "dateBoardConfig"
+          }
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
+      };
+      version : string
   };
 
   async onload() {
@@ -77,9 +98,7 @@ export default class CardBoardPlugin extends Plugin {
       leaf.view.currentBoardIndex(index);
     }
 
-    this.app.workspace.revealLeaf(
-      this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD)[0]
-    );
+    this.app.workspace.revealLeaf(leaf);
   }
 
   async deactivateView() {
@@ -92,17 +111,52 @@ export default class CardBoardPlugin extends Plugin {
 
   async saveSettings(
     newSettings: {
-      data :
-        { boardConfigs : (
-          { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : "tagBoardConfig" } |
-          { data : { completedCount : number; includeUndated : boolean; title : string }; tag : "dateBoardConfig" }
-        )[] };
+      data : {
+        boardConfigs : (
+          { data : {
+              columns : { displayTitle : string; tag : string }[];
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeOthers : boolean;
+              includeUntagged : boolean;
+              title : string
+            };
+            tag : "tagBoardConfig" }
+          | { data : {
+              completedCount : number;
+              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              includeUndated : boolean;
+              title : string
+            };
+            tag : "dateBoardConfig"
+          }
+        )[];
+        globalSettings : {
+          hideCompletedSubtasks : boolean;
+          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          subTaskDisplayLimit : number | null
+        }
+      };
       version : string
     }
   ) {
-    this.settings = newSettings;
+    await this.backupOldVersion(this.settings?.version, newSettings.version);
+
     this.removeCommands();
     this.addCommands();
+    this.settings = newSettings;
     await this.saveData(newSettings);
+  }
+
+  async backupOldVersion(oldVersion: string | null, newVersion: string) {
+    if (oldVersion && (oldVersion != newVersion)) {
+      const pathToSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data.json");
+      const pathToSavedSettings = normalizePath(this.app.vault.configDir + "/plugins/card-board/data." + oldVersion + ".json");
+
+      if (await this.app.vault.adapter.exists(pathToSavedSettings)) {
+        await this.app.vault.adapter.remove(pathToSavedSettings);
+      }
+      this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
+    }
   }
 }

@@ -1,12 +1,15 @@
 module TagBoardTests exposing (suite)
 
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
+import Helpers.BoardHelpers as BoardHelpers
+import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
 import TagBoard
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -31,7 +34,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -45,7 +48,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -63,7 +66,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -83,7 +86,7 @@ columnsBasic =
 - [ ] bar #bar
 - [ ] baz #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -98,13 +101,13 @@ columnsBasic =
 - [x] bar1 #bar
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags that start with the given tag" <|
@@ -113,13 +116,13 @@ columnsBasic =
 - [ ] bar1 #bart
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags with a trailing slash if not in the config" <|
@@ -128,13 +131,13 @@ columnsBasic =
 - [ ] bar1 #bar/
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "includes tasks with tags with a trailing slash if in the config" <|
@@ -143,13 +146,13 @@ columnsBasic =
 - [ ] bar1 #bar/
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "includes tasks with a subtag if there is a trailing slash in the config" <|
@@ -158,13 +161,13 @@ columnsBasic =
 - [ ] bar1 #bar/one
 - [ ] bar2 #bar
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "ensure only matches subtasks when using subtags" <|
@@ -174,44 +177,44 @@ columnsBasic =
 - [ ] bar3 #matt
 - [ ] bar4 #atHome
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
                         }
-                    |> tasksInColumn "At Tasks"
+                    |> BoardHelpers.tasksInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
-        , test "removes tags that match the column's tag" <|
+        , test "does not remove tags that match the column's tag" <|
             \() ->
                 """- [ ] foo #foo
 - [ ] bar1 #bar/
   - [ ] bar1.1 #bar/baz
 - [ ] bar2 #bar #baz
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.tasksInColumn "Bar Tasks"
                     |> List.concatMap TaskItem.tags
-                    |> Expect.equal [ "bar/baz", "baz"  ]
+                    |> Expect.equal [ "bar/", "bar/baz", "bar", "baz" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing)
+                    |> Parser.run (TaskList.parser "file_a" Nothing [] 0)
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | columns = [ { tag = "foo", displayTitle = "Foo tasks" } ]
                         }
-                    |> tasksInColumn "Foo tasks"
+                    |> BoardHelpers.tasksInColumn "Foo tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -223,7 +226,7 @@ columnCompleted =
         [ test "adds a 'Completed' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -244,7 +247,7 @@ columnCompleted =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -254,7 +257,7 @@ columnCompleted =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Completed"
+                    |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar3", "foo4" ]
         , test "sorts cards by title & completion time" <|
@@ -263,14 +266,14 @@ columnCompleted =
 - [x] a #foo @completed(2020-01-01)
 - [x] b #foo @completed(2020-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | completedCount = 99
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Completed"
+                    |> BoardHelpers.tasksInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "b", "c" ]
         ]
@@ -282,7 +285,7 @@ columnOthers =
         [ test "adds an 'Other' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -302,7 +305,7 @@ columnOthers =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -312,7 +315,7 @@ columnOthers =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Others"
+                    |> BoardHelpers.tasksInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo2", "foo3" ]
         , test "sorts cards by title & due date" <|
@@ -321,14 +324,14 @@ columnOthers =
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | includeOthers = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Others"
+                    |> BoardHelpers.tasksInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -340,7 +343,7 @@ columnUntagged =
         [ test "adds an 'Untagged' column " <|
             \() ->
                 ""
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -360,7 +363,7 @@ columnUntagged =
 - [ ] baz1
 - [x] baz2
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
@@ -370,7 +373,7 @@ columnUntagged =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> tasksInColumn "Untagged"
+                    |> BoardHelpers.tasksInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "baz1" ]
         , test "sorts cards by title & due date" <|
@@ -379,14 +382,14 @@ columnUntagged =
 - [ ] a @due(2020-01-01)
 - [ ] c @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "" Nothing)
+                    |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
                             | includeUntagged = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> tasksInColumn "Untagged"
+                    |> BoardHelpers.tasksInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -447,26 +450,21 @@ columnConfigsParserTest =
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding config"
-        [ test "encodes config correctly" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
+                exampleConfig
                     |> TsEncode.runExample TagBoard.configEncoder
                     |> .output
-                    |> Expect.equal """{"columns":[{"tag":"foo","displayTitle":"bar"}],"completedCount":0,"includeOthers":false,"includeUntagged":false,"title":"Tag Board Title"}"""
-        , test "produces the expected type" <|
-            \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
-                    |> TsEncode.runExample TagBoard.configEncoder
-                    |> .tsType
-                    |> Expect.equal "{ columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }"
-        , test "can decode the encoded string back to the original" <|
-            \() ->
-                { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] }
-                    |> TsEncode.runExample TagBoard.configEncoder
-                    |> .output
-                    |> runDecoder TagBoard.configDecoder
+                    |> DecodeHelpers.runDecoder TagBoard.configDecoder
                     |> .decoded
-                    |> Expect.equal (Ok { defaultConfig | columns = [ { tag = "foo", displayTitle = "bar" } ] })
+                    |> Expect.equal (Ok exampleConfig)
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         ""
+        --             |> DecodeHelpers.runDecoder TagBoard.configDecoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 
@@ -476,27 +474,9 @@ encodeDecode =
 
 defaultConfig : TagBoard.Config
 defaultConfig =
-    { columns = []
-    , completedCount = 0
-    , includeOthers = False
-    , includeUntagged = False
-    , title = "Tag Board Title"
-    }
+    BoardConfigHelpers.defaultTagBoardConfig
 
 
-tasksInColumn : String -> List ( String, List TaskItem ) -> List TaskItem
-tasksInColumn columnName tasksInColumns =
-    tasksInColumns
-        |> List.filter (\( c, _ ) -> c == columnName)
-        |> List.concatMap Tuple.second
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder
+exampleConfig : TagBoard.Config
+exampleConfig =
+    BoardConfigHelpers.exampleTagBoardConfig

@@ -1,11 +1,13 @@
 module InteropDefinitionsTests exposing (suite)
 
 import BoardConfig
+import CardBoardSettings
 import Expect
+import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
 import Semver
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -21,29 +23,67 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        [ test "decodes valid flags" <|
+        [ test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
-                    |> runDecoder interop.flags
+                """{"now":11,"zone":22,"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":[{"tag":"pathFilter","data":"aPathToIgnore"}],"subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 1 0 [] []
+                                { version = Semver.version 0 2 0 [] []
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
+                                        , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
+                                        , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
                                         }
                                     ]
+                                , globalSettings =
+                                    { hideCompletedSubtasks = True
+                                    , ignorePaths = [ FilterHelpers.pathFilter "aPathToIgnore" ]
+                                    , subTaskDisplayLimit = Just 7
+                                    }
+                                }
+                            , now = 11
+                            , zone = 22
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.1.0" <|
+            \() ->
+                """{"now":11,"zone":22,"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 2 0 [] []
+                                , boardConfigs =
+                                    [ BoardConfig.DateBoardConfig
+                                        { completedCount = 4
+                                        , filters = []
+                                        , includeUndated = True
+                                        , title = "date board title"
+                                        }
+                                    , BoardConfig.TagBoardConfig
+                                        { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , completedCount = 5
+                                        , filters = []
+                                        , includeOthers = False
+                                        , includeUntagged = True
+                                        , title = "tag board title"
+                                        }
+                                    ]
+                                , globalSettings = CardBoardSettings.defaultGlobalSettings
                                 }
                             , now = 11
                             , zone = 22
@@ -52,20 +92,10 @@ flagsTests =
         , test "fails to decode flags if a field is missing" <|
             \() ->
                 """{"format":"a format","now":11,"zone":22}"""
-                    |> runDecoder interop.flags
+                    |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "builds the correct tsType" <|
-            \() ->
-                ""
-                    |> runDecoder interop.flags
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ now : number; "
-                            ++ "settings : ({ version : string } & ({ data : JsonValue } | { data : { boardConfigs : ({ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" } | { data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" })[] } })); "
-                            ++ "zone : number }"
-                        )
         ]
 
 
@@ -112,21 +142,12 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
-        , test "encodes UpdateSettings with DateBoardConfig data" <|
+        , test "encodes RequestFilterCandidates" <|
             \() ->
-                { version = Semver.version 1 2 3 [] []
-                , boardConfigs =
-                    [ BoardConfig.DateBoardConfig
-                        { completedCount = 3
-                        , includeUndated = True
-                        , title = "A Date Board"
-                        }
-                    ]
-                }
-                    |> InteropDefinitions.UpdateSettings
+                InteropDefinitions.RequestFilterCandidates
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"updateSettings","data":{"version":"1.2.3","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":3,"includeUndated":true,"title":"A Date Board"}}]}}}"""
+                    |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -143,78 +164,93 @@ toElmTests =
         [ test "decodes activeStateUpdated data" <|
             \() ->
                 """{"tag":"activeStateUpdated","data":false}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
         , test "decodes allMarkdownLoaded" <|
             \() ->
                 """{"tag":"allMarkdownLoaded","data":{}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes fileAdded data" <|
             \() ->
-                """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileAdded { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.FileAdded
+                                { filePath = "a path"
+                                , fileDate = Just "a date"
+                                , frontMatterTags = [ "a_tag" ]
+                                , bodyOffset = 3
+                                , body = "some contents"
+                                }
+                        )
         , test "decodes fileDeleted data" <|
             \() ->
                 """{"tag":"fileDeleted","data":"a path"}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
         , test "decodes fileRenamed data" <|
             \() ->
                 """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileRenamed ( "the old path", "the new path" ))
         , test "decodes fileUpdated data" <|
             \() ->
-                """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","frontMatterTags":["a_tag"],"fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileUpdated { filePath = "a path", fileDate = Just "a date", fileContents = "some contents" })
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.FileUpdated
+                                { filePath = "a path"
+                                , fileDate = Just "a date"
+                                , frontMatterTags = [ "a_tag" ]
+                                , bodyOffset = 3
+                                , body = "some contents"
+                                }
+                        )
+        , test "decodes filterCandidates data" <|
+            \() ->
+                """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
+        , test "decodes version 0.2.0 settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 1 0 [] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 2 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         , test "fails to decode data with an unknown tag" <|
             \() ->
                 """{"tag":"xxxxx","data":{"filePath":"a path","fileDate":"a date","fileContents":"some contents"}}"""
-                    |> runDecoder interop.toElm
+                    |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         ]
-
-
-
--- HELPERS
-
-
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
-    }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder

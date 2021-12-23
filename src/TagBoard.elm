@@ -4,10 +4,12 @@ module TagBoard exposing
     , columnConfigsParser
     , columns
     , configDecoder
+    , configDecoder_v_0_1_0
     , configEncoder
     , defaultConfig
     )
 
+import Filter exposing (Filter)
 import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
@@ -25,6 +27,7 @@ import TsJson.Encode as TsEncode
 type alias Config =
     { columns : List ColumnConfig
     , completedCount : Int
+    , filters : List Filter
     , includeOthers : Bool
     , includeUntagged : Bool
     , title : String
@@ -41,6 +44,7 @@ defaultConfig : Config
 defaultConfig =
     { columns = []
     , completedCount = 10
+    , filters = []
     , includeOthers = False
     , includeUntagged = False
     , title = ""
@@ -56,6 +60,7 @@ configEncoder =
     TsEncode.object
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
         , TsEncode.required "completedCount" .completedCount TsEncode.int
+        , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
         , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
         , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
@@ -75,6 +80,18 @@ configDecoder =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+configDecoder_v_0_1_0 : TsDecode.Decoder Config
+configDecoder_v_0_1_0 =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
@@ -127,6 +144,7 @@ columnConfigParser =
         buildColumnConfig : ( String, Maybe String ) -> Parser ColumnConfig
         buildColumnConfig ( tag, title ) =
             let
+                cleanedTag : String
                 cleanedTag =
                     if String.startsWith "#" tag then
                         String.dropLeft 1 tag
@@ -134,12 +152,14 @@ columnConfigParser =
                     else
                         tag
 
+                displayTitle : String
                 displayTitle =
                     title
                         |> Maybe.withDefault defaultTitle
                         |> String.words
                         |> String.join " "
 
+                defaultTitle : String
                 defaultTitle =
                     cleanedTag
                         |> String.replace "/" " "
@@ -165,6 +185,7 @@ columnConfigParser =
 appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 appendCompleted config taskList columnList =
     let
+        completedTasks : List TaskItem
         completedTasks =
             taskList
                 |> TaskList.filter isCompleteWithTags
@@ -178,6 +199,7 @@ appendCompleted config taskList columnList =
         isCompleteWithTags item =
             TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
 
+        uniqueColumnTags : List String
         uniqueColumnTags =
             config.columns
                 |> LE.uniqueBy .tag
@@ -193,6 +215,7 @@ appendCompleted config taskList columnList =
 prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 prependOthers config taskList columnList =
     let
+        cards : List TaskItem
         cards =
             taskList
                 |> TaskList.filter isIncompleteWithoutTags
@@ -204,6 +227,7 @@ prependOthers config taskList columnList =
         isIncompleteWithoutTags item =
             not (TaskItem.isCompleted item) && TaskItem.hasTags item && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
 
+        uniqueColumnTags : List String
         uniqueColumnTags =
             config.columns
                 |> LE.uniqueBy .tag
@@ -219,6 +243,7 @@ prependOthers config taskList columnList =
 prependUntagged : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
 prependUntagged config taskList columnList =
     let
+        cards : List TaskItem
         cards =
             taskList
                 |> TaskList.filter isIncompleteWithNoTags
@@ -246,7 +271,6 @@ fillColumn taskList columnConfig acc =
     in
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
         |> TaskList.topLevelTasks
-        |> List.map (TaskItem.removeTag columnConfig.tag)
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
         |> Tuple.pair columnConfig.displayTitle

@@ -4,7 +4,8 @@ module Page.Board exposing
     , view
     )
 
-import BoardConfig exposing (BoardConfig)
+import Board exposing (Board)
+import Boards exposing (Boards)
 import Card exposing (Card)
 import Date exposing (Date)
 import FeatherIcons
@@ -14,12 +15,9 @@ import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
-import Model exposing (Model)
-import Panel exposing (Panel)
-import Panels exposing (Panels)
-import SafeZipper exposing (SafeZipper)
+import SafeZipper
+import Session exposing (Session)
 import TaskItem exposing (TaskItem, TaskItemFields)
-import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -35,40 +33,63 @@ type Msg
     | TaskItemToggled String
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
+update msg session =
     case msg of
         SettingsClicked ->
-            ( { model | configBeingEdited = Model.Editing model.boardConfigs }, Cmd.none )
+            ( session
+            , Cmd.none
+            , Session.SettingsClicked
+            )
 
         TabSelected tabIndex ->
-            ( { model | boardConfigs = SafeZipper.atIndex tabIndex model.boardConfigs }, Cmd.none )
+            ( Session.mapConfig (\c -> { c | boardConfigs = SafeZipper.atIndex tabIndex (Session.boardConfigs session) }) session
+            , Cmd.none
+            , Session.NoOp
+            )
 
         TaskItemDeleteClicked id ->
-            ( model, cmdIfHasTask id model InteropPorts.deleteTask )
+            ( session
+            , cmdIfHasTask id session InteropPorts.deleteTask
+            , Session.NoOp
+            )
 
         TaskItemEditClicked id ->
-            ( model, cmdIfHasTask id model InteropPorts.openTaskSourceFile )
+            ( session
+            , cmdIfHasTask id session InteropPorts.openTaskSourceFile
+            , Session.NoOp
+            )
 
         TaskItemToggled id ->
             let
+                timeWithZone : TimeWithZone
+                timeWithZone =
+                    Session.timeWithZone session
+
+                toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        model.timeWithZone
+                        timeWithZone
                         (TaskItem.filePath taskItem)
-                        (TaskItem.tasksToToggle id model.timeWithZone taskItem)
+                        (TaskItem.tasksToToggle id timeWithZone taskItem)
+
+                cmd : Cmd Msg
+                cmd =
+                    session
+                        |> Session.taskContainingId id
+                        |> Maybe.map toggleCmd
+                        |> Maybe.withDefault Cmd.none
             in
-            model
-                |> Model.taskContainingId id
-                |> Maybe.map toggleCmd
-                |> Maybe.withDefault Cmd.none
-                |> Tuple.pair model
+            ( session
+            , cmd
+            , Session.NoOp
+            )
 
 
-cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
-cmdIfHasTask id model cmd =
-    model
-        |> Model.taskFromId id
+cmdIfHasTask : String -> Session -> (TaskItemFields -> Cmd b) -> Cmd b
+cmdIfHasTask id session cmd =
+    session
+        |> Session.taskFromId id
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
         |> Maybe.withDefault Cmd.none
@@ -78,36 +99,48 @@ cmdIfHasTask id model cmd =
 -- VIEW
 
 
-view : TimeWithZone -> SafeZipper BoardConfig -> TaskList -> Html Msg
-view timeWithZone boardConfigs taskList =
+view : Session -> Html Msg
+view session =
+    if SafeZipper.length (Session.boardConfigs session) == 0 then
+        Html.text "Loading tasks...."
+
+    else
+        let
+            boards : Boards
+            boards =
+                Boards.init (Session.boardConfigs session) (Session.currentTaskList session)
+
+            currentIndex : Maybe Int
+            currentIndex =
+                Boards.currentIndex boards
+
+            timeWithZone : TimeWithZone
+            timeWithZone =
+                Session.timeWithZone session
+        in
+        Html.div []
+            [ Html.ul [ class "card-board-tab-list" ]
+                (tabHeaders currentIndex boards)
+            , Html.div [ class "card-board-boards" ]
+                (Boards.boardZipper boards
+                    |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
+                    |> SafeZipper.toList
+                )
+            ]
+
+
+tabHeaders : Maybe Int -> Boards -> List (Html Msg)
+tabHeaders currentIndex boards =
     let
-        panels =
-            Panels.init boardConfigs taskList
-
-        currentIndex =
-            Panels.currentIndex panels
-    in
-    Html.div []
-        [ Html.ul [ class "card-board-tab-list" ]
-            (tabHeaders currentIndex panels)
-        , Html.div [ class "card-board-panels" ]
-            (Panels.panels panels
-                |> SafeZipper.indexedMapSelectedAndRest (selectedPanelView timeWithZone) (panelView timeWithZone)
-                |> SafeZipper.toList
-            )
-        ]
-
-
-tabHeaders : Maybe Int -> Panels -> List (Html Msg)
-tabHeaders currentIndex panels =
-    let
+        beforeHeaderClass : String
         beforeHeaderClass =
             tabHeaderClass currentIndex -1
 
+        beforeFirst : Html Msg
         beforeFirst =
             Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
                 [ Html.div
-                    [ class "card-board-tabs-inner"
+                    [ class "card-board-tabs-inner card-board-tab-icon"
                     , onClick SettingsClicked
                     ]
                     [ FeatherIcons.settings
@@ -117,17 +150,20 @@ tabHeaders currentIndex panels =
                     ]
                 ]
 
+        afterHeaderClass : String
         afterHeaderClass =
-            tabHeaderClass currentIndex (Panels.length panels)
+            tabHeaderClass currentIndex (Boards.length boards)
 
+        afterLast : Html Msg
         afterLast =
             Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
                 [ Html.div [ class "card-board-tabs-inner" ]
                     [ Html.text "" ]
                 ]
 
+        tabs : List (Html Msg)
         tabs =
-            Panels.tabTitles panels
+            Boards.titles boards
                 |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentIndex)
                 |> SafeZipper.toList
     in
@@ -145,6 +181,7 @@ selectedTabHeader _ title =
 tabHeader : Maybe Int -> Int -> String -> Html Msg
 tabHeader currentIndex index title =
     let
+        headerClass : String
         headerClass =
             tabHeaderClass currentIndex index
     in
@@ -174,26 +211,26 @@ tabHeaderClass currentIndex index =
             ""
 
 
-panelView : TimeWithZone -> Int -> Panel -> Html Msg
-panelView timeWithZone index panel =
+boardView : TimeWithZone -> Int -> Board -> Html Msg
+boardView timeWithZone index board =
     Html.div
-        [ class "card-board-panel"
+        [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
-            (panel
-                |> Panel.columns timeWithZone index
+            (board
+                |> Board.columns timeWithZone index
                 |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
 
 
-selectedPanelView : TimeWithZone -> Int -> Panel -> Html Msg
-selectedPanelView timeWithZone index panel =
-    Html.div [ class "card-board-panel" ]
+selectedBoardView : TimeWithZone -> Int -> Board -> Html Msg
+selectedBoardView timeWithZone index board =
+    Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
-            (panel
-                |> Panel.columns timeWithZone index
+            (board
+                |> Board.columns timeWithZone index
                 |> List.map (\( n, cs ) -> column timeWithZone n cs)
             )
         ]
@@ -212,15 +249,19 @@ column timeWithZone title cards =
 cardView : TimeWithZone -> Card -> ( String, Html Msg )
 cardView timeWithZone card =
     let
+        cardId : String
         cardId =
             Card.id card
 
+        taskItem : TaskItem
         taskItem =
             Card.taskItem card
 
+        taskItemId : String
         taskItemId =
             Card.taskItemId card
 
+        highlightAreaClass : String
         highlightAreaClass =
             case Card.highlight timeWithZone card of
                 Card.HighlightCritical ->

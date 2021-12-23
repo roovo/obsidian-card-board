@@ -1,58 +1,62 @@
 module CardBoardSettingsTests exposing (suite)
 
+import BoardConfig
 import CardBoardSettings
 import Expect
+import Helpers.BoardConfigHelpers as BoardConfigHelpers
+import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Semver
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
 suite : Test
 suite =
     concat
-        [ encodeDecode
+        [ currentVersion
+        , encodeDecode
+        ]
+
+
+currentVersion : Test
+currentVersion =
+    describe "currentVersion"
+        [ test "is 0.2.0" <|
+            \() ->
+                CardBoardSettings.currentVersion
+                    |> Semver.print
+                    |> Expect.equal "0.2.0"
         ]
 
 
 encodeDecode : Test
 encodeDecode =
     describe "encoding and decoding settings"
-        [ test "encodes settings correctly" <|
+        [ test "can decode the encoded string back to the original" <|
             \() ->
-                defaultSettings
+                exampleSettings
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
-                    |> Expect.equal """{"version":"0.1.0","data":{"boardConfigs":[]}}"""
-        , test "produces the expected type" <|
-            \() ->
-                defaultSettings
-                    |> TsEncode.runExample CardBoardSettings.encoder
-                    |> .tsType
-                    |> Expect.equal
-                        ("{ data : { boardConfigs : ("
-                            ++ "{ data : { columns : { displayTitle : string; tag : string }[]; completedCount : number; includeOthers : boolean; includeUntagged : boolean; title : string }; tag : \"tagBoardConfig\" } | "
-                            ++ "{ data : { completedCount : number; includeUndated : boolean; title : string }; tag : \"dateBoardConfig\" }"
-                            ++ ")[] }; "
-                            ++ "version : string }"
-                        )
-        , test "can decode the encoded string back to the original" <|
-            \() ->
-                defaultSettings
-                    |> TsEncode.runExample CardBoardSettings.encoder
-                    |> .output
-                    |> runDecoder CardBoardSettings.decoder
+                    |> DecodeHelpers.runDecoder CardBoardSettings.decoder
                     |> .decoded
-                    |> Expect.equal (Ok defaultSettings)
+                    |> Expect.equal (Ok exampleSettings)
         , test "fails if the version number is unsupported" <|
             \() ->
-                { defaultSettings | version = Semver.version 0 0 0 [] [] }
+                { exampleSettings | version = Semver.version 0 0 0 [] [] }
                     |> TsEncode.runExample CardBoardSettings.encoder
                     |> .output
-                    |> runDecoder CardBoardSettings.decoder
+                    |> DecodeHelpers.runDecoder CardBoardSettings.decoder
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+
+        -- , test "builds the correct tsType" <|
+        --     \() ->
+        --         exampleSettings
+        --             |> TsEncode.runExample CardBoardSettings.encoder
+        --             |> .tsType
+        --             |> Expect.equal ""
         ]
 
 
@@ -60,19 +64,20 @@ encodeDecode =
 -- HELPERS
 
 
-defaultSettings : CardBoardSettings.Settings
-defaultSettings =
-    { boardConfigs = []
-    , version = Semver.version 0 1 0 [] []
+exampleSettings : CardBoardSettings.Settings
+exampleSettings =
+    { boardConfigs =
+        [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
+        , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
+        ]
+    , globalSettings = exampleGlobalSettings
+    , version = CardBoardSettings.currentVersion
     }
 
 
-type alias DecodeResult value =
-    { decoded : Result String value
-    , tsType : String
+exampleGlobalSettings : CardBoardSettings.GlobalSettings
+exampleGlobalSettings =
+    { hideCompletedSubtasks = True
+    , ignorePaths = [ FilterHelpers.pathFilter "a/path" ]
+    , subTaskDisplayLimit = Just 17
     }
-
-
-runDecoder : TsDecode.Decoder value -> String -> DecodeResult value
-runDecoder decoder input =
-    TsDecode.runExample input decoder
