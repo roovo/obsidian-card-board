@@ -279,6 +279,22 @@ columnCompleted =
                     |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "b", "c" ]
+        , test "only shows the configured number of completed tasks" <|
+            \() ->
+                """- [x] complete1 #foo
+- [x] complete2 #foo
+- [x] complete3 #foo
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | completedCount = 2
+                            , columns = [ { tag = "foo", displayTitle = "" } ]
+                        }
+                    |> BoardHelpers.tasksInColumn "Completed"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "complete1", "complete2" ]
         ]
 
 
