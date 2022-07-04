@@ -1,4 +1,5 @@
 *.LICENSE.txt
+.coverage/
 /data.*.json
 /data.json
 elm-stuff/

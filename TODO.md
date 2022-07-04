@@ -52,7 +52,9 @@
 - search for card by title/content
 - resizing columns
 - what to do about due dates for subtasks
-- undo buffer for toggling completion
+- undo buffer
+  - for toggling completion
+  - for deletion
 - could/should I use some taskpaper tags:
     @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
     @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
@@ -93,6 +95,7 @@
 
 # Board Types
 - have a subtag board that uses a root tag then subtags to define columns
+  2 optionss - all leaves or next level (to hadle nested tags)
 - reverse subtag: #class1/week1, #class2/week1 (you could specify week1 to get both class 1 & 2 on a board)
 - eisenhower matrix view
 - #3 define a board from the contents of a file with columns set by the headings on a page
@@ -112,6 +115,7 @@
   For a date picker.
 
 # Misc
+- use elm-coverage - as in see what isn't covered
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - I could de-bounce the rewrites of filters in the settings file on rename of path or file

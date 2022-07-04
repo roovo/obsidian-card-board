@@ -31,6 +31,14 @@ npx elm-test
 npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
 ```
 
+### Code coverage
+```
+npm i -g elm-coverage
+npx elm-coverage
+```
+
+
+
 ### Formatting elm code
 Use elm-format (https://github.com/avh4/elm-format)
 
