@@ -1,22 +1,9 @@
 # Contributing
-How this will work is still evolving, but I am accepting pull requests, so
-if you would like to help out then you are welcome.
+I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
+project.  
 
-## Asks
-- Please check before working on anything:
-  - saves wasting time if it is already being worked on.
-  - saves wasting time if it is not a feature that is currently wanted/planned.
-    You can get an idea what is currently in scope on the
-    [Happenings project board](https://github.com/roovo/obsidian-card-board/projects/1)
-  - allows us to check if you are likely to be conflicting with any other dev work.
-- Please prefix your commits with a short description of what
-  you are working on (see the commit history to see what I mean).
-- Work on one thing at a time.
-- Please TDD any significant logic and make sure all tests pass
-  before submitting a pull request.
-- Ensure you have run elm-format before submitting a pull request.
 
-## How to set up a dev environmant
+## Set up a dev environmant
 To get up and running:
 
 ```
@@ -25,22 +12,45 @@ npm run generate        # generate ts type definitions for elm ports
 npm run dev             # run dev build
 ```
 
-### Run tests
+## Release Checklist
+- check production build works
+- check with no config
+- check with previous config file versions
+- elm-review
+- elm-test
+- elm-coverage
+- elm-format
+- is README up to date?
+- pre-release new version
+  - main.js
+  - manifest.json
+  - style.css
+  - release notes
+- bump beta version: manifest-beta.json
+- test using BRAT
+- bump version: package.json
+- release new version
+  - main.js
+  - manifest.json
+  - style.css
+  - release notes
+- bump version: manifest.json
+
+
+## Run tests
 ```
 npx elm-test
 npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
 npx elm-test ./tests/SpecificFile.elm
 ```
 
-### Code coverage
+## Code coverage
 ```
 npm i -g elm-coverage
 npx elm-coverage
 ```
 
-
-
-### Formatting elm code
+## Formatting elm code
 Use elm-format (https://github.com/avh4/elm-format)
 
 ```
@@ -49,20 +59,18 @@ npm i -g elm-format
 
 works best if you set up with editor to format on save.
 
-### Find/remove dead elm code
+## Find/remove dead elm code
 ```
 npx elm-review
 npx elm-review --fix-all
 ```
 
-
-### Generate typescript types for the elm interface (ports)
+## Generate typescript types for the elm interface (ports)
 ```
 npx chokidar "src/**/*.elm" -c "npm run generate"
 ```
 
-### Generate example tasks
-
+## Generate example tasks
 ```
 ruby ./scripts/generate_example_tasks.rb path_to_vault
 ```
@@ -80,4 +88,3 @@ the plugin after changes.
 ```
 ln -s path/to/this/dir path/to/vault/.obsidian/plugins/cardboard
 ```
-

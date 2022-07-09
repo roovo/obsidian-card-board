@@ -215,10 +215,12 @@ others too, see the list on the wonderful
 
 
 ## Contributing
-How this will work is still evolving, but I am accepting pull requests, so
-if you would like to help out then you are welcome.  Please see the
-[contributing doc](CONTRIBUTING.md) for more info and guidance on
-how to get a dev environment set up and running.
+I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
+project.  However, if you want to mess around with the code then see
+[contributing doc](CONTRIBUTING.md) for more info on getting a dev environment set
+up and running.
+
+If you have any thoughts, ideas, bugs n stuff:
 
 - **Bugs/suggestions/feature requests** - [github issues](https://github.com/roovo/obsidian-card-board/issues).
 - **What's being worked on and up next?** - [CardBoard Dev](https://github.com/users/roovo/projects/2)

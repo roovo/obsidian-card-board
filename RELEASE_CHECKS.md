@@ -1,5 +1,0 @@
-- check with no config
-- check with previous config file versions
-- run elm-review
-- tests all pass
-- production build works
