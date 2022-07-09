@@ -37,7 +37,7 @@ columnsDateBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -56,7 +56,7 @@ columnsDateBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c1" ]
@@ -71,7 +71,7 @@ columnsDateBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal [ "invalid date incomplete" ]
@@ -91,7 +91,7 @@ columnsDateBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Undated"
+                    |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -115,7 +115,7 @@ columnsTagBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -134,7 +134,7 @@ columnsTagBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -153,7 +153,7 @@ columnsTagBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -177,7 +177,7 @@ columnsTagBoard =
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
-                    |> BoardHelpers.cardsInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal

@@ -11,6 +11,7 @@ module Boards exposing
 import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
+import Column
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -54,7 +55,7 @@ cards timeWithZone boards_ =
         |> SafeZipper.toList
         |> List.indexedMap (Board.columns timeWithZone)
         |> List.concat
-        |> List.map Tuple.second
+        |> List.map Column.items
         |> List.concat
 
 

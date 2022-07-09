@@ -1,5 +1,6 @@
 module DateBoardTests exposing (suite)
 
+import Column
 import DateBoard
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -29,27 +30,27 @@ columns =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "todaysItems are sorted by due date (then task title ascending)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
-                    |> BoardHelpers.tasksInColumn "Today"
+                    |> BoardHelpers.thingsInColumn "Today"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "another yesterday incomplete", "yesterday incomplete", "today incomplete" ]
         , test "tommorrowsItems are sorted by task title ascending" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
-                    |> BoardHelpers.tasksInColumn "Tomorrow"
+                    |> BoardHelpers.thingsInColumn "Tomorrow"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a task for tomorrow", "tomorrow incomplete" ]
         , test "futureItems are sorted by due date ascending (then task title)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
-                    |> BoardHelpers.tasksInColumn "Future"
+                    |> BoardHelpers.thingsInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete", "zapping into the future" ]
         ]
@@ -62,13 +63,13 @@ columnCompleted =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 99 }
-                    |> BoardHelpers.tasksInColumn "Completed"
+                    |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "more undated complete"
@@ -90,13 +91,13 @@ columnUndated =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by title ascending" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
-                    |> BoardHelpers.tasksInColumn "Undated"
+                    |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "an undated incomplete"

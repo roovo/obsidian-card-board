@@ -9,6 +9,7 @@ module TagBoard exposing
     , defaultConfig
     )
 
+import Column exposing (Column)
 import Filter exposing (Filter)
 import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
@@ -108,7 +109,7 @@ columnConfigDecoder =
 -- COLUMNS
 
 
-columns : Config -> TaskList -> List ( String, List TaskItem )
+columns : Config -> TaskList -> List (Column TaskItem)
 columns config taskList =
     config.columns
         |> LE.uniqueBy .tag
@@ -182,7 +183,7 @@ columnConfigParser =
 -- PRIVATE
 
 
-appendCompleted : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 appendCompleted config taskList columnList =
     let
         completedTasks : List TaskItem
@@ -206,13 +207,13 @@ appendCompleted config taskList columnList =
                 |> List.map .tag
     in
     if config.completedCount > 0 then
-        List.append columnList [ ( "Completed", completedTasks ) ]
+        List.append columnList [ Column.init "Completed" completedTasks ]
 
     else
         columnList
 
 
-prependOthers : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependOthers : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 prependOthers config taskList columnList =
     let
         cards : List TaskItem
@@ -234,13 +235,13 @@ prependOthers config taskList columnList =
                 |> List.map .tag
     in
     if config.includeOthers then
-        ( "Others", cards ) :: columnList
+        Column.init "Others" cards :: columnList
 
     else
         columnList
 
 
-prependUntagged : Config -> TaskList -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUntagged : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 prependUntagged config taskList columnList =
     let
         cards : List TaskItem
@@ -256,13 +257,13 @@ prependUntagged config taskList columnList =
             not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
     in
     if config.includeUntagged then
-        ( "Untagged", cards ) :: columnList
+        Column.init "Untagged" cards :: columnList
 
     else
         columnList
 
 
-fillColumn : TaskList -> ColumnConfig -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+fillColumn : TaskList -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
 fillColumn taskList columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
@@ -273,6 +274,6 @@ fillColumn taskList columnConfig acc =
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Tuple.pair columnConfig.displayTitle
+        |> Column.init columnConfig.displayTitle
         |> List.singleton
         |> List.append acc

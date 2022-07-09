@@ -1,5 +1,6 @@
 module TagBoardTests exposing (suite)
 
+import Column exposing (Column)
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
@@ -79,7 +80,7 @@ columnsBasic =
                                 , { tag = "bar", displayTitle = "bar" }
                                 ]
                         }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "returns empty columns if there are no tasks with the given tags" <|
             \() ->
@@ -93,7 +94,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "hello", displayTitle = "" } ]
                         }
-                    |> List.concatMap Tuple.second
+                    |> List.concatMap Column.items
                     |> List.length
                     |> Expect.equal 0
         , test "returns columns containing incomplete tasks with the given tags" <|
@@ -108,7 +109,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags that start with the given tag" <|
@@ -123,7 +124,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "does not include tasks with tags with a trailing slash if not in the config" <|
@@ -138,7 +139,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
         , test "includes tasks with tags with a trailing slash if in the config" <|
@@ -153,7 +154,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "includes tasks with a subtag if there is a trailing slash in the config" <|
@@ -168,7 +169,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "ensure only matches subtasks when using subtags" <|
@@ -184,7 +185,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "At Tasks"
+                    |> BoardHelpers.thingsInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
         , test "does not remove tags that match the column's tag" <|
@@ -200,7 +201,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Bar Tasks"
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.tags
                     |> List.foldl Set.union Set.empty
                     |> Expect.equalSets (Set.fromList [ "bar/", "bar/baz", "bar", "baz" ])
@@ -216,7 +217,7 @@ columnsBasic =
                         { defaultConfig
                             | columns = [ { tag = "foo", displayTitle = "Foo tasks" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Foo tasks"
+                    |> BoardHelpers.thingsInColumn "Foo tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -235,7 +236,7 @@ columnCompleted =
                             | completedCount = 1
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "foo", "Completed" ]
         , test "puts completed tasks with at least one of the tags in the 'Completed' column " <|
             \() ->
@@ -259,7 +260,7 @@ columnCompleted =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> BoardHelpers.tasksInColumn "Completed"
+                    |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar3", "foo4" ]
         , test "sorts cards by title & completion time" <|
@@ -275,7 +276,7 @@ columnCompleted =
                             | completedCount = 99
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Completed"
+                    |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "b", "c" ]
         ]
@@ -294,7 +295,7 @@ columnOthers =
                             | includeOthers = True
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "Others", "foo" ]
         , test "puts tagged tasks with none of the current tags in the  'Other' column " <|
             \() ->
@@ -317,7 +318,7 @@ columnOthers =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> BoardHelpers.tasksInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo2", "foo3" ]
         , test "sorts cards by title & due date" <|
@@ -333,7 +334,7 @@ columnOthers =
                             | includeOthers = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Others"
+                    |> BoardHelpers.thingsInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]
@@ -352,7 +353,7 @@ columnUntagged =
                             | includeUntagged = True
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
-                    |> List.map Tuple.first
+                    |> List.map Column.name
                     |> Expect.equal [ "Untagged", "foo" ]
         , test "puts tasks with NO tags in the  'Untagged' column " <|
             \() ->
@@ -375,7 +376,7 @@ columnUntagged =
                                 , { tag = "foo", displayTitle = "" }
                                 ]
                         }
-                    |> BoardHelpers.tasksInColumn "Untagged"
+                    |> BoardHelpers.thingsInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "baz1" ]
         , test "sorts cards by title & due date" <|
@@ -391,7 +392,7 @@ columnUntagged =
                             | includeUntagged = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Untagged"
+                    |> BoardHelpers.thingsInColumn "Untagged"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
         ]

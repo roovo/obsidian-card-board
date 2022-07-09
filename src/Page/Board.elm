@@ -7,6 +7,7 @@ module Page.Board exposing
 import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
+import Column exposing (Column)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
@@ -221,7 +222,7 @@ boardView timeWithZone index board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns timeWithZone index
-                |> List.map (\( n, cs ) -> column timeWithZone n cs)
+                |> List.map (\column -> columnView timeWithZone column)
             )
         ]
 
@@ -232,18 +233,18 @@ selectedBoardView timeWithZone index board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns timeWithZone index
-                |> List.map (\( n, cs ) -> column timeWithZone n cs)
+                |> List.map (\column -> columnView timeWithZone column)
             )
         ]
 
 
-column : TimeWithZone -> String -> List Card -> Html Msg
-column timeWithZone title cards =
+columnView : TimeWithZone -> Column Card -> Html Msg
+columnView timeWithZone column =
     Html.div [ class "card-board-column" ]
         [ Html.div [ class "card-board-column-header" ]
-            [ Html.text title ]
+            [ Html.text <| Column.name column ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView timeWithZone) cards)
+            (List.map (cardView timeWithZone) (Column.items column))
         ]
 
 

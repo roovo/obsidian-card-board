@@ -7,6 +7,7 @@ module DateBoard exposing
     , defaultConfig
     )
 
+import Column exposing (Column)
 import Date exposing (Date)
 import Filter exposing (Filter)
 import TaskItem exposing (TaskItem)
@@ -73,28 +74,22 @@ configDecoder_v_0_1_0 =
 -- COLUMNS
 
 
-columns : TimeWithZone -> Config -> TaskList -> List ( String, List TaskItem )
+columns : TimeWithZone -> Config -> TaskList -> List (Column TaskItem)
 columns timeWithZone config taskList =
     let
         datestamp : Date
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
-    [ ( "Today"
-      , todaysItems datestamp taskList
-      )
-    , ( "Tomorrow"
-      , tomorrowsItems datestamp taskList
-      )
-    , ( "Future"
-      , futureItems datestamp taskList
-      )
+    [ Column.init "Today" <| todaysItems datestamp taskList
+    , Column.init "Tomorrow" <| tomorrowsItems datestamp taskList
+    , Column.init "Future" <| futureItems datestamp taskList
     ]
         |> prependUndated taskList config
         |> appendCompleted taskList config
 
 
-prependUndated : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+prependUndated : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
 prependUndated taskList config columnList =
     let
         undatedtasks : List TaskItem
@@ -104,7 +99,7 @@ prependUndated taskList config columnList =
                 |> List.sortBy (String.toLower << TaskItem.title)
     in
     if config.includeUndated then
-        ( "Undated", undatedtasks ) :: columnList
+        Column.init "Undated" undatedtasks :: columnList
 
     else
         columnList
@@ -183,7 +178,7 @@ futureItems today taskList =
         |> List.sortBy TaskItem.dueRataDie
 
 
-appendCompleted : TaskList -> Config -> List ( String, List TaskItem ) -> List ( String, List TaskItem )
+appendCompleted : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
 appendCompleted taskList config columnList =
     if config.completedCount > 0 then
         TaskList.topLevelTasks taskList
@@ -193,7 +188,7 @@ appendCompleted taskList config columnList =
             |> List.sortBy TaskItem.completedPosix
             |> List.reverse
             |> List.take config.completedCount
-            |> Tuple.pair "Completed"
+            |> Column.init "Completed"
             |> List.singleton
             |> List.append columnList
 

@@ -1,12 +1,12 @@
 # Cleanups
+- update readme/contributing docs as not after contributers
+- make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add Model tests
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
 - translator pattern for child -> parent comms ??
   https://medium.com/@alex.lew/the-translator-pattern-a-model-for-child-to-parent-communication-in-elm-f4bfaa1d3f98
-- refactor: (String, List a) -> Column a
-- make it so if you click outside the modal it closes it
 - I end up with multiple copies of the app running
   - add a debug to print a string each time update is called
   - in dev mode, open cardboard
