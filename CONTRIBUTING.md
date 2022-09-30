@@ -1,6 +1,6 @@
 # Contributing
 I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
-project.  
+project.
 
 
 ## Set up a dev environmant
