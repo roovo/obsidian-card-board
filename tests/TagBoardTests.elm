@@ -1,6 +1,6 @@
 module TagBoardTests exposing (suite)
 
-import Column exposing (Column)
+import Column
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
