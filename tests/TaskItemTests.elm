@@ -35,7 +35,7 @@ suite =
         , originalText
         , parsing
         , descendantTasks
-        , tags
+        , allTags
         , tasksToToggle
         , title
         , toString
@@ -668,26 +668,26 @@ descendantTasks =
         ]
 
 
-tags : Test
-tags =
-    describe "tags"
-        [ test "returns an empty array if there are no tags" <|
+allTags : Test
+allTags =
+    describe "allTags"
+        [ test "returns an empty array for a task with no tags or substasks" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.tags
+                    |> Result.map TaskItem.allTags
                     |> Expect.equal (Ok Set.empty)
         , test "returns all tags from front matter, the top level, and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tagA", "tagB" ]) 0)
-                    |> Result.map TaskItem.tags
+                    |> Result.map TaskItem.allTags
                     |> Expect.equal (Ok (Set.fromList [ "tagA", "tagB", "tag1", "tag2", "tag3" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
                     |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tag1" ]) 0)
-                    |> Result.map TaskItem.tags
+                    |> Result.map TaskItem.allTags
                     |> Expect.equal (Ok (Set.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->

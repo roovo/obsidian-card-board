@@ -3,6 +3,7 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , TaskItemFields
+    , allTags
     , autoComplete
     , completedPosix
     , completion
@@ -26,7 +27,6 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
-    , tags
     , tasksToToggle
     , title
     , toString
@@ -179,7 +179,7 @@ hasNotes =
 
 hasTags : TaskItem -> Bool
 hasTags taskItem =
-    not <| Set.isEmpty <| tags taskItem
+    not <| Set.isEmpty <| allTags taskItem
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -199,7 +199,7 @@ hasTag tagToMatch taskItem =
             else
                 String.toLower itemTag == String.toLower tagToMatch
     in
-    Set.size (Set.filter matches <| tags taskItem) > 0
+    Set.size (Set.filter matches <| allTags taskItem) > 0
 
 
 hasSubtasks : TaskItem -> Bool
@@ -254,10 +254,10 @@ descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-tags : TaskItem -> Set String
-tags ((TaskItem fields_ _) as taskItem) =
+allTags : TaskItem -> Set String
+allTags ((TaskItem fields_ _) as taskItem) =
     descendantTasks taskItem
-        |> List.map tags
+        |> List.map allTags
         |> List.foldl Set.union fields_.tags
         |> Set.union fields_.frontMatterTags
 

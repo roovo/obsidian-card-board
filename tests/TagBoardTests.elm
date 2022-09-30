@@ -202,7 +202,7 @@ columnsBasic =
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
                     |> BoardHelpers.thingsInColumn "Bar Tasks"
-                    |> List.map TaskItem.tags
+                    |> List.map TaskItem.allTags
                     |> List.foldl Set.union Set.empty
                     |> Expect.equalSets (Set.fromList [ "bar/", "bar/baz", "bar", "baz" ])
         , test "sorts cards by title & due date" <|

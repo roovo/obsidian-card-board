@@ -221,7 +221,7 @@ not a task
                     |> Parser.run (TaskList.parser "file_a" Nothing (Set.fromList [ "fm_tag1", "fm_tag2" ]) 0)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.tasks
-                    |> List.map TaskItem.tags
+                    |> List.map TaskItem.allTags
                     |> Expect.equal
                         [ Set.fromList [ "fm_tag1", "fm_tag2" ]
                         , Set.fromList [ "fm_tag1", "fm_tag2" ]
