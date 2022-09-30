@@ -11,9 +11,24 @@
   --text-title-h1: var(--text-normal);
 }
 
-.card-board {
+.workspace-leaf-content[data-type='card-board-view'] .view-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.card-board-container .modal.mod-settings .vertical-tab-header::before {
+  display: none;
+}
+
+.card-board-container .modal.mod-settings .vertical-tab-header::after {
+  display: none;
+  content: "";
+}
+
+.card-board-view {
   height: 100%;
   background-color: var(--background-primary);
+  padding: var(--file-margins);
 }
 
 ul.card-board-tab-list {
@@ -305,7 +320,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   cursor: pointer;
 }
 
-.card-board .modal-content {
+.card-board-view .modal-content {
   display: grid;
   grid: "select form"
         / 200px auto;
@@ -332,7 +347,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   padding-top: 1.5em;
 }
 
-.card-board .vertical-tab-nav-item {
+.card-board-view .vertical-tab-nav-item {
   padding-right: 1.5em;
 }
 
@@ -380,12 +395,12 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.card-board .setting-item:first-child {
+.card-board-view .setting-item:first-child {
   padding-top: 0;
   border-top: none;
 }
 
-.card-board .setting-item {
+.card-board-view .setting-item {
   padding: 18px 0 18px 0;
   border-top: 1px solid var(--background-modifier-border);
 }
@@ -473,7 +488,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   vertical-align: middle;
 }
 
-.card-board .suggestion-container {
+.card-board-view .suggestion-container {
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;
@@ -484,23 +499,23 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   line-height: 1em;
 }
 
-.card-board .suggestion-section {
+.card-board-view .suggestion-section {
   border-top: 1px solid var(--background-modifier-border);
   padding-top: 0.5em;
 }
 
-.card-board .suggestion-section:first-child {
+.card-board-view .suggestion-section:first-child {
   border-top: none;
 }
 
-.card-board .suggestion-section-heading {
+.card-board-view .suggestion-section-heading {
   color: var(--text-faint);
   font-size: var(--font-smaller);
   font-weight: var(--bold-weight);
   margin-bottom: 3px;
 }
 
-.card-board .suggestion-item {
+.card-board-view .suggestion-item {
   padding-left: 5px;
   font-size: var(--font-small);
   line-height: 1.3em;
