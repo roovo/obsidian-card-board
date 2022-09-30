@@ -257,7 +257,7 @@ descendantTasks (TaskItem _ subtasks_) =
 allTags : TaskItem -> Set String
 allTags ((TaskItem fields_ _) as taskItem) =
     descendantTasks taskItem
-        |> List.map allTags
+        |> List.map (fields >> .tags)
         |> List.foldl Set.union fields_.tags
         |> Set.union fields_.frontMatterTags
 
