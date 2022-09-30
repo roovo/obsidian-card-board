@@ -230,18 +230,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .card-board-card.markdown-preview-view .task-list-item-checkbox {
   grid-area: checkbox;
-  position: static;
-  margin: 0;
-  margin-right: 0.5em;
-  margin-top: 0.25em;
-  height: 1em;
-  width: 1em;
-}
-
-
-/* fixes alignment of checkbox ticks on california coast theme */
-.card-board-card-content-area > input[type="checkbox"]:checked:before {
-  position:static;
+  vertical-align: middle;
 }
 
 .card-board-card-title {
