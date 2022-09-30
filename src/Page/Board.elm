@@ -293,7 +293,7 @@ cardView timeWithZone card =
                 []
             , cardTagsView (TaskItem.tags taskItem)
                 |> when (TaskItem.hasTags taskItem)
-            , subtasksView (Card.subtasks card)
+            , subtasksView (Card.descendantTasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)

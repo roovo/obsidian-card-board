@@ -34,7 +34,7 @@ suite =
         , notes
         , originalText
         , parsing
-        , subtasks
+        , descendantTasks
         , tags
         , tasksToToggle
         , title
@@ -149,7 +149,7 @@ completion =
 containsId : Test
 containsId =
     describe "containsId"
-        [ test "returns False if the id is not in the task or any subtasks" <|
+        [ test "returns False if the id is not in the task or any descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
@@ -161,7 +161,7 @@ containsId =
                     |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 1))
                     |> Expect.equal (Ok True)
-        , test "returns True if the id is for one of the subtasks" <|
+        , test "returns True if the id is for one of the descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
@@ -263,13 +263,13 @@ hasTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok True)
-        , test "returns True if the task has subtasks with tags" <|
+        , test "returns True if the task has any descendant tasks with tags" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar #baz #bar #foo"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok True)
-        , test "returns False if the task and subtasks have no tags" <|
+        , test "returns False if the task and all descendant tasks have no tags" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run TaskItemHelpers.basicParser
@@ -559,11 +559,11 @@ originalText =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.originalText
                     |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title ")
-        , test "retains leading whitepace for the  original line text for subtasks" <|
+        , test "retains leading whitepace for the original line text for descendantTasks" <|
             \() ->
                 "- [X] task\n   \t - [ ] sub-task"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.originalText)
                     |> Expect.equal (Ok [ "   \t - [ ] sub-task" ])
         ]
@@ -631,31 +631,31 @@ parsing =
         ]
 
 
-subtasks : Test
-subtasks =
-    describe "subtasks"
-        [ test "parses subtasks" <|
+descendantTasks : Test
+descendantTasks =
+    describe "descendantTasks"
+        [ test "parses descendantTasks" <|
             \() ->
                 "- [ ] foo\n - [ ] bar"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
-        , test "stops parsing subtasks at the end of indentation" <|
+        , test "stops parsing descendantTasks at the end of indentation" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar", "baz" ])
         , test "it is happy even if the level of indentation decreases as long as still indented" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar", "baz" ])
-        , test "consumes <eol> character where there are subtasks" <|
+        , test "consumes <eol> character where there are descendantTasks" <|
             \() ->
                 "- [X] foo\n - [ ] sub foo\n- [ ] bar"
                     |> Parser.run
@@ -721,21 +721,21 @@ tasksToToggle =
                     |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
-        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is true and all other subtasks are complete" <|
+        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is true and all other descendant tasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
-        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is false and all other subtasks are complete" <|
+        , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is false and all other descendant tasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(false)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
-        , test "returns the sub-TaskItem if the subtask matches the id and @autocomplete is set but there are other incomplete subtasks" <|
+        , test "returns the sub-TaskItem if the subtask matches the id and @autocomplete is set but there are other incomplete descendant tasks" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run TaskItemHelpers.basicParser
@@ -749,14 +749,14 @@ tasksToToggle =
                     |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
-        , test "returns the TaskItem if it is complete, matches and all subtasks are already complete" <|
+        , test "returns the TaskItem if it is complete, matches and all descendant tasks are already complete" <|
             \() ->
                 "- [x] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
-        , test "returns the TaskItem if it is incomplete, matches and all subtasks are already complete" <|
+        , test "returns the TaskItem if it is incomplete, matches and all descendant tasks are already complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
@@ -865,19 +865,19 @@ toString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] the task")
-        , test "preserves leading whitespace for subtasks" <|
+        , test "preserves leading whitespace for descendant tasks" <|
             \() ->
                 "- [X] the task\n   \t- [ ] a subtask"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
                     |> List.map TaskItem.toString
                     |> Expect.equal [ "   \t- [ ] a subtask" ]
-        , test "does not output frontmatter tags for subtasks" <|
+        , test "does not output frontmatter tags for descendant tasks" <|
             \() ->
                 "- [X] the task\n   \t- [ ] a subtask"
                     |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "aTag" ]) 0)
-                    |> Result.map TaskItem.subtasks
+                    |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
                     |> List.map TaskItem.toString
                     |> Expect.equal [ "   \t- [ ] a subtask" ]

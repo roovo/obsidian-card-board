@@ -21,7 +21,7 @@ suite =
         , id
         , markdownWithIds
         , notesId
-        , subtasks
+        , descendantTasks
         , taskItemId
         ]
 
@@ -132,7 +132,7 @@ id =
 markdownWithIds : Test
 markdownWithIds =
     describe "markdownWithIds"
-        [ test "extracts the taskItem title, subtasks titles, and notes with their respective ids" <|
+        [ test "extracts the taskItem title, descendant task titles, and notes with their respective ids" <|
             \() ->
                 """- [ ] foo
  some note
@@ -165,16 +165,16 @@ notesId =
         ]
 
 
-subtasks : Test
-subtasks =
-    describe "subtasks"
-        [ test "returns an empty list if there are no subtasks" <|
+descendantTasks : Test
+descendantTasks =
+    describe "descendantTasks"
+        [ test "returns an empty list if there are no descendantTasks" <|
             \() ->
                 taskItem
                     |> Maybe.map (Card.fromTaskItem "")
-                    |> Maybe.map Card.subtasks
+                    |> Maybe.map Card.descendantTasks
                     |> Expect.equal (Just [])
-        , test "returns a list of the subtasks with the card idPrefix" <|
+        , test "returns a list of the descendant tasks with the card idPrefix" <|
             \() ->
                 """- [ ] foo
 
@@ -182,7 +182,7 @@ subtasks =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "a_prefix")
-                    |> Maybe.map Card.subtasks
+                    |> Maybe.map Card.descendantTasks
                     |> Maybe.map (List.map <| Tuple.mapSecond TaskItem.title)
                     |> Expect.equal (Just [ ( "a_prefix:2166136261:3", "bar" ) ])
         ]

@@ -7,6 +7,7 @@ module TaskItem exposing
     , completedPosix
     , completion
     , containsId
+    , descendantTasks
     , due
     , dueRataDie
     , dummy
@@ -25,7 +26,6 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
-    , subtasks
     , tags
     , tasksToToggle
     , title
@@ -138,7 +138,7 @@ completion =
 
 containsId : String -> TaskItem -> Bool
 containsId targetId taskItem =
-    (id taskItem :: List.map id (subtasks taskItem))
+    (id taskItem :: List.map id (descendantTasks taskItem))
         |> List.member targetId
 
 
@@ -249,14 +249,14 @@ originalText =
     fields >> .originalText
 
 
-subtasks : TaskItem -> List TaskItem
-subtasks (TaskItem _ subtasks_) =
+descendantTasks : TaskItem -> List TaskItem
+descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
 tags : TaskItem -> Set String
 tags ((TaskItem fields_ _) as taskItem) =
-    subtasks taskItem
+    descendantTasks taskItem
         |> List.map tags
         |> List.foldl Set.union fields_.tags
         |> Set.union fields_.frontMatterTags
@@ -268,13 +268,13 @@ tasksToToggle id_ timeWithZone taskItem =
         idBelongsToSubtask : Bool
         idBelongsToSubtask =
             taskItem
-                |> subtasks
+                |> descendantTasks
                 |> List.map id
                 |> List.member id_
 
         resultIsAllSubtasksCompleted : Bool
         resultIsAllSubtasksCompleted =
-            subtasks taskItem
+            descendantTasks taskItem
                 |> List.map
                     (\t ->
                         if id t == id_ then
@@ -287,7 +287,7 @@ tasksToToggle id_ timeWithZone taskItem =
 
         matchingTaskItem : List TaskItem
         matchingTaskItem =
-            (taskItem :: subtasks taskItem)
+            (taskItem :: descendantTasks taskItem)
                 |> List.filter (\t -> id t == id_)
 
         topLevelTaskIsNotAlreadyComplete : Bool

@@ -146,7 +146,7 @@ tasks : TaskList -> List TaskItem
 tasks (TaskList taskList) =
     taskList
         |> List.concatMap
-            (\t -> t :: TaskItem.subtasks t)
+            (\t -> t :: TaskItem.descendantTasks t)
 
 
 topLevelTasks : TaskList -> List TaskItem
