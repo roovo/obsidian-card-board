@@ -17,8 +17,8 @@ module TaskItem exposing
     , hasNotes
     , hasOneOfTheTags
     , hasSubtasks
-    , hasTag
     , hasTags
+    , hasThisTag
     , id
     , isCompleted
     , isDated
@@ -184,11 +184,11 @@ hasTags taskItem =
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
 hasOneOfTheTags tagsToMatch taskItem =
-    List.any (\t -> hasTag t taskItem) tagsToMatch
+    List.any (\t -> hasThisTag t taskItem) tagsToMatch
 
 
-hasTag : String -> TaskItem -> Bool
-hasTag tagToMatch taskItem =
+hasThisTag : String -> TaskItem -> Bool
+hasThisTag tagToMatch taskItem =
     let
         matches : String -> Bool
         matches itemTag =

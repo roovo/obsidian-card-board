@@ -125,7 +125,7 @@ isAllowed taskItem filter =
             fileIsFromPath (TaskItem.filePath taskItem) path
 
         TagFilter tag ->
-            TaskItem.hasTag tag taskItem
+            TaskItem.hasThisTag tag taskItem
 
 
 

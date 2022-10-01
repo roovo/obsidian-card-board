@@ -23,9 +23,9 @@ suite =
         , filePath
         , hasOneOfTheTags
         , hasTags
-        , hasTagBasic
-        , hasTagWithSubtag
-        , hasTagWithSubtagWildcard
+        , hasThisTagBasic
+        , hasThisTagWithSubtag
+        , hasThisTagWithSubtagWildcard
         , id
         , isCompleted
         , isFromFile
@@ -278,128 +278,128 @@ hasTags =
         ]
 
 
-hasTagBasic : Test
-hasTagBasic =
-    describe "hasTag - basic operation"
+hasThisTagBasic : Test
+hasThisTagBasic =
+    describe "hasThisTag - basic operation"
         [ test "returns True if the task has tags INCLUDING the given one" <|
             \() ->
                 "- [ ] foo #baz #bar #foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok True)
         , test "is case insensative" <|
             \() ->
                 "- [ ] foo #baz #bar #foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "BAR")
+                    |> Result.map (TaskItem.hasThisTag "BAR")
                     |> Expect.equal (Ok True)
         , test "returns True if the task has a subtask with the given tag" <|
             \() ->
                 "- [ ] foo \n  - [ ] bar #bar"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok True)
         , test "returns False if the task has no tags" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok False)
         , test "returns False if the task has tags but NOT the given one" <|
             \() ->
                 "- [ ] foo #baz #barrrrr #foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok False)
         , test "returns False if the task has a tags that starts with the given one" <|
             \() ->
                 "- [ ] foo #bart"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok False)
         , test "returns False if the task has the tag but it is followed by a slash" <|
             \() ->
                 "- [ ] foo #bar/"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok False)
         , test "returns False if the task has the tag but it is followed by a subtag" <|
             \() ->
                 "- [ ] foo #bar/baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar")
+                    |> Result.map (TaskItem.hasThisTag "bar")
                     |> Expect.equal (Ok False)
         ]
 
 
-hasTagWithSubtag : Test
-hasTagWithSubtag =
-    describe "hasTag - with subtag"
+hasThisTagWithSubtag : Test
+hasThisTagWithSubtag =
+    describe "hasThisTag - with subtag"
         [ test "returns True if the task has the given subtag" <|
             \() ->
                 "- [ ] foo #bar/baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/baz")
+                    |> Result.map (TaskItem.hasThisTag "bar/baz")
                     |> Expect.equal (Ok True)
         , test "is case insensative" <|
             \() ->
                 "- [ ] foo #bar/Baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "BAR/BAZ")
+                    |> Result.map (TaskItem.hasThisTag "BAR/BAZ")
                     |> Expect.equal (Ok True)
         , test "returns False if the task has the subtag but it is followed by a slash" <|
             \() ->
                 "- [ ] foo #bar/baz/"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/baz")
+                    |> Result.map (TaskItem.hasThisTag "bar/baz")
                     |> Expect.equal (Ok False)
         , test "returns False if the task has the subtag but it is followed by another subtag" <|
             \() ->
                 "- [ ] foo #bar/baz/qux"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/baz")
+                    |> Result.map (TaskItem.hasThisTag "bar/baz")
                     |> Expect.equal (Ok False)
         , test "only matches actual subtags" <|
             \() ->
                 "- [ ] foo #bart"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok False)
         ]
 
 
-hasTagWithSubtagWildcard : Test
-hasTagWithSubtagWildcard =
-    describe "hasTag - with subtag wildcard"
+hasThisTagWithSubtagWildcard : Test
+hasThisTagWithSubtagWildcard =
+    describe "hasThisTag - with subtag wildcard"
         [ test "returns True if the task has a / on the end" <|
             \() ->
                 "- [ ] foo #bar/"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
         , test "is case insensative" <|
             \() ->
                 "- [ ] foo #bAr/"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
         , test "returns True if the task has a subtag" <|
             \() ->
                 "- [ ] foo #bar/baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
         , test "returns True if the task has nested subtags" <|
             \() ->
                 "- [ ] foo #bar/baz/qux"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
         , test "returns True if the task has no slash on the end" <|
             \() ->
                 "- [ ] foo #bar"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasTag "bar/")
+                    |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
         ]
 
