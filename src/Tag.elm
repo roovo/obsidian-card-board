@@ -4,6 +4,7 @@ module Tag exposing
     )
 
 import Parser as P exposing ((|.), (|=), Parser)
+import ParserHelper
 
 
 type Tag
@@ -22,6 +23,7 @@ parser =
         |= (P.getChompedString (P.chompWhile (not << isInvalidCharacter))
                 |> P.andThen checkIfEmpty
                 |> P.andThen checkIsNotNumeric
+                |> ParserHelper.checkWhitespaceFollows
            )
 
 

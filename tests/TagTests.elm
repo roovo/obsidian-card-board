@@ -65,13 +65,19 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        , test "fails with a '#as@r'" <|
+            \() ->
+                "#as@r"
+                    |> Parser.run Tag.parser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         , fuzz validTagContentFuzzer "fails with strings that don't start with '#'" <|
             \fuzzedTag ->
                 fuzzedTag
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , fuzz stringWithInvalidCharacters "fails for tags containing invalid characters" <|
+        , fuzz stringWithInvalidCharacters "fails for tags consitting of invalid characters" <|
             \fuzzedTag ->
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
