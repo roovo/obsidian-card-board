@@ -2,7 +2,7 @@ module TagTests exposing (suite)
 
 import Expect
 import Fuzz exposing (Fuzzer)
-import Parser
+import Parser exposing ((|.), (|=))
 import Tag
 import Test exposing (..)
 
@@ -17,7 +17,43 @@ suite =
 parser : Test
 parser =
     describe "parser"
-        [ test "fails with an empty string" <|
+        [ test "parses '#foo-bar'" <|
+            \() ->
+                "#foo-bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo-bar")
+        , test "parses '#foo_bar'" <|
+            \() ->
+                "#foo_bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo_bar")
+        , test "parses '#foo/bar'" <|
+            \() ->
+                "#foo/bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo/bar")
+        , fuzz validTagContentFuzzer "parses all valid tags that start with '#'" <|
+            \fuzzedTag ->
+                ("#" ++ fuzzedTag)
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok fuzzedTag)
+        , test "can parse multiple tags" <|
+            \() ->
+                "#foo/bar #baz"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> ( first, second ))
+                            |= Tag.parser
+                            |. Parser.token " "
+                            |= Tag.parser
+                        )
+                    |> Result.map (\r -> Tuple.mapFirst Tag.toString r)
+                    |> Result.map (\r -> Tuple.mapSecond Tag.toString r)
+                    |> Expect.equal (Ok ( "foo/bar", "baz" ))
+        , test "fails with an empty string" <|
             \() ->
                 ""
                     |> Parser.run Tag.parser
@@ -47,30 +83,6 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , fuzz validTagContentFuzzer "parses '#foo-bar'" <|
-            \fuzzedTag ->
-                "#foo-bar"
-                    |> Parser.run Tag.parser
-                    |> Result.map Tag.toString
-                    |> Expect.equal (Ok "foo-bar")
-        , fuzz validTagContentFuzzer "parses '#foo_bar'" <|
-            \fuzzedTag ->
-                "#foo_bar"
-                    |> Parser.run Tag.parser
-                    |> Result.map Tag.toString
-                    |> Expect.equal (Ok "foo_bar")
-        , fuzz validTagContentFuzzer "parses '#foo/bar'" <|
-            \fuzzedTag ->
-                "#foo/bar"
-                    |> Parser.run Tag.parser
-                    |> Result.map Tag.toString
-                    |> Expect.equal (Ok "foo/bar")
-        , fuzz validTagContentFuzzer "parses all valid tags that start with '#'" <|
-            \fuzzedTag ->
-                ("#" ++ fuzzedTag)
-                    |> Parser.run Tag.parser
-                    |> Result.map Tag.toString
-                    |> Expect.equal (Ok fuzzedTag)
         ]
 
 
