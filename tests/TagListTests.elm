@@ -35,6 +35,14 @@ push =
                     |> pushTag (buildTag "foo")
                     |> TagList.toString
                     |> Expect.equal "#foo"
+        , test "can push multiple Tags onto an empty TagList" <|
+            \() ->
+                TagList.empty
+                    |> pushTag (buildTag "foo")
+                    |> pushTag (buildTag "bar")
+                    |> pushTag (buildTag "baz")
+                    |> TagList.toString
+                    |> Expect.equal "#foo #bar #baz"
         ]
 
 

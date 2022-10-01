@@ -27,4 +27,5 @@ toString (TagList tags) =
     tags
         |> List.map Tag.toString
         |> List.map (String.append "#")
-        |> String.join ""
+        |> List.reverse
+        |> String.join " "
