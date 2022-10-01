@@ -19,11 +19,24 @@ parser : Parser Tag
 parser =
     P.succeed Tag
         |. P.token "#"
-        |= P.andThen checkIfEmpty (P.getChompedString (P.chompWhile (not << isInvalidCharacter)))
+        |= (P.getChompedString (P.chompWhile (not << isInvalidCharacter))
+                |> P.andThen checkIfEmpty
+                |> P.andThen checkIsNotNumeric
+           )
 
 
 
 -- PRIVATE
+
+
+checkIsNotNumeric : String -> Parser String
+checkIsNotNumeric parsedString =
+    case String.toInt parsedString of
+        Just _ ->
+            P.problem "numeric tag"
+
+        Nothing ->
+            P.succeed parsedString
 
 
 checkIfEmpty : String -> Parser String

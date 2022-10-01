@@ -41,6 +41,12 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        , fuzz numericStringFuzzer "fails for tags containing only digits" <|
+            \fuzzedTag ->
+                ("#" ++ fuzzedTag)
+                    |> Parser.run Tag.parser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
         , fuzz validTagContentFuzzer "parses '#foo-bar'" <|
             \fuzzedTag ->
                 "#foo-bar"
@@ -90,6 +96,11 @@ stringWithInvalidCharacters =
         |> Fuzz.map ensureNotEmpty
 
 
+numericStringFuzzer : Fuzzer String
+numericStringFuzzer =
+    Fuzz.map String.fromInt Fuzz.int
+
+
 validTagContentFuzzer : Fuzzer String
 validTagContentFuzzer =
     let
@@ -106,10 +117,20 @@ validTagContentFuzzer =
 
             else
                 a
+
+        ensureNotNumeric : String -> String
+        ensureNotNumeric a =
+            case String.toInt a of
+                Just _ ->
+                    "a"
+
+                Nothing ->
+                    a
     in
     Fuzz.string
         |> Fuzz.map dropInvalidCharacters
         |> Fuzz.map ensureNotEmpty
+        |> Fuzz.map ensureNotNumeric
 
 
 isValidTagCharacter : Char -> Bool
