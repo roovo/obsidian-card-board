@@ -29,13 +29,37 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , fuzz noHashAtStartFuzzer "fails with strings that don't start with '#'" <|
+        , fuzz validTagContentFuzzer "fails with strings that don't start with '#'" <|
             \fuzzedTag ->
                 fuzzedTag
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , fuzz noHashAtStartFuzzer "parses strings that start with '#'" <|
+        , fuzz stringWithInvalidCharacters "fails for tags containing invalid characters" <|
+            \fuzzedTag ->
+                ("#" ++ fuzzedTag)
+                    |> Parser.run Tag.parser
+                    |> Result.toMaybe
+                    |> Expect.equal Nothing
+        , fuzz validTagContentFuzzer "parses '#foo-bar'" <|
+            \fuzzedTag ->
+                "#foo-bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo-bar")
+        , fuzz validTagContentFuzzer "parses '#foo_bar'" <|
+            \fuzzedTag ->
+                "#foo_bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo_bar")
+        , fuzz validTagContentFuzzer "parses '#foo/bar'" <|
+            \fuzzedTag ->
+                "#foo/bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo/bar")
+        , fuzz validTagContentFuzzer "parses all valid tags that start with '#'" <|
             \fuzzedTag ->
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
@@ -44,16 +68,36 @@ parser =
         ]
 
 
-noHashAtStartFuzzer : Fuzzer String
-noHashAtStartFuzzer =
+stringWithInvalidCharacters : Fuzzer String
+stringWithInvalidCharacters =
     let
-        dropWhileHashAtStart : String -> String
-        dropWhileHashAtStart a =
-            if String.startsWith "#" a then
-                dropWhileHashAtStart <| String.dropLeft 1 a
+        dropValidCharacters : String -> String
+        dropValidCharacters a =
+            String.toList a
+                |> List.filter (not << isValidTagCharacter)
+                |> String.fromList
+
+        ensureNotEmpty : String -> String
+        ensureNotEmpty a =
+            if String.length a == 0 then
+                "!"
 
             else
                 a
+    in
+    Fuzz.string
+        |> Fuzz.map dropValidCharacters
+        |> Fuzz.map ensureNotEmpty
+
+
+validTagContentFuzzer : Fuzzer String
+validTagContentFuzzer =
+    let
+        dropInvalidCharacters : String -> String
+        dropInvalidCharacters a =
+            String.toList a
+                |> List.filter isValidTagCharacter
+                |> String.fromList
 
         ensureNotEmpty : String -> String
         ensureNotEmpty a =
@@ -64,5 +108,17 @@ noHashAtStartFuzzer =
                 a
     in
     Fuzz.string
-        |> Fuzz.map dropWhileHashAtStart
+        |> Fuzz.map dropInvalidCharacters
         |> Fuzz.map ensureNotEmpty
+
+
+isValidTagCharacter : Char -> Bool
+isValidTagCharacter c =
+    if Char.isAlphaNum c then
+        True
+
+    else if List.member c [ '_', '-', '/' ] then
+        True
+
+    else
+        False

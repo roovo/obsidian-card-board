@@ -19,7 +19,11 @@ parser : Parser Tag
 parser =
     P.succeed Tag
         |. P.token "#"
-        |= P.andThen checkIfEmpty (P.getChompedString (P.chompWhile (always True)))
+        |= P.andThen checkIfEmpty (P.getChompedString (P.chompWhile (not << isInvalidCharacter)))
+
+
+
+-- PRIVATE
 
 
 checkIfEmpty : String -> Parser String
@@ -29,3 +33,15 @@ checkIfEmpty parsedString =
 
     else
         P.succeed parsedString
+
+
+isInvalidCharacter : Char -> Bool
+isInvalidCharacter c =
+    if Char.isAlphaNum c then
+        False
+
+    else if List.member c [ '_', '-', '/' ] then
+        False
+
+    else
+        True
