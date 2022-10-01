@@ -1,5 +1,6 @@
 module Tag exposing
-    ( parser
+    ( Tag
+    , parser
     , toString
     )
 
