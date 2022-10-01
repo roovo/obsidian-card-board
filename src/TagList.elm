@@ -2,6 +2,7 @@ module TagList exposing
     ( TagList
     , append
     , empty
+    , isEmpty
     , push
     , toString
     )
@@ -26,6 +27,11 @@ push tag (TagList tags) =
 append : TagList -> TagList -> TagList
 append (TagList l1) (TagList l2) =
     TagList (List.append l2 l1)
+
+
+isEmpty : TagList -> Bool
+isEmpty (TagList ts) =
+    List.isEmpty ts
 
 
 toString : TagList -> String

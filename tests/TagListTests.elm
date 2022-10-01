@@ -13,6 +13,7 @@ suite =
         [ empty
         , push
         , append
+        , isEmpty
         ]
 
 
@@ -69,6 +70,26 @@ append =
                     |> TagList.toString
                     |> Expect.equal "#foo #bar #baz #quz"
         ]
+
+
+isEmpty : Test
+isEmpty =
+    describe "isEmpty"
+        [ test "returns True for an empty TagList" <|
+            \() ->
+                TagList.empty
+                    |> TagList.isEmpty
+                    |> Expect.equal True
+        , test "returns False for a non-empty TagList" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.isEmpty
+                    |> Expect.equal False
+        ]
+
+
+
+-- HELPERS
 
 
 buildList : List String -> TagList
