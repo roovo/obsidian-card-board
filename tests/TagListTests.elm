@@ -12,6 +12,7 @@ suite =
     concat
         [ empty
         , push
+        , append
         ]
 
 
@@ -44,6 +45,35 @@ push =
                     |> TagList.toString
                     |> Expect.equal "#foo #bar #baz"
         ]
+
+
+append : Test
+append =
+    describe "append"
+        [ test "appending two empty TagLists produces and emptu TagList" <|
+            \() ->
+                TagList.empty
+                    |> TagList.append TagList.empty
+                    |> TagList.toString
+                    |> Expect.equal ""
+        , test "appending an empty TagList onto a non-empty one gives the non-empty one" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.append TagList.empty
+                    |> TagList.toString
+                    |> Expect.equal "#foo #bar"
+        , test "puts two TagLists together" <|
+            \() ->
+                buildList [ "baz", "quz" ]
+                    |> TagList.append (buildList [ "foo", "bar" ])
+                    |> TagList.toString
+                    |> Expect.equal "#foo #bar #baz #quz"
+        ]
+
+
+buildList : List String -> TagList
+buildList cs =
+    List.foldl (\c ts -> pushTag (buildTag c) ts) TagList.empty cs
 
 
 buildTag : String -> Maybe Tag

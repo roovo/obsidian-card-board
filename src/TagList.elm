@@ -1,5 +1,6 @@
 module TagList exposing
     ( TagList
+    , append
     , empty
     , push
     , toString
@@ -20,6 +21,11 @@ empty =
 push : Tag -> TagList -> TagList
 push tag (TagList tags) =
     TagList (tag :: tags)
+
+
+append : TagList -> TagList -> TagList
+append (TagList l1) (TagList l2) =
+    TagList (List.append l2 l1)
 
 
 toString : TagList -> String
