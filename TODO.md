@@ -1,3 +1,13 @@
+- allow filter to be used as either an allow or deny list
+  - remove (currently unused) global settings
+  - add setting for allow/deny choice for each board type
+  - do this for CardBoardSettings, InteropPorts and Session
+  - bump settings version
+  - decode the settings
+  - rewrite the settings on launch
+  - save old settings if version has changed
+  - implement the feature
+
 # Cleanups
 - make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
