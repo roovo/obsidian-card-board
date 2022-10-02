@@ -195,6 +195,7 @@ appendCompleted config taskList columnList =
                 |> List.reverse
                 |> List.sortBy TaskItem.completedPosix
                 |> List.reverse
+                |> List.take config.completedCount
 
         isCompleteWithTags : TaskItem -> Bool
         isCompleteWithTags item =
