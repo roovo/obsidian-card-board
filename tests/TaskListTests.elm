@@ -4,7 +4,7 @@ import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
-import Set
+import TagList
 import TaskItem
 import TaskList
 import Test exposing (..)
@@ -82,7 +82,7 @@ map =
                 """- [ ] foo
 - [x] bar #tag1
 """
-                    |> Parser.run (TaskList.parser "old/path" Nothing Set.empty 0)
+                    |> Parser.run (TaskList.parser "old/path" Nothing TagList.empty 0)
                     |> Result.map (TaskList.map <| TaskItem.updateFilePath "old/path" "new/path")
                     |> Result.map TaskList.topLevelTasks
                     |> Result.map (List.map TaskItem.filePath)
@@ -209,7 +209,7 @@ not a task
 - [X] baz
 
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing Set.empty 0)
+                    |> Parser.run (TaskList.parser "file_a" Nothing TagList.empty 0)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.taskIds
                     |> Expect.equal [ "4275677999:1", "4275677999:4", "4275677999:6" ]
@@ -218,13 +218,13 @@ not a task
                 """- [ ] foo
 - [x] bar
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing (Set.fromList [ "fm_tag1", "fm_tag2" ]) 0)
+                    |> Parser.run (TaskList.parser "file_a" Nothing (TagList.fromList [ "fm_tag1", "fm_tag2" ]) 0)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.tasks
                     |> List.map TaskItem.allTags
                     |> Expect.equal
-                        [ Set.fromList [ "fm_tag1", "fm_tag2" ]
-                        , Set.fromList [ "fm_tag1", "fm_tag2" ]
+                        [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
+                        , TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         ]
         ]
 

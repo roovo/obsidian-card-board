@@ -11,18 +11,18 @@ module Helpers.TaskListHelpers exposing
 
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Parser exposing (Parser)
-import Set
+import TagList
 import TaskList exposing (TaskList)
 
 
 basicParser : Parser TaskList
 basicParser =
-    TaskList.parser "" Nothing Set.empty 0
+    TaskList.parser "" Nothing TagList.empty 0
 
 
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d Set.empty 0) ts
+    Parser.run (TaskList.parser p d TagList.empty 0) ts
         |> Result.withDefault TaskList.empty
 
 

@@ -7,7 +7,7 @@ import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
 import Semver
-import Set
+import TagList
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -184,7 +184,7 @@ toElmTests =
                             InteropDefinitions.FileAdded
                                 { filePath = "a path"
                                 , fileDate = Just "a date"
-                                , frontMatterTags = Set.fromList [ "a_tag" ]
+                                , frontMatterTags = TagList.fromList [ "a_tag" ]
                                 , bodyOffset = 3
                                 , body = "some contents"
                                 }
@@ -211,7 +211,7 @@ toElmTests =
                             InteropDefinitions.FileUpdated
                                 { filePath = "a path"
                                 , fileDate = Just "a date"
-                                , frontMatterTags = Set.fromList [ "a_tag" ]
+                                , frontMatterTags = TagList.fromList [ "a_tag" ]
                                 , bodyOffset = 3
                                 , body = "some contents"
                                 }

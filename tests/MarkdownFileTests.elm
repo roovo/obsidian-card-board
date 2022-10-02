@@ -3,7 +3,7 @@ module MarkdownFileTests exposing (suite)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
 import MarkdownFile exposing (decoder)
-import Set
+import TagList
 import Test exposing (..)
 
 
@@ -51,14 +51,14 @@ decoderTests =
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok <| Set.fromList [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
         , test "extracts (top level) tags from the front matter block" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"---\\ntags:\\n- tag1\\n- tag2\\n---\\nsome contents\"}"
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok <| Set.fromList [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
         , test "does not include the front matter block in the body" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"---\\ntags:\\n- tag1\\n- tag2\\n---\\nsome contents\"}"
@@ -72,21 +72,21 @@ decoderTests =
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok <| Set.fromList [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
         , test "extracts (top level) tags from the front matter block if preceeded by whitespace" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"  \\n\\n---\\ntags:\\n- tag1\\n- tag2\\n---\\nsome contents\"}"
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok <| Set.fromList [ "tag1", "tag2" ])
+                    |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
         , test "does not extract front matter if it is not at the start of the file" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"x\\n---\\ntags: [ tag1, tag2 ]\\n---\\nsome contents\"}"
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok Set.empty)
+                    |> Expect.equal (Ok TagList.empty)
         , test "includes the front matter block in the body if it is not at the start of the file" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"x\\n---\\ntags: [ tag1, tag2 ]\\n---\\nsome contents\"}"
@@ -100,7 +100,7 @@ decoderTests =
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok Set.empty)
+                    |> Expect.equal (Ok TagList.empty)
         , test "does not include the the front matter block in the body if it is invalid yaml" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"---\\ntags: [ tag1, tag2 ]\\n$ is not valid\\n---\\nsome contents\"}"
@@ -121,7 +121,7 @@ decoderTests =
                     |> DecodeHelpers.runDecoder decoder
                     |> .decoded
                     |> Result.map .frontMatterTags
-                    |> Expect.equal (Ok Set.empty)
+                    |> Expect.equal (Ok TagList.empty)
         , test "sets the bodyOffest to 0 if there is no front matter" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"some contents\"}"

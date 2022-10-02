@@ -5,7 +5,7 @@ import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import Set
+import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import Time
@@ -139,7 +139,7 @@ markdownWithIds =
   - [ ] bar
  more notes
   """
-                    |> Parser.run (TaskItem.parser "file" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "file" Nothing TagList.empty 0)
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.markdownWithIds
@@ -213,5 +213,5 @@ now =
 taskItem : Maybe TaskItem
 taskItem =
     "- [ ] foo"
-        |> Parser.run (TaskItem.parser "taskItemPath" Nothing (Set.fromList []) 0)
+        |> Parser.run (TaskItem.parser "taskItemPath" Nothing TagList.empty 0)
         |> Result.toMaybe

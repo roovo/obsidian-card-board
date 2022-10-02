@@ -6,7 +6,7 @@ import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
-import Set
+import TagList
 import TaskItem exposing (AutoCompletion(..), Completion(..))
 import Test exposing (..)
 import Time
@@ -152,19 +152,19 @@ containsId =
         [ test "returns False if the id is not in the task or any descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 4))
                     |> Expect.equal (Ok False)
         , test "returns True if the id is for the task" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 1))
                     |> Expect.equal (Ok True)
         , test "returns True if the id is for one of the descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 2))
                     |> Expect.equal (Ok True)
         ]
@@ -182,7 +182,7 @@ due =
         , test "returns Nothing if the file date is invalid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "not a date") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "not a date") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
         , test "returns Nothing if the @due date is invalid" <|
@@ -194,13 +194,13 @@ due =
         , test "returns Just the date if the file date is valid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737431)
         , test "@due() date over-rides the file date" <|
             \() ->
                 "- [ ] foo @due(2021-03-03)"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "the @due() date is not included in the title" <|
@@ -230,7 +230,7 @@ filePath =
         [ test "returns the filePath" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
         ]
@@ -410,7 +410,7 @@ id =
         [ test "returns FNVC1a(filePath):row" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.id
                     |> Expect.equal (Ok "1414514984:1")
         ]
@@ -452,13 +452,13 @@ isDated =
         , test "returns False if the date is invalid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "not a date") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "not a date") TagList.empty 0)
                     |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok False)
         , test "returns True if the date is valid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") TagList.empty 0)
                     |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok True)
         ]
@@ -470,13 +470,13 @@ isFromFile =
         [ test "returns False if the filenames do NOT match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File B")
                     |> Expect.equal (Ok False)
         , test "returns True if the filenames do match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File A")
                     |> Expect.equal (Ok True)
         , test "returns True if the filenames are both blank" <|
@@ -488,19 +488,19 @@ isFromFile =
         , test "returns False if the filenames do NOT match case" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File a")
                     |> Expect.equal (Ok False)
         , test "returns False if the filenames are a partial match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         , test "matches id" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         ]
@@ -512,13 +512,13 @@ lineNumber =
         [ test "is the actual line number if there is no bodyOffset" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing TagList.empty 0)
                     |> Result.map TaskItem.lineNumber
                     |> Expect.equal (Ok 1)
         , test "adds in the bodyOffset" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList []) 3)
+                    |> Parser.run (TaskItem.parser "" Nothing TagList.empty 3)
                     |> Result.map TaskItem.lineNumber
                     |> Expect.equal (Ok 4)
         ]
@@ -676,23 +676,23 @@ allTags =
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.allTags
-                    |> Expect.equal (Ok Set.empty)
+                    |> Expect.equal (Ok TagList.empty)
         , test "returns all tags from front matter, the top level, and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tagA", "tagB" ]) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
                     |> Result.map TaskItem.allTags
-                    |> Expect.equal (Ok (Set.fromList [ "tagA", "tagB", "tag1", "tag2", "tag3" ]))
+                    |> Expect.equal (Ok (TagList.fromList [ "tagA", "tagB", "tag1", "tag2", "tag3" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tag1" ]) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag1" ]) 0)
                     |> Result.map TaskItem.allTags
-                    |> Expect.equal (Ok (Set.fromList [ "tag1", "tag2" ]))
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tag3" ]) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag3" ]) 0)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
         ]
@@ -814,7 +814,7 @@ toString =
         , test "outputs all tags except front matter tags" <|
             \() ->
                 "- [X] #tag1 foo #tag2 bar #tag3"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "tag4" ]) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag4" ]) 0)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar #tag1 #tag2 #tag3")
         , test "outputs a @completed(<iso-date>) TaskList item with the completed date at the end" <|
@@ -832,7 +832,7 @@ toString =
         , test "does not output a @due(<iso-date>) TaskList item if the original had a file based due date" <|
             \() ->
                 "- [X] foo bar"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") (Set.fromList []) 0)
+                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.toString
                     |> Expect.equal (Ok "- [x] foo bar")
         , test "outputs an @autocomplete(true) TaskList item if in the original" <|
@@ -876,7 +876,7 @@ toString =
         , test "does not output frontmatter tags for descendant tasks" <|
             \() ->
                 "- [X] the task\n   \t- [ ] a subtask"
-                    |> Parser.run (TaskItem.parser "" Nothing (Set.fromList [ "aTag" ]) 0)
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "aTag" ]) 0)
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
                     |> List.map TaskItem.toString

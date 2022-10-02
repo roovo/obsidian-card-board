@@ -18,7 +18,7 @@ import InteropPorts
 import Json.Decode as JD
 import SafeZipper
 import Session exposing (Session)
-import Set exposing (Set)
+import TagList exposing (TagList)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TimeWithZone exposing (TimeWithZone)
 
@@ -307,10 +307,10 @@ cardView timeWithZone card =
         |> Tuple.pair cardId
 
 
-cardTagsView : Set String -> Html Msg
+cardTagsView : TagList -> Html Msg
 cardTagsView tags =
     Html.div [ class "card-board-card-tag-area" ]
-        (List.map cardTagView <| Set.toList tags)
+        (List.map cardTagView <| TagList.toList tags)
 
 
 cardTagView : String -> Html Msg

@@ -41,7 +41,8 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
-import Set exposing (Set)
+import Tag exposing (Tag)
+import TagList exposing (TagList)
 import TaskPaperTag
 import Time
 
@@ -56,11 +57,11 @@ type alias TaskItemFields =
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
-    , frontMatterTags : Set String
+    , frontMatterTags : TagList
     , lineNumber : Int
     , notes : String
     , originalText : String
-    , tags : Set String
+    , tags : TagList
     , title : String
     }
 
@@ -73,11 +74,11 @@ dummy =
         , dueFile = Nothing
         , dueTag = Nothing
         , filePath = ""
-        , frontMatterTags = Set.empty
+        , frontMatterTags = TagList.empty
         , lineNumber = 0
         , notes = ""
         , originalText = ""
-        , tags = Set.empty
+        , tags = TagList.empty
         , title = ""
         }
         []
@@ -103,7 +104,7 @@ type Content
     = AutoCompleteTag Bool
     | CompletedTag Time.Posix
     | DueTag Date
-    | ObsidianTag String
+    | ObsidianTag Tag
     | Word String
 
 
@@ -179,7 +180,7 @@ hasNotes =
 
 hasTags : TaskItem -> Bool
 hasTags taskItem =
-    not <| Set.isEmpty <| allTags taskItem
+    not <| TagList.isEmpty <| allTags taskItem
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -189,17 +190,7 @@ hasOneOfTheTags tagsToMatch taskItem =
 
 hasThisTag : String -> TaskItem -> Bool
 hasThisTag tagToMatch taskItem =
-    let
-        matches : String -> Bool
-        matches itemTag =
-            if String.endsWith "/" tagToMatch then
-                String.startsWith (String.toLower tagToMatch) (String.toLower itemTag)
-                    || (String.toLower itemTag == String.dropRight 1 (String.toLower tagToMatch))
-
-            else
-                String.toLower itemTag == String.toLower tagToMatch
-    in
-    Set.size (Set.filter matches <| allTags taskItem) > 0
+    TagList.containsTagMatching tagToMatch <| allTags taskItem
 
 
 hasSubtasks : TaskItem -> Bool
@@ -254,12 +245,14 @@ descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-allTags : TaskItem -> Set String
+allTags : TaskItem -> TagList
 allTags ((TaskItem fields_ _) as taskItem) =
     descendantTasks taskItem
         |> List.map (fields >> .tags)
-        |> List.foldl Set.union fields_.tags
-        |> Set.union fields_.frontMatterTags
+        |> List.foldl TagList.append TagList.empty
+        |> TagList.append fields_.tags
+        |> TagList.append fields_.frontMatterTags
+        |> TagList.unique
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
@@ -336,15 +329,11 @@ toString (TaskItem fields_ _) =
 
         fieldTags : String
         fieldTags =
-            if Set.size fields_.tags > 0 then
-                fields_.tags
-                    |> Set.map (String.append "#")
-                    |> Set.toList
-                    |> String.join " "
-                    |> String.append " "
+            if TagList.isEmpty fields_.tags then
+                ""
 
             else
-                ""
+                " " ++ TagList.toString fields_.tags
 
         dueTag : String
         dueTag =
@@ -416,7 +405,7 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 -- SERIALIZATION
 
 
-parser : String -> Maybe String -> Set String -> Int -> Parser TaskItem
+parser : String -> Maybe String -> TagList -> Int -> Parser TaskItem
 parser pathToFile fileDate frontMatterTags bodyOffset =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
@@ -437,7 +426,7 @@ parser pathToFile fileDate frontMatterTags bodyOffset =
         |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset)
 
 
-taskItemFieldsBuilder : Int -> Int -> String -> Set String -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
+taskItemFieldsBuilder : Int -> Int -> String -> TagList -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
 taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset row completion_ dueFromFile contents endOffset source =
     let
         sourceText : String
@@ -458,16 +447,16 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
             contents
                 |> List.foldr extractDueDate Nothing
 
-        obsidianTags : Set String
+        obsidianTags : TagList
         obsidianTags =
             contents
-                |> List.foldr extractTag Set.empty
+                |> List.foldr extractTag TagList.empty
 
-        extractTag : Content -> Set String -> Set String
+        extractTag : Content -> TagList -> TagList
         extractTag content ts =
             case content of
                 ObsidianTag t ->
-                    Set.insert t ts
+                    TagList.cons t ts
 
                 _ ->
                     ts
@@ -574,17 +563,10 @@ tokenParser =
         [ P.backtrackable <| TaskPaperTag.completedTagParser CompletedTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
         , P.backtrackable <| TaskPaperTag.autocompleteTagParser AutoCompleteTag
-        , P.backtrackable <| obsidianTagParser
+        , P.backtrackable <| P.map ObsidianTag Tag.parser
         , P.succeed Word
             |= ParserHelper.wordParser
         ]
-
-
-obsidianTagParser : Parser Content
-obsidianTagParser =
-    P.succeed ObsidianTag
-        |. P.token "#"
-        |= ParserHelper.wordParser
 
 
 prefixParser : Parser Completion
@@ -608,7 +590,7 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-addAnySubtasksAndNotes : String -> Maybe String -> Set String -> Int -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes : String -> Maybe String -> TagList -> Int -> TaskItemFields -> Parser TaskItem
 addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
@@ -647,7 +629,7 @@ addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
         |> P.andThen buildTaskItem
 
 
-indentedItemParser : String -> Maybe String -> Set String -> Int -> Parser IndentedItem
+indentedItemParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
 indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
     P.oneOf
         [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
@@ -661,7 +643,7 @@ notesParser =
         |= ParserHelper.anyLineParser
 
 
-subTaskParser : String -> Maybe String -> Set String -> Int -> Parser IndentedItem
+subTaskParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
 subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
