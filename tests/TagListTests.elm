@@ -20,6 +20,7 @@ suite =
         , containsTagMatchingSubtag
         , containsTagMatchingSubtagWildcard
         , containsTagMatchingOneOf
+        , toList
         ]
 
 
@@ -228,6 +229,17 @@ containsTagMatchingOneOf =
                 TagList.fromList [ "foo", "bar" ]
                     |> TagList.containsTagMatchingOneOf [ "baz", "qux" ]
                     |> Expect.equal False
+        ]
+
+
+toList : Test
+toList =
+    describe "toList"
+        [ test "returns the TagList as a list of Strings" <|
+            \() ->
+                TagList.fromList [ "foo", "bar" ]
+                    |> TagList.toList
+                    |> Expect.equal [ "foo", "bar" ]
         ]
 
 

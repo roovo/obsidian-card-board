@@ -7,6 +7,7 @@ module TagList exposing
     , empty
     , fromList
     , isEmpty
+    , toList
     , toString
     , unique
     )
@@ -54,11 +55,8 @@ append (TagList l1) (TagList l2) =
 
 
 unique : TagList -> TagList
-unique (TagList ts) =
-    ts
-        |> List.map Tag.toString
-        |> LE.uniqueBy String.toLower
-        |> fromList
+unique =
+    fromList << LE.uniqueBy String.toLower << toList
 
 
 isEmpty : TagList -> Bool
@@ -72,7 +70,7 @@ containsTagMatchingOneOf candidates tagList =
 
 
 containsTagMatching : String -> TagList -> Bool
-containsTagMatching candidate (TagList ts) =
+containsTagMatching candidate =
     let
         matches : String -> Bool
         matches t =
@@ -83,12 +81,14 @@ containsTagMatching candidate (TagList ts) =
             else
                 String.toLower t == String.toLower candidate
     in
-    List.any matches <| List.map Tag.toString ts
+    List.any matches << toList
 
 
 toString : TagList -> String
-toString (TagList tags) =
-    tags
-        |> List.map Tag.toString
-        |> List.map (String.append "#")
-        |> String.join " "
+toString =
+    String.join " " << List.map (String.append "#") << toList
+
+
+toList : TagList -> List String
+toList (TagList ts) =
+    List.map Tag.toString ts
