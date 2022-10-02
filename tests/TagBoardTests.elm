@@ -292,7 +292,7 @@ columnCompleted =
                             | completedCount = 2
                             , columns = [ { tag = "foo", displayTitle = "" } ]
                         }
-                    |> BoardHelpers.tasksInColumn "Completed"
+                    |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "complete1", "complete2" ]
         ]
