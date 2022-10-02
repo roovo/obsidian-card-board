@@ -22,33 +22,14 @@ parser =
     P.succeed Tag
         |. P.token "#"
         |= (P.getChompedString (P.chompWhile (not << isInvalidCharacter))
-                |> P.andThen checkIfEmpty
-                |> P.andThen checkIsNotNumeric
+                |> P.andThen (ParserHelper.checkIfEmpty "Tag.parser")
+                |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
                 |> ParserHelper.checkWhitespaceFollows
            )
 
 
 
 -- PRIVATE
-
-
-checkIsNotNumeric : String -> Parser String
-checkIsNotNumeric parsedString =
-    case String.toInt parsedString of
-        Just _ ->
-            P.problem "numeric tag"
-
-        Nothing ->
-            P.succeed parsedString
-
-
-checkIfEmpty : String -> Parser String
-checkIfEmpty parsedString =
-    if String.length parsedString == 0 then
-        P.problem "Empty string found"
-
-    else
-        P.succeed parsedString
 
 
 isInvalidCharacter : Char -> Bool
