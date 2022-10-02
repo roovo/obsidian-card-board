@@ -2,7 +2,7 @@
 	"id": "card-board",
 	"name": "CardBoard",
 	"description": "Display markdown tasks on kanban-style boards.",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"author": "roovo",
 	"authorUrl": "https://github.com/roovo",
 	"minAppVersion": "0.12.13",
