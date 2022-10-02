@@ -17,6 +17,7 @@ suite =
         , containsTagMatchingBasic
         , containsTagMatchingSubtag
         , containsTagMatchingSubtagWildcard
+        , containsTagMatchingOneOf
         ]
 
 
@@ -171,6 +172,22 @@ containsTagMatchingSubtagWildcard =
                 buildList [ "foo", "bar/baz" ]
                     |> TagList.containsTagMatching "bar/"
                     |> Expect.equal True
+        ]
+
+
+containsTagMatchingOneOf : Test
+containsTagMatchingOneOf =
+    describe "containsTagMatchingOneOf"
+        [ test "returns True if the TagList contains a matching tag" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.containsTagMatchingOneOf [ "bar", "baz" ]
+                    |> Expect.equal True
+        , test "returns False if the TagList does NOT contain a matching tag" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.containsTagMatchingOneOf [ "baz", "qux" ]
+                    |> Expect.equal False
         ]
 
 

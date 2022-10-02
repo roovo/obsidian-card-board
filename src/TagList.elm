@@ -2,6 +2,7 @@ module TagList exposing
     ( TagList
     , append
     , containsTagMatching
+    , containsTagMatchingOneOf
     , empty
     , isEmpty
     , push
@@ -33,6 +34,11 @@ append (TagList l1) (TagList l2) =
 isEmpty : TagList -> Bool
 isEmpty (TagList ts) =
     List.isEmpty ts
+
+
+containsTagMatchingOneOf : List String -> TagList -> Bool
+containsTagMatchingOneOf candidates tagList =
+    List.any (\c -> containsTagMatching c tagList) candidates
 
 
 containsTagMatching : String -> TagList -> Bool
