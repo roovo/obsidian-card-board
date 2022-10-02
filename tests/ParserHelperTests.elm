@@ -15,6 +15,7 @@ suite =
         , booleanParserTest
         , checkWhitespaceFollowsTests
         , checkIfEmpty
+        , checkIsNotNumeric
         , dateParserTests
         , indentParserTests
         , nonEmptyStringParserTest
@@ -123,7 +124,7 @@ checkIsNotNumeric =
             \() ->
                 "hi"
                     |> P.run (ParserHelper.checkIsNotNumeric "location" "abc")
-                    |> Expect.equal (Ok "non-empty string")
+                    |> Expect.equal (Ok "abc")
         , test "FAILS if the parsed string IS numeric" <|
             \() ->
                 "hi"
