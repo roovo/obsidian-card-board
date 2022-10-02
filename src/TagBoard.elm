@@ -5,6 +5,7 @@ module TagBoard exposing
     , columns
     , configDecoder
     , configDecoder_v_0_1_0
+    , configDecoder_v_0_2_0
     , configEncoder
     , defaultConfig
     )
@@ -78,6 +79,17 @@ columnConfigEncoder =
 
 configDecoder : TsDecode.Decoder Config
 configDecoder =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+configDecoder_v_0_2_0 : TsDecode.Decoder Config
+configDecoder_v_0_2_0 =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)

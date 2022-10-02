@@ -24,7 +24,7 @@ module Session exposing
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
-import CardBoardSettings exposing (GlobalSettings)
+import CardBoardSettings
 import Filter
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -45,7 +45,6 @@ type Session
 
 type alias Config =
     { boardConfigs : SafeZipper BoardConfig
-    , globalSettings : GlobalSettings
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -66,7 +65,6 @@ default : Session
 default =
     Session
         { boardConfigs = SafeZipper.empty
-        , globalSettings = CardBoardSettings.defaultGlobalSettings
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -80,7 +78,6 @@ fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
         { boardConfigs = SafeZipper.fromList <| CardBoardSettings.boardConfigs flags.settings
-        , globalSettings = CardBoardSettings.globalSettings flags.settings
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
