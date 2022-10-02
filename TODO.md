@@ -1,5 +1,4 @@
 - allow filter to be used as either an allow or deny list
-  - remove (currently unused) global settings
   - add setting for allow/deny choice for each board type
   - do this for CardBoardSettings, InteropPorts and Session
   - bump settings version

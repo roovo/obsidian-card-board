@@ -2,6 +2,7 @@ module BoardConfig exposing
     ( BoardConfig(..)
     , decoder
     , decoder_v_0_1_0
+    , decoder_v_0_2_0
     , default
     , encoder
     , filters
@@ -132,6 +133,14 @@ decoder =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
         , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        ]
+
+
+decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_2_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_2_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_2_0
         ]
 
 
