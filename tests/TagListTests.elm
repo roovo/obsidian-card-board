@@ -11,7 +11,7 @@ suite : Test
 suite =
     concat
         [ empty
-        , push
+        , cons
         , append
         , fromList
         , isEmpty
@@ -33,23 +33,22 @@ empty =
         ]
 
 
-push : Test
-push =
-    describe "push"
-        [ test "can push a Tag onto an empty TagList" <|
+cons : Test
+cons =
+    describe "cons"
+        [ test "adds a Tag onto an empty TagList" <|
             \() ->
                 TagList.empty
-                    |> pushTag (buildTag "foo")
+                    |> consTag (buildTag "foo")
                     |> TagList.toString
                     |> Expect.equal "#foo"
-        , test "can push multiple Tags onto an empty TagList" <|
+        , test "adds Tags to the start of the TagList" <|
             \() ->
                 TagList.empty
-                    |> pushTag (buildTag "foo")
-                    |> pushTag (buildTag "bar")
-                    |> pushTag (buildTag "baz")
-                    |> TagList.toString
-                    |> Expect.equal "#foo #bar #baz"
+                    |> consTag (buildTag "foo")
+                    |> consTag (buildTag "bar")
+                    |> consTag (buildTag "baz")
+                    |> Expect.equal (TagList.fromList [ "baz", "bar", "foo" ])
         ]
 
 
@@ -224,8 +223,8 @@ buildTag content =
         |> Result.toMaybe
 
 
-pushTag : Maybe Tag -> TagList -> TagList
-pushTag tag list =
+consTag : Maybe Tag -> TagList -> TagList
+consTag tag list =
     tag
-        |> Maybe.map (\t -> TagList.push t list)
+        |> Maybe.map (\t -> TagList.cons t list)
         |> Maybe.withDefault TagList.empty

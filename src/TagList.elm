@@ -1,12 +1,12 @@
 module TagList exposing
     ( TagList
     , append
+    , cons
     , containsTagMatching
     , containsTagMatchingOneOf
     , empty
     , fromList
     , isEmpty
-    , push
     , toString
     )
 
@@ -35,20 +35,22 @@ fromList cs =
         pushTag : Maybe Tag -> TagList -> TagList
         pushTag tag list =
             tag
-                |> Maybe.map (\t -> push t list)
+                |> Maybe.map (\t -> cons t list)
                 |> Maybe.withDefault list
     in
-    List.foldl (\c ts -> pushTag (buildTag c) ts) empty cs
+    cs
+        |> List.reverse
+        |> List.foldl (\c ts -> pushTag (buildTag c) ts) empty
 
 
-push : Tag -> TagList -> TagList
-push tag (TagList tags) =
+cons : Tag -> TagList -> TagList
+cons tag (TagList tags) =
     TagList (tag :: tags)
 
 
 append : TagList -> TagList -> TagList
 append (TagList l1) (TagList l2) =
-    TagList (List.append l2 l1)
+    TagList (List.append l1 l2)
 
 
 isEmpty : TagList -> Bool
@@ -81,5 +83,4 @@ toString (TagList tags) =
     tags
         |> List.map Tag.toString
         |> List.map (String.append "#")
-        |> List.reverse
         |> String.join " "
