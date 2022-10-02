@@ -1,6 +1,7 @@
 module TagList exposing
     ( TagList
     , append
+    , containsTagMatching
     , empty
     , isEmpty
     , push
@@ -32,6 +33,21 @@ append (TagList l1) (TagList l2) =
 isEmpty : TagList -> Bool
 isEmpty (TagList ts) =
     List.isEmpty ts
+
+
+containsTagMatching : String -> TagList -> Bool
+containsTagMatching candidate (TagList ts) =
+    let
+        matches : String -> Bool
+        matches t =
+            if String.endsWith "/" candidate then
+                String.startsWith (String.toLower candidate) t
+                    || (t == String.dropRight 1 (String.toLower candidate))
+
+            else
+                t == String.toLower candidate
+    in
+    List.any matches <| List.map Tag.toString ts
 
 
 toString : TagList -> String

@@ -14,6 +14,9 @@ suite =
         , push
         , append
         , isEmpty
+        , containsTagMatchingBasic
+        , containsTagMatchingSubtag
+        , containsTagMatchingSubtagWildcard
         ]
 
 
@@ -85,6 +88,89 @@ isEmpty =
                 buildList [ "foo", "bar" ]
                     |> TagList.isEmpty
                     |> Expect.equal False
+        ]
+
+
+containsTagMatchingBasic : Test
+containsTagMatchingBasic =
+    describe "containsTagMatching - basic"
+        [ test "returns True if the TagList contains an exact match" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.containsTagMatching "foo"
+                    |> Expect.equal True
+        , test "is case insensative" <|
+            \() ->
+                buildList [ "foO", "bar" ]
+                    |> TagList.containsTagMatching "Foo"
+                    |> Expect.equal True
+        , test "returns False if the TagList does NOT contain the tag" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.containsTagMatching "baz"
+                    |> Expect.equal False
+        , test "returns False if the TagList is empty" <|
+            \() ->
+                TagList.empty
+                    |> TagList.containsTagMatching "bar"
+                    |> Expect.equal False
+        , test "returns False if the TagList and the match are empty" <|
+            \() ->
+                TagList.empty
+                    |> TagList.containsTagMatching ""
+                    |> Expect.equal False
+        , test "returns False if the TagList contains a tag that starts with the match" <|
+            \() ->
+                buildList [ "foo", "bar" ]
+                    |> TagList.containsTagMatching "fo"
+                    |> Expect.equal False
+        , test "returns False if the TagList contains the tag but it is followed  by a '/'" <|
+            \() ->
+                buildList [ "foo/", "bar" ]
+                    |> TagList.containsTagMatching "foo"
+                    |> Expect.equal False
+        , test "returns False if the TagList contains the tag but it is followed  by a subtag" <|
+            \() ->
+                buildList [ "foo/baz", "bar" ]
+                    |> TagList.containsTagMatching "foo"
+                    |> Expect.equal False
+        ]
+
+
+containsTagMatchingSubtag : Test
+containsTagMatchingSubtag =
+    describe "containsTagMatching - subtags"
+        [ test "returns True if the TagList contains an exact match" <|
+            \() ->
+                buildList [ "foo", "bar/baz" ]
+                    |> TagList.containsTagMatching "bar/baz"
+                    |> Expect.equal True
+        , test "returns False if the TagList contains the tag/subtag but it has a trailing '/'" <|
+            \() ->
+                buildList [ "foo", "bar/baz/" ]
+                    |> TagList.containsTagMatching "bar/baz"
+                    |> Expect.equal False
+        , test "only matches actual subtags" <|
+            \() ->
+                buildList [ "foo", "bart" ]
+                    |> TagList.containsTagMatching "bar/"
+                    |> Expect.equal False
+        ]
+
+
+containsTagMatchingSubtagWildcard : Test
+containsTagMatchingSubtagWildcard =
+    describe "containsTagMatching - subtag wildcards"
+        [ test "returns True if the TagList contains an exact match" <|
+            \() ->
+                buildList [ "foo", "bar/" ]
+                    |> TagList.containsTagMatching "bar/"
+                    |> Expect.equal True
+        , test "returns True if the TagList contains the tag with a subtag" <|
+            \() ->
+                buildList [ "foo", "bar/baz" ]
+                    |> TagList.containsTagMatching "bar/"
+                    |> Expect.equal True
         ]
 
 

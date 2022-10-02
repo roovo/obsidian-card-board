@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ parser
+        , toString
         ]
 
 
@@ -40,7 +41,7 @@ parser =
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
-                    |> Expect.equal (Ok fuzzedTag)
+                    |> Expect.equal (Ok (String.toLower fuzzedTag))
         , test "can parse multiple tags" <|
             \() ->
                 "#foo/bar #baz"
@@ -90,6 +91,22 @@ parser =
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         ]
+
+
+toString : Test
+toString =
+    describe "toString"
+        [ test "always outputs lower case" <|
+            \() ->
+                "#FOO-Bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo-bar")
+        ]
+
+
+
+-- HELPERS
 
 
 stringWithInvalidCharacters : Fuzzer String

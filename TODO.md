@@ -1,3 +1,6 @@
+- preserve the case of tags when converting them back to strings
+- ensure duplicate tags are not printed on cards
+
 # Cleanups
 - make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
