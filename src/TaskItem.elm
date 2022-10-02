@@ -253,6 +253,7 @@ allTags ((TaskItem fields_ _) as taskItem) =
         |> TagList.append fields_.tags
         |> TagList.append fields_.frontMatterTags
         |> TagList.unique
+        |> TagList.sort
 
 
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem

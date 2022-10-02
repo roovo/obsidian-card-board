@@ -682,11 +682,17 @@ allTags =
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
                     |> Result.map TaskItem.allTags
-                    |> Expect.equal (Ok (TagList.fromList [ "tagA", "tagB", "tag1", "tag2", "tag3" ]))
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2", "tag3", "tagA", "tagB" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag1" ]) 0)
+                    |> Result.map TaskItem.allTags
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
+        , test "returns the tags in alphabetical order" <|
+            \() ->
+                "- [ ] foo #tag2 bar #tag1\n  - [ ] bar #tag1"
+                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList []) 0)
                     |> Result.map TaskItem.allTags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|

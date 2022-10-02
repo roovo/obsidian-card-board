@@ -7,6 +7,7 @@ module TagList exposing
     , empty
     , fromList
     , isEmpty
+    , sort
     , toList
     , toString
     , unique
@@ -82,6 +83,11 @@ containsTagMatching candidate =
                 String.toLower t == String.toLower candidate
     in
     List.any matches << toList
+
+
+sort : TagList -> TagList
+sort =
+    fromList << List.sort << toList
 
 
 toString : TagList -> String

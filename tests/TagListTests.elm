@@ -20,6 +20,7 @@ suite =
         , containsTagMatchingSubtag
         , containsTagMatchingSubtagWildcard
         , containsTagMatchingOneOf
+        , sort
         , toList
         ]
 
@@ -229,6 +230,18 @@ containsTagMatchingOneOf =
                 TagList.fromList [ "foo", "bar" ]
                     |> TagList.containsTagMatchingOneOf [ "baz", "qux" ]
                     |> Expect.equal False
+        ]
+
+
+sort : Test
+sort =
+    describe "sort"
+        [ test "sorts the Tags alphabetically" <|
+            \() ->
+                TagList.fromList [ "foo", "bar" ]
+                    |> TagList.sort
+                    |> TagList.toList
+                    |> Expect.equal [ "bar", "foo" ]
         ]
 
 
