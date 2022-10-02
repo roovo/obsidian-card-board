@@ -1,6 +1,7 @@
 module Card exposing
     ( Card
     , Highlight(..)
+    , descendantTasks
     , editButtonId
     , filePath
     , fromTaskItem
@@ -8,7 +9,6 @@ module Card exposing
     , id
     , markdownWithIds
     , notesId
-    , subtasks
     , taskItem
     , taskItemId
     )
@@ -102,7 +102,7 @@ markdownWithIds card =
         subtasksWithIds : List { id : String, markdown : String }
         subtasksWithIds =
             card
-                |> subtasks
+                |> descendantTasks
                 |> List.map subtaskMarkdownWithId
 
         notesWithId : List { id : String, markdown : String }
@@ -134,9 +134,9 @@ notesId card =
     id card ++ ":notes"
 
 
-subtasks : Card -> List ( String, TaskItem )
-subtasks (Card idPrefix item) =
-    TaskItem.subtasks item
+descendantTasks : Card -> List ( String, TaskItem )
+descendantTasks (Card idPrefix item) =
+    TaskItem.descendantTasks item
         |> List.map (\sub -> ( idPrefix ++ ":" ++ TaskItem.id sub, sub ))
 
 

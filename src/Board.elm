@@ -6,7 +6,7 @@ module Board exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import Column exposing (Column, init)
+import Column exposing (Column)
 import DateBoard
 import Filter exposing (Filter)
 import TagBoard

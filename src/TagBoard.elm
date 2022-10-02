@@ -268,7 +268,7 @@ fillColumn taskList columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
         isIncompleteWithTag tag item =
-            not (TaskItem.isCompleted item) && TaskItem.hasTag tag item
+            not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
     in
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
         |> TaskList.topLevelTasks

@@ -14,6 +14,7 @@ suite =
         [ anyLineParserTest
         , booleanParserTest
         , checkWhitespaceFollowsTests
+        , checkIfEmpty
         , dateParserTests
         , indentParserTests
         , nonEmptyStringParserTest
@@ -98,9 +99,43 @@ booleanParserTest =
         ]
 
 
+checkIfEmpty : Test
+checkIfEmpty =
+    describe "checkIfEmpty"
+        [ test "SUCCEEDS if the parsed string ISN'T empty" <|
+            \() ->
+                "hi"
+                    |> P.run (ParserHelper.checkIfEmpty "location" "non-empty string")
+                    |> Expect.equal (Ok "non-empty string")
+        , test "FAILS if the parsed string IS empty" <|
+            \() ->
+                "hi"
+                    |> P.run (ParserHelper.checkIfEmpty "location" "")
+                    |> Result.mapError (List.map .problem)
+                    |> Expect.equal (Err [ P.Problem "Empty string found in location" ])
+        ]
+
+
+checkIsNotNumeric : Test
+checkIsNotNumeric =
+    describe "checkIsNotNumeric"
+        [ test "SUCCEEDS if the parsed string ISN'T numeric" <|
+            \() ->
+                "hi"
+                    |> P.run (ParserHelper.checkIsNotNumeric "location" "abc")
+                    |> Expect.equal (Ok "non-empty string")
+        , test "FAILS if the parsed string IS numeric" <|
+            \() ->
+                "hi"
+                    |> P.run (ParserHelper.checkIsNotNumeric "location" "123")
+                    |> Result.mapError (List.map .problem)
+                    |> Expect.equal (Err [ P.Problem "Numeric string found in location" ])
+        ]
+
+
 checkWhitespaceFollowsTests : Test
 checkWhitespaceFollowsTests =
-    describe "parser"
+    describe "checkWhitespaceFollows"
         [ test "parsers a valid token at end of string" <|
             \() ->
                 "hi"

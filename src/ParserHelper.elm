@@ -1,6 +1,8 @@
 module ParserHelper exposing
     ( anyLineParser
     , booleanParser
+    , checkIfEmpty
+    , checkIsNotNumeric
     , checkWhitespaceFollows
     , dateParser
     , indentParser
@@ -291,6 +293,16 @@ checkIfEmpty calledFrom parsedString =
 
     else
         P.succeed parsedString
+
+
+checkIsNotNumeric : String -> String -> Parser String
+checkIsNotNumeric calledFrom parsedString =
+    case String.toInt parsedString of
+        Just _ ->
+            P.problem <| "Numeric string found in " ++ calledFrom
+
+        Nothing ->
+            P.succeed parsedString
 
 
 chompWithEndOfLine : Parser ()

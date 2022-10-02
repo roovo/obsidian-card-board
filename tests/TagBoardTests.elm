@@ -1,14 +1,14 @@
 module TagBoardTests exposing (suite)
 
-import Column exposing (Column)
+import Column
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
-import Set
 import TagBoard
+import TagList
 import TaskItem
 import TaskList
 import Test exposing (..)
@@ -202,16 +202,16 @@ columnsBasic =
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
                     |> BoardHelpers.thingsInColumn "Bar Tasks"
-                    |> List.map TaskItem.tags
-                    |> List.foldl Set.union Set.empty
-                    |> Expect.equalSets (Set.fromList [ "bar/", "bar/baz", "bar", "baz" ])
+                    |> List.map TaskItem.allTags
+                    |> List.foldl TagList.append TagList.empty
+                    |> Expect.equal (TagList.fromList [ "bar", "baz", "bar/", "bar/baz" ])
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing Set.empty 0)
+                    |> Parser.run (TaskList.parser "file_a" Nothing TagList.empty 0)
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig

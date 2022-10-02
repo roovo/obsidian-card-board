@@ -22,6 +22,8 @@
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
+- nested subtasks are un-nested on cards
+  - if I was going to sort this, would I want to support nested autocomplete?
 - should I support reverse subtags, i.e. /todo would match #todo or #project1/todo or #a/b/todo
 - should I support both ends subtags, i.e. /todo/ would match #todo or #project1/todo or #todo/foo or #a/todo/b
 - What should I show on the view when there are no boards defined

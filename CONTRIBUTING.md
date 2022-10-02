@@ -1,6 +1,6 @@
 # Contributing
 I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
-project.  
+project.
 
 
 ## Set up a dev environmant
@@ -13,13 +13,13 @@ npm run dev             # run dev build
 ```
 
 ## Release Checklist
-- check production build works
-- check with no config
-- check with previous config file versions
 - elm-review
 - elm-test
 - elm-coverage
 - elm-format
+- check production build works
+- check with no config (data.json file)
+- check with previous config file versions
 - is README up to date?
 - pre-release new version
   - main.js
