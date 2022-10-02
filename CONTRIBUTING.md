@@ -35,6 +35,8 @@ npm run dev             # run dev build
   - style.css
   - release notes
 - bump version: manifest.json
+- bump beta version: manifest-beta.json
+- tag the release
 
 
 ## Run tests

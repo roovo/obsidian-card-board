@@ -29,7 +29,6 @@
 - What should I show on the view when there are no boards defined
 - Some sort of toggle compact view - where it shows each task as a single line card
   with only the checkbox and the first line of the title.
-- I parse 'foo:w' as a tag whereas obsidian only recognises the foo part.
 - do I want to warn the user that I couldn't read settings at startup?
   are there any sensible options I can give them if I do?
   - gets stuck on "Loading tasks..." if flags parsing fails
@@ -67,11 +66,9 @@
 - edit in place via popup
 
 # Board Improvements
-- Tagboard: have separate Other and Untagged columns
 - do I want to sort undated (or other in tagged board) column by the mod date of the containg file?
 - do I want a way of flagging cards?
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
-- should I have an option to set colors for tags?
 - context menu to set due date to today
 - don't display all completed tasks - can get quite long!
 - filter cards on board (e.g. by tag)
@@ -130,8 +127,6 @@
   look at esbuild
 - put the target in dist
   - put the static sources in an assets dir and copy them into dist on build too- BadInputFromTypeScript -> I don't do anything if I can something bad from
-- TaskItem.tags should really be a Set
-  - would need to add a Set.Extra module otherwise the code will be less readable
 - work out how I will handle changes to the settings file format
 - Could I write a worker that keeps an eye on what is being edited and adds
   a completion timestamp when it is done?
