@@ -41,7 +41,7 @@ parser =
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
-                    |> Expect.equal (Ok (String.toLower fuzzedTag))
+                    |> Expect.equal (Ok fuzzedTag)
         , test "can parse multiple tags" <|
             \() ->
                 "#foo/bar #baz"
@@ -96,12 +96,12 @@ parser =
 toString : Test
 toString =
     describe "toString"
-        [ test "always outputs lower case" <|
+        [ test "preserves the case of tags" <|
             \() ->
                 "#FOO-Bar"
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
-                    |> Expect.equal (Ok "foo-bar")
+                    |> Expect.equal (Ok "FOO-Bar")
         ]
 
 

@@ -1,4 +1,3 @@
-- preserve the case of tags when converting them back to strings
 - ensure duplicate tags are not printed on cards
 
 # Cleanups

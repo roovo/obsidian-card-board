@@ -14,7 +14,7 @@ type Tag
 
 toString : Tag -> String
 toString (Tag s) =
-    String.toLower s
+    s
 
 
 parser : Parser Tag

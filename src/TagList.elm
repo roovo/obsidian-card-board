@@ -47,11 +47,11 @@ containsTagMatching candidate (TagList ts) =
         matches : String -> Bool
         matches t =
             if String.endsWith "/" candidate then
-                String.startsWith (String.toLower candidate) t
-                    || (t == String.dropRight 1 (String.toLower candidate))
+                String.startsWith (String.toLower candidate) (String.toLower t)
+                    || (String.toLower t == String.dropRight 1 (String.toLower candidate))
 
             else
-                t == String.toLower candidate
+                String.toLower t == String.toLower candidate
     in
     List.any matches <| List.map Tag.toString ts
 
