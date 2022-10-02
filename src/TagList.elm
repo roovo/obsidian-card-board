@@ -4,11 +4,13 @@ module TagList exposing
     , containsTagMatching
     , containsTagMatchingOneOf
     , empty
+    , fromList
     , isEmpty
     , push
     , toString
     )
 
+import Parser
 import Tag exposing (Tag)
 
 
@@ -19,6 +21,24 @@ type TagList
 empty : TagList
 empty =
     TagList []
+
+
+fromList : List String -> TagList
+fromList cs =
+    let
+        buildTag : String -> Maybe Tag
+        buildTag content =
+            ("#" ++ content)
+                |> Parser.run Tag.parser
+                |> Result.toMaybe
+
+        pushTag : Maybe Tag -> TagList -> TagList
+        pushTag tag list =
+            tag
+                |> Maybe.map (\t -> push t list)
+                |> Maybe.withDefault list
+    in
+    List.foldl (\c ts -> pushTag (buildTag c) ts) empty cs
 
 
 push : Tag -> TagList -> TagList
