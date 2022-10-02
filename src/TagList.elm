@@ -8,8 +8,10 @@ module TagList exposing
     , fromList
     , isEmpty
     , toString
+    , unique
     )
 
+import List.Extra as LE
 import Parser
 import Tag exposing (Tag)
 
@@ -38,9 +40,7 @@ fromList cs =
                 |> Maybe.map (\t -> cons t list)
                 |> Maybe.withDefault list
     in
-    cs
-        |> List.reverse
-        |> List.foldl (\c ts -> pushTag (buildTag c) ts) empty
+    List.foldr (\c ts -> pushTag (buildTag c) ts) empty cs
 
 
 cons : Tag -> TagList -> TagList
@@ -51,6 +51,14 @@ cons tag (TagList tags) =
 append : TagList -> TagList -> TagList
 append (TagList l1) (TagList l2) =
     TagList (List.append l1 l2)
+
+
+unique : TagList -> TagList
+unique (TagList ts) =
+    ts
+        |> List.map Tag.toString
+        |> LE.uniqueBy String.toLower
+        |> fromList
 
 
 isEmpty : TagList -> Bool

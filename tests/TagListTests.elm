@@ -14,6 +14,7 @@ suite =
         , cons
         , append
         , fromList
+        , unique
         , isEmpty
         , containsTagMatchingBasic
         , containsTagMatchingSubtag
@@ -94,6 +95,24 @@ fromList =
                 TagList.fromList [ "!@#", "foo", "123", "bar", "", "#plop" ]
                     |> TagList.toString
                     |> Expect.equal "#foo #bar"
+        ]
+
+
+unique : Test
+unique =
+    describe "unique"
+        [ test "removes duplicate tags" <|
+            \() ->
+                TagList.fromList [ "foo", "foo", "foo", "bar", "bar" ]
+                    |> TagList.unique
+                    |> TagList.toString
+                    |> Expect.equal "#foo #bar"
+        , test "is case insensative (uses first occurance)" <|
+            \() ->
+                TagList.fromList [ "Foo", "foo", "FOO", "bar", "bAr" ]
+                    |> TagList.unique
+                    |> TagList.toString
+                    |> Expect.equal "#Foo #bar"
         ]
 
 
