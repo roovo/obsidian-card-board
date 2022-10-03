@@ -128,6 +128,7 @@ type Msg
     | ModalCancelClicked
     | ModalCloseClicked
     | PathsRequested Int String
+    | PolaritySelected String
     | SettingsBoardNameClicked Int
     | ToggleIncludeOthers
     | ToggleIncludeUndated
@@ -215,6 +216,9 @@ update msg model =
             , cmd
             , Session.NoOp
             )
+
+        PolaritySelected polarity ->
+            updateBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
         SettingsBoardNameClicked index ->
             wrap <| switchBoardConfig (SafeZipper.atIndex index) model
@@ -737,8 +741,7 @@ polaritySelect : Polarity -> Html Msg
 polaritySelect polarity =
     Html.select
         [ class "dropdown"
-
-        -- , onInput SelectedPolarity
+        , onInput PolaritySelected
         ]
         (case polarity of
             Filter.Allow ->

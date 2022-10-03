@@ -11,6 +11,7 @@ module Filter exposing
     , ofType
     , polarityDecoder
     , polarityEncoder
+    , polarityFromString
     , updatePath
     , value
     )
@@ -104,6 +105,15 @@ polarityDecoder =
         [ TsDecode.literal Allow (JE.string "Allow")
         , TsDecode.literal Deny (JE.string "Deny")
         ]
+
+
+polarityFromString : String -> Polarity
+polarityFromString source =
+    if source == "Deny" then
+        Deny
+
+    else
+        Allow
 
 
 

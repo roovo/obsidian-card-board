@@ -25,6 +25,7 @@ suite =
         , updateBoardType
         , updateCompletedCount
         , updateFilters
+        , updateFilterPolarity
         , updateTags
         , updateTitle
         ]
@@ -225,6 +226,24 @@ updateFilters =
                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
                     |> BoardConfig.filters
                     |> Expect.equal FilterHelpers.exampleFilters
+        ]
+
+
+updateFilterPolarity : Test
+updateFilterPolarity =
+    describe "updateFilterPolarity"
+        [ test "updates the filter polarity for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" "a title"
+                    |> BoardConfig.updateFilterPolarity "Deny"
+                    |> BoardConfig.filterPolarity
+                    |> Expect.equal Filter.Deny
+        , test "updates the filter polarity for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" "a title"
+                    |> BoardConfig.updateFilterPolarity "Deny"
+                    |> BoardConfig.filterPolarity
+                    |> Expect.equal Filter.Deny
         ]
 
 

@@ -14,6 +14,7 @@ suite : Test
 suite =
     concat
         [ encodeDecode
+        , polarityFromString
         , isAllowed
         , ofType
         , filterType
@@ -63,6 +64,27 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder Filter.polarityDecoder
                     |> .decoded
                     |> Expect.equal (Ok Filter.Deny)
+        ]
+
+
+polarityFromString : Test
+polarityFromString =
+    describe "polarityFromString"
+        [ test "converts 'Allow' into Polarity.Allow" <|
+            \() ->
+                "Allow"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Allow
+        , test "converts 'Deny' into Polarity.Deny" <|
+            \() ->
+                "Deny"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Deny
+        , test "converts 'BadInput' into Polarity.Allow" <|
+            \() ->
+                "BadInput"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Allow
         ]
 
 
