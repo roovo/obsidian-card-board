@@ -1,5 +1,6 @@
 - allow filter to be used as either an allow or deny list
   - implement the settings pane with a dropdown to choose
+    - change the settings when dropdown is changed
   - use the filter when drawing the baords
 
 # Cleanups
