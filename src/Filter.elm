@@ -1,17 +1,22 @@
 module Filter exposing
     ( Filter
+    , Polarity(..)
     , decoder
+    , defaultPolarity
     , dummy
     , encoder
     , filterType
     , filterTypes
     , isAllowed
     , ofType
+    , polarityDecoder
+    , polarityEncoder
     , updatePath
     , value
     )
 
 import DecodeHelpers
+import Json.Encode as JE
 import List.Extra as LE
 import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
@@ -24,6 +29,11 @@ type Filter
     | TagFilter String
 
 
+type Polarity
+    = Allow
+    | Deny
+
+
 dummy : Filter
 dummy =
     TagFilter ""
@@ -32,6 +42,11 @@ dummy =
 filterTypes : List String
 filterTypes =
     [ "Files", "Paths", "Tags" ]
+
+
+defaultPolarity : Polarity
+defaultPolarity =
+    Allow
 
 
 
@@ -64,6 +79,30 @@ decoder =
         [ DecodeHelpers.toElmVariant "fileFilter" FileFilter TsDecode.string
         , DecodeHelpers.toElmVariant "pathFilter" PathFilter TsDecode.string
         , DecodeHelpers.toElmVariant "tagFilter" TagFilter TsDecode.string
+        ]
+
+
+polarityEncoder : TsEncode.Encoder Polarity
+polarityEncoder =
+    TsEncode.union
+        (\vAllow vDeny v ->
+            case v of
+                Allow ->
+                    vAllow
+
+                Deny ->
+                    vDeny
+        )
+        |> TsEncode.variantLiteral (JE.string "Allow")
+        |> TsEncode.variantLiteral (JE.string "Deny")
+        |> TsEncode.buildUnion
+
+
+polarityDecoder : TsDecode.Decoder Polarity
+polarityDecoder =
+    TsDecode.oneOf
+        [ TsDecode.literal Allow (JE.string "Allow")
+        , TsDecode.literal Deny (JE.string "Deny")
         ]
 
 

@@ -3,6 +3,7 @@ module InteropDefinitionsTests exposing (suite)
 import BoardConfig
 import CardBoardSettings
 import Expect
+import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
@@ -26,7 +27,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.3.0" <|
             \() ->
-                """{"now":11,"zone":22,"settings":{"version":"0.3.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"settings":{"version":"0.3.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -37,6 +38,7 @@ flagsTests =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                        , filterPolarity = Filter.Deny
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
@@ -44,6 +46,7 @@ flagsTests =
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                        , filterPolarity = Filter.Allow
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -67,6 +70,7 @@ flagsTests =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                        , filterPolarity = Filter.Allow
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
@@ -74,6 +78,7 @@ flagsTests =
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                        , filterPolarity = Filter.Allow
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -97,6 +102,7 @@ flagsTests =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = []
+                                        , filterPolarity = Filter.Allow
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
@@ -104,6 +110,7 @@ flagsTests =
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
                                         , completedCount = 5
                                         , filters = []
+                                        , filterPolarity = Filter.Allow
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"

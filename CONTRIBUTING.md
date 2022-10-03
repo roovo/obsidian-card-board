@@ -29,6 +29,7 @@ npm run dev             # run dev build
 - bump beta version: manifest-beta.json
 - test using BRAT
 - bump version: package.json
+- tag the release
 - release new version
   - main.js
   - manifest.json
@@ -36,7 +37,6 @@ npm run dev             # run dev build
   - release notes
 - bump version: manifest.json
 - bump beta version: manifest-beta.json
-- tag the release
 
 
 ## Run tests

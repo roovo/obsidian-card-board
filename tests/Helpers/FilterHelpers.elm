@@ -5,7 +5,7 @@ module Helpers.FilterHelpers exposing
     , tagFilter
     )
 
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity)
 import Helpers.DecodeHelpers as DecodeHelpers
 import TsJson.Decode as TsDecode
 
