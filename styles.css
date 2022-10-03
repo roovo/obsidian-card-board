@@ -389,8 +389,9 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   border-top: none;
 }
 
-.card-board-view .setting-item {
+.card-board-view .setting-item.new-section {
   padding: 18px 0 18px 0;
+  margin-top: 5px;
   border-top: 1px solid var(--background-modifier-border);
 }
 

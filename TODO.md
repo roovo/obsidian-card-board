@@ -1,7 +1,6 @@
 - allow filter to be used as either an allow or deny list
-  - implement the settings pane with a dropdown to choose
-    - don't show a separator line between the filters and polarity on the settings modal
   - use the filter when drawing the baords
+  - update README
 
 # Cleanups
 - make it so if you click outside the modal it closes it
