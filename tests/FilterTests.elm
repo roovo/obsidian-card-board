@@ -20,13 +20,14 @@ suite =
         , filterTypes
         , updatePath
         , value
+        , defaultPolarity
         ]
 
 
 encodeDecode : Test
 encodeDecode =
-    describe "encoding and decoding filters"
-        [ test "can decode the encoded string back to the original" <|
+    describe "encoding and decoding"
+        [ test "can decode the encoded example filter string back to the original" <|
             \() ->
                 FilterHelpers.exampleFilters
                     |> TsEncode.runExample (TsEncode.list Filter.encoder)
@@ -34,6 +35,34 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder (TsDecode.list Filter.decoder)
                     |> .decoded
                     |> Expect.equal (Ok FilterHelpers.exampleFilters)
+        , test "can decode an encoded Filter.Allow Polarity string" <|
+            \() ->
+                "\"Allow\""
+                    |> DecodeHelpers.runDecoder Filter.polarityDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Allow)
+        , test "can decode an encoded Filter.Deny Polarity string" <|
+            \() ->
+                "\"Deny\""
+                    |> DecodeHelpers.runDecoder Filter.polarityDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Deny)
+        , test "can encode and decode Filter.Allow" <|
+            \() ->
+                Filter.Allow
+                    |> TsEncode.runExample Filter.polarityEncoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Filter.polarityDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Allow)
+        , test "can decode the encoded Deny Polarity string back to the original" <|
+            \() ->
+                Filter.Deny
+                    |> TsEncode.runExample Filter.polarityEncoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Filter.polarityDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Deny)
         ]
 
 
@@ -249,4 +278,14 @@ value =
                 FilterHelpers.tagFilter "some tag"
                     |> Filter.value
                     |> Expect.equal "some tag"
+        ]
+
+
+defaultPolarity : Test
+defaultPolarity =
+    describe "defaultPolarity"
+        [ test "is Allow" <|
+            \() ->
+                Filter.defaultPolarity
+                    |> Expect.equal Filter.Allow
         ]

@@ -1,11 +1,6 @@
 - allow filter to be used as either an allow or deny list
-  - add setting for allow/deny choice for each board type
-  - do this for CardBoardSettings, InteropPorts and Session
-  - bump settings version
-  - decode the settings
-  - rewrite the settings on launch
-  - save old settings if version has changed
-  - implement the feature
+  - implement the settings pane with a dropdown to choose
+  - use the filter when drawing the baords
 
 # Cleanups
 - make it so if you click outside the modal it closes it

@@ -11,7 +11,7 @@ module TagBoard exposing
     )
 
 import Column exposing (Column)
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity)
 import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
@@ -30,6 +30,7 @@ type alias Config =
     { columns : List ColumnConfig
     , completedCount : Int
     , filters : List Filter
+    , filterPolarity : Polarity
     , includeOthers : Bool
     , includeUntagged : Bool
     , title : String
@@ -47,6 +48,7 @@ defaultConfig =
     { columns = []
     , completedCount = 10
     , filters = []
+    , filterPolarity = Filter.defaultPolarity
     , includeOthers = False
     , includeUntagged = False
     , title = ""
@@ -63,6 +65,7 @@ configEncoder =
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
         , TsEncode.required "completedCount" .completedCount TsEncode.int
         , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
+        , TsEncode.required "filterPolarity" .filterPolarity Filter.polarityEncoder
         , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
         , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
@@ -83,6 +86,9 @@ configDecoder =
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        -- |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
+        -- |> TsDecode.andMap (TsDecode.field "filterPolarity" <| TsDecode.succeed Filter.Allow)
+        |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
@@ -94,6 +100,7 @@ configDecoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
@@ -105,6 +112,7 @@ configDecoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
+        |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
