@@ -1,5 +1,4 @@
 - allow filter to be used as either an allow or deny list
-  - use the filter when drawing the baords
   - update README
 
 # Cleanups

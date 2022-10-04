@@ -144,6 +144,7 @@ moreUndatedTasks : ( String, Maybe String, String )
 moreUndatedTasks =
     ( "x", Nothing, """
 - [ ] more undated incomplete #bTag
+- [ ] more undated incomplete with cTag #cTag
 - [x] more undated complete @completed(2020-06-03)
 """ )
 
