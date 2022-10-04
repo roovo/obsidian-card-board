@@ -176,20 +176,11 @@ tags: [ project1 ]
 ```
 
 ## Board Filters
-You can filter what appears on each board in the board settings.  There are 3
-types of filter:
+You can filter which tasks appear on each board in the board settings.  There are 3
+types of filter you can use: file, path, and #tags (including front matter tags).  You can
+use any combination of these on a per-board basis.
 
-- **file**: will only include tasks from the chosen files.
-- **path**: will only include tasks from files in the chosen paths.
-- **tag**: will only include tasks with the chosen tags (including front matter tags).
-
-You can use multiple filters of each type:
-- If you have multiple file and path filters then only tasks from the chosen
-  files or paths will be shown.
-- If you use multiple tag filters then tasks with any of the chosen tags will
-  be included.
-- If you use file/path filters as well as tag filters then only tasks from
-  the chosen files or paths which also have any of the chosen tags will be shown.
+You can also choose whether to use the filters as an allow or a deny list.
 
 ## Settings
 Plugin settings are accessible from the plugin view itself, via the settings icon
