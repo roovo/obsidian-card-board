@@ -25,7 +25,7 @@ import TsJson.Encode as TsEncode
 type alias Config =
     { completedCount : Int
     , filters : List Filter
-    , filterPolarity : Filter.Polarity
+    , filterPolarity : Polarity
     , includeUndated : Bool
     , title : String
     }

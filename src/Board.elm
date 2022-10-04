@@ -87,6 +87,7 @@ filterByTag polarity filters taskList =
 applyFilters : TaskList -> Polarity -> List Filter -> TaskList
 applyFilters taskList polarity filters =
     let
+        operator : Bool -> Bool
         operator =
             case polarity of
                 Filter.Allow ->
@@ -95,6 +96,7 @@ applyFilters taskList polarity filters =
                 Filter.Deny ->
                     not
 
+        filterMode : (a -> Bool) -> List a -> Bool
         filterMode =
             case polarity of
                 Filter.Allow ->
