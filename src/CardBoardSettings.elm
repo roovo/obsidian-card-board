@@ -7,7 +7,6 @@ module CardBoardSettings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Filter exposing (Filter)
 import Semver
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode

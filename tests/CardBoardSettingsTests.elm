@@ -5,7 +5,6 @@ import CardBoardSettings
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
-import Helpers.FilterHelpers as FilterHelpers
 import Semver
 import Test exposing (..)
 import TsJson.Encode as TsEncode

@@ -1,7 +1,6 @@
 module InteropDefinitionsTests exposing (suite)
 
 import BoardConfig
-import CardBoardSettings
 import Expect
 import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
