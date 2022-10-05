@@ -30,6 +30,7 @@ module TaskItem exposing
     , tasksToToggle
     , title
     , toString
+    , toToggledString
     , toggleCompletion
     , updateFilePath
     )
@@ -41,6 +42,8 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import Regex
+import String.Extra as SE
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
@@ -374,6 +377,74 @@ toString (TaskItem fields_ _) =
                     " @autocomplete(true)"
     in
     leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
+
+
+toToggledString : { a | now : Time.Posix } -> TaskItem -> String
+toToggledString timeWithZone (TaskItem fields_ _) =
+    let
+        regexReplacer : String -> (Regex.Match -> String) -> String -> String
+        regexReplacer regex replacer original =
+            case Regex.fromString regex of
+                Just r ->
+                    Regex.replace r replacer original
+
+                Nothing ->
+                    original
+
+        blockLinkRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
+
+        checkbox : String
+        checkbox =
+            case fields_.completion of
+                Incomplete ->
+                    "- [x]"
+
+                _ ->
+                    "- [ ]"
+
+        toggleTick : String -> String
+        toggleTick t =
+            regexReplacer "^\\s*(- \\[[ xX]\\])" (\_ -> checkbox) t
+
+        completionTag : String
+        completionTag =
+            case fields_.completion of
+                Incomplete ->
+                    let
+                        completionString : String
+                        completionString =
+                            timeWithZone.now
+                                |> Iso8601.fromTime
+                                |> String.left 19
+                    in
+                    " @completed(" ++ completionString ++ ")"
+
+                _ ->
+                    ""
+
+        removeCompletionTag : String -> String
+        removeCompletionTag t =
+            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "") t
+
+        insertCompletionTag : String -> String
+        insertCompletionTag t =
+            let
+                tagInserter : String -> String
+                tagInserter =
+                    Regex.find blockLinkRegex t
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault (String.length t)
+                        |> SE.insertAt completionTag
+            in
+            tagInserter t
+    in
+    fields_.originalText
+        |> toggleTick
+        |> removeCompletionTag
+        |> insertCompletionTag
 
 
 

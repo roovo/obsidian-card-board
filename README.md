@@ -124,7 +124,7 @@ So if you have a tag `#foo/bar` you will be able to style it with your favorite
 color for foo/bars (which just has to be HotPink) using:
 
 ```css
-.cm-s-obsidian card-board-card-tag.tag-foo-bar > span.cm-hashtag {
+.card-board-view .card-board-card-tag.tag-foo-bar > span.cm-hashtag {
   background-color: HotPink;
   color: DimGrey;
 }

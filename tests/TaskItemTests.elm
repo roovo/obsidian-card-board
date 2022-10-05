@@ -2,6 +2,7 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
+import Fuzz exposing (Fuzzer)
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -39,6 +40,7 @@ suite =
         , tasksToToggle
         , title
         , toString
+        , toToggledString
         , transformation
         , updateFilePath
         ]
@@ -879,7 +881,7 @@ toString =
                     |> Result.withDefault []
                     |> List.map TaskItem.toString
                     |> Expect.equal [ "   \t- [ ] a subtask" ]
-        , test "does not output frontmatter tags for descendant tasks" <|
+        , test "does not output front matter tags for descendant tasks" <|
             \() ->
                 "- [X] the task\n   \t- [ ] a subtask"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "aTag" ]) 0)
@@ -888,6 +890,47 @@ toString =
                     |> List.map TaskItem.toString
                     |> Expect.equal [ "   \t- [ ] a subtask" ]
         ]
+
+
+toToggledString : Test
+toToggledString =
+    describe "toToggledString"
+        [ test "outputs a string for a completed task, given an INCOMPLETE item" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
+        , test "outputs a string for an incomplete task given an item with an 'x' in the checkbox" <|
+            \() ->
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+        , test "outputs a string for an incomplete task given an item with an 'X' in the checkbox" <|
+            \() ->
+                "- [X] foo #tag1 @completed(2020-03-22T00:00:00) bar #tag2"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
+        ]
+
+
+nonWhitespaceCharacter : Fuzzer String
+nonWhitespaceCharacter =
+    let
+        ensureNotEmpty : String -> String
+        ensureNotEmpty a =
+            if String.length a == 0 then
+                "x"
+
+            else
+                a
+    in
+    Fuzz.string
+        |> Fuzz.map String.trimLeft
+        |> Fuzz.map (String.left 1)
+        |> Fuzz.map ensureNotEmpty
 
 
 transformation : Test
