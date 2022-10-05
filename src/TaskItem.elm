@@ -391,9 +391,9 @@ toToggledString timeWithZone (TaskItem fields_ _) =
                 Nothing ->
                     original
 
-        blockLinkRegex =
+        checkboxRegex =
             Maybe.withDefault Regex.never <|
-                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
+                Regex.fromString "- \\[[ xX]\\]"
 
         checkbox : String
         checkbox =
@@ -404,25 +404,17 @@ toToggledString timeWithZone (TaskItem fields_ _) =
                 _ ->
                     "- [ ]"
 
-        toggleTick : String -> String
-        toggleTick t =
-            regexReplacer "^\\s*(- \\[[ xX]\\])" (\_ -> checkbox) t
-
-        completionTag : String
-        completionTag =
-            case fields_.completion of
-                Incomplete ->
-                    let
-                        completionString : String
-                        completionString =
-                            timeWithZone.now
-                                |> Iso8601.fromTime
-                                |> String.left 19
-                    in
-                    " @completed(" ++ completionString ++ ")"
-
-                _ ->
-                    ""
+        replaceCheckbox : String -> String
+        replaceCheckbox t =
+            let
+                checkboxIndex : Int
+                checkboxIndex =
+                    Regex.find checkboxRegex t
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault 0
+            in
+            SE.replaceSlice checkbox checkboxIndex (checkboxIndex + 5) t
 
         removeCompletionTag : String -> String
         removeCompletionTag t =
@@ -440,9 +432,29 @@ toToggledString timeWithZone (TaskItem fields_ _) =
                         |> SE.insertAt completionTag
             in
             tagInserter t
+
+        blockLinkRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
+
+        completionTag : String
+        completionTag =
+            case fields_.completion of
+                Incomplete ->
+                    let
+                        completionString : String
+                        completionString =
+                            timeWithZone.now
+                                |> Iso8601.fromTime
+                                |> String.left 19
+                    in
+                    " @completed(" ++ completionString ++ ")"
+
+                _ ->
+                    ""
     in
     fields_.originalText
-        |> toggleTick
+        |> replaceCheckbox
         |> removeCompletionTag
         |> insertCompletionTag
 

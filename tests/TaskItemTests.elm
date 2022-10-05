@@ -913,6 +913,14 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
+        , test "preserves leading whitespace for descendant tasks" <|
+            \() ->
+                "- [X] the task\n   \t- [ ] a subtask"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.withDefault []
+                    |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
 
 
