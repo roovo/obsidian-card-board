@@ -2,7 +2,6 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
-import Fuzz exposing (Fuzzer)
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -827,23 +826,6 @@ toToggledString =
                     |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
-
-
-nonWhitespaceCharacter : Fuzzer String
-nonWhitespaceCharacter =
-    let
-        ensureNotEmpty : String -> String
-        ensureNotEmpty a =
-            if String.length a == 0 then
-                "x"
-
-            else
-                a
-    in
-    Fuzz.string
-        |> Fuzz.map String.trimLeft
-        |> Fuzz.map (String.left 1)
-        |> Fuzz.map ensureNotEmpty
 
 
 transformation : Test

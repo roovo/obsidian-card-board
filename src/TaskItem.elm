@@ -39,11 +39,10 @@ module TaskItem exposing
 import Date exposing (Date)
 import FNV1a
 import Iso8601
-import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
-import Regex
+import Regex exposing (Regex)
 import String.Extra as SE
 import Tag exposing (Tag)
 import TagList exposing (TagList)
@@ -313,73 +312,6 @@ title =
     fields >> .title
 
 
-toString : TaskItem -> String
-toString (TaskItem fields_ _) =
-    let
-        leadingWhiteSpace : String
-        leadingWhiteSpace =
-            fields_.originalText
-                |> String.toList
-                |> LE.takeWhile isSpaceOrTab
-                |> String.fromList
-
-        checkbox : String
-        checkbox =
-            case fields_.completion of
-                Incomplete ->
-                    "- [ ] "
-
-                _ ->
-                    "- [x] "
-
-        fieldTags : String
-        fieldTags =
-            if TagList.isEmpty fields_.tags then
-                ""
-
-            else
-                " " ++ TagList.toString fields_.tags
-
-        dueTag : String
-        dueTag =
-            case fields_.dueTag of
-                Just date ->
-                    " @due(" ++ Date.toIsoString date ++ ")"
-
-                _ ->
-                    ""
-
-        completionTag : String
-        completionTag =
-            case fields_.completion of
-                CompletedAt completionTime ->
-                    let
-                        completionString : String
-                        completionString =
-                            completionTime
-                                |> Iso8601.fromTime
-                                |> String.left 19
-                    in
-                    " @completed(" ++ completionString ++ ")"
-
-                _ ->
-                    ""
-
-        autoCompleteTag : String
-        autoCompleteTag =
-            case fields_.autoComplete of
-                NotSpecifed ->
-                    ""
-
-                FalseSpecified ->
-                    " @autocomplete(false)"
-
-                TrueSpecified ->
-                    " @autocomplete(true)"
-    in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
-
-
 toToggledString : { a | now : Time.Posix } -> TaskItem -> String
 toToggledString timeWithZone (TaskItem fields_ _) =
     let
@@ -392,6 +324,7 @@ toToggledString timeWithZone (TaskItem fields_ _) =
                 Nothing ->
                     original
 
+        checkboxRegex : Regex
         checkboxRegex =
             Maybe.withDefault Regex.never <|
                 Regex.fromString "- \\[[ xX]\\]"
@@ -434,6 +367,7 @@ toToggledString timeWithZone (TaskItem fields_ _) =
             in
             tagInserter t
 
+        blockLinkRegex : Regex
         blockLinkRegex =
             Maybe.withDefault Regex.never <|
                 Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
