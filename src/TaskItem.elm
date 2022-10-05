@@ -28,8 +28,9 @@ module TaskItem exposing
     , originalText
     , parser
     , tasksToToggle
-    , title
-    , toString
+    ,  title
+       -- , toString
+
     , toToggledString
     , toggleCompletion
     , updateFilePath

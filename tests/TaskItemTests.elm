@@ -39,7 +39,6 @@ suite =
         , allTags
         , tasksToToggle
         , title
-        , toString
         , toToggledString
         , transformation
         , updateFilePath
@@ -795,100 +794,6 @@ title =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "the task")
-        ]
-
-
-toString : Test
-toString =
-    describe "toString"
-        [ test "outputs an incomplete TaskList item with an empty checkbox" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [ ] foo")
-        , test "outputs a completed TaskList item with a ticked checkbox" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo")
-        , test "outputs a completed TaskList item with a (lower-case) ticked checkbox" <|
-            \() ->
-                "- [X] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo")
-        , test "outputs all tags except front matter tags" <|
-            \() ->
-                "- [X] #tag1 foo #tag2 bar #tag3"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag4" ]) 0)
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar #tag1 #tag2 #tag3")
-        , test "outputs a @completed(<iso-date>) TaskList item with the completed date at the end" <|
-            \() ->
-                "- [X] foo @completed(2020-03-22) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @completed(2020-03-22T00:00:00)")
-        , test "outputs a @due(<iso-date>) TaskList item if the original had a @due tag" <|
-            \() ->
-                "- [X] foo @due(2020-03-22) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @due(2020-03-22)")
-        , test "does not output a @due(<iso-date>) TaskList item if the original had a file based due date" <|
-            \() ->
-                "- [X] foo bar"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar")
-        , test "outputs an @autocomplete(true) TaskList item if in the original" <|
-            \() ->
-                "- [X] foo @autocomplete(true) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @autocomplete(true)")
-        , test "outputs an @autocomplete(false) TaskList item if in the original" <|
-            \() ->
-                "- [X] foo @autocomplete(false) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @autocomplete(false)")
-        , test "does not output an @autocomplete() TaskList item if the original didn't specify one" <|
-            \() ->
-                "- [X] foo bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar")
-        , test "removes excess whitespace between the title and the ']'" <|
-            \() ->
-                "- [X]      the task"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] the task")
-        , test "removes trailing whitespace" <|
-            \() ->
-                "- [X] the task   "
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] the task")
-        , test "preserves leading whitespace for descendant tasks" <|
-            \() ->
-                "- [X] the task\n   \t- [ ] a subtask"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.withDefault []
-                    |> List.map TaskItem.toString
-                    |> Expect.equal [ "   \t- [ ] a subtask" ]
-        , test "does not output front matter tags for descendant tasks" <|
-            \() ->
-                "- [X] the task\n   \t- [ ] a subtask"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "aTag" ]) 0)
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.withDefault []
-                    |> List.map TaskItem.toString
-                    |> Expect.equal [ "   \t- [ ] a subtask" ]
         ]
 
 
