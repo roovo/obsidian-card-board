@@ -29,6 +29,7 @@
   height: 100%;
   background-color: var(--background-primary);
   padding: var(--file-margins);
+  font-size: var(--font-normal);
 }
 
 ul.card-board-tab-list {
@@ -111,7 +112,7 @@ li.is-after-active .card-board-tabs-inner {
 
 .card-board-columns {
   display: grid;
-  grid-auto-columns: minmax(272px, 1fr);
+  grid-auto-columns: minmax(20em, 1fr);
   grid-auto-flow: column;
   grid-gap: 1em;
   margin-right: 1em;
@@ -125,7 +126,6 @@ li.is-after-active .card-board-tabs-inner {
 }
 .card-board-column-header {
   font-weight: var(--bold-weight);
-  font-size: var(--font-normal);
   margin-bottom: 1em;
 }
 
@@ -143,11 +143,13 @@ ul.card-board-column-list > li.card-board-card::before {
   content: "";
 }
 
-.card-board-card.markdown-preview-view {
+.card-board-card {
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
   background-color: var(--background-primary);
   padding: 0;
+  user-select: text;
+  -webkit-user-select: text;
   grid-column-gap: 0.25em;
   display: grid;
   grid: "mark contents"
@@ -184,7 +186,6 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card-tag-area {
   grid-area: tags;
-  font-size: var(--font-small);
   margin-bottom: 0.5em;
 }
 
@@ -197,7 +198,6 @@ ul.card-board-column-list > li.card-board-card::before {
     background-color: var(--background-secondary-alt);
     border: 1px solid var(--background-modifier-border);
     color: var(--text-muted);
-    font-size: var(--font-adaptive-small);
     font-family: var(--font-ui);
     text-align: center;
     text-decoration: none;
@@ -228,15 +228,25 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
     border-right: 1px solid var(--background-modifier-border);
 }
 
-.card-board-card.markdown-preview-view .task-list-item-checkbox {
+.card-board-card input.task-list-item-checkbox {
   grid-area: checkbox;
-  vertical-align: middle;
+  align-self: top;
+  margin-top: 0.2em;
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
 }
+
+.card-board-card input.task-list-item-checkbox:after {
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
+}
+
 
 .card-board-card-title {
   grid-area: title;
   font-weight: var(--bold-weight);
-  font-size: var(--font-normal);
   display: -webkit-box;
   color: var(--text-title-h1);
   -webkit-line-clamp: 2;
@@ -282,6 +292,13 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .card-board-card-notes-area > ul::before {
   border-style: none;
+}
+
+.card-board-card-notes-area button {
+  font-size: var(--font-small);
+  padding: 0.5em 0.5em;
+  line-height: 1em;
+  height: auto;
 }
 
 .card-board-card-footer-area {

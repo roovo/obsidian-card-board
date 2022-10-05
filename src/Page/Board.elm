@@ -278,7 +278,7 @@ cardView timeWithZone card =
                 Card.HighlightNone ->
                     ""
     in
-    Html.li [ class "card-board-card cm-s-obsidian markdown-preview-view" ]
+    Html.li [ class "card-board-card cm-s-obsidian" ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []
         , Html.div [ class "card-board-card-content-area" ]
