@@ -16,6 +16,7 @@ import Filter exposing (Filter, Polarity)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Html.Keyed
 import InteropPorts
 import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
@@ -489,16 +490,16 @@ modalSettingsView configs multiselect =
                                 |> SafeZipper.toList
                            )
                     )
-                , settingsFormView (SafeZipper.current configs) multiselect
+                , settingsFormView (SafeZipper.current configs) (SafeZipper.currentIndex configs) multiselect
                 ]
             ]
         ]
 
 
-settingsFormView : Maybe BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
-settingsFormView boardConfig multiselect =
-    case boardConfig of
-        Just (BoardConfig.DateBoardConfig config) ->
+settingsFormView : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> Html Msg
+settingsFormView boardConfig boardIndex multiselect =
+    case ( boardConfig, boardIndex ) of
+        ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
             let
                 includeUndatedStyle : String
                 includeUndatedStyle =
@@ -589,7 +590,7 @@ settingsFormView boardConfig multiselect =
                     ]
                 ]
 
-        Just (BoardConfig.TagBoardConfig config) ->
+        ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
                 includeOthersStyle : String
                 includeOthersStyle =
@@ -668,12 +669,15 @@ settingsFormView boardConfig multiselect =
                                     ]
                                 ]
                             ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.textarea
-                                [ onInput EnteredTags
-                                , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                                ]
-                                [ Html.text tagText ]
+                        , Html.Keyed.node "div"
+                            [ class "setting-item-control" ]
+                            [ ( String.fromInt index
+                              , Html.textarea
+                                    [ onInput EnteredTags
+                                    , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
+                                    ]
+                                    [ Html.text tagText ]
+                              )
                             ]
                         ]
                     , Html.div [ class "setting-item" ]
@@ -733,7 +737,7 @@ settingsFormView boardConfig multiselect =
                     ]
                 ]
 
-        Nothing ->
+        _ ->
             Html.text ""
 
 
