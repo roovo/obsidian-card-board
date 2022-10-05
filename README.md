@@ -10,8 +10,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
-- Per-board filtering using file, path, and tag filters.
-- Front matter tag support.
+- Per-board filtering can be used in either Allow or Deny mode
+- Board can be scaled using css snippet
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -189,6 +189,25 @@ above the board to the left of the tabs.  You can:
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
 - Delete any boards you no longer need.
+
+## Scaling Board Size
+You can scale the size of the board relative to the size of stuff in Obsidian using
+a css snippet:
+
+```css
+.card-board-view {
+  font-size: 1em;
+}
+
+.card-board-view .card-board-columns {
+  grid-auto-columns: minmax(20em, 1fr);
+}
+```
+
+You can change the font-size to alter the general size of the contents of the cards.
+If you change the value of the first parameter of the minmax function you can change
+the minimum width of the cards.
+
 
 ## Limitations
 - Might not work that great on large vaults (as it parses all markdown files at startup).
