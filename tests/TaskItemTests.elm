@@ -38,7 +38,7 @@ suite =
         , allTags
         , tasksToToggle
         , title
-        , toString
+        , toToggledString
         , transformation
         , updateFilePath
         ]
@@ -796,97 +796,35 @@ title =
         ]
 
 
-toString : Test
-toString =
-    describe "toString"
-        [ test "outputs an incomplete TaskList item with an empty checkbox" <|
+toToggledString : Test
+toToggledString =
+    describe "toToggledString"
+        [ test "outputs a string for a completed task, given an INCOMPLETE item" <|
             \() ->
-                "- [ ] foo"
+                "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [ ] foo")
-        , test "outputs a completed TaskList item with a ticked checkbox" <|
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
+        , test "outputs a string for an incomplete task given an item with an 'x' in the checkbox" <|
             \() ->
-                "- [x] foo"
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo")
-        , test "outputs a completed TaskList item with a (lower-case) ticked checkbox" <|
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+        , test "outputs a string for an incomplete task given an item with an 'X' in the checkbox" <|
             \() ->
-                "- [X] foo"
+                "- [X] foo #tag1 @completed(2020-03-22T00:00:00) bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo")
-        , test "outputs all tags except front matter tags" <|
-            \() ->
-                "- [X] #tag1 foo #tag2 bar #tag3"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag4" ]) 0)
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar #tag1 #tag2 #tag3")
-        , test "outputs a @completed(<iso-date>) TaskList item with the completed date at the end" <|
-            \() ->
-                "- [X] foo @completed(2020-03-22) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @completed(2020-03-22T00:00:00)")
-        , test "outputs a @due(<iso-date>) TaskList item if the original had a @due tag" <|
-            \() ->
-                "- [X] foo @due(2020-03-22) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @due(2020-03-22)")
-        , test "does not output a @due(<iso-date>) TaskList item if the original had a file based due date" <|
-            \() ->
-                "- [X] foo bar"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar")
-        , test "outputs an @autocomplete(true) TaskList item if in the original" <|
-            \() ->
-                "- [X] foo @autocomplete(true) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @autocomplete(true)")
-        , test "outputs an @autocomplete(false) TaskList item if in the original" <|
-            \() ->
-                "- [X] foo @autocomplete(false) bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar @autocomplete(false)")
-        , test "does not output an @autocomplete() TaskList item if the original didn't specify one" <|
-            \() ->
-                "- [X] foo bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] foo bar")
-        , test "removes excess whitespace between the title and the ']'" <|
-            \() ->
-                "- [X]      the task"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] the task")
-        , test "removes trailing whitespace" <|
-            \() ->
-                "- [X] the task   "
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.toString
-                    |> Expect.equal (Ok "- [x] the task")
+                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
                 "- [X] the task\n   \t- [ ] a subtask"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map TaskItem.toString
-                    |> Expect.equal [ "   \t- [ ] a subtask" ]
-        , test "does not output frontmatter tags for descendant tasks" <|
-            \() ->
-                "- [X] the task\n   \t- [ ] a subtask"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "aTag" ]) 0)
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.withDefault []
-                    |> List.map TaskItem.toString
-                    |> Expect.equal [ "   \t- [ ] a subtask" ]
+                    |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
 
 

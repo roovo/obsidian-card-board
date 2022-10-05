@@ -28,8 +28,10 @@ module TaskItem exposing
     , originalText
     , parser
     , tasksToToggle
-    , title
-    , toString
+    ,  title
+       -- , toString
+
+    , toToggledString
     , toggleCompletion
     , updateFilePath
     )
@@ -37,10 +39,11 @@ module TaskItem exposing
 import Date exposing (Date)
 import FNV1a
 import Iso8601
-import List.Extra as LE
 import Maybe.Extra as ME
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import Regex exposing (Regex)
+import String.Extra as SE
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
@@ -309,50 +312,74 @@ title =
     fields >> .title
 
 
-toString : TaskItem -> String
-toString (TaskItem fields_ _) =
+toToggledString : { a | now : Time.Posix } -> TaskItem -> String
+toToggledString timeWithZone (TaskItem fields_ _) =
     let
-        leadingWhiteSpace : String
-        leadingWhiteSpace =
-            fields_.originalText
-                |> String.toList
-                |> LE.takeWhile isSpaceOrTab
-                |> String.fromList
+        regexReplacer : String -> (Regex.Match -> String) -> String -> String
+        regexReplacer regex replacer original =
+            case Regex.fromString regex of
+                Just r ->
+                    Regex.replace r replacer original
+
+                Nothing ->
+                    original
+
+        checkboxRegex : Regex
+        checkboxRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "- \\[[ xX]\\]"
 
         checkbox : String
         checkbox =
             case fields_.completion of
                 Incomplete ->
-                    "- [ ] "
+                    "- [x]"
 
                 _ ->
-                    "- [x] "
+                    "- [ ]"
 
-        fieldTags : String
-        fieldTags =
-            if TagList.isEmpty fields_.tags then
-                ""
+        replaceCheckbox : String -> String
+        replaceCheckbox t =
+            let
+                checkboxIndex : Int
+                checkboxIndex =
+                    Regex.find checkboxRegex t
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault 0
+            in
+            SE.replaceSlice checkbox checkboxIndex (checkboxIndex + 5) t
 
-            else
-                " " ++ TagList.toString fields_.tags
+        removeCompletionTag : String -> String
+        removeCompletionTag t =
+            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "") t
 
-        dueTag : String
-        dueTag =
-            case fields_.dueTag of
-                Just date ->
-                    " @due(" ++ Date.toIsoString date ++ ")"
+        insertCompletionTag : String -> String
+        insertCompletionTag t =
+            let
+                tagInserter : String -> String
+                tagInserter =
+                    Regex.find blockLinkRegex t
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault (String.length t)
+                        |> SE.insertAt completionTag
+            in
+            tagInserter t
 
-                _ ->
-                    ""
+        blockLinkRegex : Regex
+        blockLinkRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
 
         completionTag : String
         completionTag =
             case fields_.completion of
-                CompletedAt completionTime ->
+                Incomplete ->
                     let
                         completionString : String
                         completionString =
-                            completionTime
+                            timeWithZone.now
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
@@ -360,20 +387,11 @@ toString (TaskItem fields_ _) =
 
                 _ ->
                     ""
-
-        autoCompleteTag : String
-        autoCompleteTag =
-            case fields_.autoComplete of
-                NotSpecifed ->
-                    ""
-
-                FalseSpecified ->
-                    " @autocomplete(false)"
-
-                TrueSpecified ->
-                    " @autocomplete(true)"
     in
-    leadingWhiteSpace ++ checkbox ++ String.trim fields_.title ++ fieldTags ++ dueTag ++ autoCompleteTag ++ completionTag
+    fields_.originalText
+        |> replaceCheckbox
+        |> removeCompletionTag
+        |> insertCompletionTag
 
 
 

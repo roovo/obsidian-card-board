@@ -91,7 +91,7 @@ rewriteTasks timeWithZone filePath taskItems =
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = taskItem |> TaskItem.toggleCompletion timeWithZone |> TaskItem.toString
+            , newText = TaskItem.toToggledString timeWithZone taskItem
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }

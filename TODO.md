@@ -1,4 +1,14 @@
+- option to hide tags used in board definitions
+  - allow lists
+  - column definitions of tag boards
+
+- link to https://obsidian-plugin-stats.vercel.app from teh readme for finding more plugins
+- don't prefix the tag class with 'tag-' as that can be inferred!
+- don't reorder what appears on the task line when updating it
+  so that tags that are inline with the text stay there!
+
 # Cleanups
+- review coverage report and add tests where needed
 - make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add Model tests
@@ -114,6 +124,7 @@
 
 # Misc
 - use elm-coverage - as in see what isn't covered
+- should probably think about not using Regex in TaskItem for building the output string
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - I could de-bounce the rewrites of filters in the settings file on rename of path or file
