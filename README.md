@@ -221,7 +221,7 @@ plugins you can use for task management in Obsidian.
 [Checklist](https://github.com/delashum/obsidian-checklist-plugin), and
 [Tasks](https://github.com/schemar/obsidian-tasks) are the most popular. There are
 others too, see the list on the wonderful
-[roundup site](https://www.obsidianroundup.org/plugins/).
+[Obsidian Plugin Stats site](https://obsidian-plugin-stats.vercel.app).
 
 
 ## Contributing
