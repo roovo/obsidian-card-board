@@ -8,7 +8,7 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column exposing (Column)
 import DateBoard
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity)
 import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -62,31 +62,54 @@ filterTaskList config taskList =
         filters : List Filter
         filters =
             BoardConfig.filters config
+
+        filterPolarity : Polarity
+        filterPolarity =
+            BoardConfig.filterPolarity config
     in
     taskList
-        |> filterByFilesystem filters
-        |> filterByTag filters
+        |> filterByFilesystem filterPolarity filters
+        |> filterByTag filterPolarity filters
 
 
-filterByFilesystem : List Filter -> TaskList -> TaskList
-filterByFilesystem filters taskList =
+filterByFilesystem : Polarity -> List Filter -> TaskList -> TaskList
+filterByFilesystem polarity filters taskList =
     List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths") filters
-        |> applyFilters taskList
+        |> applyFilters taskList polarity
 
 
-filterByTag : List Filter -> TaskList -> TaskList
-filterByTag filters taskList =
+filterByTag : Polarity -> List Filter -> TaskList -> TaskList
+filterByTag polarity filters taskList =
     List.filter (\f -> Filter.filterType f == "Tags") filters
-        |> applyFilters taskList
+        |> applyFilters taskList polarity
 
 
-applyFilters : TaskList -> List Filter -> TaskList
-applyFilters taskList filters =
+applyFilters : TaskList -> Polarity -> List Filter -> TaskList
+applyFilters taskList polarity filters =
+    let
+        operator : Bool -> Bool
+        operator =
+            case polarity of
+                Filter.Allow ->
+                    identity
+
+                Filter.Deny ->
+                    not
+
+        filterMode : (a -> Bool) -> List a -> Bool
+        filterMode =
+            case polarity of
+                Filter.Allow ->
+                    List.any
+
+                Filter.Deny ->
+                    List.all
+    in
     if List.isEmpty filters then
         taskList
 
     else
-        TaskList.filter (\x -> List.any (Filter.isAllowed x) filters) taskList
+        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed t) filters) taskList
 
 
 placeCardsInColumns : Int -> List (Column TaskItem) -> List (Column Card)

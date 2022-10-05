@@ -5,7 +5,6 @@ import CardBoardSettings
 import Expect
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
-import Helpers.FilterHelpers as FilterHelpers
 import Semver
 import Test exposing (..)
 import TsJson.Encode as TsEncode
@@ -22,11 +21,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.2.0" <|
+        [ test "is 0.3.0" <|
             \() ->
                 CardBoardSettings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.2.0"
+                    |> Expect.equal "0.3.0"
         ]
 
 
@@ -70,14 +69,5 @@ exampleSettings =
         [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
         , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
         ]
-    , globalSettings = exampleGlobalSettings
     , version = CardBoardSettings.currentVersion
-    }
-
-
-exampleGlobalSettings : CardBoardSettings.GlobalSettings
-exampleGlobalSettings =
-    { hideCompletedSubtasks = True
-    , ignorePaths = [ FilterHelpers.pathFilter "a/path" ]
-    , subTaskDisplayLimit = Just 17
     }

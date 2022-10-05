@@ -3,6 +3,7 @@ module SettingsStateTests exposing (suite)
 import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Expect
+import Filter
 import Helpers.FilterHelpers as FilterHelpers
 import SafeZipper exposing (SafeZipper)
 import SettingsState
@@ -167,6 +168,7 @@ exampleDateBoardConfig : DateBoard.Config
 exampleDateBoardConfig =
     { completedCount = 12
     , filters = []
+    , filterPolarity = Filter.Deny
     , includeUndated = False
     , title = "Date Board Title"
     }
@@ -177,6 +179,7 @@ exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
+    , filterPolarity = Filter.Deny
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"

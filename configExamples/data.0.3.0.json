@@ -1,0 +1,64 @@
+{
+  "version": "0.3.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 5,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "home/"
+            }
+          ],
+          "filterPolarity": "Deny",
+          "includeUndated": true,
+          "title": "Dated"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/",
+              "displayTitle": "Home/"
+            },
+            {
+              "tag": "home",
+              "displayTitle": "Home"
+            },
+            {
+              "tag": "wellbeing",
+              "displayTitle": "Wellbeing"
+            },
+            {
+              "tag": "town",
+              "displayTitle": "Town"
+            }
+          ],
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "project1"
+            },
+            {
+              "tag": "tagFilter",
+              "data": "home"
+            },
+            {
+              "tag": "tagFilter",
+              "data": "poo"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "includeOthers": true,
+          "includeUntagged": true,
+          "title": "Tagged"
+        }
+      }
+    ]
+  }
+}

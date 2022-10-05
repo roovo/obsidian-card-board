@@ -3,13 +3,14 @@ module DateBoard exposing
     , columns
     , configDecoder
     , configDecoder_v_0_1_0
+    , configDecoder_v_0_2_0
     , configEncoder
     , defaultConfig
     )
 
 import Column exposing (Column)
 import Date exposing (Date)
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity(..))
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -24,6 +25,7 @@ import TsJson.Encode as TsEncode
 type alias Config =
     { completedCount : Int
     , filters : List Filter
+    , filterPolarity : Polarity
     , includeUndated : Bool
     , title : String
     }
@@ -33,6 +35,7 @@ defaultConfig : Config
 defaultConfig =
     { completedCount = 10
     , filters = []
+    , filterPolarity = Filter.defaultPolarity
     , includeUndated = True
     , title = ""
     }
@@ -47,6 +50,7 @@ configEncoder =
     TsEncode.object
         [ TsEncode.required "completedCount" .completedCount TsEncode.int
         , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
+        , TsEncode.required "filterPolarity" .filterPolarity Filter.polarityEncoder
         , TsEncode.required "includeUndated" .includeUndated TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
         ]
@@ -57,6 +61,17 @@ configDecoder =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+configDecoder_v_0_2_0 : TsDecode.Decoder Config
+configDecoder_v_0_2_0 =
+    TsDecode.succeed Config
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.succeed Allow)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
@@ -66,6 +81,7 @@ configDecoder_v_0_1_0 =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
+        |> TsDecode.andMap (TsDecode.succeed Allow)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 

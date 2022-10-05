@@ -12,7 +12,7 @@ module Page.Settings exposing
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -128,6 +128,7 @@ type Msg
     | ModalCancelClicked
     | ModalCloseClicked
     | PathsRequested Int String
+    | PolaritySelected String
     | SettingsBoardNameClicked Int
     | ToggleIncludeOthers
     | ToggleIncludeUndated
@@ -215,6 +216,9 @@ update msg model =
             , cmd
             , Session.NoOp
             )
+
+        PolaritySelected polarity ->
+            updateBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
         SettingsBoardNameClicked index ->
             wrap <| switchBoardConfig (SafeZipper.atIndex index) model
@@ -522,7 +526,7 @@ settingsFormView boardConfig multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item" ]
+                    , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
@@ -534,6 +538,16 @@ settingsFormView boardConfig multiselect =
                             ]
                         ]
                     , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Filter Polarity" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Use the filters as an Allow or Deny list" ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ polaritySelect config.filterPolarity ]
+                        ]
+                    , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Include Undated" ]
@@ -617,7 +631,7 @@ settingsFormView boardConfig multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item" ]
+                    , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
@@ -629,6 +643,16 @@ settingsFormView boardConfig multiselect =
                             ]
                         ]
                     , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Filter Polarity" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Use the filters as an Allow or Deny list" ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ polaritySelect config.filterPolarity ]
+                        ]
+                    , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Columns" ]
@@ -711,6 +735,29 @@ settingsFormView boardConfig multiselect =
 
         Nothing ->
             Html.text ""
+
+
+polaritySelect : Polarity -> Html Msg
+polaritySelect polarity =
+    Html.select
+        [ class "dropdown"
+        , onInput PolaritySelected
+        ]
+        (case polarity of
+            Filter.Allow ->
+                [ Html.option [ value "Allow", selected True ]
+                    [ Html.text "Allow" ]
+                , Html.option [ value "Deny" ]
+                    [ Html.text "Deny" ]
+                ]
+
+            Filter.Deny ->
+                [ Html.option [ value "Allow" ]
+                    [ Html.text "Allow" ]
+                , Html.option [ value "Deny", selected True ]
+                    [ Html.text "Deny" ]
+                ]
+        )
 
 
 settingTitleSelectedView : Int -> BoardConfig -> Html Msg

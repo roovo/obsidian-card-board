@@ -2,8 +2,10 @@ module BoardConfig exposing
     ( BoardConfig(..)
     , decoder
     , decoder_v_0_1_0
+    , decoder_v_0_2_0
     , default
     , encoder
+    , filterPolarity
     , filters
     , fromBoardType
     , isForDateBoard
@@ -15,6 +17,7 @@ module BoardConfig exposing
     , toggleIncludeUntagged
     , updateBoardType
     , updateCompletedCount
+    , updateFilterPolarity
     , updateFilters
     , updateTags
     , updateTitle
@@ -22,7 +25,7 @@ module BoardConfig exposing
 
 import DateBoard
 import DecodeHelpers
-import Filter exposing (Filter)
+import Filter exposing (Filter, Polarity)
 import Parser
 import TagBoard
 import TsJson.Decode as TsDecode
@@ -97,6 +100,16 @@ filters config =
             boardConfig.filters
 
 
+filterPolarity : BoardConfig -> Polarity
+filterPolarity config =
+    case config of
+        DateBoardConfig boardConfig ->
+            boardConfig.filterPolarity
+
+        TagBoardConfig boardConfig ->
+            boardConfig.filterPolarity
+
+
 title : BoardConfig -> String
 title config =
     case config of
@@ -132,6 +145,14 @@ decoder =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
         , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        ]
+
+
+decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_2_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_2_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_2_0
         ]
 
 
@@ -238,6 +259,16 @@ updateCompletedCount value config =
 
         _ ->
             config
+
+
+updateFilterPolarity : String -> BoardConfig -> BoardConfig
+updateFilterPolarity polarity config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
 
 
 updateBoardType : String -> BoardConfig -> BoardConfig

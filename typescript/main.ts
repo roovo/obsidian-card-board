@@ -10,6 +10,7 @@ export default class CardBoardPlugin extends Plugin {
               columns : { displayTitle : string; tag : string }[];
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              filterPolarity : "Allow" | "Deny";
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -18,17 +19,13 @@ export default class CardBoardPlugin extends Plugin {
           | { data : {
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              filterPolarity : "Allow" | "Deny";
               includeUndated : boolean;
               title : string
             };
             tag : "dateBoardConfig"
           }
         )[];
-        globalSettings : {
-          hideCompletedSubtasks : boolean;
-          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-          subTaskDisplayLimit : number | null
-        }
       };
       version : string
   };
@@ -117,6 +114,7 @@ export default class CardBoardPlugin extends Plugin {
               columns : { displayTitle : string; tag : string }[];
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              filterPolarity : "Allow" | "Deny";
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -125,17 +123,13 @@ export default class CardBoardPlugin extends Plugin {
           | { data : {
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+              filterPolarity : "Allow" | "Deny";
               includeUndated : boolean;
               title : string
             };
             tag : "dateBoardConfig"
           }
         )[];
-        globalSettings : {
-          hideCompletedSubtasks : boolean;
-          ignorePaths : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-          subTaskDisplayLimit : number | null
-        }
       };
       version : string
     }

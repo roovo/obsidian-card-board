@@ -104,6 +104,7 @@ columnUndated =
                         , "incomplete with cTag"
                         , "invalid date incomplete"
                         , "more undated incomplete"
+                        , "more undated incomplete with cTag"
                         , "untagged incomplete"
                         ]
         ]

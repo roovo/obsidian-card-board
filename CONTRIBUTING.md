@@ -23,20 +23,22 @@ npm run dev             # run dev build
 - is README up to date?
 - pre-release new version
   - main.js
-  - manifest.json
+  - manifest.json (the version in here is what is displaye as the current plugin version
+                   in obsidian)
   - style.css
   - release notes
 - bump beta version: manifest-beta.json
 - test using BRAT
 - bump version: package.json
+- tag the release
 - release new version
   - main.js
-  - manifest.json
+  - manifest.json (the version in here is what is displaye as the current plugin version
+                   in obsidian)
   - style.css
   - release notes
 - bump version: manifest.json
 - bump beta version: manifest-beta.json
-- tag the release
 
 
 ## Run tests
