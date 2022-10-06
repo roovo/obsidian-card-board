@@ -301,9 +301,11 @@ export class CardBoardView extends ItemView {
         boardConfigs : (
           { data : {
               columns : { displayTitle : string; tag : string }[];
+              showColumnTags : boolean;
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -313,6 +315,7 @@ export class CardBoardView extends ItemView {
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeUndated : boolean;
               title : string
             };

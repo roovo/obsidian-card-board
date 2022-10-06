@@ -1,0 +1,70 @@
+{
+  "version": "0.4.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 5,
+          "filters": [],
+          "filterPolarity": "Deny",
+          "showFilteredTags": false,
+          "includeUndated": true,
+          "title": "Personal"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "project1",
+              "displayTitle": "Project 1"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "project1"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "Project 1"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/kitchen",
+              "displayTitle": "Kitchen"
+            },
+            {
+              "tag": "home/outside",
+              "displayTitle": "Outside"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "home/"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "Home"
+        }
+      }
+    ]
+  }
+}

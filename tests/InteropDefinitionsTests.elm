@@ -24,7 +24,42 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        [ test "decodes valid flags for settings version 0.3.0" <|
+        [ test "decodes valid flags for settings version 0.4.0" <|
+            \() ->
+                """{"now":11,"zone":22,"settings":{"version":"0.4.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 4 0 [] []
+                                , boardConfigs =
+                                    [ BoardConfig.DateBoardConfig
+                                        { completedCount = 4
+                                        , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                        , filterPolarity = Filter.Deny
+                                        , showFilteredTags = True
+                                        , includeUndated = True
+                                        , title = "date board title"
+                                        }
+                                    , BoardConfig.TagBoardConfig
+                                        { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , showColumnTags = False
+                                        , completedCount = 5
+                                        , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                        , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
+                                        , includeOthers = False
+                                        , includeUntagged = True
+                                        , title = "tag board title"
+                                        }
+                                    ]
+                                }
+                            , now = 11
+                            , zone = 22
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.3.0" <|
             \() ->
                 """{"now":11,"zone":22,"settings":{"version":"0.3.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
@@ -32,20 +67,23 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 3 0 [] []
+                                { version = Semver.version 0 4 0 [] []
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , filterPolarity = Filter.Deny
+                                        , showFilteredTags = False
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , showColumnTags = False
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -64,20 +102,23 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 3 0 [] []
+                                { version = Semver.version 0 4 0 [] []
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , showColumnTags = False
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -96,20 +137,23 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 3 0 [] []
+                                { version = Semver.version 0 4 0 [] []
                                 , boardConfigs =
                                     [ BoardConfig.DateBoardConfig
                                         { completedCount = 4
                                         , filters = []
                                         , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                        , showColumnTags = False
                                         , completedCount = 5
                                         , filters = []
                                         , filterPolarity = Filter.Allow
+                                        , showFilteredTags = False
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -258,24 +302,30 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
+        , test "decodes version 0.4.0 settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"0.4.0","data":{"boardConfigs":[]}}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 4 0 [] [], boardConfigs = [] })
         , test "decodes version 0.3.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.3.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 3 0 [] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 4 0 [] [], boardConfigs = [] })
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 3 0 [] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 4 0 [] [], boardConfigs = [] })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 3 0 [] [], boardConfigs = [] })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 4 0 [] [], boardConfigs = [] })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""

@@ -50,7 +50,7 @@ encodeDecode =
                 BoardConfigHelpers.exampleBoardConfig
                     |> TsEncode.runExample BoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder BoardConfig.decoder
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
         ]

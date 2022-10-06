@@ -118,7 +118,7 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample DateBoard.configEncoder
                     |> .output
-                    |> DecodeHelpers.runDecoder DateBoard.configDecoder
+                    |> DecodeHelpers.runDecoder DateBoard.configDecoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
 

@@ -474,7 +474,7 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample TagBoard.configEncoder
                     |> .output
-                    |> DecodeHelpers.runDecoder TagBoard.configDecoder
+                    |> DecodeHelpers.runDecoder TagBoard.configDecoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
 

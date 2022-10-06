@@ -169,6 +169,7 @@ exampleDateBoardConfig =
     { completedCount = 12
     , filters = []
     , filterPolarity = Filter.Deny
+    , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
     }
@@ -177,9 +178,11 @@ exampleDateBoardConfig =
 exampleTagBoardConfig : TagBoard.Config
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
+    , showColumnTags = True
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , filterPolarity = Filter.Deny
+    , showFilteredTags = True
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"
