@@ -22,6 +22,8 @@ suite =
         , toggleIncludeOthers
         , toggleIncludeUndated
         , toggleIncludeUntagged
+        , toggleShowColumnTags
+        , toggleShowFilteredTags
         , updateBoardType
         , updateCompletedCount
         , updateFilters
@@ -158,6 +160,45 @@ toggleIncludeUntagged =
                     |> extractTagBoardConfig
                     |> Maybe.map .includeUntagged
                     |> Expect.equal (Just <| not defaultTagBoardConfig.includeUntagged)
+        ]
+
+
+toggleShowColumnTags : Test
+toggleShowColumnTags =
+    describe "toggleShowColumnTags"
+        [ test "does nothing to a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleShowColumnTags
+                    |> extractDateBoardConfig
+                    |> Expect.equal (Just DateBoard.defaultConfig)
+        , test "toggles includeUntagged for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleShowColumnTags
+                    |> extractTagBoardConfig
+                    |> Maybe.map .showColumnTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showColumnTags)
+        ]
+
+
+toggleShowFilteredTags : Test
+toggleShowFilteredTags =
+    describe "toggleShowFilteredTags"
+        [ test "toggles includeUntagged for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleShowFilteredTags
+                    |> extractDateBoardConfig
+                    |> Maybe.map .showFilteredTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
+        , test "toggles includeUntagged for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleShowFilteredTags
+                    |> extractTagBoardConfig
+                    |> Maybe.map .showFilteredTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
         ]
 
 

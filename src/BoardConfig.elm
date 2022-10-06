@@ -16,6 +16,8 @@ module BoardConfig exposing
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
+    , toggleShowColumnTags
+    , toggleShowFilteredTags
     , updateBoardType
     , updateCompletedCount
     , updateFilterPolarity
@@ -215,6 +217,26 @@ toggleIncludeOthers config =
 
         TagBoardConfig boardConfig ->
             TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
+
+
+toggleShowColumnTags : BoardConfig -> BoardConfig
+toggleShowColumnTags config =
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | showColumnTags = not boardConfig.showColumnTags }
+
+
+toggleShowFilteredTags : BoardConfig -> BoardConfig
+toggleShowFilteredTags config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
 
 
 updateTitle : String -> BoardConfig -> BoardConfig
