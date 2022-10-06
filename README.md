@@ -1,4 +1,8 @@
 # Obsidian CardBoard Plugin
+
+![License](https://img.shields.io/github/license/roovo/obsidian-card-board)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/roovo/obsidian-card-board?style=flat-square)
+
 An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 (hopefully anyway).
 
