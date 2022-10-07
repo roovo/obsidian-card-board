@@ -1,6 +1,7 @@
 module Tag exposing
     ( Tag
     , parser
+    , startsWith
     , toString
     )
 
@@ -12,9 +13,8 @@ type Tag
     = Tag String
 
 
-toString : Tag -> String
-toString (Tag s) =
-    s
+
+-- CREATE
 
 
 parser : Parser Tag
@@ -26,6 +26,24 @@ parser =
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
                 |> ParserHelper.checkWhitespaceFollows
            )
+
+
+
+-- UTILITIES
+
+
+startsWith : String -> Tag -> Bool
+startsWith substring (Tag tagString) =
+    String.startsWith substring tagString
+
+
+
+-- CONVERT
+
+
+toString : Tag -> String
+toString (Tag s) =
+    s
 
 
 

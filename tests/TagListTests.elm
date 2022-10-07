@@ -15,6 +15,7 @@ suite =
         , append
         , fromList
         , unique
+        , filter
         , isEmpty
         , containsTagMatchingBasic
         , containsTagMatchingSubtag
@@ -115,6 +116,24 @@ unique =
                     |> TagList.unique
                     |> TagList.toString
                     |> Expect.equal "#Foo #bar"
+        ]
+
+
+filter : Test
+filter =
+    describe "filter"
+        [ test "does nothing if the test is always satisfied" <|
+            \() ->
+                TagList.fromList [ "foo", "bar", "baz", "qux" ]
+                    |> TagList.filter (always True)
+                    |> TagList.toString
+                    |> Expect.equal "#foo #bar #baz #qux"
+        , test "filters matching tags" <|
+            \() ->
+                TagList.fromList [ "foo", "bar", "baz", "qux" ]
+                    |> TagList.filter (Tag.startsWith "ba")
+                    |> TagList.toString
+                    |> Expect.equal "#bar #baz"
         ]
 
 

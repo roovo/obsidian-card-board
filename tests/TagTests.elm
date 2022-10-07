@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ parser
+        , startsWith
         , toString
         ]
 
@@ -90,6 +91,24 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        ]
+
+
+startsWith : Test
+startsWith =
+    describe "startsWith"
+        [ test "returns True if the tag starts with the given string (not including the #" <|
+            \() ->
+                "#FOO-Bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map (Tag.startsWith "FOO")
+                    |> Expect.equal (Ok True)
+        , test "returns False if the tag wdoes NOT start with the given string (not including the #" <|
+            \() ->
+                "#FOO-Bar"
+                    |> Parser.run Tag.parser
+                    |> Result.map (Tag.startsWith "OO")
+                    |> Expect.equal (Ok False)
         ]
 
 

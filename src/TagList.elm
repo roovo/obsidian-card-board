@@ -5,6 +5,7 @@ module TagList exposing
     , containsTagMatching
     , containsTagMatchingOneOf
     , empty
+    , filter
     , fromList
     , isEmpty
     , sort
@@ -20,6 +21,10 @@ import Tag exposing (Tag)
 
 type TagList
     = TagList (List Tag)
+
+
+
+-- CREATE
 
 
 empty : TagList
@@ -50,24 +55,26 @@ cons tag (TagList tags) =
     TagList (tag :: tags)
 
 
+
+-- COMBINE
+
+
 append : TagList -> TagList -> TagList
 append (TagList l1) (TagList l2) =
     TagList (List.append l1 l2)
 
 
-unique : TagList -> TagList
-unique =
-    fromList << LE.uniqueBy String.toLower << toList
+
+-- TRANSFORM
 
 
-isEmpty : TagList -> Bool
-isEmpty (TagList ts) =
-    List.isEmpty ts
+filter : (Tag -> Bool) -> TagList -> TagList
+filter test (TagList ts) =
+    TagList <| List.filter test ts
 
 
-containsTagMatchingOneOf : List String -> TagList -> Bool
-containsTagMatchingOneOf candidates tagList =
-    List.any (\c -> containsTagMatching c tagList) candidates
+
+-- UTILITIES
 
 
 containsTagMatching : String -> TagList -> Bool
@@ -85,9 +92,32 @@ containsTagMatching candidate =
     List.any matches << toList
 
 
+containsTagMatchingOneOf : List String -> TagList -> Bool
+containsTagMatchingOneOf candidates tagList =
+    List.any (\c -> containsTagMatching c tagList) candidates
+
+
+isEmpty : TagList -> Bool
+isEmpty (TagList ts) =
+    List.isEmpty ts
+
+
+unique : TagList -> TagList
+unique =
+    fromList << LE.uniqueBy String.toLower << toList
+
+
+
+-- SORT
+
+
 sort : TagList -> TagList
 sort =
     fromList << List.sort << toList
+
+
+
+-- CONVERT
 
 
 toString : TagList -> String
