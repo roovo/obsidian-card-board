@@ -3,7 +3,6 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , TaskItemFields
-    , allTags
     , autoComplete
     , completedPosix
     , completion
@@ -28,6 +27,7 @@ module TaskItem exposing
     , originalText
     , parser
     , removeTags
+    , tags
     , tasksToToggle
     , title
     , toToggledString
@@ -59,7 +59,6 @@ type alias TaskItemFields =
     , dueFile : Maybe Date
     , dueTag : Maybe Date
     , filePath : String
-    , frontMatterTags : TagList
     , lineNumber : Int
     , notes : String
     , originalText : String
@@ -76,7 +75,6 @@ dummy =
         , dueFile = Nothing
         , dueTag = Nothing
         , filePath = ""
-        , frontMatterTags = TagList.empty
         , lineNumber = 0
         , notes = ""
         , originalText = ""
@@ -182,7 +180,7 @@ hasNotes =
 
 hasTags : TaskItem -> Bool
 hasTags taskItem =
-    not <| TagList.isEmpty <| allTags taskItem
+    not <| TagList.isEmpty <| tags taskItem
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -192,7 +190,7 @@ hasOneOfTheTags tagsToMatch taskItem =
 
 hasThisTag : String -> TaskItem -> Bool
 hasThisTag tagToMatch taskItem =
-    TagList.containsTagMatching tagToMatch <| allTags taskItem
+    TagList.containsTagMatching tagToMatch <| tags taskItem
 
 
 hasSubtasks : TaskItem -> Bool
@@ -247,13 +245,12 @@ descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-allTags : TaskItem -> TagList
-allTags ((TaskItem fields_ _) as taskItem) =
+tags : TaskItem -> TagList
+tags ((TaskItem fields_ _) as taskItem) =
     descendantTasks taskItem
         |> List.map (fields >> .tags)
         |> List.foldl TagList.append TagList.empty
         |> TagList.append fields_.tags
-        |> TagList.append fields_.frontMatterTags
         |> TagList.unique
         |> TagList.sort
 
@@ -564,11 +561,10 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
     , dueFile = dueFromFile
     , dueTag = tagDueDate
     , filePath = path
-    , frontMatterTags = frontMatterTags
     , lineNumber = bodyOffset + row
     , notes = ""
     , originalText = sourceText
-    , tags = obsidianTags
+    , tags = TagList.append frontMatterTags obsidianTags
     , title = parsedTitle
     }
         |> addCompletionTime

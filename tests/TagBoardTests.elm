@@ -211,7 +211,7 @@ columnsBasic =
                                 ]
                         }
                     |> BoardHelpers.thingsInColumns [ "Col 1", "Col 2" ]
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -235,7 +235,7 @@ columnsBasic =
                             , showColumnTags = False
                         }
                     |> BoardHelpers.thingsInColumns [ "Col 1", "Col 2" ]
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -347,7 +347,7 @@ columnCompleted =
                             , completedCount = 10
                         }
                     |> BoardHelpers.thingsInColumn "Completed"
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -370,7 +370,7 @@ columnCompleted =
                             , completedCount = 10
                         }
                     |> BoardHelpers.thingsInColumn "Completed"
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -450,7 +450,7 @@ columnOthers =
                             , includeOthers = True
                         }
                     |> BoardHelpers.thingsInColumn "Others"
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort

@@ -15,8 +15,7 @@ import Time
 suite : Test
 suite =
     concat
-        [ allTags
-        , autoComplete
+        [ autoComplete
         , blockLink
         , completion
         , containsId
@@ -37,6 +36,7 @@ suite =
         , originalText
         , parsing
         , removeTags
+        , tags
         , tasksToToggle
         , title
         , toToggledString
@@ -669,32 +669,32 @@ descendantTasks =
         ]
 
 
-allTags : Test
-allTags =
-    describe "allTags"
+tags : Test
+tags =
+    describe "tags"
         [ test "returns an empty array for a task with no tags or substasks" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok TagList.empty)
         , test "returns all tags from front matter, the top level, and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2", "tag3", "tagA", "tagB" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag1" ]) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "returns the tags in alphabetical order" <|
             \() ->
                 "- [ ] foo #tag2 bar #tag1\n  - [ ] bar #tag1"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList []) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->
@@ -713,7 +713,7 @@ removeTags =
                 "- [ ] foo #foo #foo/ #bar #baz #baza #qux"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Result.map TagList.toList
                     |> Result.map List.sort
                     |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
@@ -722,7 +722,7 @@ removeTags =
                 "- [ ] foo #foo #foo/\n  - [ ] bar #bar #baz #baza #qux"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Result.map TagList.toList
                     |> Result.map List.sort
                     |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])

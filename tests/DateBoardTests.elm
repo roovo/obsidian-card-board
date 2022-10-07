@@ -67,7 +67,7 @@ columns =
                             , showFilteredTags = False
                         }
                     |> BoardHelpers.thingsInColumns [ "Future", "Today" ]
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -111,7 +111,7 @@ columnCompleted =
                             , completedCount = 10
                         }
                     |> BoardHelpers.thingsInColumn "Completed"
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort
@@ -153,7 +153,7 @@ columnUndated =
                             , includeUndated = True
                         }
                     |> BoardHelpers.thingsInColumn "Undated"
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
                     |> TagList.toList
                     |> List.sort

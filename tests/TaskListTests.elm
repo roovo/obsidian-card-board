@@ -223,7 +223,7 @@ not a task
                     |> Parser.run (TaskList.parser "file_a" Nothing (TagList.fromList [ "fm_tag1", "fm_tag2" ]) 0)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.tasks
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> Expect.equal
                         [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         , TagList.fromList [ "fm_tag1", "fm_tag2" ]
@@ -239,7 +239,7 @@ removeTags =
                 TaskListHelpers.exampleTagBoardTaskList
                     |> TaskList.removeTags [ "tag1", "tag2" ]
                     |> TaskList.tasks
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> List.concatMap TagList.toList
                     |> LE.unique
                     |> Expect.equal [ "tag3", "tag4" ]
