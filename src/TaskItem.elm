@@ -401,6 +401,7 @@ removeTags tagStrings (TaskItem fields_ subtasks_) =
         equalsAny tag =
             List.any (\tagString -> Tag.equals tagString tag) tagStrings
 
+        removeFromFields : TaskItemFields -> TaskItemFields
         removeFromFields f =
             { f | tags = TagList.filter (\tag -> not <| equalsAny tag) f.tags }
     in
