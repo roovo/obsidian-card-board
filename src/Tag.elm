@@ -1,5 +1,6 @@
 module Tag exposing
     ( Tag
+    , equals
     , parser
     , startsWith
     , toString
@@ -30,6 +31,11 @@ parser =
 
 
 -- UTILITIES
+
+
+equals : String -> Tag -> Bool
+equals checkString (Tag tagString) =
+    checkString == tagString
 
 
 startsWith : String -> Tag -> Bool
