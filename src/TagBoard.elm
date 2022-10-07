@@ -246,7 +246,7 @@ taskListWithTagsRemoved config taskList =
         tagsToRemove =
             case ( config.showFilteredTags, config.showColumnTags ) of
                 ( True, True ) ->
-                    filterTags ++ columnTags
+                    []
 
                 ( False, True ) ->
                     filterTags
@@ -255,7 +255,7 @@ taskListWithTagsRemoved config taskList =
                     columnTags
 
                 ( False, False ) ->
-                    []
+                    filterTags ++ columnTags
     in
     TaskList.removeTags tagsToRemove taskList
 
