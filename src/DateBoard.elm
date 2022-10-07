@@ -108,19 +108,43 @@ configDecoder_v_0_1_0 =
 -- COLUMNS
 
 
+taskListWithTagsRemoved : Config -> TaskList -> TaskList
+taskListWithTagsRemoved config taskList =
+    let
+        filterTags : List String
+        filterTags =
+            config.filters
+                |> List.filter (\f -> Filter.filterType f == "Tags")
+                |> List.map Filter.value
+
+        tagsToRemove : List String
+        tagsToRemove =
+            if config.showFilteredTags then
+                []
+
+            else
+                filterTags
+    in
+    TaskList.removeTags tagsToRemove taskList
+
+
 columns : TimeWithZone -> Config -> TaskList -> List (Column TaskItem)
 columns timeWithZone config taskList =
     let
+        tasks : TaskList
+        tasks =
+            taskListWithTagsRemoved config taskList
+
         datestamp : Date
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
-    [ Column.init "Today" <| todaysItems datestamp taskList
-    , Column.init "Tomorrow" <| tomorrowsItems datestamp taskList
-    , Column.init "Future" <| futureItems datestamp taskList
+    [ Column.init "Today" <| todaysItems datestamp tasks
+    , Column.init "Tomorrow" <| tomorrowsItems datestamp tasks
+    , Column.init "Future" <| futureItems datestamp tasks
     ]
-        |> prependUndated taskList config
-        |> appendCompleted taskList config
+        |> prependUndated tasks config
+        |> appendCompleted tasks config
 
 
 prependUndated : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
