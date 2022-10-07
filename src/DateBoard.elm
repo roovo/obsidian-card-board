@@ -77,7 +77,7 @@ configDecoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
@@ -88,7 +88,7 @@ configDecoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.succeed Allow)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
@@ -99,7 +99,7 @@ configDecoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.succeed Allow)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 

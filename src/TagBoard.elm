@@ -106,11 +106,11 @@ configDecoder_v_0_3_0 : TsDecode.Decoder Config
 configDecoder_v_0_3_0 =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
@@ -120,11 +120,11 @@ configDecoder_v_0_2_0 : TsDecode.Decoder Config
 configDecoder_v_0_2_0 =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
@@ -134,11 +134,11 @@ configDecoder_v_0_1_0 : TsDecode.Decoder Config
 configDecoder_v_0_1_0 =
     TsDecode.succeed Config
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
-        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)

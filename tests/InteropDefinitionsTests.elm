@@ -73,17 +73,17 @@ flagsTests =
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , filterPolarity = Filter.Deny
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                        , showColumnTags = False
+                                        , showColumnTags = True
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , filterPolarity = Filter.Allow
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -108,17 +108,17 @@ flagsTests =
                                         { completedCount = 4
                                         , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                         , filterPolarity = Filter.Allow
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                        , showColumnTags = False
+                                        , showColumnTags = True
                                         , completedCount = 5
                                         , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                         , filterPolarity = Filter.Allow
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
@@ -143,17 +143,17 @@ flagsTests =
                                         { completedCount = 4
                                         , filters = []
                                         , filterPolarity = Filter.Allow
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeUndated = True
                                         , title = "date board title"
                                         }
                                     , BoardConfig.TagBoardConfig
                                         { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                        , showColumnTags = False
+                                        , showColumnTags = True
                                         , completedCount = 5
                                         , filters = []
                                         , filterPolarity = Filter.Allow
-                                        , showFilteredTags = False
+                                        , showFilteredTags = True
                                         , includeOthers = False
                                         , includeUntagged = True
                                         , title = "tag board title"
