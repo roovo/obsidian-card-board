@@ -15,10 +15,12 @@ import Time
 suite : Test
 suite =
     concat
-        [ autoComplete
+        [ allTags
+        , autoComplete
         , blockLink
         , completion
         , containsId
+        , descendantTasks
         , due
         , filePath
         , hasOneOfTheTags
@@ -34,8 +36,7 @@ suite =
         , notes
         , originalText
         , parsing
-        , descendantTasks
-        , allTags
+        , removeTags
         , tasksToToggle
         , title
         , toToggledString
@@ -701,6 +702,30 @@ allTags =
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag3" ]) 0)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
+        ]
+
+
+removeTags : Test
+removeTags =
+    describe "removeTags"
+        [ test "removes from a TaskItem with no subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/ #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.allTags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
+        , test "removes from a TaskItem and it's subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/\n  - [ ] bar #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.allTags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
         ]
 
 

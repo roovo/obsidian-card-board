@@ -18,7 +18,7 @@ defaultDateBoardConfig =
     { completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
-    , showFilteredTags = False
+    , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
     }
@@ -43,11 +43,11 @@ exampleDateBoardConfig =
 defaultTagBoardConfig : TagBoard.Config
 defaultTagBoardConfig =
     { columns = []
-    , showColumnTags = False
+    , showColumnTags = True
     , completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
-    , showFilteredTags = False
+    , showFilteredTags = True
     , includeOthers = False
     , includeUntagged = False
     , title = "Tag Board Title"

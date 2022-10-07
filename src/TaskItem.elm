@@ -27,6 +27,7 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
+    , removeTags
     , tasksToToggle
     , title
     , toToggledString
@@ -394,6 +395,21 @@ toToggledString timeWithZone (TaskItem fields_ _) =
 
 
 -- MODIFICATION
+
+
+removeTags : List String -> TaskItem -> TaskItem
+removeTags tagStrings (TaskItem fields_ subtasks_) =
+    let
+        equalsAny : Tag -> Bool
+        equalsAny tag =
+            List.any (\tagString -> Tag.equals tagString tag) tagStrings
+
+        removeFromFields f =
+            { f | tags = TagList.filter (\tag -> not <| equalsAny tag) f.tags }
+    in
+    TaskItem
+        (removeFromFields fields_)
+        (List.map removeFromFields subtasks_)
 
 
 toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem

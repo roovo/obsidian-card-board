@@ -17,6 +17,7 @@ import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import String.Extra as SE
+import Tag exposing (Tag)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
@@ -158,7 +159,7 @@ columns : Config -> TaskList -> List (Column TaskItem)
 columns config taskList =
     config.columns
         |> LE.uniqueBy .tag
-        |> List.foldl (fillColumn taskList) []
+        |> List.foldl (fillColumn taskList config) []
         |> prependOthers config taskList
         |> prependUntagged config taskList
         |> appendCompleted config taskList
@@ -228,6 +229,37 @@ columnConfigParser =
 -- PRIVATE
 
 
+taskListWithTagsRemoved : Config -> TaskList -> TaskList
+taskListWithTagsRemoved config taskList =
+    let
+        columnTags : List String
+        columnTags =
+            List.map .tag config.columns
+
+        filterTags : List String
+        filterTags =
+            config.filters
+                |> List.filter (\f -> Filter.filterType f == "Tags")
+                |> List.map Filter.value
+
+        tagsToRemove : List String
+        tagsToRemove =
+            case ( config.showFilteredTags, config.showColumnTags ) of
+                ( True, True ) ->
+                    filterTags ++ columnTags
+
+                ( False, True ) ->
+                    filterTags
+
+                ( True, False ) ->
+                    columnTags
+
+                ( False, False ) ->
+                    []
+    in
+    TaskList.removeTags tagsToRemove taskList
+
+
 appendCompleted : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 appendCompleted config taskList columnList =
     let
@@ -235,6 +267,7 @@ appendCompleted config taskList columnList =
         completedTasks =
             taskList
                 |> TaskList.filter isCompleteWithTags
+                |> taskListWithTagsRemoved config
                 |> TaskList.topLevelTasks
                 |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.reverse
@@ -266,6 +299,7 @@ prependOthers config taskList columnList =
         cards =
             taskList
                 |> TaskList.filter isIncompleteWithoutTags
+                |> taskListWithTagsRemoved config
                 |> TaskList.topLevelTasks
                 |> List.sortBy (String.toLower << TaskItem.title)
                 |> List.sortBy TaskItem.dueRataDie
@@ -309,14 +343,15 @@ prependUntagged config taskList columnList =
         columnList
 
 
-fillColumn : TaskList -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
-fillColumn taskList columnConfig acc =
+fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
+fillColumn taskList config columnConfig acc =
     let
         isIncompleteWithTag : String -> TaskItem -> Bool
         isIncompleteWithTag tag item =
             not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
     in
     TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
+        |> taskListWithTagsRemoved config
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
