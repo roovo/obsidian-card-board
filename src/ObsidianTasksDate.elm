@@ -1,39 +1,45 @@
-module ObsidianTasksDate exposing (ObsidianTasksDate(..), parser)
+module ObsidianTasksDate exposing
+    ( completionTimeParser
+    , dueDateParser
+    )
 
 import Date exposing (Date)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
-
-
-
--- TYPES
-
-
-type ObsidianTasksDate
-    = Due Date
-    | Scheduled Date
-    | Completed Date
+import Time
 
 
 
 -- PARSE
 
 
-parser : Parser ObsidianTasksDate
-parser =
-    P.oneOf
-        [ P.backtrackable <| builder "📅 " Due
-        , P.backtrackable <| builder "✅ " Completed
-        , P.backtrackable <| builder "⏳ " Scheduled
-        ]
+dueDateParser : (Date -> a) -> Parser a
+dueDateParser tagger =
+    formatParser "📅 " tagger
+
+
+completionTimeParser : (Time.Posix -> a) -> Parser a
+completionTimeParser tagger =
+    formatParser "✅ " dateToPosixTime
+        |> P.map tagger
 
 
 
 -- PRIVATE
 
 
-builder : String -> (Date -> ObsidianTasksDate) -> Parser ObsidianTasksDate
-builder emoticon tagger =
+formatParser : String -> (Date -> a) -> Parser a
+formatParser emoticon tagger =
     P.succeed tagger
         |. P.token emoticon
         |= ParserHelper.dateParser
+
+
+dateToPosixTime : Date.Date -> Time.Posix
+dateToPosixTime date =
+    Time.millisToPosix ((Date.toRataDie date - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
+
+
+epochStartOffset : Int
+epochStartOffset =
+    719162

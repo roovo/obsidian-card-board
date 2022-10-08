@@ -37,6 +37,7 @@ import Date exposing (Date)
 import FNV1a
 import Iso8601
 import Maybe.Extra as ME
+import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
 import Regex exposing (Regex)
@@ -96,19 +97,22 @@ type IndentedItem
 
 dummy : TaskItem
 dummy =
-    TaskItem
-        { autoComplete = NotSpecifed
-        , completion = Incomplete
-        , dueFile = Nothing
-        , dueTag = Nothing
-        , filePath = ""
-        , lineNumber = 0
-        , notes = ""
-        , originalText = ""
-        , tags = TagList.empty
-        , title = ""
-        }
-        []
+    TaskItem dummyFields []
+
+
+dummyFields : TaskItemFields
+dummyFields =
+    { autoComplete = NotSpecifed
+    , completion = Incomplete
+    , dueFile = Nothing
+    , dueTag = Nothing
+    , filePath = ""
+    , lineNumber = 0
+    , notes = ""
+    , originalText = ""
+    , tags = TagList.empty
+    , title = ""
+    }
 
 
 
@@ -612,6 +616,8 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
                 DueTag tagDate ->
                     Just tagDate
 
+                -- TasksDate tasksDate ->
+                --     ObsidianTasksDate.dueDate tasksDate
                 _ ->
                     date
 
@@ -621,6 +627,8 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
                 CompletedTag completionTime ->
                     Just completionTime
 
+                -- TasksDate tasksDate ->
+                --     ObsidianTasksDate.completionTime tasksDate
                 _ ->
                     time
 
@@ -704,6 +712,8 @@ tokenParser =
         [ P.backtrackable <| TaskPaperTag.completedTagParser CompletedTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
         , P.backtrackable <| TaskPaperTag.autocompleteTagParser AutoCompleteTag
+        , P.backtrackable <| ObsidianTasksDate.dueDateParser DueTag
+        , P.backtrackable <| ObsidianTasksDate.completionTimeParser CompletedTag
         , P.backtrackable <| P.map ObsidianTag Tag.parser
         , P.succeed Word
             |= ParserHelper.wordParser

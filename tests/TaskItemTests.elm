@@ -69,7 +69,7 @@ completion =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
-        , test "returns Complete for a completed task with no @completed() date" <|
+        , test "returns Complete for a completed task with no inline completion date" <|
             \() ->
                 "- [x] foo"
                     |> Parser.run TaskItemHelpers.basicParser
@@ -81,9 +81,33 @@ completion =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
+        , test "returns Incomplete for an incomplete task with a ✅ date" <|
+            \() ->
+                "- [ ] foo ✅ 2020-01-01"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
         , test "returns CompletedAt for an completed task with a @completed() date" <|
             \() ->
                 "- [x] foo @completed(2020-01-01)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns CompletedAt for an completed task with a ✅ date" <|
+            \() ->
+                "- [x] foo ✅ 2020-01-01"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns CompletedAt for an completed task with a 📅 date before the ✅ date" <|
+            \() ->
+                "- [x] foo 📅 2020-01-02 ✅ 2020-01-01"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns CompletedAt for an completed task with a ✅ date before the 📅 date" <|
+            \() ->
+                "- [x] foo ✅ 2020-01-01 📅 2020-01-01"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
@@ -135,7 +159,7 @@ containsId =
 due : Test
 due =
     describe "due"
-        [ test "returns Nothing for a task with no file date or @due() date" <|
+        [ test "returns Nothing for a task with no file date or inline due date" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
@@ -153,6 +177,12 @@ due =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
+        , test "returns Nothing if the 📅 date is invalid" <|
+            \() ->
+                "- [ ] foo 📅 2020-51-01"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
         , test "returns Just the date if the file date is valid" <|
             \() ->
                 "- [ ] foo"
@@ -165,12 +195,42 @@ due =
                     |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "📅 date over-rides the file date" <|
+            \() ->
+                "- [ ] foo 📅 2021-03-03"
+                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "📅 date over-rides the file date when preceeded by a ✅ date" <|
+            \() ->
+                "- [ ] foo ✅ 2021-03-02 📅 2021-03-03"
+                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "📅 date over-rides the file date when postceeded by a ✅ date" <|
+            \() ->
+                "- [ ] foo 📅 2021-03-03 ✅ 2021-03-02"
+                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "the @due() date is not included in the title" <|
             \() ->
                 "- [x] foo @due(2020-01-01) bar"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
+        , test "the 📅 date is not included in the title" <|
+            \() ->
+                "- [x] foo 📅 2020-01-01 bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
+        , test "the 📅 date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo 📅 2020-51-01 bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo 📅 2020-51-01 bar")
         , test "the @due() date is included in the title if it is not valid" <|
             \() ->
                 "- [x] foo @due(2020-51-01) bar"
