@@ -248,6 +248,6 @@ up and running.
 If you have any thoughts, ideas, bugs n stuff:
 
 - **Bugs/suggestions/feature requests** - [github issues](https://github.com/roovo/obsidian-card-board/issues).
-- **What's being worked on and up next?** - [CardBoard Dev](https://github.com/users/roovo/projects/2)
+- **What's being worked on and up next?** - [CardBoard Dev](https://github.com/users/roovo/projects/4)
 - **Questions/discussions** - [github discussions](https://github.com/roovo/obsidian-card-board/discussions)
 
