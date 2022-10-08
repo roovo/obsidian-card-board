@@ -105,7 +105,7 @@ exampleDateBoardTasks =
     [ undatedTasks
     , moreUndatedTasks
     , ( "d", Just DateTimeHelpers.farFuture, """
-- [ ] zapping into the future
+- [ ] zapping into the future #future #tag1
 - [ ] far future incomplete
 - [x] far future complete
 """ )
@@ -115,17 +115,17 @@ exampleDateBoardTasks =
 """ )
     , ( "c", Just DateTimeHelpers.tomorrow, """
 - [ ] tomorrow incomplete
-- [ ] a task for tomorrow
+- [ ] a task for tomorrow #tomorrow #tag1
 - [x] tomorrow complete @completed(2020-06-02)
 """ )
     , ( "b", Just DateTimeHelpers.today, """
-- [ ] today incomplete
-- [x] today complete @completed(2020-06-02)
+- [ ] today incomplete #today #tag1
+- [x] today complete @completed(2020-06-02) #tag1 #today
 """ )
     , yesterdaysTasks
     , ( "f", Just "invalid date", """
 - [ ] invalid date incomplete #aTag
-- [x] invalid date complete
+- [x] invalid date complete #tag1 #invalid
 """ )
     ]
 
@@ -133,7 +133,7 @@ exampleDateBoardTasks =
 undatedTasks : ( String, Maybe String, String )
 undatedTasks =
     ( "gg/xx/yy.md", Nothing, """
-- [ ] an undated incomplete #bTag
+- [ ] an undated incomplete #bTag #tag1
 - [ ] incomplete with cTag #cTag
 - [ ] untagged incomplete
 - [x] undated complete @completed(2020-06-02)
@@ -144,7 +144,7 @@ moreUndatedTasks : ( String, Maybe String, String )
 moreUndatedTasks =
     ( "x", Nothing, """
 - [ ] more undated incomplete #bTag
-- [ ] more undated incomplete with cTag #cTag
+- [ ] more undated incomplete with cTag #cTag  #tag1
 - [x] more undated complete @completed(2020-06-03)
 """ )
 

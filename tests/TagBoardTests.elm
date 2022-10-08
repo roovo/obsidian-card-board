@@ -2,9 +2,11 @@ module TagBoardTests exposing (suite)
 
 import Column
 import Expect
+import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
 import TagBoard
@@ -188,23 +190,56 @@ columnsBasic =
                     |> BoardHelpers.thingsInColumn "At Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
-        , test "does not remove tags that match the column's tag" <|
+        , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
             \() ->
                 """- [ ] foo #foo
-- [ ] bar1 #bar/
-  - [ ] bar1.1 #bar/baz
-- [ ] bar2 #bar #baz
+- [ ] bar1 #bar #col1
+  - [ ] bar1.1 #bar #bar/baz #subtask
+- [ ] bar2 #bar #bar/ #col2
+- [ ] foo #foo #check
 """
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
-                            | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
+                            | filters = [ FilterHelpers.tagFilter "bar" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                            , columns =
+                                [ { tag = "col1", displayTitle = "Col 1" }
+                                , { tag = "col2", displayTitle = "Col 2" }
+                                ]
                         }
-                    |> BoardHelpers.thingsInColumn "Bar Tasks"
-                    |> List.map TaskItem.allTags
+                    |> BoardHelpers.thingsInColumns [ "Col 1", "Col 2" ]
+                    |> List.map TaskItem.tags
                     |> List.foldl TagList.append TagList.empty
-                    |> Expect.equal (TagList.fromList [ "bar", "baz", "bar/", "bar/baz" ])
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "bar/", "bar/baz", "col1", "col2", "subtask" ]
+        , test "removes exact matches of tags defined in config.columns from all task items if the config says not to show them" <|
+            \() ->
+                """- [ ] foo #foo
+- [ ] bar1 #bar #col1
+  - [ ] bar1.1 #bar #bar/baz #subtask
+- [ ] bar2 #bar #bar/ #col2
+- [ ] foo #foo #check
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | columns =
+                                [ { tag = "col1", displayTitle = "Col 1" }
+                                , { tag = "col2", displayTitle = "Col 2" }
+                                ]
+                            , showColumnTags = False
+                        }
+                    |> BoardHelpers.thingsInColumns [ "Col 1", "Col 2" ]
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "bar", "bar", "bar/", "bar/baz", "subtask" ]
         , test "sorts cards by title & due date" <|
             \() ->
                 """- [ ] b #foo @due(2020-01-01)
@@ -295,6 +330,51 @@ columnCompleted =
                     |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "complete1", "complete2" ]
+        , test "removes exact matches of tags defined in config.filters if the config says not to show them" <|
+            \() ->
+                """- [x] complete1 #foo #bar
+  - [x] complete2 #foo #bar2
+- [x] complete3 #foo
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | filters = [ FilterHelpers.tagFilter "foo" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                            , columns = [ { tag = "foo", displayTitle = "" } ]
+                            , completedCount = 10
+                        }
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "bar", "bar2" ]
+        , test "removes exact matches of tags defined in config.columns from all task items if the config says not to show them" <|
+            \() ->
+                """- [x] complete1 #foo #bar #col1
+  - [x] complete2 #foo #bar2
+- [x] complete3 #foo #col2
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | columns =
+                                [ { tag = "col1", displayTitle = "Col 1" }
+                                , { tag = "col2", displayTitle = "Col 2" }
+                                ]
+                            , showColumnTags = False
+                            , completedCount = 10
+                        }
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "bar", "bar2", "foo", "foo" ]
         ]
 
 
@@ -353,6 +433,28 @@ columnOthers =
                     |> BoardHelpers.thingsInColumn "Others"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "c", "a", "b" ]
+        , test "removes exact matches of tags defined in config.filters if the config says not to show them" <|
+            \() ->
+                """- [ ] incomplete1 #foo
+  - [ ] incomplete2 #foo #bar
+- [ ] incomplete3 #foo #baz
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultConfig
+                            | filters = [ FilterHelpers.tagFilter "foo" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                            , columns = [ { tag = "bar", displayTitle = "" } ]
+                            , includeOthers = True
+                        }
+                    |> BoardHelpers.thingsInColumn "Others"
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "baz" ]
         ]
 
 
@@ -474,16 +576,9 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample TagBoard.configEncoder
                     |> .output
-                    |> DecodeHelpers.runDecoder TagBoard.configDecoder
+                    |> DecodeHelpers.runDecoder TagBoard.configDecoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
-
-        -- , test "builds the correct tsType" <|
-        --     \() ->
-        --         ""
-        --             |> DecodeHelpers.runDecoder TagBoard.configDecoder
-        --             |> .tsType
-        --             |> Expect.equal ""
         ]
 
 

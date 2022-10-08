@@ -3,11 +3,15 @@ module DateBoardTests exposing (suite)
 import Column
 import DateBoard
 import Expect
+import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import List.Extra as LE
+import TagList
 import TaskItem
 import Test exposing (..)
 import TsJson.Encode as TsEncode
@@ -53,6 +57,21 @@ columns =
                     |> BoardHelpers.thingsInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete", "zapping into the future" ]
+        , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                        { defaultConfig
+                            | filters = [ FilterHelpers.tagFilter "tag1" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                        }
+                    |> BoardHelpers.thingsInColumns [ "Future", "Today" ]
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "future", "today" ]
         ]
 
 
@@ -81,6 +100,22 @@ columnCompleted =
                         , "far future complete"
                         , "invalid date complete"
                         ]
+        , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                        { defaultConfig
+                            | filters = [ FilterHelpers.tagFilter "tag1" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                            , completedCount = 10
+                        }
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> Expect.equal [ "invalid", "today" ]
         ]
 
 
@@ -107,6 +142,23 @@ columnUndated =
                         , "more undated incomplete with cTag"
                         , "untagged incomplete"
                         ]
+        , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                        { defaultConfig
+                            | filters = [ FilterHelpers.tagFilter "tag1" ]
+                            , filterPolarity = Filter.Allow
+                            , showFilteredTags = False
+                            , includeUndated = True
+                        }
+                    |> BoardHelpers.thingsInColumn "Undated"
+                    |> List.map TaskItem.tags
+                    |> List.foldl TagList.append TagList.empty
+                    |> TagList.toList
+                    |> List.sort
+                    |> LE.unique
+                    |> Expect.equal [ "aTag", "bTag", "cTag" ]
         ]
 
 
@@ -118,16 +170,9 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample DateBoard.configEncoder
                     |> .output
-                    |> DecodeHelpers.runDecoder DateBoard.configDecoder
+                    |> DecodeHelpers.runDecoder DateBoard.configDecoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
-
-        -- , test "builds the correct tsType" <|
-        --     \() ->
-        --         ""
-        --             |> DecodeHelpers.runDecoder DateBoard.configDecoder
-        --             |> .tsType
-        --             |> Expect.equal ""
         ]
 
 

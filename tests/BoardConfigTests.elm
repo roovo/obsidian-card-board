@@ -18,10 +18,13 @@ suite =
         [ default
         , encodeDecode
         , fromBoardType
+        , isForDateBoard
         , mapFilters
         , toggleIncludeOthers
         , toggleIncludeUndated
         , toggleIncludeUntagged
+        , toggleShowColumnTags
+        , toggleShowFilteredTags
         , updateBoardType
         , updateCompletedCount
         , updateFilters
@@ -50,7 +53,7 @@ encodeDecode =
                 BoardConfigHelpers.exampleBoardConfig
                     |> TsEncode.runExample BoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder BoardConfig.decoder
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
         ]
@@ -79,6 +82,38 @@ fromBoardType =
                 BoardConfig.fromBoardType "NOT dateBoard" "some title"
                     |> BoardConfig.title
                     |> Expect.equal "some title"
+        ]
+
+
+isForDateBoard : Test
+isForDateBoard =
+    describe "isForDateBoard"
+        [ test "returns True for a DateBoard" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" "some title"
+                    |> BoardConfig.isForDateBoard
+                    |> Expect.equal True
+        , test "returns False for a TagBoard" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" "some title"
+                    |> BoardConfig.isForDateBoard
+                    |> Expect.equal False
+        ]
+
+
+isForTagBoard : Test
+isForTagBoard =
+    describe "isForTagBoard"
+        [ test "returns True for a TagBoard" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" "some title"
+                    |> BoardConfig.isForTagBoard
+                    |> Expect.equal True
+        , test "returns False for a TagBoard" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" "some title"
+                    |> BoardConfig.isForTagBoard
+                    |> Expect.equal False
         ]
 
 
@@ -161,6 +196,45 @@ toggleIncludeUntagged =
         ]
 
 
+toggleShowColumnTags : Test
+toggleShowColumnTags =
+    describe "toggleShowColumnTags"
+        [ test "does nothing to a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleShowColumnTags
+                    |> extractDateBoardConfig
+                    |> Expect.equal (Just DateBoard.defaultConfig)
+        , test "toggles includeUntagged for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleShowColumnTags
+                    |> extractTagBoardConfig
+                    |> Maybe.map .showColumnTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showColumnTags)
+        ]
+
+
+toggleShowFilteredTags : Test
+toggleShowFilteredTags =
+    describe "toggleShowFilteredTags"
+        [ test "toggles includeUntagged for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleShowFilteredTags
+                    |> extractDateBoardConfig
+                    |> Maybe.map .showFilteredTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
+        , test "toggles includeUntagged for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleShowFilteredTags
+                    |> extractTagBoardConfig
+                    |> Maybe.map .showFilteredTags
+                    |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
+        ]
+
+
 updateBoardType : Test
 updateBoardType =
     describe "updateBoardType"
@@ -208,6 +282,20 @@ updateCompletedCount =
                     |> extractTagBoardConfig
                     |> Maybe.map .completedCount
                     |> Expect.equal (Just 33)
+        , test "does NOT update the completedCount for a DateBoard config if the count is Nothing" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.updateCompletedCount Nothing
+                    |> extractDateBoardConfig
+                    |> Maybe.map .completedCount
+                    |> Expect.equal (Just 10)
+        , test "does NOT update the completedCount for a TagBoard config if the count is Nothing" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.updateCompletedCount Nothing
+                    |> extractTagBoardConfig
+                    |> Maybe.map .completedCount
+                    |> Expect.equal (Just 10)
         ]
 
 

@@ -1,8 +1,9 @@
 module BoardConfig exposing
     ( BoardConfig(..)
-    , decoder
     , decoder_v_0_1_0
     , decoder_v_0_2_0
+    , decoder_v_0_3_0
+    , decoder_v_0_4_0
     , default
     , encoder
     , filterPolarity
@@ -15,6 +16,8 @@ module BoardConfig exposing
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
+    , toggleShowColumnTags
+    , toggleShowFilteredTags
     , updateBoardType
     , updateCompletedCount
     , updateFilterPolarity
@@ -39,6 +42,10 @@ import TsJson.Encode as TsEncode
 type BoardConfig
     = DateBoardConfig DateBoard.Config
     | TagBoardConfig TagBoard.Config
+
+
+
+-- CREATE
 
 
 default : BoardConfig
@@ -67,7 +74,7 @@ fromBoardType boardType title_ =
 
 
 
--- INFO
+-- UTILITIES
 
 
 isForDateBoard : BoardConfig -> Bool
@@ -121,7 +128,7 @@ title config =
 
 
 
--- SERIALIZATION
+-- SERIALIZE
 
 
 encoder : TsEncode.Encoder BoardConfig
@@ -140,11 +147,19 @@ encoder =
         |> TsEncode.buildUnion
 
 
-decoder : TsDecode.Decoder BoardConfig
-decoder =
+decoder_v_0_4_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_4_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_4_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_4_0
+        ]
+
+
+decoder_v_0_3_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_3_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_3_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_3_0
         ]
 
 
@@ -165,7 +180,7 @@ decoder_v_0_1_0 =
 
 
 
--- MODIFICATION
+-- TRANSFORM
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig
@@ -178,14 +193,14 @@ mapFilters fn config =
             TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
 
 
-toggleIncludeUntagged : BoardConfig -> BoardConfig
-toggleIncludeUntagged config =
+toggleIncludeOthers : BoardConfig -> BoardConfig
+toggleIncludeOthers config =
     case config of
         DateBoardConfig _ ->
             config
 
         TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
+            TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
 
 
 toggleIncludeUndated : BoardConfig -> BoardConfig
@@ -198,24 +213,62 @@ toggleIncludeUndated config =
             config
 
 
-toggleIncludeOthers : BoardConfig -> BoardConfig
-toggleIncludeOthers config =
+toggleIncludeUntagged : BoardConfig -> BoardConfig
+toggleIncludeUntagged config =
     case config of
         DateBoardConfig _ ->
             config
 
         TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
+            TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
 
 
-updateTitle : String -> BoardConfig -> BoardConfig
-updateTitle title_ config =
+toggleShowColumnTags : BoardConfig -> BoardConfig
+toggleShowColumnTags config =
     case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | title = title_ }
+        DateBoardConfig _ ->
+            config
 
         TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | title = title_ }
+            TagBoardConfig { boardConfig | showColumnTags = not boardConfig.showColumnTags }
+
+
+toggleShowFilteredTags : BoardConfig -> BoardConfig
+toggleShowFilteredTags config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
+
+
+updateBoardType : String -> BoardConfig -> BoardConfig
+updateBoardType boardType config =
+    fromBoardType boardType (title config)
+
+
+updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
+updateCompletedCount value config =
+    case ( config, value ) of
+        ( DateBoardConfig boardConfig, Just newCount ) ->
+            DateBoardConfig { boardConfig | completedCount = newCount }
+
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            TagBoardConfig { boardConfig | completedCount = newCount }
+
+        _ ->
+            config
+
+
+updateFilterPolarity : String -> BoardConfig -> BoardConfig
+updateFilterPolarity polarity config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
 
 
 updateFilters : List Filter -> BoardConfig -> BoardConfig
@@ -248,29 +301,11 @@ updateTags tags config =
                     config
 
 
-updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
-updateCompletedCount value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newCount ) ->
-            DateBoardConfig { boardConfig | completedCount = newCount }
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            TagBoardConfig { boardConfig | completedCount = newCount }
-
-        _ ->
-            config
-
-
-updateFilterPolarity : String -> BoardConfig -> BoardConfig
-updateFilterPolarity polarity config =
+updateTitle : String -> BoardConfig -> BoardConfig
+updateTitle title_ config =
     case config of
         DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
+            DateBoardConfig { boardConfig | title = title_ }
 
         TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
-
-
-updateBoardType : String -> BoardConfig -> BoardConfig
-updateBoardType boardType config =
-    fromBoardType boardType (title config)
+            TagBoardConfig { boardConfig | title = title_ }

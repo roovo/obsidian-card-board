@@ -21,11 +21,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.3.0" <|
+        [ test "is 0.4.0" <|
             \() ->
                 CardBoardSettings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.3.0"
+                    |> Expect.equal "0.4.0"
         ]
 
 

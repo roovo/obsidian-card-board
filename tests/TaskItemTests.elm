@@ -2,12 +2,11 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
-import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
 import TagList
-import TaskItem exposing (AutoCompletion(..), Completion(..))
+import TaskItem exposing (Completion(..))
 import Test exposing (..)
 import Time
 
@@ -15,10 +14,10 @@ import Time
 suite : Test
 suite =
     concat
-        [ autoComplete
-        , blockLink
+        [ blockLink
         , completion
         , containsId
+        , descendantTasks
         , due
         , filePath
         , hasOneOfTheTags
@@ -34,49 +33,12 @@ suite =
         , notes
         , originalText
         , parsing
-        , descendantTasks
-        , allTags
+        , removeTags
+        , tags
         , tasksToToggle
         , title
         , toToggledString
-        , transformation
         , updateFilePath
-        ]
-
-
-autoComplete : Test
-autoComplete =
-    describe "autoComplete"
-        [ test "returns TrueSpecified where the @autocomplete tag is true" <|
-            \() ->
-                "- [ ] foo @autocomplete(true)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok TrueSpecified)
-        , test "returns NotSpecifed where there is no @autocomplete tag" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok NotSpecifed)
-        , test "returns FalseSpecified where the @autocomplete tag is false" <|
-            \() ->
-                "- [ ] foo @autocomplete(false)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok FalseSpecified)
-        , test "doesn't include the tag in the title" <|
-            \() ->
-                "- [ ] foo @autocomplete(false)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo")
-        , test "includes an invalid tag in the title" <|
-            \() ->
-                "- [ ] foo @autocomplete(falsey)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo @autocomplete(falsey)")
         ]
 
 
@@ -668,32 +630,32 @@ descendantTasks =
         ]
 
 
-allTags : Test
-allTags =
-    describe "allTags"
+tags : Test
+tags =
+    describe "tags"
         [ test "returns an empty array for a task with no tags or substasks" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok TagList.empty)
         , test "returns all tags from front matter, the top level, and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2", "tag3", "tagA", "tagB" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag1" ]) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "returns the tags in alphabetical order" <|
             \() ->
                 "- [ ] foo #tag2 bar #tag1\n  - [ ] bar #tag1"
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList []) 0)
-                    |> Result.map TaskItem.allTags
+                    |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->
@@ -701,6 +663,30 @@ allTags =
                     |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag3" ]) 0)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
+        ]
+
+
+removeTags : Test
+removeTags =
+    describe "removeTags"
+        [ test "removes from a TaskItem with no subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/ #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
+        , test "removes from a TaskItem and it's subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/\n  - [ ] bar #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
         ]
 
 
@@ -825,40 +811,6 @@ toToggledString =
                     |> Result.withDefault []
                     |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
-        ]
-
-
-transformation : Test
-transformation =
-    describe "transformation"
-        [ test "toggling a completed task produces one marked as incomplete" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion <| { now = Time.millisToPosix 0 })
-                    |> Result.map TaskItem.isCompleted
-                    |> Expect.equal (Ok False)
-        , test "toggling a task completed on a given date produces one marked as incomplete" <|
-            \() ->
-                "- [x] foo @completed(2020-01-01)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion <| { now = Time.millisToPosix 0 })
-                    |> Result.map TaskItem.isCompleted
-                    |> Expect.equal (Ok False)
-        , test "toggling an incomplete task produces one marked as complete on the given date" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
-        , test "toggling a incomplete task with a @completed date updates the @completed date" <|
-            \() ->
-                "- [ ] foo @completed(2020-01-01)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
         ]
 
 

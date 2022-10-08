@@ -291,7 +291,7 @@ cardView timeWithZone card =
                 []
             , Html.div [ class "card-board-card-title", id cardId ]
                 []
-            , cardTagsView (TaskItem.allTags taskItem)
+            , cardTagsView (TaskItem.tags taskItem)
                 |> when (TaskItem.hasTags taskItem)
             , subtasksView (Card.descendantTasks card)
                 |> when (TaskItem.hasSubtasks taskItem)

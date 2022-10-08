@@ -134,6 +134,8 @@ type Msg
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
+    | ToggleShowColumnTags
+    | ToggleShowFilteredTags
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
@@ -232,6 +234,12 @@ update msg model =
 
         ToggleIncludeUntagged ->
             updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+
+        ToggleShowColumnTags ->
+            updateBoardBeingEdited BoardConfig.toggleShowColumnTags model
+
+        ToggleShowFilteredTags ->
+            updateBoardBeingEdited BoardConfig.toggleShowFilteredTags model
 
 
 selectedItemLabel : Filter -> String
@@ -501,6 +509,14 @@ settingsFormView boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
         ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
             let
+                showFilteredTagsStyle : String
+                showFilteredTagsStyle =
+                    if config.showFilteredTags then
+                        " is-enabled"
+
+                    else
+                        ""
+
                 includeUndatedStyle : String
                 includeUndatedStyle =
                     if config.includeUndated then
@@ -548,6 +564,21 @@ settingsFormView boardConfig boardIndex multiselect =
                         , Html.div [ class "setting-item-control" ]
                             [ polaritySelect config.filterPolarity ]
                         ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Show Filter Tags" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                                , onClick ToggleShowFilteredTags
+                                ]
+                                []
+                            ]
+                        ]
                     , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
@@ -592,6 +623,22 @@ settingsFormView boardConfig boardIndex multiselect =
 
         ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
+                showFilteredTagsStyle : String
+                showFilteredTagsStyle =
+                    if config.showFilteredTags then
+                        " is-enabled"
+
+                    else
+                        ""
+
+                showColumnTagsStyle : String
+                showColumnTagsStyle =
+                    if config.showColumnTags then
+                        " is-enabled"
+
+                    else
+                        ""
+
                 includeOthersStyle : String
                 includeOthersStyle =
                     if config.includeOthers then
@@ -653,6 +700,21 @@ settingsFormView boardConfig boardIndex multiselect =
                         , Html.div [ class "setting-item-control" ]
                             [ polaritySelect config.filterPolarity ]
                         ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Show Filter Tags" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                                , onClick ToggleShowFilteredTags
+                                ]
+                                []
+                            ]
+                        ]
                     , Html.div [ class "setting-item", class "new-section" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
@@ -678,6 +740,21 @@ settingsFormView boardConfig boardIndex multiselect =
                                     ]
                                     [ Html.text tagText ]
                               )
+                            ]
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Show Column Tags" ]
+                            , Html.div [ class "setting-item-description" ]
+                                [ Html.text "Turn this off if you don't want to display any tags used to define columns on cards on this board." ]
+                            ]
+                        , Html.div [ class "setting-item-control" ]
+                            [ Html.div
+                                [ class <| "checkbox-container" ++ showColumnTagsStyle
+                                , onClick ToggleShowColumnTags
+                                ]
+                                []
                             ]
                         ]
                     , Html.div [ class "setting-item" ]

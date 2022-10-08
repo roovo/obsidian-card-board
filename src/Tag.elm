@@ -1,6 +1,8 @@
 module Tag exposing
     ( Tag
+    , equals
     , parser
+    , startsWith
     , toString
     )
 
@@ -8,13 +10,16 @@ import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 
 
+
+-- TYPES
+
+
 type Tag
     = Tag String
 
 
-toString : Tag -> String
-toString (Tag s) =
-    s
+
+-- CREATE
 
 
 parser : Parser Tag
@@ -26,6 +31,29 @@ parser =
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
                 |> ParserHelper.checkWhitespaceFollows
            )
+
+
+
+-- UTILITIES
+
+
+equals : String -> Tag -> Bool
+equals checkString (Tag tagString) =
+    checkString == tagString
+
+
+startsWith : String -> Tag -> Bool
+startsWith substring (Tag tagString) =
+    String.startsWith substring tagString
+
+
+
+-- CONVERT
+
+
+toString : Tag -> String
+toString (Tag s) =
+    s
 
 
 

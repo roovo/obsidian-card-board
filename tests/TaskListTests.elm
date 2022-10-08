@@ -3,6 +3,7 @@ module TaskListTests exposing (suite)
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import List.Extra as LE
 import Parser
 import TagList
 import TaskItem
@@ -17,6 +18,7 @@ suite =
         , filter
         , map
         , parsing
+        , removeTags
         , replaceForFile
         , removeForFile
         , taskContainingId
@@ -221,11 +223,26 @@ not a task
                     |> Parser.run (TaskList.parser "file_a" Nothing (TagList.fromList [ "fm_tag1", "fm_tag2" ]) 0)
                     |> Result.withDefault TaskList.empty
                     |> TaskList.tasks
-                    |> List.map TaskItem.allTags
+                    |> List.map TaskItem.tags
                     |> Expect.equal
                         [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         , TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         ]
+        ]
+
+
+removeTags : Test
+removeTags =
+    describe "removeTags"
+        [ test "removes tags from all TaskItems in the list that exaactly match the given strings" <|
+            \() ->
+                TaskListHelpers.exampleTagBoardTaskList
+                    |> TaskList.removeTags [ "tag1", "tag2" ]
+                    |> TaskList.tasks
+                    |> List.map TaskItem.tags
+                    |> List.concatMap TagList.toList
+                    |> LE.unique
+                    |> Expect.equal [ "tag3", "tag4" ]
         ]
 
 

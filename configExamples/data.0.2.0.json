@@ -16,12 +16,12 @@
         "data": {
           "columns": [
             {
-              "tag": "foo",
-              "displayTitle": "Foo"
+              "tag": "home",
+              "displayTitle": "Home"
             },
             {
-              "tag": "bar",
-              "displayTitle": "Bar"
+              "tag": "wellbeing",
+              "displayTitle": "Wellbeing"
             }
           ],
           "completedCount": 10,

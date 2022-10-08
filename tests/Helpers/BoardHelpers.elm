@@ -1,6 +1,14 @@
-module Helpers.BoardHelpers exposing (thingsInColumn)
+module Helpers.BoardHelpers exposing
+    ( thingsInColumn
+    , thingsInColumns
+    )
 
 import Column exposing (Column)
+
+
+thingsInColumns : List String -> List (Column a) -> List a
+thingsInColumns columnNames cardsInColumns =
+    List.concatMap (\columnName -> thingsInColumn columnName cardsInColumns) columnNames
 
 
 thingsInColumn : String -> List (Column a) -> List a

@@ -8,9 +8,11 @@ export default class CardBoardPlugin extends Plugin {
         boardConfigs : (
           { data : {
               columns : { displayTitle : string; tag : string }[];
+              showColumnTags : boolean;
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -20,6 +22,7 @@ export default class CardBoardPlugin extends Plugin {
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeUndated : boolean;
               title : string
             };
@@ -112,9 +115,11 @@ export default class CardBoardPlugin extends Plugin {
         boardConfigs : (
           { data : {
               columns : { displayTitle : string; tag : string }[];
+              showColumnTags : boolean;
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeOthers : boolean;
               includeUntagged : boolean;
               title : string
@@ -124,6 +129,7 @@ export default class CardBoardPlugin extends Plugin {
               completedCount : number;
               filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
               filterPolarity : "Allow" | "Deny";
+              showFilteredTags : boolean;
               includeUndated : boolean;
               title : string
             };

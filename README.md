@@ -14,8 +14,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
-- Per-board filtering can be used in either Allow or Deny mode
+- Tags used in the definition of Boards can be hidden from view on Cards
 - Board can be scaled using css snippet
+- Per-board filtering can be used in either Allow or Deny mode
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -165,7 +166,7 @@ you can define a board that shows tasks tagged with these in separate columns:
 ### Subtags
 If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
 
-## Front Matter Tags
+### Front Matter Tags
 If you want to give all the tasks on a page the same tag, you can put it in the
 page front matter:
 
@@ -179,12 +180,22 @@ tags: [ project1 ]
 - [ ] this task will automatically have a project1 tag
 ```
 
+### Hiding Tags
+If you don't want to see the tags used to configure the board's columns on the cards,
+you can show/hide them in the settings.  If you choose not to show the column tags,
+this will hide all the tags used in the settings wherever cards oare on the board.
+It will only hide tags that exactly match those used in the settings.
+
 ## Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
 types of filter you can use: file, path, and #tags (including front matter tags).  You can
 use any combination of these on a per-board basis.
 
-You can also choose whether to use the filters as an allow or a deny list.
+You can also:
+
+- Choose whether to use the filters as an allow or a deny list.
+- Choose if you want any tags specified as a filter to be shown or
+  hidden on cards on the board.
 
 ## Settings
 Plugin settings are accessible from the plugin view itself, via the settings icon
