@@ -3,7 +3,6 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , TaskItemFields
-    , autoComplete
     , completedPosix
     , completion
     , containsId
@@ -31,7 +30,6 @@ module TaskItem exposing
     , tasksToToggle
     , title
     , toToggledString
-    , toggleCompletion
     , updateFilePath
     )
 
@@ -67,23 +65,6 @@ type alias TaskItemFields =
     }
 
 
-dummy : TaskItem
-dummy =
-    TaskItem
-        { autoComplete = NotSpecifed
-        , completion = Incomplete
-        , dueFile = Nothing
-        , dueTag = Nothing
-        , filePath = ""
-        , lineNumber = 0
-        , notes = ""
-        , originalText = ""
-        , tags = TagList.empty
-        , title = ""
-        }
-        []
-
-
 type TaskItem
     = TaskItem TaskItemFields (List TaskItemFields)
 
@@ -113,13 +94,25 @@ type IndentedItem
     | Note String
 
 
+dummy : TaskItem
+dummy =
+    TaskItem
+        { autoComplete = NotSpecifed
+        , completion = Incomplete
+        , dueFile = Nothing
+        , dueTag = Nothing
+        , filePath = ""
+        , lineNumber = 0
+        , notes = ""
+        , originalText = ""
+        , tags = TagList.empty
+        , title = ""
+        }
+        []
+
+
 
 -- INFO
-
-
-autoComplete : TaskItem -> AutoCompletion
-autoComplete =
-    fields >> .autoComplete
 
 
 completedPosix : TaskItem -> Int
@@ -141,6 +134,11 @@ containsId : String -> TaskItem -> Bool
 containsId targetId taskItem =
     (id taskItem :: List.map id (descendantTasks taskItem))
         |> List.member targetId
+
+
+descendantTasks : TaskItem -> List TaskItem
+descendantTasks (TaskItem _ subtasks_) =
+    List.map (\s -> TaskItem s []) subtasks_
 
 
 due : TaskItem -> Maybe Date
@@ -170,17 +168,17 @@ fields (TaskItem f _) =
 
 filePath : TaskItem -> String
 filePath =
-    fields >> .filePath
+    .filePath << fields
 
 
 hasNotes : TaskItem -> Bool
 hasNotes =
-    fields >> .notes >> String.isEmpty >> not
+    not << String.isEmpty << .notes << fields
 
 
 hasTags : TaskItem -> Bool
-hasTags taskItem =
-    not <| TagList.isEmpty <| tags taskItem
+hasTags =
+    not << TagList.isEmpty << tags
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -189,8 +187,8 @@ hasOneOfTheTags tagsToMatch taskItem =
 
 
 hasThisTag : String -> TaskItem -> Bool
-hasThisTag tagToMatch taskItem =
-    TagList.containsTagMatching tagToMatch <| tags taskItem
+hasThisTag tagToMatch =
+    TagList.containsTagMatching tagToMatch << tags
 
 
 hasSubtasks : TaskItem -> Bool
@@ -200,14 +198,9 @@ hasSubtasks (TaskItem _ subtasks_) =
 
 id : TaskItem -> String
 id (TaskItem fields_ _) =
-    String.fromInt (FNV1a.hash fields_.filePath) ++ ":" ++ String.fromInt fields_.lineNumber
-
-
-isDated : TaskItem -> Bool
-isDated taskItem =
-    taskItem
-        |> due
-        |> ME.isJust
+    String.fromInt (FNV1a.hash fields_.filePath)
+        ++ ":"
+        ++ String.fromInt fields_.lineNumber
 
 
 isCompleted : TaskItem -> Bool
@@ -220,29 +213,29 @@ isCompleted (TaskItem fields_ _) =
             True
 
 
+isDated : TaskItem -> Bool
+isDated =
+    ME.isJust << due
+
+
 isFromFile : String -> TaskItem -> Bool
 isFromFile pathToFile =
-    fields >> .filePath >> (==) pathToFile
+    (==) pathToFile << .filePath << fields
 
 
 lineNumber : TaskItem -> Int
 lineNumber =
-    fields >> .lineNumber
+    .lineNumber << fields
 
 
 notes : TaskItem -> String
 notes =
-    fields >> .notes
+    .notes << fields
 
 
 originalText : TaskItem -> String
 originalText =
-    fields >> .originalText
-
-
-descendantTasks : TaskItem -> List TaskItem
-descendantTasks (TaskItem _ subtasks_) =
-    List.map (\s -> TaskItem s []) subtasks_
+    .originalText << fields
 
 
 tags : TaskItem -> TagList
@@ -258,45 +251,49 @@ tags ((TaskItem fields_ _) as taskItem) =
 tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
 tasksToToggle id_ timeWithZone taskItem =
     let
-        idBelongsToSubtask : Bool
+        autoComplete : TaskItem -> AutoCompletion
+        autoComplete =
+            fields >> .autoComplete
+
+        idBelongsToSubtask : TaskItem -> Bool
         idBelongsToSubtask =
-            taskItem
-                |> descendantTasks
-                |> List.map id
-                |> List.member id_
-
-        resultIsAllSubtasksCompleted : Bool
-        resultIsAllSubtasksCompleted =
-            descendantTasks taskItem
-                |> List.map
-                    (\t ->
-                        if id t == id_ then
-                            toggleCompletion timeWithZone t
-
-                        else
-                            t
-                    )
-                |> List.all isCompleted
+            List.member id_ << List.map id << descendantTasks
 
         matchingTaskItem : List TaskItem
         matchingTaskItem =
-            (taskItem :: descendantTasks taskItem)
-                |> List.filter (\t -> id t == id_)
+            List.filter (\t -> id t == id_) (taskItem :: descendantTasks taskItem)
 
-        topLevelTaskIsNotAlreadyComplete : Bool
-        topLevelTaskIsNotAlreadyComplete =
-            not <| isCompleted taskItem
+        resultIsAllSubtasksCompleted : TaskItem -> Bool
+        resultIsAllSubtasksCompleted =
+            List.all isCompleted << List.map toggleIfMatches << descendantTasks
 
-        shouldAutoComplete : Bool
-        shouldAutoComplete =
-            case autoComplete taskItem of
+        shouldAutoComplete : TaskItem -> Bool
+        shouldAutoComplete t =
+            case autoComplete t of
                 TrueSpecified ->
                     True
 
                 _ ->
                     False
+
+        toggleIfMatches : TaskItem -> TaskItem
+        toggleIfMatches t =
+            if id t == id_ then
+                toggleCompletion timeWithZone t
+
+            else
+                t
+
+        topLevelTaskIsNotAlreadyComplete : TaskItem -> Bool
+        topLevelTaskIsNotAlreadyComplete =
+            not << isCompleted
     in
-    if shouldAutoComplete && idBelongsToSubtask && resultIsAllSubtasksCompleted && topLevelTaskIsNotAlreadyComplete then
+    if
+        idBelongsToSubtask taskItem
+            && shouldAutoComplete taskItem
+            && resultIsAllSubtasksCompleted taskItem
+            && topLevelTaskIsNotAlreadyComplete taskItem
+    then
         taskItem :: matchingTaskItem
 
     else
@@ -305,89 +302,7 @@ tasksToToggle id_ timeWithZone taskItem =
 
 title : TaskItem -> String
 title =
-    fields >> .title
-
-
-toToggledString : { a | now : Time.Posix } -> TaskItem -> String
-toToggledString timeWithZone (TaskItem fields_ _) =
-    let
-        regexReplacer : String -> (Regex.Match -> String) -> String -> String
-        regexReplacer regex replacer original =
-            case Regex.fromString regex of
-                Just r ->
-                    Regex.replace r replacer original
-
-                Nothing ->
-                    original
-
-        checkboxRegex : Regex
-        checkboxRegex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromString "- \\[[ xX]\\]"
-
-        checkbox : String
-        checkbox =
-            case fields_.completion of
-                Incomplete ->
-                    "- [x]"
-
-                _ ->
-                    "- [ ]"
-
-        replaceCheckbox : String -> String
-        replaceCheckbox t =
-            let
-                checkboxIndex : Int
-                checkboxIndex =
-                    Regex.find checkboxRegex t
-                        |> List.head
-                        |> Maybe.map .index
-                        |> Maybe.withDefault 0
-            in
-            SE.replaceSlice checkbox checkboxIndex (checkboxIndex + 5) t
-
-        removeCompletionTag : String -> String
-        removeCompletionTag t =
-            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "") t
-
-        insertCompletionTag : String -> String
-        insertCompletionTag t =
-            let
-                tagInserter : String -> String
-                tagInserter =
-                    Regex.find blockLinkRegex t
-                        |> List.head
-                        |> Maybe.map .index
-                        |> Maybe.withDefault (String.length t)
-                        |> SE.insertAt completionTag
-            in
-            tagInserter t
-
-        blockLinkRegex : Regex
-        blockLinkRegex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
-
-        completionTag : String
-        completionTag =
-            case fields_.completion of
-                Incomplete ->
-                    let
-                        completionString : String
-                        completionString =
-                            timeWithZone.now
-                                |> Iso8601.fromTime
-                                |> String.left 19
-                    in
-                    " @completed(" ++ completionString ++ ")"
-
-                _ ->
-                    ""
-    in
-    fields_.originalText
-        |> replaceCheckbox
-        |> removeCompletionTag
-        |> insertCompletionTag
+    .title << fields
 
 
 
@@ -395,32 +310,19 @@ toToggledString timeWithZone (TaskItem fields_ _) =
 
 
 removeTags : List String -> TaskItem -> TaskItem
-removeTags tagStrings (TaskItem fields_ subtasks_) =
+removeTags toRemove (TaskItem fields_ subtasks_) =
     let
-        equalsAny : Tag -> Bool
-        equalsAny tag =
-            List.any (\tagString -> Tag.equals tagString tag) tagStrings
+        isKeeper : Tag -> Bool
+        isKeeper tag =
+            List.all (\tagString -> not <| Tag.equals tagString tag) toRemove
 
         removeFromFields : TaskItemFields -> TaskItemFields
         removeFromFields f =
-            { f | tags = TagList.filter (\tag -> not <| equalsAny tag) f.tags }
+            { f | tags = TagList.filter isKeeper f.tags }
     in
     TaskItem
         (removeFromFields fields_)
         (List.map removeFromFields subtasks_)
-
-
-toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
-toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
-    case fields_.completion of
-        Completed ->
-            TaskItem { fields_ | completion = Incomplete } subtasks_
-
-        CompletedAt _ ->
-            TaskItem { fields_ | completion = Incomplete } subtasks_
-
-        Incomplete ->
-            TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
 
 
 updateFilePath : String -> String -> TaskItem -> TaskItem
@@ -433,7 +335,7 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 
 
 
--- SERIALIZATION
+-- SERIALIZE
 
 
 parser : String -> Maybe String -> TagList -> Int -> Parser TaskItem
@@ -455,6 +357,218 @@ parser pathToFile fileDate frontMatterTags bodyOffset =
     )
         |> P.andThen rejectIfNoTitle
         |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset)
+
+
+
+-- CONVERT
+
+
+toToggledString : { a | now : Time.Posix } -> TaskItem -> String
+toToggledString timeWithZone ((TaskItem fields_ _) as taskItem) =
+    let
+        blockLinkRegex : Regex
+        blockLinkRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
+
+        toggledCheckbox : TaskItem -> String
+        toggledCheckbox t_ =
+            case completion t_ of
+                Incomplete ->
+                    "- [x]"
+
+                _ ->
+                    "- [ ]"
+
+        checkboxRegex : Regex
+        checkboxRegex =
+            Maybe.withDefault Regex.never <|
+                Regex.fromString "- \\[[ xX]\\]"
+
+        completionTag : TaskItem -> String
+        completionTag t_ =
+            case completion t_ of
+                Incomplete ->
+                    let
+                        completionString : String
+                        completionString =
+                            timeWithZone.now
+                                |> Iso8601.fromTime
+                                |> String.left 19
+                    in
+                    " @completed(" ++ completionString ++ ")"
+
+                _ ->
+                    ""
+
+        insertCompletionTag : TaskItem -> String -> String
+        insertCompletionTag t_ taskString =
+            let
+                tagInserter : String -> String
+                tagInserter =
+                    Regex.find blockLinkRegex taskString
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault (String.length taskString)
+                        |> SE.insertAt (completionTag t_)
+            in
+            tagInserter taskString
+
+        regexReplacer : String -> (Regex.Match -> String) -> String -> String
+        regexReplacer regex replacer original =
+            case Regex.fromString regex of
+                Just r ->
+                    Regex.replace r replacer original
+
+                Nothing ->
+                    original
+
+        removeCompletionTag : String -> String
+        removeCompletionTag =
+            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "")
+
+        replaceCheckbox : TaskItem -> String -> String
+        replaceCheckbox t_ taskString =
+            let
+                checkboxIndex : Int
+                checkboxIndex =
+                    Regex.find checkboxRegex taskString
+                        |> List.head
+                        |> Maybe.map .index
+                        |> Maybe.withDefault 0
+            in
+            SE.replaceSlice
+                (toggledCheckbox t_)
+                checkboxIndex
+                (checkboxIndex + 5)
+                taskString
+    in
+    fields_.originalText
+        |> replaceCheckbox taskItem
+        |> removeCompletionTag
+        |> insertCompletionTag taskItem
+
+
+
+-- PRIVATE
+
+
+addAnySubtasksAndNotes : String -> Maybe String -> TagList -> Int -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
+    let
+        buildTaskItem : List IndentedItem -> Parser TaskItem
+        buildTaskItem indentedItems =
+            P.succeed (TaskItem { fields_ | notes = parsedNotes indentedItems } <| parsedSubtasks indentedItems)
+
+        parsedSubtasks : List IndentedItem -> List TaskItemFields
+        parsedSubtasks indentedItems =
+            indentedItems
+                |> List.filterMap
+                    (\i ->
+                        case i of
+                            Subtask taskItemFields ->
+                                Just taskItemFields
+
+                            _ ->
+                                Nothing
+                    )
+
+        parsedNotes : List IndentedItem -> String
+        parsedNotes indentedItems =
+            indentedItems
+                |> List.filterMap
+                    (\i ->
+                        case i of
+                            Note notes_ ->
+                                Just notes_
+
+                            _ ->
+                                Nothing
+                    )
+                |> String.join "\n"
+    in
+    P.succeed identity
+        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags bodyOffset)
+        |> P.andThen buildTaskItem
+
+
+contentHelp : List Content -> Parser (P.Step (List Content) (List Content))
+contentHelp revContents =
+    P.oneOf
+        [ P.succeed (\content -> P.Loop (content :: revContents))
+            |= tokenParser
+            |. P.chompWhile isSpaceOrTab
+        , P.succeed ()
+            |> P.map (\_ -> P.Done (List.reverse revContents))
+        ]
+
+
+contentParser : Parser (List Content)
+contentParser =
+    P.loop [] contentHelp
+
+
+fileDateParser : Maybe String -> Parser (Maybe Date)
+fileDateParser fileDate =
+    fileDate
+        |> Maybe.map Date.fromIsoString
+        |> Maybe.map Result.toMaybe
+        |> ME.join
+        |> P.succeed
+
+
+indentedItemParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
+indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
+    P.oneOf
+        [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
+        , notesParser
+        ]
+
+
+notesParser : Parser IndentedItem
+notesParser =
+    P.succeed Note
+        |= ParserHelper.anyLineParser
+
+
+prefixParser : Parser Completion
+prefixParser =
+    P.oneOf
+        [ P.succeed Incomplete
+            |. P.token "- [ ] "
+        , P.succeed Completed
+            |. P.token "- [x] "
+        , P.succeed Completed
+            |. P.token "- [X] "
+        ]
+
+
+rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
+rejectIfNoTitle fields_ =
+    if String.length fields_.title == 0 then
+        P.problem "Task has no title"
+
+    else
+        P.succeed fields_
+
+
+subTaskParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
+subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
+    P.succeed taskItemFieldsBuilder
+        |= P.getOffset
+        |= P.getCol
+        |= P.succeed pathToFile
+        |= P.succeed frontMatterTags
+        |= P.succeed bodyOffset
+        |= P.getRow
+        |= prefixParser
+        |. P.chompWhile isSpaceOrTab
+        |= fileDateParser fileDate
+        |= contentParser
+        |= P.getOffset
+        |. lineEndOrEnd
+        |= P.getSource
+        |> P.andThen (\f -> P.succeed (Subtask f))
 
 
 taskItemFieldsBuilder : Int -> Int -> String -> TagList -> Int -> Int -> Completion -> Maybe Date -> List Content -> Int -> String -> TaskItemFields
@@ -571,20 +685,17 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> addCompletionTime
 
 
-contentParser : Parser (List Content)
-contentParser =
-    P.loop [] contentHelp
+toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
+toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
+    case fields_.completion of
+        Completed ->
+            TaskItem { fields_ | completion = Incomplete } subtasks_
 
+        CompletedAt _ ->
+            TaskItem { fields_ | completion = Incomplete } subtasks_
 
-contentHelp : List Content -> Parser (P.Step (List Content) (List Content))
-contentHelp revContents =
-    P.oneOf
-        [ P.succeed (\content -> P.Loop (content :: revContents))
-            |= tokenParser
-            |. P.chompWhile isSpaceOrTab
-        , P.succeed ()
-            |> P.map (\_ -> P.Done (List.reverse revContents))
-        ]
+        Incomplete ->
+            TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
 
 
 tokenParser : Parser Content
@@ -597,105 +708,3 @@ tokenParser =
         , P.succeed Word
             |= ParserHelper.wordParser
         ]
-
-
-prefixParser : Parser Completion
-prefixParser =
-    P.oneOf
-        [ P.succeed Incomplete
-            |. P.token "- [ ] "
-        , P.succeed Completed
-            |. P.token "- [x] "
-        , P.succeed Completed
-            |. P.token "- [X] "
-        ]
-
-
-fileDateParser : Maybe String -> Parser (Maybe Date)
-fileDateParser fileDate =
-    fileDate
-        |> Maybe.map Date.fromIsoString
-        |> Maybe.map Result.toMaybe
-        |> ME.join
-        |> P.succeed
-
-
-addAnySubtasksAndNotes : String -> Maybe String -> TagList -> Int -> TaskItemFields -> Parser TaskItem
-addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
-    let
-        buildTaskItem : List IndentedItem -> Parser TaskItem
-        buildTaskItem indentedItems =
-            P.succeed (TaskItem { fields_ | notes = parsedNotes indentedItems } <| parsedSubtasks indentedItems)
-
-        parsedSubtasks : List IndentedItem -> List TaskItemFields
-        parsedSubtasks indentedItems =
-            indentedItems
-                |> List.filterMap
-                    (\i ->
-                        case i of
-                            Subtask taskItemFields ->
-                                Just taskItemFields
-
-                            _ ->
-                                Nothing
-                    )
-
-        parsedNotes : List IndentedItem -> String
-        parsedNotes indentedItems =
-            indentedItems
-                |> List.filterMap
-                    (\i ->
-                        case i of
-                            Note notes_ ->
-                                Just notes_
-
-                            _ ->
-                                Nothing
-                    )
-                |> String.join "\n"
-    in
-    P.succeed identity
-        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags bodyOffset)
-        |> P.andThen buildTaskItem
-
-
-indentedItemParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
-indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
-    P.oneOf
-        [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
-        , notesParser
-        ]
-
-
-notesParser : Parser IndentedItem
-notesParser =
-    P.succeed Note
-        |= ParserHelper.anyLineParser
-
-
-subTaskParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
-subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
-    P.succeed taskItemFieldsBuilder
-        |= P.getOffset
-        |= P.getCol
-        |= P.succeed pathToFile
-        |= P.succeed frontMatterTags
-        |= P.succeed bodyOffset
-        |= P.getRow
-        |= prefixParser
-        |. P.chompWhile isSpaceOrTab
-        |= fileDateParser fileDate
-        |= contentParser
-        |= P.getOffset
-        |. lineEndOrEnd
-        |= P.getSource
-        |> P.andThen (\f -> P.succeed (Subtask f))
-
-
-rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
-rejectIfNoTitle fields_ =
-    if String.length fields_.title == 0 then
-        P.problem "Task has no title"
-
-    else
-        P.succeed fields_

@@ -12,11 +12,6 @@ import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
-currentVersion : Semver.Version
-currentVersion =
-    Semver.version 0 4 0 [] []
-
-
 
 -- TYPES
 
@@ -28,7 +23,7 @@ type alias Settings =
 
 
 
--- INFO
+-- UTILITIES
 
 
 boardConfigs : Settings -> List BoardConfig
@@ -36,8 +31,13 @@ boardConfigs =
     .boardConfigs
 
 
+currentVersion : Semver.Version
+currentVersion =
+    Semver.version 0 4 0 [] []
 
--- SERIALIZATION
+
+
+-- SERIALIZE
 
 
 encoder : TsEncode.Encoder Settings
@@ -55,7 +55,7 @@ decoder =
 
 
 
--- HELPERS - ENCODERS
+-- PRIVATE
 
 
 dataEncoder : TsEncode.Encoder { a | boardConfigs : List BoardConfig }
@@ -69,10 +69,6 @@ semverEncoder : TsEncode.Encoder Semver.Version
 semverEncoder =
     TsEncode.string
         |> TsEncode.map Semver.print
-
-
-
--- HELPERS - DECODERS
 
 
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)

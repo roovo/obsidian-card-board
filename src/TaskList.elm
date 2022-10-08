@@ -35,19 +35,13 @@ type TaskList
     = TaskList (List TaskItem)
 
 
+
+-- CREATE
+
+
 empty : TaskList
 empty =
     TaskList []
-
-
-
--- PARSING
-
-
-parser : String -> Maybe String -> TagList -> Int -> Parser TaskList
-parser filePath fileDate frontMatterTags bodyOffset =
-    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
-        |> P.map (\ts -> TaskList ts)
 
 
 fromMarkdown : MarkdownFile -> TaskList
@@ -64,12 +58,22 @@ fromMarkdown markdownFile =
 
 
 
+-- PARSE
+
+
+parser : String -> Maybe String -> TagList -> Int -> Parser TaskList
+parser filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
+        |> P.map (\ts -> TaskList ts)
+
+
+
 -- COMBINE
 
 
 append : TaskList -> TaskList -> TaskList
-append (TaskList root) (TaskList toAppend) =
-    TaskList <| root ++ toAppend
+append (TaskList l1) (TaskList l2) =
+    TaskList <| List.append l1 l2
 
 
 concat : List TaskList -> TaskList
@@ -78,81 +82,66 @@ concat =
 
 
 
--- MANIPULATE
-
-
-foldl : (TaskItem -> b -> b) -> b -> TaskList -> b
-foldl fn acc (TaskList taskItems) =
-    List.foldl fn acc taskItems
-
-
-map : (TaskItem -> TaskItem) -> TaskList -> TaskList
-map fn (TaskList taskItems) =
-    taskItems
-        |> List.map fn
-        |> TaskList
-
-
-replaceForFile : String -> TaskList -> TaskList -> TaskList
-replaceForFile filePath updatedList currentList =
-    currentList
-        |> removeForFile filePath
-        |> append updatedList
-
-
-removeForFile : String -> TaskList -> TaskList
-removeForFile filePath (TaskList taskItems) =
-    taskItems
-        |> itemsNotFromFile filePath
-        |> TaskList
-
-
-removeTags : List String -> TaskList -> TaskList
-removeTags tags taskList =
-    map (TaskItem.removeTags tags) taskList
-
-
-
--- INFO
+-- TRANSFORM
 
 
 filter : (TaskItem -> Bool) -> TaskList -> TaskList
-filter fn (TaskList taskItems) =
-    List.filter fn taskItems
-        |> TaskList
+filter fn =
+    TaskList << List.filter fn << topLevelTasks
+
+
+foldl : (TaskItem -> b -> b) -> b -> TaskList -> b
+foldl fn acc =
+    List.foldl fn acc << topLevelTasks
+
+
+map : (TaskItem -> TaskItem) -> TaskList -> TaskList
+map fn =
+    TaskList << List.map fn << topLevelTasks
+
+
+replaceForFile : String -> TaskList -> TaskList -> TaskList
+replaceForFile filePath updatedList =
+    append updatedList << removeForFile filePath
+
+
+removeForFile : String -> TaskList -> TaskList
+removeForFile filePath =
+    TaskList << itemsNotFromFile filePath << topLevelTasks
+
+
+removeTags : List String -> TaskList -> TaskList
+removeTags tags =
+    map (TaskItem.removeTags tags)
+
+
+
+-- UTILITIES
 
 
 taskTitles : TaskList -> List String
-taskTitles (TaskList taskItems) =
-    taskItems
-        |> List.map TaskItem.title
+taskTitles =
+    List.map TaskItem.title << topLevelTasks
 
 
 taskIds : TaskList -> List String
-taskIds (TaskList taskItems) =
-    taskItems
-        |> List.map TaskItem.id
+taskIds =
+    List.map TaskItem.id << topLevelTasks
 
 
 taskContainingId : String -> TaskList -> Maybe TaskItem
-taskContainingId id taskList =
-    taskList
-        |> tasks
-        |> LE.find (TaskItem.containsId id)
+taskContainingId id =
+    LE.find (TaskItem.containsId id) << tasks
 
 
 taskFromId : String -> TaskList -> Maybe TaskItem
-taskFromId id taskList =
-    taskList
-        |> tasks
-        |> LE.find (\i -> TaskItem.id i == id)
+taskFromId id =
+    LE.find (\i -> TaskItem.id i == id) << tasks
 
 
 tasks : TaskList -> List TaskItem
-tasks (TaskList taskList) =
-    taskList
-        |> List.concatMap
-            (\t -> t :: TaskItem.descendantTasks t)
+tasks =
+    List.concatMap (\t -> t :: TaskItem.descendantTasks t) << topLevelTasks
 
 
 topLevelTasks : TaskList -> List TaskItem
@@ -165,9 +154,8 @@ topLevelTasks (TaskList taskList) =
 
 
 itemsNotFromFile : String -> List TaskItem -> List TaskItem
-itemsNotFromFile pathToFile taskItems =
-    taskItems
-        |> List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
+itemsNotFromFile pathToFile =
+    List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
 taskItemsHelp : String -> Maybe String -> TagList -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))

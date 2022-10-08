@@ -19,6 +19,10 @@ import Parser
 import Tag exposing (Tag)
 
 
+
+-- TYPES
+
+
 type TagList
     = TagList (List Tag)
 

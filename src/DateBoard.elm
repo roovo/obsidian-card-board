@@ -45,7 +45,7 @@ defaultConfig =
 
 
 
--- SERIALIZATION
+-- SERIALIZE
 
 
 configEncoder : TsEncode.Encoder Config
@@ -105,27 +105,7 @@ configDecoder_v_0_1_0 =
 
 
 
--- COLUMNS
-
-
-taskListWithTagsRemoved : Config -> TaskList -> TaskList
-taskListWithTagsRemoved config taskList =
-    let
-        filterTags : List String
-        filterTags =
-            config.filters
-                |> List.filter (\f -> Filter.filterType f == "Tags")
-                |> List.map Filter.value
-
-        tagsToRemove : List String
-        tagsToRemove =
-            if config.showFilteredTags then
-                []
-
-            else
-                filterTags
-    in
-    TaskList.removeTags tagsToRemove taskList
+-- UTILITIES
 
 
 columns : TimeWithZone -> Config -> TaskList -> List (Column TaskItem)
@@ -147,6 +127,54 @@ columns timeWithZone config taskList =
         |> appendCompleted tasks config
 
 
+
+-- PRIVATE
+
+
+appendCompleted : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
+appendCompleted taskList config columnList =
+    if config.completedCount > 0 then
+        TaskList.topLevelTasks taskList
+            |> List.filter TaskItem.isCompleted
+            |> List.sortBy (String.toLower << TaskItem.title)
+            |> List.reverse
+            |> List.sortBy TaskItem.completedPosix
+            |> List.reverse
+            |> List.take config.completedCount
+            |> Column.init "Completed"
+            |> List.singleton
+            |> List.append columnList
+
+    else
+        columnList
+
+
+futureItems : Date -> TaskList -> List TaskItem
+futureItems today taskList =
+    let
+        tomorrow : Date
+        tomorrow =
+            Date.add Date.Days 1 today
+
+        isToday : TaskItem -> Bool
+        isToday t =
+            case TaskItem.due t of
+                Nothing ->
+                    False
+
+                Just date ->
+                    if Date.diff Date.Days tomorrow date > 0 then
+                        True
+
+                    else
+                        False
+    in
+    TaskList.topLevelTasks taskList
+        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
+
+
 prependUndated : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
 prependUndated taskList config columnList =
     let
@@ -161,6 +189,22 @@ prependUndated taskList config columnList =
 
     else
         columnList
+
+
+taskListWithTagsRemoved : Config -> TaskList -> TaskList
+taskListWithTagsRemoved config taskList =
+    let
+        filterTags : List String
+        filterTags =
+            config.filters
+                |> List.filter (\f -> Filter.filterType f == "Tags")
+                |> List.map Filter.value
+
+        tagsToRemove : List String
+        tagsToRemove =
+            List.filter (always <| not <| config.showFilteredTags) filterTags
+    in
+    TaskList.removeTags tagsToRemove taskList
 
 
 todaysItems : Date -> TaskList -> List TaskItem
@@ -208,47 +252,3 @@ tomorrowsItems today taskList =
     TaskList.topLevelTasks taskList
         |> List.filter (\t -> isTomorrow t && (not <| TaskItem.isCompleted t))
         |> List.sortBy (String.toLower << TaskItem.title)
-
-
-futureItems : Date -> TaskList -> List TaskItem
-futureItems today taskList =
-    let
-        tomorrow : Date
-        tomorrow =
-            Date.add Date.Days 1 today
-
-        isToday : TaskItem -> Bool
-        isToday t =
-            case TaskItem.due t of
-                Nothing ->
-                    False
-
-                Just date ->
-                    if Date.diff Date.Days tomorrow date > 0 then
-                        True
-
-                    else
-                        False
-    in
-    TaskList.topLevelTasks taskList
-        |> List.filter (\t -> (not <| TaskItem.isCompleted t) && isToday t)
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.sortBy TaskItem.dueRataDie
-
-
-appendCompleted : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted taskList config columnList =
-    if config.completedCount > 0 then
-        TaskList.topLevelTasks taskList
-            |> List.filter TaskItem.isCompleted
-            |> List.sortBy (String.toLower << TaskItem.title)
-            |> List.reverse
-            |> List.sortBy TaskItem.completedPosix
-            |> List.reverse
-            |> List.take config.completedCount
-            |> Column.init "Completed"
-            |> List.singleton
-            |> List.append columnList
-
-    else
-        columnList

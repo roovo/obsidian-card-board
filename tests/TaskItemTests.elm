@@ -2,12 +2,11 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
-import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
 import TagList
-import TaskItem exposing (AutoCompletion(..), Completion(..))
+import TaskItem exposing (Completion(..))
 import Test exposing (..)
 import Time
 
@@ -15,8 +14,7 @@ import Time
 suite : Test
 suite =
     concat
-        [ autoComplete
-        , blockLink
+        [ blockLink
         , completion
         , containsId
         , descendantTasks
@@ -40,44 +38,7 @@ suite =
         , tasksToToggle
         , title
         , toToggledString
-        , transformation
         , updateFilePath
-        ]
-
-
-autoComplete : Test
-autoComplete =
-    describe "autoComplete"
-        [ test "returns TrueSpecified where the @autocomplete tag is true" <|
-            \() ->
-                "- [ ] foo @autocomplete(true)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok TrueSpecified)
-        , test "returns NotSpecifed where there is no @autocomplete tag" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok NotSpecifed)
-        , test "returns FalseSpecified where the @autocomplete tag is false" <|
-            \() ->
-                "- [ ] foo @autocomplete(false)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.autoComplete
-                    |> Expect.equal (Ok FalseSpecified)
-        , test "doesn't include the tag in the title" <|
-            \() ->
-                "- [ ] foo @autocomplete(false)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo")
-        , test "includes an invalid tag in the title" <|
-            \() ->
-                "- [ ] foo @autocomplete(falsey)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo @autocomplete(falsey)")
         ]
 
 
@@ -850,40 +811,6 @@ toToggledString =
                     |> Result.withDefault []
                     |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
-        ]
-
-
-transformation : Test
-transformation =
-    describe "transformation"
-        [ test "toggling a completed task produces one marked as incomplete" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion <| { now = Time.millisToPosix 0 })
-                    |> Result.map TaskItem.isCompleted
-                    |> Expect.equal (Ok False)
-        , test "toggling a task completed on a given date produces one marked as incomplete" <|
-            \() ->
-                "- [x] foo @completed(2020-01-01)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion <| { now = Time.millisToPosix 0 })
-                    |> Result.map TaskItem.isCompleted
-                    |> Expect.equal (Ok False)
-        , test "toggling an incomplete task produces one marked as complete on the given date" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
-        , test "toggling a incomplete task with a @completed date updates the @completed date" <|
-            \() ->
-                "- [ ] foo @completed(2020-01-01)"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toggleCompletion { now = DateTimeHelpers.yearStart })
-                    |> Result.map TaskItem.completion
-                    |> Expect.equal (Ok <| CompletedAt DateTimeHelpers.yearStart)
         ]
 
 

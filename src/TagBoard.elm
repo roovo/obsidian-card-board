@@ -61,7 +61,7 @@ defaultConfig =
 
 
 
--- SERIALIZATION
+-- SERIALIZE
 
 
 configEncoder : TsEncode.Encoder Config
@@ -151,7 +151,7 @@ columnConfigDecoder =
 
 
 
--- COLUMNS
+-- UTILITIES
 
 
 columns : Config -> TaskList -> List (Column TaskItem)
@@ -165,12 +165,48 @@ columns config taskList =
 
 
 
--- PARSING
+-- PARSE
 
 
 columnConfigsParser : Parser (List ColumnConfig)
 columnConfigsParser =
     P.loop [] columnConfigHelp
+
+
+
+-- PRIVATE
+
+
+appendCompleted : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+appendCompleted config taskList columnList =
+    let
+        completedTasks : List TaskItem
+        completedTasks =
+            taskList
+                |> TaskList.filter isCompleteWithTags
+                |> taskListWithTagsRemoved config
+                |> TaskList.topLevelTasks
+                |> List.sortBy (String.toLower << TaskItem.title)
+                |> List.reverse
+                |> List.sortBy TaskItem.completedPosix
+                |> List.reverse
+                |> List.take config.completedCount
+
+        isCompleteWithTags : TaskItem -> Bool
+        isCompleteWithTags item =
+            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
+
+        uniqueColumnTags : List String
+        uniqueColumnTags =
+            config.columns
+                |> LE.uniqueBy .tag
+                |> List.map .tag
+    in
+    if config.completedCount > 0 then
+        List.append columnList [ Column.init "Completed" completedTasks ]
+
+    else
+        columnList
 
 
 columnConfigHelp : List ColumnConfig -> Parser (P.Step (List ColumnConfig) (List ColumnConfig))
@@ -224,71 +260,21 @@ columnConfigParser =
         |> P.andThen buildColumnConfig
 
 
-
--- PRIVATE
-
-
-taskListWithTagsRemoved : Config -> TaskList -> TaskList
-taskListWithTagsRemoved config taskList =
+fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
+fillColumn taskList config columnConfig acc =
     let
-        columnTags : List String
-        columnTags =
-            List.map .tag config.columns
-
-        filterTags : List String
-        filterTags =
-            config.filters
-                |> List.filter (\f -> Filter.filterType f == "Tags")
-                |> List.map Filter.value
-
-        tagsToRemove : List String
-        tagsToRemove =
-            case ( config.showFilteredTags, config.showColumnTags ) of
-                ( True, True ) ->
-                    []
-
-                ( False, True ) ->
-                    filterTags
-
-                ( True, False ) ->
-                    columnTags
-
-                ( False, False ) ->
-                    filterTags ++ columnTags
+        isIncompleteWithTag : String -> TaskItem -> Bool
+        isIncompleteWithTag tag item =
+            not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
     in
-    TaskList.removeTags tagsToRemove taskList
-
-
-appendCompleted : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted config taskList columnList =
-    let
-        completedTasks : List TaskItem
-        completedTasks =
-            taskList
-                |> TaskList.filter isCompleteWithTags
-                |> taskListWithTagsRemoved config
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.reverse
-                |> List.sortBy TaskItem.completedPosix
-                |> List.reverse
-                |> List.take config.completedCount
-
-        isCompleteWithTags : TaskItem -> Bool
-        isCompleteWithTags item =
-            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
-
-        uniqueColumnTags : List String
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
-    in
-    if config.completedCount > 0 then
-        List.append columnList [ Column.init "Completed" completedTasks ]
-
-    else
-        columnList
+    TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
+        |> taskListWithTagsRemoved config
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
+        |> Column.init columnConfig.displayTitle
+        |> List.singleton
+        |> List.append acc
 
 
 prependOthers : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
@@ -342,18 +328,22 @@ prependUntagged config taskList columnList =
         columnList
 
 
-fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
-fillColumn taskList config columnConfig acc =
+taskListWithTagsRemoved : Config -> TaskList -> TaskList
+taskListWithTagsRemoved config taskList =
     let
-        isIncompleteWithTag : String -> TaskItem -> Bool
-        isIncompleteWithTag tag item =
-            not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
+        columnTags : List String
+        columnTags =
+            List.map .tag config.columns
+
+        filterTags : List String
+        filterTags =
+            config.filters
+                |> List.filter (\f -> Filter.filterType f == "Tags")
+                |> List.map Filter.value
+
+        tagsToRemove : List String
+        tagsToRemove =
+            List.filter (always <| not <| config.showFilteredTags) filterTags
+                ++ List.filter (always <| not <| config.showColumnTags) columnTags
     in
-    TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
-        |> taskListWithTagsRemoved config
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.sortBy TaskItem.dueRataDie
-        |> Column.init columnConfig.displayTitle
-        |> List.singleton
-        |> List.append acc
+    TaskList.removeTags tagsToRemove taskList
