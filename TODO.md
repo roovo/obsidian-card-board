@@ -1,13 +1,10 @@
-- option to hide tags used in board definitions
-  - allow lists
-  - column definitions of tag boards
+- global config on which task format to use for updating completion
+  - only needs Tasks and CardBoard (taskpaper) format initially
+- us the configured completion format
 
-- link to https://obsidian-plugin-stats.vercel.app from teh readme for finding more plugins
-- don't prefix the tag class with 'tag-' as that can be inferred!
-- don't reorder what appears on the task line when updating it
-  so that tags that are inline with the text stay there!
 
 # Cleanups
+- don't prefix the tag class with 'tag-' as that can be inferred!
 - review coverage report and add tests where needed
 - make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
