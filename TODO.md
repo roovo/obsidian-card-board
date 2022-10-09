@@ -11,7 +11,6 @@
 - review coverage report and add tests where needed
 - make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
-- add Model tests
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
 - translator pattern for child -> parent comms ??
@@ -123,15 +122,13 @@
   For a date picker.
 
 # Misc
-- use elm-coverage - as in see what isn't covered
-- should probably think about not using Regex in TaskItem for building the output string
+- should probably think about not using Regex in TaskItem
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - I could de-bounce the rewrites of filters in the settings file on rename of path or file
 - look at obsidian://show-plugin?id=card-boardw
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?
-- do I want to rename Panel -> Board ??
 - https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
@@ -150,7 +147,6 @@
   the hover for all edit buttons.  Can I be smarter?  Only matters really if performance
   issues.
 - can I use github runners to build?
-- run elm review
 - where to use fuzz testing
 - review awful typescript code!
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can

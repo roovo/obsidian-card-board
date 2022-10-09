@@ -62,7 +62,7 @@ type alias TaskItemFields =
     , notes : String
     , originalText : String
     , tags : TagList
-    , title : String
+    , title : List String
     }
 
 
@@ -83,7 +83,7 @@ type Completion
 
 
 type Content
-    = AutoCompleteTag Bool
+    = AutoCompleteTag AutoCompletion
     | CompletedTag Time.Posix
     | DueTag Date
     | ObsidianTag Tag
@@ -97,11 +97,11 @@ type IndentedItem
 
 dummy : TaskItem
 dummy =
-    TaskItem dummyFields []
+    TaskItem defaultFields []
 
 
-dummyFields : TaskItemFields
-dummyFields =
+defaultFields : TaskItemFields
+defaultFields =
     { autoComplete = NotSpecifed
     , completion = Incomplete
     , dueFile = Nothing
@@ -111,7 +111,7 @@ dummyFields =
     , notes = ""
     , originalText = ""
     , tags = TagList.empty
-    , title = ""
+    , title = []
     }
 
 
@@ -306,7 +306,7 @@ tasksToToggle id_ timeWithZone taskItem =
 
 title : TaskItem -> String
 title =
-    .title << fields
+    String.join " " << .title << fields
 
 
 
@@ -496,6 +496,15 @@ addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
         |> P.andThen buildTaskItem
 
 
+autoCompleteTagger : Bool -> Content
+autoCompleteTagger flag =
+    if flag then
+        AutoCompleteTag TrueSpecified
+
+    else
+        AutoCompleteTag FalseSpecified
+
+
 contentHelp : List Content -> Parser (P.Step (List Content) (List Content))
 contentHelp revContents =
     P.oneOf
@@ -549,7 +558,7 @@ prefixParser =
 
 rejectIfNoTitle : TaskItemFields -> Parser TaskItemFields
 rejectIfNoTitle fields_ =
-    if String.length fields_.title == 0 then
+    if List.isEmpty fields_.title then
         P.problem "Task has no title"
 
     else
@@ -582,71 +591,14 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         sourceText =
             String.slice (startOffset - (startColumn - 1)) endOffset source
 
-        extractWords : Content -> List String -> List String
-        extractWords content words =
-            case content of
-                Word word ->
-                    word :: words
-
-                _ ->
-                    words
-
-        tagDueDate : Maybe Date
-        tagDueDate =
-            contents
-                |> List.foldr extractDueDate Nothing
-
-        obsidianTags : TagList
-        obsidianTags =
-            contents
-                |> List.foldr extractTag TagList.empty
-
-        extractTag : Content -> TagList -> TagList
-        extractTag content ts =
-            case content of
-                ObsidianTag t ->
-                    TagList.cons t ts
-
-                _ ->
-                    ts
-
-        extractDueDate : Content -> Maybe Date -> Maybe Date
-        extractDueDate content date =
-            case content of
-                DueTag tagDate ->
-                    Just tagDate
-
-                -- TasksDate tasksDate ->
-                --     ObsidianTasksDate.dueDate tasksDate
-                _ ->
-                    date
-
         extractCompletionTime : Content -> Maybe Time.Posix -> Maybe Time.Posix
         extractCompletionTime content time =
             case content of
                 CompletedTag completionTime ->
                     Just completionTime
 
-                -- TasksDate tasksDate ->
-                --     ObsidianTasksDate.completionTime tasksDate
                 _ ->
                     time
-
-        extractAutoComplete : Content -> AutoCompletion -> AutoCompletion
-        extractAutoComplete content autoComplete_ =
-            case content of
-                AutoCompleteTag False ->
-                    FalseSpecified
-
-                AutoCompleteTag True ->
-                    TrueSpecified
-
-                _ ->
-                    autoComplete_
-
-        autoCompletefromTag : AutoCompletion
-        autoCompletefromTag =
-            List.foldr extractAutoComplete NotSpecifed contents
 
         addCompletionTime : TaskItemFields -> TaskItemFields
         addCompletionTime fields_ =
@@ -659,37 +611,47 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
             else
                 fields_
 
-        parsedTitle : String
-        parsedTitle =
-            let
-                wordsWithoutBlockLink : List Content
-                wordsWithoutBlockLink =
-                    case List.reverse contents of
-                        (Word endWord) :: cs ->
-                            if String.startsWith "^" endWord then
-                                List.reverse cs
+        extractContents : Content -> TaskItemFields -> TaskItemFields
+        extractContents content fields_ =
+            case content of
+                Word word ->
+                    { fields_ | title = word :: fields_.title }
 
-                            else
-                                contents
+                DueTag date ->
+                    { fields_ | dueTag = Just date }
 
-                        _ ->
-                            contents
-            in
-            wordsWithoutBlockLink
-                |> List.foldr extractWords []
-                |> String.join " "
+                CompletedTag time ->
+                    fields_
+
+                ObsidianTag tag ->
+                    { fields_ | tags = TagList.cons tag fields_.tags }
+
+                AutoCompleteTag tag ->
+                    { fields_ | autoComplete = tag }
+
+        removeTrailingBlockLink : List Content -> List Content
+        removeTrailingBlockLink contents_ =
+            case List.reverse contents of
+                (Word endWord) :: cs ->
+                    if String.startsWith "^" endWord then
+                        List.reverse cs
+
+                    else
+                        contents
+
+                _ ->
+                    contents
     in
-    { autoComplete = autoCompletefromTag
-    , completion = completion_
-    , dueFile = dueFromFile
-    , dueTag = tagDueDate
-    , filePath = path
-    , lineNumber = bodyOffset + row
-    , notes = ""
-    , originalText = sourceText
-    , tags = TagList.append frontMatterTags obsidianTags
-    , title = parsedTitle
-    }
+    contents
+        |> removeTrailingBlockLink
+        |> List.foldl extractContents defaultFields
+        |> (\tif -> { tif | completion = completion_ })
+        |> (\tif -> { tif | dueFile = dueFromFile })
+        |> (\tif -> { tif | filePath = path })
+        |> (\tif -> { tif | lineNumber = bodyOffset + row })
+        |> (\tif -> { tif | originalText = sourceText })
+        |> (\tif -> { tif | tags = TagList.append tif.tags frontMatterTags })
+        |> (\tif -> { tif | title = List.reverse tif.title })
         |> addCompletionTime
 
 
@@ -711,7 +673,7 @@ tokenParser =
     P.oneOf
         [ P.backtrackable <| TaskPaperTag.completedTagParser CompletedTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
-        , P.backtrackable <| TaskPaperTag.autocompleteTagParser AutoCompleteTag
+        , P.backtrackable <| TaskPaperTag.autocompleteTagParser autoCompleteTagger
         , P.backtrackable <| ObsidianTasksDate.dueDateParser DueTag
         , P.backtrackable <| ObsidianTasksDate.completionTimeParser CompletedTag
         , P.backtrackable <| P.map ObsidianTag Tag.parser
