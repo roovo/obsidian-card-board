@@ -21,11 +21,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.4.0" <|
+        [ test "is 0.5.0" <|
             \() ->
                 CardBoardSettings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.4.0"
+                    |> Expect.equal "0.5.0"
         ]
 
 
@@ -49,13 +49,6 @@ encodeDecode =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-
-        -- , test "builds the correct tsType" <|
-        --     \() ->
-        --         exampleSettings
-        --             |> TsEncode.runExample CardBoardSettings.encoder
-        --             |> .tsType
-        --             |> Expect.equal ""
         ]
 
 
@@ -69,5 +62,11 @@ exampleSettings =
         [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
         , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
         ]
+    , globalSettings = exampleGlobalSettings
     , version = CardBoardSettings.currentVersion
     }
+
+
+exampleGlobalSettings : CardBoardSettings.GlobalSettings
+exampleGlobalSettings =
+    { taskUpdateFormat = CardBoardSettings.ObsidianTasks }

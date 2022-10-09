@@ -102,6 +102,7 @@ rewriteTasks timeWithZone filePath taskItems =
 updateSettings : SafeZipper BoardConfig -> Cmd msg
 updateSettings boardConfigs =
     { version = CardBoardSettings.currentVersion
+    , globalSettings = CardBoardSettings.defaultGlobalSettings
     , boardConfigs = SafeZipper.toList boardConfigs
     }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder
