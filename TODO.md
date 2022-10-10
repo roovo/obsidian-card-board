@@ -1,6 +1,11 @@
+- settings modal fixes needed
+  - the multiselect shifts the form contents down when it appears
+  - there is no visible close icon when using Prism
+    - can I make it so if you click outside the modal it closes it (would solve this
+      in the more general case and is expected behaviour!
 - global config on which task format to use for updating completion
   - only needs Tasks and CardBoard (taskpaper) format initially
-- us the configured completion format
+- use the configured completion format
 
 
 # Cleanups

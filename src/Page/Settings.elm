@@ -473,31 +473,44 @@ modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Ht
 modalSettingsView configs multiselect =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal mod-settings" ]
+        , Html.div [ class "modal mod-settings mod-sidebar-layout" ]
             [ Html.div
                 [ class "modal-close-button"
                 , onClick ModalCloseClicked
                 ]
                 []
-            , Html.div [ class "modal-content" ]
+            , Html.div [ class "modal-title" ]
+                [ Html.text "The Modal Title" ]
+            , Html.div [ class "modal-content vertical-tabs-container" ]
                 [ Html.div [ class "settings-menu vertical-tab-header" ]
-                    (Html.div [ class "vertical-tab-header-group-title" ]
-                        [ Html.text "Boards"
-                        , Html.div
-                            [ class "vertical-tab-header-group-title-icon"
-                            , onClick AddBoardClicked
-                            ]
-                            [ FeatherIcons.plus
-                                |> FeatherIcons.withSize 1
-                                |> FeatherIcons.withSizeUnit "em"
-                                |> FeatherIcons.toHtml []
+                    [ Html.div [ class "vertical-tab-header-group" ]
+                        [ Html.div [ class "vertical-tab-header-group-title" ]
+                            [ Html.text "Options" ]
+                        , Html.div [ class "vertical-tab-header-group-items" ]
+                            [ Html.div [ class "vertical-tab-nav-item" ]
+                                [ Html.text "Task format" ]
                             ]
                         ]
-                        :: (configs
+                    , Html.div [ class "vertical-tab-header-group" ]
+                        [ Html.div [ class "vertical-tab-header-group-title" ]
+                            [ Html.text "Boards"
+                            , Html.div
+                                [ class "vertical-tab-header-group-title-icon"
+                                , onClick AddBoardClicked
+                                ]
+                                [ FeatherIcons.plus
+                                    |> FeatherIcons.withSize 1
+                                    |> FeatherIcons.withSizeUnit "em"
+                                    |> FeatherIcons.toHtml []
+                                ]
+                            ]
+                        , Html.div [ class "vertical-tab-header-group-items" ]
+                            (configs
                                 |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
                                 |> SafeZipper.toList
-                           )
-                    )
+                            )
+                        ]
+                    ]
                 , settingsFormView (SafeZipper.current configs) (SafeZipper.currentIndex configs) multiselect
                 ]
             ]
@@ -525,8 +538,8 @@ settingsFormView boardConfig boardIndex multiselect =
                     else
                         ""
             in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
+            Html.div [ class "vertical-tab-content-container" ]
+                [ Html.div [ class "vertical-tab-content" ]
                     [ Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
@@ -543,12 +556,20 @@ settingsFormView boardConfig boardIndex multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
+                    , Html.div [ class "setting-item setting-item-heading" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
+                            , Html.div [ class "setting-item-description" ] []
+                            ]
+                        , Html.div [ class "setting-item-control" ] []
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Definitions" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
+                                [ Html.text "Filter tasks by files, paths, and/or tags." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ MultiSelect.view multiselect
@@ -557,9 +578,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filter Polarity" ]
+                                [ Html.text "Polarity" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters as an Allow or Deny list" ]
+                                [ Html.text "Use the filters as an Allow or Deny list." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ polaritySelect config.filterPolarity ]
@@ -567,9 +588,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Filter Tags" ]
+                                [ Html.text "Show filter tags on cards" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
+                                [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -579,12 +600,20 @@ settingsFormView boardConfig boardIndex multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
+                    , Html.div [ class "setting-item setting-item-heading" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Undated" ]
+                                [ Html.text "Columns" ]
+                            , Html.div [ class "setting-item-description" ] []
+                            ]
+                        , Html.div [ class "setting-item-control" ] []
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Include undated" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no due date" ]
+                                [ Html.text "Whether to include a column for tasks with no due date." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -597,7 +626,7 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
+                                [ Html.text "Completed count" ]
                             , Html.div [ class "setting-item-description" ]
                                 [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
                             ]
@@ -661,8 +690,8 @@ settingsFormView boardConfig boardIndex multiselect =
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
                         |> String.join "\n"
             in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
+            Html.div [ class "vertical-tab-content-container" ]
+                [ Html.div [ class "vertical-tab-content" ]
                     [ Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
@@ -679,12 +708,20 @@ settingsFormView boardConfig boardIndex multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
+                    , Html.div [ class "setting-item setting-item-heading" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Filters" ]
+                            , Html.div [ class "setting-item-description" ] []
+                            ]
+                        , Html.div [ class "setting-item-control" ] []
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Definitions" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
+                                [ Html.text "Filter tasks by files, paths, and/or tags." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ MultiSelect.view multiselect
@@ -693,9 +730,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filter Polarity" ]
+                                [ Html.text "Polarity" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters as an Allow or Deny list" ]
+                                [ Html.text "Use the filters defined above as an Allow or Deny list." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ polaritySelect config.filterPolarity ]
@@ -703,9 +740,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Filter Tags" ]
+                                [ Html.text "Show filter tags on cards" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
+                                [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -715,10 +752,18 @@ settingsFormView boardConfig boardIndex multiselect =
                                 []
                             ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
+                    , Html.div [ class "setting-item setting-item-heading" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
                                 [ Html.text "Columns" ]
+                            , Html.div [ class "setting-item-description" ] []
+                            ]
+                        , Html.div [ class "setting-item-control" ] []
+                        ]
+                    , Html.div [ class "setting-item" ]
+                        [ Html.div [ class "setting-item-info" ]
+                            [ Html.div [ class "setting-item-name" ]
+                                [ Html.text "Definitions" ]
                             , Html.div [ class "setting-item-description" ]
                                 [ Html.div []
                                     [ Html.text "The tags to use to define board columns." ]
@@ -745,9 +790,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Column Tags" ]
+                                [ Html.text "Show column tags on cards" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used to define columns on cards on this board." ]
+                                [ Html.text "Turn this on if you want to display the tags used to define columns on cards on this board." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -760,9 +805,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Others" ]
+                                [ Html.text "Include others" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with tags other than those specified" ]
+                                [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -775,9 +820,9 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Untagged" ]
+                                [ Html.text "Include untagged" ]
                             , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no tags" ]
+                                [ Html.text "Whether to include a column for tasks with no tags." ]
                             ]
                         , Html.div [ class "setting-item-control" ]
                             [ Html.div
@@ -790,7 +835,7 @@ settingsFormView boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item" ]
                         [ Html.div [ class "setting-item-info" ]
                             [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
+                                [ Html.text "Completed count" ]
                             , Html.div [ class "setting-item-description" ]
                                 [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
                             ]
