@@ -1,13 +1,15 @@
 module SettingsState exposing
-    ( Action(..)
-    , SettingsState(..)
-    , addState
+    ( SettingsState(..)
+    , addBoardRequested
+    , boardConfigs
     , cancelCurrentState
-    , confirmAdd
-    , confirmDelete
-    , deleteState
+    , confirmAddBoard
+    , confirmDeleteBoard
+    , deleteBoardRequested
     , init
-    , mapBoardBeingAdded
+    , switchBoardBeingEdited
+    , updateBoardBeingAdded
+    , updateBoardBeingEdited
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -19,95 +21,172 @@ import SafeZipper exposing (SafeZipper)
 
 
 type SettingsState
-    = AddingBoard BoardConfig
-    | DeletingBoard
-    | EditingBoard
-
-
-type Action
-    = AddBoard BoardConfig SettingsState
-    | AddCancelled SettingsState
-    | DeleteCurrent
-    | Exit
-    | NoAction
-    | SetToState SettingsState
+    = AddingBoard BoardConfig (SafeZipper BoardConfig)
+    | ClosingPlugin (SafeZipper BoardConfig)
+    | ClosingSettings (SafeZipper BoardConfig)
+    | DeletingBoard (SafeZipper BoardConfig)
+    | EditingBoard (SafeZipper BoardConfig)
 
 
 
--- CONSTRUCTION
+-- CREATE
 
 
 init : SafeZipper BoardConfig -> SettingsState
-init boardConfigs =
-    if SafeZipper.length boardConfigs == 0 then
-        AddingBoard BoardConfig.default
+init boardConfigs_ =
+    if SafeZipper.length boardConfigs_ == 0 then
+        AddingBoard BoardConfig.default boardConfigs_
 
     else
-        EditingBoard
-
-
-addState : SettingsState
-addState =
-    AddingBoard BoardConfig.default
-
-
-deleteState : SettingsState
-deleteState =
-    DeletingBoard
+        EditingBoard boardConfigs_
 
 
 
--- MAPPING
+-- UTILITIES
 
 
-mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
-mapBoardBeingAdded fn settingsState =
+boardConfigs : SettingsState -> SafeZipper BoardConfig
+boardConfigs settingsState =
     case settingsState of
-        AddingBoard c ->
-            AddingBoard (fn c)
+        AddingBoard _ cs ->
+            cs
+
+        ClosingPlugin cs ->
+            cs
+
+        ClosingSettings cs ->
+            cs
+
+        DeletingBoard cs ->
+            cs
+
+        EditingBoard cs ->
+            cs
+
+
+
+-- TRANSFORM
+
+
+addBoardRequested : SettingsState -> SettingsState
+addBoardRequested settingsState =
+    case settingsState of
+        AddingBoard c cs ->
+            settingsState
+
+        ClosingPlugin cs ->
+            AddingBoard BoardConfig.default cs
+
+        ClosingSettings cs ->
+            AddingBoard BoardConfig.default cs
+
+        DeletingBoard cs ->
+            AddingBoard BoardConfig.default cs
+
+        EditingBoard cs ->
+            AddingBoard BoardConfig.default cs
+
+
+cancelCurrentState : SettingsState -> SettingsState
+cancelCurrentState settingsState =
+    case settingsState of
+        AddingBoard _ cs ->
+            if SafeZipper.length cs == 0 then
+                ClosingPlugin cs
+
+            else
+                init cs
+
+        ClosingPlugin cs ->
+            ClosingPlugin cs
+
+        ClosingSettings cs ->
+            ClosingSettings cs
+
+        DeletingBoard cs ->
+            EditingBoard cs
+
+        EditingBoard cs ->
+            ClosingSettings cs
+
+
+confirmAddBoard : SettingsState -> SettingsState
+confirmAddBoard settingsState =
+    case settingsState of
+        AddingBoard c cs ->
+            cs
+                |> SafeZipper.add c
+                |> SafeZipper.last
+                |> EditingBoard
 
         _ ->
             settingsState
 
 
-
--- ACTIONS
-
-
-cancelCurrentState : SettingsState -> Action
-cancelCurrentState settingsState =
+confirmDeleteBoard : SettingsState -> SettingsState
+confirmDeleteBoard settingsState =
     case settingsState of
-        AddingBoard _ ->
-            AddCancelled EditingBoard
+        DeletingBoard cs ->
+            SafeZipper.deleteCurrent cs
+                |> init
 
-        DeletingBoard ->
-            SetToState EditingBoard
-
-        EditingBoard ->
-            Exit
+        _ ->
+            settingsState
 
 
-confirmAdd : SettingsState -> Action
-confirmAdd settingsState =
+deleteBoardRequested : SettingsState -> SettingsState
+deleteBoardRequested settingsState =
     case settingsState of
-        AddingBoard c ->
-            AddBoard c EditingBoard
+        AddingBoard c cs ->
+            DeletingBoard cs
 
-        EditingBoard ->
-            NoAction
+        ClosingPlugin cs ->
+            DeletingBoard cs
 
-        DeletingBoard ->
-            NoAction
+        ClosingSettings cs ->
+            DeletingBoard cs
+
+        DeletingBoard cs ->
+            settingsState
+
+        EditingBoard cs ->
+            DeletingBoard cs
 
 
-confirmDelete : SettingsState -> Action
-confirmDelete settingsState =
+switchBoardBeingEdited : Int -> SettingsState -> SettingsState
+switchBoardBeingEdited index settingsState =
     case settingsState of
-        AddingBoard _ ->
-            NoAction
+        AddingBoard c cs ->
+            EditingBoard <| SafeZipper.atIndex index cs
 
-        EditingBoard ->
-            NoAction
+        ClosingPlugin cs ->
+            EditingBoard <| SafeZipper.atIndex index cs
 
-        DeletingBoard ->
-            DeleteCurrent
+        ClosingSettings cs ->
+            EditingBoard <| SafeZipper.atIndex index cs
+
+        DeletingBoard cs ->
+            EditingBoard <| SafeZipper.atIndex index cs
+
+        EditingBoard cs ->
+            EditingBoard <| SafeZipper.atIndex index cs
+
+
+updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+updateBoardBeingAdded fn settingsState =
+    case settingsState of
+        AddingBoard c cs ->
+            AddingBoard (fn c) cs
+
+        _ ->
+            settingsState
+
+
+updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+updateBoardBeingEdited fn settingsState =
+    case settingsState of
+        EditingBoard cs ->
+            EditingBoard <| SafeZipper.mapCurrent fn cs
+
+        _ ->
+            settingsState
