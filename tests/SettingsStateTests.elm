@@ -1,7 +1,7 @@
 module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import CardBoardSettings
+import CardBoardSettings exposing (GlobalSettings, TaskUpdateFormat(..))
 import DateBoard
 import Expect
 import Filter
@@ -21,10 +21,12 @@ suite =
         , confirmAddBoard
         , confirmDeleteBoard
         , deleteBoardRequested
+        , editBoardAt
+        , editGlobalSettings
         , init
-        , switchBoardBeingEdited
         , updateBoardBeingAdded
         , updateBoardBeingEdited
+        , updateGlobalSettings
         ]
 
 
@@ -54,6 +56,11 @@ addBoardRequested =
         , test "EditingBoard -> AddingBoard" <|
             \() ->
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.addBoardRequested
+                    |> Expect.equal (SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "EditingGlobalSettings -> AddingBoard" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.addBoardRequested
                     |> Expect.equal (SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
@@ -87,6 +94,11 @@ boardConfigs =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.boardConfigs
                     |> Expect.equal (SafeZipper.fromList [ exampleBoardConfigTagBoard ])
+        , test "returns the configs if in EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.boardConfigs
+                    |> Expect.equal (SafeZipper.fromList [ exampleBoardConfigTagBoard ])
         ]
 
 
@@ -108,6 +120,11 @@ cancelCurrentState =
                 SettingsState.ClosingPlugin SafeZipper.empty CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.cancelCurrentState
                     |> Expect.equal (SettingsState.ClosingPlugin SafeZipper.empty CardBoardSettings.defaultGlobalSettings)
+        , test "ClosingSettings -> ClosingSettings" <|
+            \() ->
+                SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings)
         , test "DeletingBoard -> EditingBoard" <|
             \() ->
                 SettingsState.DeletingBoard SafeZipper.empty CardBoardSettings.defaultGlobalSettings
@@ -118,9 +135,9 @@ cancelCurrentState =
                 SettingsState.EditingBoard SafeZipper.empty CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.cancelCurrentState
                     |> Expect.equal (SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings)
-        , test "ClosingSettings -> ClosingSettings" <|
+        , test "EditingGlobalSettings -> ClosingSettings" <|
             \() ->
-                SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                SettingsState.EditingGlobalSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.cancelCurrentState
                     |> Expect.equal (SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings)
         ]
@@ -154,6 +171,11 @@ confirmAddBoard =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.confirmAddBoard
                     |> Expect.equal (SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.confirmAddBoard
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
 
 
@@ -190,6 +212,11 @@ confirmDeleteBoard =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.confirmDeleteBoard
                     |> Expect.equal (SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.confirmDeleteBoard
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
 
 
@@ -221,6 +248,83 @@ deleteBoardRequested =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.deleteBoardRequested
                     |> Expect.equal (SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "EditingGlobalSettings -> DeletingBoard" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.deleteBoardRequested
+                    |> Expect.equal (SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        ]
+
+
+editBoardAt : Test
+editBoardAt =
+    describe "editBoardAt"
+        [ test "AddingBoard -> EditingBoard" <|
+            \() ->
+                SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "ClosingPlugin -> EditingBoard" <|
+            \() ->
+                SettingsState.ClosingPlugin (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "ClosingSettings -> EditingBoard" <|
+            \() ->
+                SettingsState.ClosingSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "DeletingBoard -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "EditingBoard -> EditingBoard (switched)" <|
+            \() ->
+                SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "EditingGlobalSettings -> EditingBoard" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        ]
+
+
+editGlobalSettings : Test
+editGlobalSettings =
+    describe "editGlobalSettings"
+        [ test "AddingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "ClosingPlugin -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.ClosingPlugin (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "ClosingSettings -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.ClosingSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "DeletingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "EditingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing to EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
 
 
@@ -235,37 +339,6 @@ init =
             \() ->
                 SettingsState.init exampleBoardConfigsDateBoard CardBoardSettings.defaultGlobalSettings
                     |> Expect.equal (SettingsState.EditingBoard exampleBoardConfigsDateBoard CardBoardSettings.defaultGlobalSettings)
-        ]
-
-
-switchBoardBeingEdited : Test
-switchBoardBeingEdited =
-    describe "switchBoardBeingEdited"
-        [ test "AddingBoard -> EditingBoard" <|
-            \() ->
-                SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
-                    |> SettingsState.switchBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
-        , test "ClosingPlugin -> EditingBoard" <|
-            \() ->
-                SettingsState.ClosingPlugin (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
-                    |> SettingsState.switchBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
-        , test "ClosingSettings -> EditingBoard" <|
-            \() ->
-                SettingsState.ClosingSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
-                    |> SettingsState.switchBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
-        , test "DeletingBoard -> EditingBoard" <|
-            \() ->
-                SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
-                    |> SettingsState.switchBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
-        , test "EditingBoard -> EditingBoard (switched)" <|
-            \() ->
-                SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
-                    |> SettingsState.switchBoardBeingEdited 1
-                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.last <| SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
 
 
@@ -297,6 +370,11 @@ updateBoardBeingAdded =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.updateBoardBeingAdded (always exampleBoardConfigTagBoard)
                     |> Expect.equal (SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateBoardBeingAdded (always exampleBoardConfigTagBoard)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
         ]
 
 
@@ -328,6 +406,47 @@ updateBoardBeingEdited =
                 SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.updateBoardBeingEdited (always exampleBoardConfigTagBoard)
                     |> Expect.equal (SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigTagBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateBoardBeingEdited (always exampleBoardConfigTagBoard)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        ]
+
+
+updateGlobalSettings : Test
+updateGlobalSettings =
+    describe "updateGlobalSettings"
+        [ test "does nothing if it is in the AddingBoard state" <|
+            \() ->
+                SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.AddingBoard BoardConfig.default (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the ClosingPlugin state" <|
+            \() ->
+                SettingsState.ClosingPlugin (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.ClosingPlugin (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the ClosingSettings state" <|
+            \() ->
+                SettingsState.ClosingSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.ClosingSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the DeletingBoard state" <|
+            \() ->
+                SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.DeletingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "does nothing if it is in the EditingBoard state" <|
+            \() ->
+                SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.EditingBoard (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        , test "updates the current board if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.updateGlobalSettings (always exampleGlobalSettings)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) exampleGlobalSettings)
         ]
 
 
@@ -348,6 +467,11 @@ exampleBoardConfigTagBoard =
 exampleBoardConfigsDateBoard : SafeZipper BoardConfig
 exampleBoardConfigsDateBoard =
     SafeZipper.fromList <| [ exampleBoardConfigDateBoard ]
+
+
+exampleGlobalSettings : GlobalSettings
+exampleGlobalSettings =
+    { taskUpdateFormat = ObsidianTasks }
 
 
 exampleDateBoardConfig : DateBoard.Config

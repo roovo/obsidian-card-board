@@ -8,6 +8,7 @@ module CardBoardSettings exposing
     , defaultGlobalSettings
     , encoder
     , globalSettings
+    , updateTaskUpdateFormat
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -63,6 +64,11 @@ globalSettings =
     .globalSettings
 
 
+updateTaskUpdateFormat : String -> GlobalSettings -> GlobalSettings
+updateTaskUpdateFormat taskUpdateFormat gs =
+    { gs | taskUpdateFormat = taskUpdateFormatFromString taskUpdateFormat }
+
+
 
 -- SERIALIZE
 
@@ -83,6 +89,15 @@ decoder =
 
 
 -- PRIVATE
+
+
+taskUpdateFormatFromString : String -> TaskUpdateFormat
+taskUpdateFormatFromString source =
+    if source == "ObsidianTasks" then
+        ObsidianTasks
+
+    else
+        ObsidianCardBoard
 
 
 dataEncoder : TsEncode.Encoder { a | boardConfigs : List BoardConfig, globalSettings : GlobalSettings }

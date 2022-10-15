@@ -6,10 +6,12 @@ module SettingsState exposing
     , confirmAddBoard
     , confirmDeleteBoard
     , deleteBoardRequested
+    , editBoardAt
+    , editGlobalSettings
     , init
-    , switchBoardBeingEdited
     , updateBoardBeingAdded
     , updateBoardBeingEdited
+    , updateGlobalSettings
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -163,10 +165,10 @@ deleteBoardRequested settingsState =
             DeletingBoard cs gs
 
 
-switchBoardBeingEdited : Int -> SettingsState -> SettingsState
-switchBoardBeingEdited index settingsState =
+editBoardAt : Int -> SettingsState -> SettingsState
+editBoardAt index settingsState =
     case settingsState of
-        AddingBoard c cs gs ->
+        AddingBoard _ cs gs ->
             EditingBoard (SafeZipper.atIndex index cs) gs
 
         ClosingPlugin cs gs ->
@@ -185,6 +187,28 @@ switchBoardBeingEdited index settingsState =
             EditingBoard (SafeZipper.atIndex index cs) gs
 
 
+editGlobalSettings : SettingsState -> SettingsState
+editGlobalSettings settingsState =
+    case settingsState of
+        AddingBoard _ cs gs ->
+            EditingGlobalSettings cs gs
+
+        ClosingPlugin cs gs ->
+            EditingGlobalSettings cs gs
+
+        ClosingSettings cs gs ->
+            EditingGlobalSettings cs gs
+
+        DeletingBoard cs gs ->
+            EditingGlobalSettings cs gs
+
+        EditingBoard cs gs ->
+            EditingGlobalSettings cs gs
+
+        EditingGlobalSettings _ _ ->
+            settingsState
+
+
 updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
 updateBoardBeingAdded fn settingsState =
     case settingsState of
@@ -200,6 +224,16 @@ updateBoardBeingEdited fn settingsState =
     case settingsState of
         EditingBoard cs gs ->
             EditingBoard (SafeZipper.mapCurrent fn cs) gs
+
+        _ ->
+            settingsState
+
+
+updateGlobalSettings : (GlobalSettings -> GlobalSettings) -> SettingsState -> SettingsState
+updateGlobalSettings fn settingsState =
+    case settingsState of
+        EditingGlobalSettings cs gs ->
+            EditingGlobalSettings cs (fn gs)
 
         _ ->
             settingsState

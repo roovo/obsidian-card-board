@@ -11,6 +11,7 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
+import CardBoardSettings exposing (GlobalSettings, TaskUpdateFormat(..))
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import Html exposing (Html)
@@ -104,11 +105,13 @@ type Msg
     | EnteredTags String
     | EnteredTitle String
     | FilterCandidatesReceived (List Filter)
+    | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
     | PathsRequested Int String
     | PolaritySelected String
+    | TaskUpdateFormatSelected String
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
@@ -136,7 +139,7 @@ update msg model =
                 newSettingsState =
                     model.settingsState
                         |> SettingsState.updateBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
-                        |> SettingsState.switchBoardBeingEdited index
+                        |> SettingsState.editBoardAt index
 
                 newFilters =
                     currentFilters <| SettingsState.boardConfigs newSettingsState
@@ -192,6 +195,9 @@ update msg model =
             , Session.NoOp
             )
 
+        GlobalSettingsClicked ->
+            wrap { model | settingsState = SettingsState.editGlobalSettings model.settingsState }
+
         ModalCancelClicked ->
             handleClose model
 
@@ -219,6 +225,15 @@ update msg model =
 
         PolaritySelected polarity ->
             updateBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+
+        TaskUpdateFormatSelected taskUpdateFormat ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.updateGlobalSettings
+                            (CardBoardSettings.updateTaskUpdateFormat taskUpdateFormat)
+                            model.settingsState
+                }
 
         ToggleIncludeOthers ->
             updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
@@ -316,12 +331,17 @@ wrap model =
 -- VIEW
 
 
+type CurrentSection
+    = Options
+    | Boards
+
+
 view : Model -> Html Msg
 view model =
     case model.settingsState of
         SettingsState.AddingBoard newConfig allConfigs gs ->
             Html.div []
-                [ modalSettingsView allConfigs model.multiSelect
+                [ boardSettingsView allConfigs model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
@@ -333,15 +353,15 @@ view model =
 
         SettingsState.DeletingBoard allConfigs gs ->
             Html.div []
-                [ modalSettingsView allConfigs model.multiSelect
+                [ boardSettingsView allConfigs model.multiSelect
                 , modalConfirmDelete
                 ]
 
         SettingsState.EditingBoard allConfigs gs ->
-            modalSettingsView allConfigs model.multiSelect
+            boardSettingsView allConfigs model.multiSelect
 
         SettingsState.EditingGlobalSettings allConfigs gs ->
-            modalSettingsView allConfigs model.multiSelect
+            globalSettingsView allConfigs gs
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -437,8 +457,33 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
-modalSettingsView configs multiselect =
+
+-- Html.div
+--     [ class "vertical-tab-nav-item is-active"
+--     , onClick <| BoardNameClicked index
+--     ]
+--     [ Html.text <| BoardConfig.title boardConfig ]
+
+
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> Html Msg -> Html Msg
+settingsSurroundView currentSection configs formContents =
+    let
+        boardMapFn =
+            case currentSection of
+                Options ->
+                    settingTitleView
+
+                Boards ->
+                    settingTitleSelectedView
+
+        globalSettingsClass =
+            case currentSection of
+                Options ->
+                    "vertical-tab-nav-item is-active"
+
+                Boards ->
+                    "vertical-tab-nav-item"
+    in
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal mod-settings mod-sidebar-layout" ]
@@ -455,8 +500,11 @@ modalSettingsView configs multiselect =
                         [ Html.div [ class "vertical-tab-header-group-title" ]
                             [ Html.text "Options" ]
                         , Html.div [ class "vertical-tab-header-group-items" ]
-                            [ Html.div [ class "vertical-tab-nav-item" ]
-                                [ Html.text "Task format" ]
+                            [ Html.div
+                                [ class globalSettingsClass
+                                , onClick GlobalSettingsClicked
+                                ]
+                                [ Html.text "Global Settings" ]
                             ]
                         ]
                     , Html.div [ class "vertical-tab-header-group" ]
@@ -474,19 +522,48 @@ modalSettingsView configs multiselect =
                             ]
                         , Html.div [ class "vertical-tab-header-group-items" ]
                             (configs
-                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
+                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
                                 |> SafeZipper.toList
                             )
                         ]
                     ]
-                , settingsFormView (SafeZipper.current configs) (SafeZipper.currentIndex configs) multiselect
+                , formContents
                 ]
             ]
         ]
 
 
-settingsFormView : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> Html Msg
-settingsFormView boardConfig boardIndex multiselect =
+boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
+boardSettingsView boardConfigs multiselect =
+    boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
+        |> settingsSurroundView Boards boardConfigs
+
+
+globalSettingsView : SafeZipper BoardConfig -> GlobalSettings -> Html Msg
+globalSettingsView boardConfigs gs =
+    settingsSurroundView Options boardConfigs <| globalSettingsForm gs
+
+
+globalSettingsForm : GlobalSettings -> Html Msg
+globalSettingsForm gs =
+    Html.div [ class "vertical-tab-content-container" ]
+        [ Html.div [ class "vertical-tab-content" ]
+            [ Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Task update format" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Which format to use when updating tasks." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ taskUpdateFormatSelect gs.taskUpdateFormat ]
+                ]
+            ]
+        ]
+
+
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> Html Msg
+boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
         ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
             let
@@ -829,6 +906,29 @@ settingsFormView boardConfig boardIndex multiselect =
 
         _ ->
             Html.text ""
+
+
+taskUpdateFormatSelect : TaskUpdateFormat -> Html Msg
+taskUpdateFormatSelect taskUpdateFormat =
+    Html.select
+        [ class "dropdown"
+        , onInput TaskUpdateFormatSelected
+        ]
+        (case taskUpdateFormat of
+            ObsidianCardBoard ->
+                [ Html.option [ value "ObsidianCardBoard", selected True ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            ObsidianTasks ->
+                [ Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianTasks", selected True ]
+                    [ Html.text "Tasks" ]
+                ]
+        )
 
 
 polaritySelect : Polarity -> Html Msg

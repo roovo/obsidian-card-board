@@ -15,6 +15,7 @@ suite =
     concat
         [ currentVersion
         , encodeDecode
+        , updateTaskUpdateFormat
         ]
 
 
@@ -49,6 +50,30 @@ encodeDecode =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        ]
+
+
+updateTaskUpdateFormat : Test
+updateTaskUpdateFormat =
+    describe "updateTaskUpdateFormat"
+        [ test "can update to be ObsidianCardBoard format" <|
+            \() ->
+                exampleGlobalSettings
+                    |> CardBoardSettings.updateTaskUpdateFormat "ObsidianCardBoard"
+                    |> Expect.equal { taskUpdateFormat = CardBoardSettings.ObsidianCardBoard }
+        , test "can update to be ObsidianTasks format" <|
+            \() ->
+                exampleGlobalSettings
+                    |> CardBoardSettings.updateTaskUpdateFormat "ObsidianCardBoard"
+                    |> CardBoardSettings.updateTaskUpdateFormat "ObsidianTasks"
+                    |> Expect.equal { taskUpdateFormat = CardBoardSettings.ObsidianTasks }
+        , test "defaults to be ObsidianCardBoard if the string is not recognised" <|
+            \() ->
+                exampleGlobalSettings
+                    |> CardBoardSettings.updateTaskUpdateFormat "ObsidianCardBoard"
+                    |> CardBoardSettings.updateTaskUpdateFormat "ObsidianTasks"
+                    |> CardBoardSettings.updateTaskUpdateFormat "xxxxxx"
+                    |> Expect.equal { taskUpdateFormat = CardBoardSettings.ObsidianCardBoard }
         ]
 
 
