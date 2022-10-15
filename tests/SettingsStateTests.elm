@@ -23,6 +23,7 @@ suite =
         , deleteBoardRequested
         , editBoardAt
         , editGlobalSettings
+        , globalSettings
         , init
         , updateBoardBeingAdded
         , updateBoardBeingEdited
@@ -325,6 +326,42 @@ editGlobalSettings =
                 SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings
                     |> SettingsState.editGlobalSettings
                     |> Expect.equal (SettingsState.EditingGlobalSettings (SafeZipper.fromList [ exampleBoardConfigDateBoard, exampleBoardConfigTagBoard ]) CardBoardSettings.defaultGlobalSettings)
+        ]
+
+
+globalSettings : Test
+globalSettings =
+    describe "globalSettings"
+        [ test "returns the configs (apart from the one being added) if in AddingBoard state" <|
+            \() ->
+                SettingsState.AddingBoard BoardConfig.default SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+        , test "returns the configs if in ClosingPlugin state" <|
+            \() ->
+                SettingsState.ClosingPlugin SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+        , test "returns the configs if in ClosingSettings state" <|
+            \() ->
+                SettingsState.ClosingSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+        , test "returns the configs if in DeletingBoard state" <|
+            \() ->
+                SettingsState.DeletingBoard SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+        , test "returns the configs if in EditingBoard state" <|
+            \() ->
+                SettingsState.EditingBoard SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+        , test "returns the configs if in EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings SafeZipper.empty CardBoardSettings.defaultGlobalSettings
+                    |> SettingsState.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
         ]
 
 

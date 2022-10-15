@@ -5,6 +5,7 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
+import CardBoardSettings exposing (Settings)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -54,7 +55,7 @@ init flags =
             ( Boards session
                 |> forceAddWhenNoBoards
             , Cmd.batch
-                [ InteropPorts.updateSettings (Session.boardConfigs session)
+                [ InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
                 , InteropPorts.elmInitialized
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
@@ -127,7 +128,7 @@ type Msg
     = ActiveStateUpdated Bool
     | AllMarkdownLoaded
     | BadInputFromTypeScript
-    | BoardConfigsUpdated (List BoardConfig)
+    | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
@@ -160,11 +161,13 @@ update msg model =
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
-        ( BoardConfigsUpdated newConfigs, _ ) ->
+        ( SettingsUpdated newSettings, _ ) ->
             let
                 newModel : Model
                 newModel =
-                    mapSession (Session.updateConfigs newConfigs) model
+                    model
+                        |> mapSession (Session.updateConfigs newSettings.boardConfigs)
+                        |> mapSession (Session.updateGlobalSettings newSettings.globalSettings)
             in
             ( newModel
             , Cmd.batch
@@ -284,7 +287,7 @@ cmdForFilterPathRename newPath session =
                 |> List.any (\f -> Filter.value f == newPath)
     in
     if anyUpdatedFilters then
-        InteropPorts.updateSettings (Session.boardConfigs session)
+        InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
 
     else
         Cmd.none
@@ -369,7 +372,7 @@ subscriptions _ =
                                     AllMarkdownLoaded
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
-                                    BoardConfigsUpdated newSettings.boardConfigs
+                                    SettingsUpdated newSettings
 
                                 InteropDefinitions.ShowBoard index ->
                                     ShowBoard index

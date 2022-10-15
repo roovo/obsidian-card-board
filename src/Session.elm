@@ -19,6 +19,7 @@ module Session exposing
     , taskList
     , timeWithZone
     , updateConfigs
+    , updateGlobalSettings
     , updatePath
     )
 
@@ -263,6 +264,11 @@ updateConfigs newConfigs ((Session config) as session) =
                         |> Maybe.withDefault 0
             in
             mapConfig (\c -> { c | boardConfigs = configs }) session
+
+
+updateGlobalSettings : GlobalSettings -> Session -> Session
+updateGlobalSettings newSettings ((Session config) as session) =
+    mapConfig (\c -> { c | globalSettings = newSettings }) session
 
 
 currentTaskList : Session -> TaskList

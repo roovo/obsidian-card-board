@@ -3,9 +3,14 @@
   - there is no visible close icon when using Prism
     - can I make it so if you click outside the modal it closes it (would solve this
       in the more general case and is expected behaviour!
-- global config on which task format to use for updating completion
-  - only needs Tasks and CardBoard (taskpaper) format initially
+  - the add board icon needs to be better positioned
 - use the configured completion format
+- desribe task update format options in the global settings dialog
+
+- use Settings everywehere
+  - when decoding -> SafeZipper
+  - encode to SafeZipper
+
 
 
 # Cleanups

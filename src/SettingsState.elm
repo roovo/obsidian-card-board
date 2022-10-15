@@ -8,6 +8,7 @@ module SettingsState exposing
     , deleteBoardRequested
     , editBoardAt
     , editGlobalSettings
+    , globalSettings
     , init
     , updateBoardBeingAdded
     , updateBoardBeingEdited
@@ -69,6 +70,28 @@ boardConfigs settingsState =
 
         EditingGlobalSettings cs _ ->
             cs
+
+
+globalSettings : SettingsState -> GlobalSettings
+globalSettings settingsState =
+    case settingsState of
+        AddingBoard _ _ gs ->
+            gs
+
+        ClosingPlugin _ gs ->
+            gs
+
+        ClosingSettings _ gs ->
+            gs
+
+        DeletingBoard _ gs ->
+            gs
+
+        EditingBoard _ gs ->
+            gs
+
+        EditingGlobalSettings _ gs ->
+            gs
 
 
 
@@ -203,7 +226,7 @@ editGlobalSettings settingsState =
             EditingGlobalSettings cs gs
 
         EditingBoard cs gs ->
-            EditingGlobalSettings cs gs
+            EditingGlobalSettings cs (Debug.log "plop4" gs)
 
         EditingGlobalSettings _ _ ->
             settingsState

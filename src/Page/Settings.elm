@@ -196,7 +196,7 @@ update msg model =
             )
 
         GlobalSettingsClicked ->
-            wrap { model | settingsState = SettingsState.editGlobalSettings model.settingsState }
+            wrap { model | settingsState = SettingsState.editGlobalSettings (Debug.log "plop3" model.settingsState) }
 
         ModalCancelClicked ->
             handleClose model
@@ -301,12 +301,15 @@ handleClose model =
 
         newBoardConfigs =
             SettingsState.boardConfigs newSettingsState
+
+        newGlobalSettings =
+            SettingsState.globalSettings newSettingsState
     in
     case newSettingsState of
         SettingsState.ClosingPlugin cs gs ->
             ( { model | settingsState = newSettingsState }
             , Cmd.batch
-                [ InteropPorts.updateSettings newBoardConfigs
+                [ InteropPorts.updateSettings newBoardConfigs newGlobalSettings
                 , InteropPorts.closeView
                 ]
             , Session.SettingsClosed newBoardConfigs
@@ -314,7 +317,7 @@ handleClose model =
 
         SettingsState.ClosingSettings cs gs ->
             ( { model | settingsState = newSettingsState }
-            , InteropPorts.updateSettings newBoardConfigs
+            , InteropPorts.updateSettings newBoardConfigs newGlobalSettings
             , Session.SettingsClosed newBoardConfigs
             )
 
@@ -358,10 +361,14 @@ view model =
                 ]
 
         SettingsState.EditingBoard allConfigs gs ->
+            let
+                plop =
+                    Debug.log "plop2" gs
+            in
             boardSettingsView allConfigs model.multiSelect
 
         SettingsState.EditingGlobalSettings allConfigs gs ->
-            globalSettingsView allConfigs gs
+            globalSettingsView allConfigs <| Debug.log "plop" gs
 
 
 modalAddBoard : BoardConfig -> Html Msg
