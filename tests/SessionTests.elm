@@ -1,6 +1,7 @@
 module SessionTests exposing (suite)
 
 import BoardConfig
+import CardBoardSettings
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -20,6 +21,7 @@ suite =
         , default
         , deleteItemsFromFile
         , finishAdding
+        , globalSettings
         , replaceTaskItems
         , updatePath
         ]
@@ -123,6 +125,17 @@ finishAdding =
                     |> Session.taskList
                     |> State.map TaskList.taskTitles
                     |> Expect.equal (State.Loaded [ "a1", "a2" ])
+        ]
+
+
+globalSettings : Test
+globalSettings =
+    describe "globalSettings"
+        [ test "if Waiting, sets to be Loaded with no tasks in the list" <|
+            \() ->
+                Session.default
+                    |> Session.globalSettings
+                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
         ]
 
 

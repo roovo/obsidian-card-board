@@ -10,6 +10,7 @@ module Session exposing
     , deleteItemsFromFile
     , finishAdding
     , fromFlags
+    , globalSettings
     , isActiveView
     , mapConfig
     , replaceTaskItems
@@ -52,14 +53,14 @@ type alias Config =
     }
 
 
-
--- MSG
-
-
 type Msg
     = NoOp
     | SettingsClicked
     | SettingsClosed (SafeZipper BoardConfig)
+
+
+
+-- CREATE
 
 
 default : Session
@@ -90,6 +91,10 @@ fromFlags flags =
         }
 
 
+
+-- UTILITIES
+
+
 mapConfig : (Config -> Config) -> Session -> Session
 mapConfig fn (Session conf) =
     Session (fn conf)
@@ -98,6 +103,11 @@ mapConfig fn (Session conf) =
 boardConfigs : Session -> SafeZipper BoardConfig
 boardConfigs (Session config) =
     config.boardConfigs
+
+
+globalSettings : Session -> GlobalSettings
+globalSettings (Session config) =
+    config.globalSettings
 
 
 timeWithZone : Session -> TimeWithZone

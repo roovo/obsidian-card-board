@@ -48,7 +48,7 @@ init session =
     { multiSelect = MultiSelect.init multiSelectConfig (currentFilters boardConfigs)
     , pathCache = State.Waiting
     , session = session
-    , settingsState = SettingsState.init boardConfigs
+    , settingsState = SettingsState.init boardConfigs (Session.globalSettings session)
     }
 
 
@@ -288,7 +288,7 @@ handleClose model =
             SettingsState.boardConfigs newSettingsState
     in
     case newSettingsState of
-        SettingsState.ClosingPlugin cs ->
+        SettingsState.ClosingPlugin cs gs ->
             ( { model | settingsState = newSettingsState }
             , Cmd.batch
                 [ InteropPorts.updateSettings newBoardConfigs
@@ -297,7 +297,7 @@ handleClose model =
             , Session.SettingsClosed newBoardConfigs
             )
 
-        SettingsState.ClosingSettings cs ->
+        SettingsState.ClosingSettings cs gs ->
             ( { model | settingsState = newSettingsState }
             , InteropPorts.updateSettings newBoardConfigs
             , Session.SettingsClosed newBoardConfigs
@@ -319,25 +319,28 @@ wrap model =
 view : Model -> Html Msg
 view model =
     case model.settingsState of
-        SettingsState.AddingBoard newConfig allConfigs ->
+        SettingsState.AddingBoard newConfig allConfigs gs ->
             Html.div []
                 [ modalSettingsView allConfigs model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.ClosingPlugin allConfigs ->
+        SettingsState.ClosingPlugin allConfigs gs ->
             Html.text ""
 
-        SettingsState.ClosingSettings allConfigs ->
+        SettingsState.ClosingSettings allConfigs gs ->
             Html.text ""
 
-        SettingsState.DeletingBoard allConfigs ->
+        SettingsState.DeletingBoard allConfigs gs ->
             Html.div []
                 [ modalSettingsView allConfigs model.multiSelect
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard allConfigs ->
+        SettingsState.EditingBoard allConfigs gs ->
+            modalSettingsView allConfigs model.multiSelect
+
+        SettingsState.EditingGlobalSettings allConfigs gs ->
             modalSettingsView allConfigs model.multiSelect
 
 

@@ -13,6 +13,7 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import CardBoardSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
 
 
@@ -21,24 +22,25 @@ import SafeZipper exposing (SafeZipper)
 
 
 type SettingsState
-    = AddingBoard BoardConfig (SafeZipper BoardConfig)
-    | ClosingPlugin (SafeZipper BoardConfig)
-    | ClosingSettings (SafeZipper BoardConfig)
-    | DeletingBoard (SafeZipper BoardConfig)
-    | EditingBoard (SafeZipper BoardConfig)
+    = AddingBoard BoardConfig (SafeZipper BoardConfig) GlobalSettings
+    | ClosingPlugin (SafeZipper BoardConfig) GlobalSettings
+    | ClosingSettings (SafeZipper BoardConfig) GlobalSettings
+    | DeletingBoard (SafeZipper BoardConfig) GlobalSettings
+    | EditingBoard (SafeZipper BoardConfig) GlobalSettings
+    | EditingGlobalSettings (SafeZipper BoardConfig) GlobalSettings
 
 
 
 -- CREATE
 
 
-init : SafeZipper BoardConfig -> SettingsState
-init boardConfigs_ =
-    if SafeZipper.length boardConfigs_ == 0 then
-        AddingBoard BoardConfig.default boardConfigs_
+init : SafeZipper BoardConfig -> GlobalSettings -> SettingsState
+init cs gs =
+    if SafeZipper.length cs == 0 then
+        AddingBoard BoardConfig.default cs gs
 
     else
-        EditingBoard boardConfigs_
+        EditingBoard cs gs
 
 
 
@@ -48,19 +50,22 @@ init boardConfigs_ =
 boardConfigs : SettingsState -> SafeZipper BoardConfig
 boardConfigs settingsState =
     case settingsState of
-        AddingBoard _ cs ->
+        AddingBoard _ cs _ ->
             cs
 
-        ClosingPlugin cs ->
+        ClosingPlugin cs _ ->
             cs
 
-        ClosingSettings cs ->
+        ClosingSettings cs _ ->
             cs
 
-        DeletingBoard cs ->
+        DeletingBoard cs _ ->
             cs
 
-        EditingBoard cs ->
+        EditingBoard cs _ ->
+            cs
+
+        EditingGlobalSettings cs _ ->
             cs
 
 
@@ -71,53 +76,56 @@ boardConfigs settingsState =
 addBoardRequested : SettingsState -> SettingsState
 addBoardRequested settingsState =
     case settingsState of
-        AddingBoard c cs ->
+        AddingBoard _ _ _ ->
             settingsState
 
-        ClosingPlugin cs ->
-            AddingBoard BoardConfig.default cs
+        ClosingPlugin cs gs ->
+            AddingBoard BoardConfig.default cs gs
 
-        ClosingSettings cs ->
-            AddingBoard BoardConfig.default cs
+        ClosingSettings cs gs ->
+            AddingBoard BoardConfig.default cs gs
 
-        DeletingBoard cs ->
-            AddingBoard BoardConfig.default cs
+        DeletingBoard cs gs ->
+            AddingBoard BoardConfig.default cs gs
 
-        EditingBoard cs ->
-            AddingBoard BoardConfig.default cs
+        EditingBoard cs gs ->
+            AddingBoard BoardConfig.default cs gs
+
+        EditingGlobalSettings cs gs ->
+            AddingBoard BoardConfig.default cs gs
 
 
 cancelCurrentState : SettingsState -> SettingsState
 cancelCurrentState settingsState =
     case settingsState of
-        AddingBoard _ cs ->
+        AddingBoard _ cs gs ->
             if SafeZipper.length cs == 0 then
-                ClosingPlugin cs
+                ClosingPlugin cs gs
 
             else
-                init cs
+                init cs gs
 
-        ClosingPlugin cs ->
-            ClosingPlugin cs
+        ClosingPlugin cs gs ->
+            ClosingPlugin cs gs
 
-        ClosingSettings cs ->
-            ClosingSettings cs
+        ClosingSettings cs gs ->
+            ClosingSettings cs gs
 
-        DeletingBoard cs ->
-            EditingBoard cs
+        DeletingBoard cs gs ->
+            EditingBoard cs gs
 
-        EditingBoard cs ->
-            ClosingSettings cs
+        EditingBoard cs gs ->
+            ClosingSettings cs gs
+
+        EditingGlobalSettings cs gs ->
+            ClosingSettings cs gs
 
 
 confirmAddBoard : SettingsState -> SettingsState
 confirmAddBoard settingsState =
     case settingsState of
-        AddingBoard c cs ->
-            cs
-                |> SafeZipper.add c
-                |> SafeZipper.last
-                |> EditingBoard
+        AddingBoard c cs gs ->
+            EditingBoard (SafeZipper.last <| SafeZipper.add c cs) gs
 
         _ ->
             settingsState
@@ -126,9 +134,8 @@ confirmAddBoard settingsState =
 confirmDeleteBoard : SettingsState -> SettingsState
 confirmDeleteBoard settingsState =
     case settingsState of
-        DeletingBoard cs ->
-            SafeZipper.deleteCurrent cs
-                |> init
+        DeletingBoard cs gs ->
+            init (SafeZipper.deleteCurrent cs) gs
 
         _ ->
             settingsState
@@ -137,46 +144,52 @@ confirmDeleteBoard settingsState =
 deleteBoardRequested : SettingsState -> SettingsState
 deleteBoardRequested settingsState =
     case settingsState of
-        AddingBoard c cs ->
-            DeletingBoard cs
+        AddingBoard c cs gs ->
+            DeletingBoard cs gs
 
-        ClosingPlugin cs ->
-            DeletingBoard cs
+        ClosingPlugin cs gs ->
+            DeletingBoard cs gs
 
-        ClosingSettings cs ->
-            DeletingBoard cs
+        ClosingSettings cs gs ->
+            DeletingBoard cs gs
 
-        DeletingBoard cs ->
+        DeletingBoard cs gs ->
             settingsState
 
-        EditingBoard cs ->
-            DeletingBoard cs
+        EditingBoard cs gs ->
+            DeletingBoard cs gs
+
+        EditingGlobalSettings cs gs ->
+            DeletingBoard cs gs
 
 
 switchBoardBeingEdited : Int -> SettingsState -> SettingsState
 switchBoardBeingEdited index settingsState =
     case settingsState of
-        AddingBoard c cs ->
-            EditingBoard <| SafeZipper.atIndex index cs
+        AddingBoard c cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
 
-        ClosingPlugin cs ->
-            EditingBoard <| SafeZipper.atIndex index cs
+        ClosingPlugin cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
 
-        ClosingSettings cs ->
-            EditingBoard <| SafeZipper.atIndex index cs
+        ClosingSettings cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
 
-        DeletingBoard cs ->
-            EditingBoard <| SafeZipper.atIndex index cs
+        DeletingBoard cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
 
-        EditingBoard cs ->
-            EditingBoard <| SafeZipper.atIndex index cs
+        EditingBoard cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
+
+        EditingGlobalSettings cs gs ->
+            EditingBoard (SafeZipper.atIndex index cs) gs
 
 
 updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
 updateBoardBeingAdded fn settingsState =
     case settingsState of
-        AddingBoard c cs ->
-            AddingBoard (fn c) cs
+        AddingBoard c cs gs ->
+            AddingBoard (fn c) cs gs
 
         _ ->
             settingsState
@@ -185,8 +198,8 @@ updateBoardBeingAdded fn settingsState =
 updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
 updateBoardBeingEdited fn settingsState =
     case settingsState of
-        EditingBoard cs ->
-            EditingBoard <| SafeZipper.mapCurrent fn cs
+        EditingBoard cs gs ->
+            EditingBoard (SafeZipper.mapCurrent fn cs) gs
 
         _ ->
             settingsState
