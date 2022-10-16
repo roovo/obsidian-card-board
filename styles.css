@@ -330,6 +330,9 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0;
 }
 
+.card-board-view .vertical-tab-content-container::before {
+  display: none;
+}
 
 .vertical-tab-header-group-title-icon {
   justify-self: end;

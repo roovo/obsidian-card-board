@@ -1,8 +1,7 @@
 - settings modal fixes needed
   - the multiselect shifts the form contents down when it appears
-  - there is no visible close icon when using Prism
-    - can I make it so if you click outside the modal it closes it (would solve this
-      in the more general case and is expected behaviour!
+  - can I make it so if you click outside the modal it closes it (would solve this
+    in the more general case and is expected behaviour!)
 - describe task update format options in the global settings dialog
 
 - tabs are not very visible
