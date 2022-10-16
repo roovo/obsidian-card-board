@@ -10,6 +10,7 @@ module CardBoardSettings exposing
 import BoardConfig exposing (BoardConfig)
 import GlobalSettings exposing (GlobalSettings)
 import Json.Encode as JE
+import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -20,7 +21,7 @@ import TsJson.Encode as TsEncode
 
 
 type alias Settings =
-    { boardConfigs : List BoardConfig
+    { boardConfigs : SafeZipper BoardConfig
     , globalSettings : GlobalSettings
     , version : Semver.Version
     }
@@ -30,7 +31,7 @@ type alias Settings =
 -- UTILITIES
 
 
-boardConfigs : Settings -> List BoardConfig
+boardConfigs : Settings -> SafeZipper BoardConfig
 boardConfigs =
     .boardConfigs
 
@@ -67,10 +68,10 @@ decoder =
 -- PRIVATE
 
 
-dataEncoder : TsEncode.Encoder { a | boardConfigs : List BoardConfig, globalSettings : GlobalSettings }
+dataEncoder : TsEncode.Encoder { a | boardConfigs : SafeZipper BoardConfig, globalSettings : GlobalSettings }
 dataEncoder =
     TsEncode.object
-        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list BoardConfig.encoder)
+        [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.map SafeZipper.toList <| TsEncode.list BoardConfig.encoder)
         , TsEncode.required "globalSettings" .globalSettings GlobalSettings.encoder
         ]
 
@@ -115,7 +116,7 @@ versionedSettingsDecoder =
 v_0_5_0_Decoder : TsDecode.Decoder Settings
 v_0_5_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_5_0))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0)))
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
@@ -123,7 +124,7 @@ v_0_5_0_Decoder =
 v_0_4_0_Decoder : TsDecode.Decoder Settings
 v_0_4_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_4_0))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_4_0)))
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
@@ -131,7 +132,7 @@ v_0_4_0_Decoder =
 v_0_3_0_Decoder : TsDecode.Decoder Settings
 v_0_3_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_3_0))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_3_0)))
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
@@ -139,7 +140,7 @@ v_0_3_0_Decoder =
 v_0_2_0_Decoder : TsDecode.Decoder Settings
 v_0_2_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_2_0))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_2_0)))
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
@@ -147,7 +148,7 @@ v_0_2_0_Decoder =
 v_0_1_0_Decoder : TsDecode.Decoder Settings
 v_0_1_0_Decoder =
     TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_1_0))
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_1_0)))
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 

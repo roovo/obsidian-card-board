@@ -104,7 +104,7 @@ updateSettings : SafeZipper BoardConfig -> GlobalSettings -> Cmd msg
 updateSettings boardConfigs gs =
     { version = CardBoardSettings.currentVersion
     , globalSettings = gs
-    , boardConfigs = SafeZipper.toList boardConfigs
+    , boardConfigs = boardConfigs
     }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder
         |> interopFromElm

@@ -82,7 +82,7 @@ default =
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
-        { boardConfigs = SafeZipper.fromList <| CardBoardSettings.boardConfigs flags.settings
+        { boardConfigs = CardBoardSettings.boardConfigs flags.settings
         , globalSettings = CardBoardSettings.globalSettings flags.settings
         , isActiveView = False
         , taskList = State.Waiting
@@ -242,21 +242,20 @@ taskContainingId id (Session config) =
             Nothing
 
 
-updateConfigs : List BoardConfig -> Session -> Session
+updateConfigs : SafeZipper BoardConfig -> Session -> Session
 updateConfigs newConfigs ((Session config) as session) =
     case config.taskList of
         State.Waiting ->
-            mapConfig (\c -> { c | boardConfigs = SafeZipper.fromList newConfigs }) session
+            mapConfig (\c -> { c | boardConfigs = newConfigs }) session
 
         State.Loading _ ->
-            mapConfig (\c -> { c | boardConfigs = SafeZipper.fromList newConfigs }) session
+            mapConfig (\c -> { c | boardConfigs = newConfigs }) session
 
         State.Loaded _ ->
             let
                 configs : SafeZipper BoardConfig
                 configs =
-                    SafeZipper.fromList newConfigs
-                        |> SafeZipper.atIndex newIndex
+                    SafeZipper.atIndex newIndex newConfigs
 
                 newIndex : Int
                 newIndex =
