@@ -3,7 +3,6 @@
   - there is no visible close icon when using Prism
     - can I make it so if you click outside the modal it closes it (would solve this
       in the more general case and is expected behaviour!
-  - the add board icon needs to be better positioned
 - describe task update format options in the global settings dialog
 
 - tabs are not very visible

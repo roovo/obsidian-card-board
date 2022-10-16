@@ -334,6 +334,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .vertical-tab-header-group-title-icon {
   justify-self: end;
   cursor: pointer;
+  float: right;
 }
 
 .modal.mod-settings {
