@@ -14,7 +14,8 @@ port module InteropPorts exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardSettings exposing (GlobalSettings)
+import CardBoardSettings
+import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import Json.Decode
 import Json.Encode

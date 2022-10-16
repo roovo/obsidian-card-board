@@ -16,7 +16,8 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import CardBoardSettings exposing (GlobalSettings)
+import CardBoardSettings
+import GlobalSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
 
 

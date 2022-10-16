@@ -4,6 +4,7 @@ import BoardConfig
 import CardBoardSettings
 import Expect
 import Filter
+import GlobalSettings
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
@@ -55,7 +56,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = { taskUpdateFormat = CardBoardSettings.ObsidianTasks }
+                                , globalSettings = { taskUpdateFormat = GlobalSettings.ObsidianTasks }
                                 }
                             , now = 11
                             , zone = 22
@@ -91,7 +92,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = CardBoardSettings.defaultGlobalSettings
+                                , globalSettings = GlobalSettings.default
                                 }
                             , now = 11
                             , zone = 22
@@ -127,7 +128,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = CardBoardSettings.defaultGlobalSettings
+                                , globalSettings = GlobalSettings.default
                                 }
                             , now = 11
                             , zone = 22
@@ -163,7 +164,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = CardBoardSettings.defaultGlobalSettings
+                                , globalSettings = GlobalSettings.default
                                 }
                             , now = 11
                             , zone = 22
@@ -199,7 +200,7 @@ flagsTests =
                                         , title = "tag board title"
                                         }
                                     ]
-                                , globalSettings = CardBoardSettings.defaultGlobalSettings
+                                , globalSettings = GlobalSettings.default
                                 }
                             , now = 11
                             , zone = 22
@@ -348,31 +349,31 @@ toElmTests =
                 """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskUpdateFormat":"ObsidianCardBoard"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = { taskUpdateFormat = CardBoardSettings.ObsidianCardBoard } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = { taskUpdateFormat = GlobalSettings.ObsidianCardBoard } })
         , test "decodes version 0.4.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.4.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.3.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.3.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = CardBoardSettings.defaultGlobalSettings })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = [], globalSettings = GlobalSettings.default })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""

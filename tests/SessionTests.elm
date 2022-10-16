@@ -4,6 +4,7 @@ import BoardConfig
 import CardBoardSettings
 import Expect
 import Filter
+import GlobalSettings
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
@@ -135,7 +136,7 @@ globalSettings =
             \() ->
                 Session.default
                     |> Session.globalSettings
-                    |> Expect.equal CardBoardSettings.defaultGlobalSettings
+                    |> Expect.equal GlobalSettings.default
         ]
 
 

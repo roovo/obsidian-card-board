@@ -1,17 +1,14 @@
 module CardBoardSettings exposing
-    ( GlobalSettings
-    , Settings
-    , TaskUpdateFormat(..)
+    ( Settings
     , boardConfigs
     , currentVersion
     , decoder
-    , defaultGlobalSettings
     , encoder
     , globalSettings
-    , updateTaskUpdateFormat
     )
 
 import BoardConfig exposing (BoardConfig)
+import GlobalSettings exposing (GlobalSettings)
 import Json.Encode as JE
 import Semver
 import TsJson.Decode as TsDecode
@@ -26,22 +23,6 @@ type alias Settings =
     { boardConfigs : List BoardConfig
     , globalSettings : GlobalSettings
     , version : Semver.Version
-    }
-
-
-type TaskUpdateFormat
-    = ObsidianCardBoard
-    | ObsidianTasks
-
-
-type alias GlobalSettings =
-    { taskUpdateFormat : TaskUpdateFormat
-    }
-
-
-defaultGlobalSettings : GlobalSettings
-defaultGlobalSettings =
-    { taskUpdateFormat = ObsidianCardBoard
     }
 
 
@@ -62,11 +43,6 @@ currentVersion =
 globalSettings : Settings -> GlobalSettings
 globalSettings =
     .globalSettings
-
-
-updateTaskUpdateFormat : String -> GlobalSettings -> GlobalSettings
-updateTaskUpdateFormat taskUpdateFormat gs =
-    { gs | taskUpdateFormat = taskUpdateFormatFromString taskUpdateFormat }
 
 
 
@@ -91,64 +67,18 @@ decoder =
 -- PRIVATE
 
 
-taskUpdateFormatFromString : String -> TaskUpdateFormat
-taskUpdateFormatFromString source =
-    if source == "ObsidianTasks" then
-        ObsidianTasks
-
-    else
-        ObsidianCardBoard
-
-
 dataEncoder : TsEncode.Encoder { a | boardConfigs : List BoardConfig, globalSettings : GlobalSettings }
 dataEncoder =
     TsEncode.object
         [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.list BoardConfig.encoder)
-        , TsEncode.required "globalSettings" .globalSettings globalSettingsEncoder
+        , TsEncode.required "globalSettings" .globalSettings GlobalSettings.encoder
         ]
-
-
-globalSettingsEncoder : TsEncode.Encoder GlobalSettings
-globalSettingsEncoder =
-    TsEncode.object
-        [ TsEncode.required "taskUpdateFormat" .taskUpdateFormat taskUpdateFormatEncoder
-        ]
-
-
-globalSettingsDecoder : TsDecode.Decoder GlobalSettings
-globalSettingsDecoder =
-    TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskUpdateFormatDecoder)
 
 
 semverEncoder : TsEncode.Encoder Semver.Version
 semverEncoder =
     TsEncode.string
         |> TsEncode.map Semver.print
-
-
-taskUpdateFormatEncoder : TsEncode.Encoder TaskUpdateFormat
-taskUpdateFormatEncoder =
-    TsEncode.union
-        (\vObsidianCardBoard vObsidianTasks v ->
-            case v of
-                ObsidianCardBoard ->
-                    vObsidianCardBoard
-
-                ObsidianTasks ->
-                    vObsidianTasks
-        )
-        |> TsEncode.variantLiteral (JE.string "ObsidianCardBoard")
-        |> TsEncode.variantLiteral (JE.string "ObsidianTasks")
-        |> TsEncode.buildUnion
-
-
-taskUpdateFormatDecoder : TsDecode.Decoder TaskUpdateFormat
-taskUpdateFormatDecoder =
-    TsDecode.oneOf
-        [ TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
-        , TsDecode.literal ObsidianTasks (JE.string "ObsidianTasks")
-        ]
 
 
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
@@ -186,7 +116,7 @@ v_0_5_0_Decoder : TsDecode.Decoder Settings
 v_0_5_0_Decoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_5_0))
-        |> TsDecode.andMap (TsDecode.field "globalSettings" globalSettingsDecoder)
+        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
@@ -194,7 +124,7 @@ v_0_4_0_Decoder : TsDecode.Decoder Settings
 v_0_4_0_Decoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_4_0))
-        |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
+        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
@@ -202,7 +132,7 @@ v_0_3_0_Decoder : TsDecode.Decoder Settings
 v_0_3_0_Decoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_3_0))
-        |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
+        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
@@ -210,7 +140,7 @@ v_0_2_0_Decoder : TsDecode.Decoder Settings
 v_0_2_0_Decoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_2_0))
-        |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
+        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
@@ -218,7 +148,7 @@ v_0_1_0_Decoder : TsDecode.Decoder Settings
 v_0_1_0_Decoder =
     TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.list BoardConfig.decoder_v_0_1_0))
-        |> TsDecode.andMap (TsDecode.succeed defaultGlobalSettings)
+        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 

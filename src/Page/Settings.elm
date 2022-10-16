@@ -11,9 +11,10 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
-import CardBoardSettings exposing (GlobalSettings, TaskUpdateFormat(..))
+import CardBoardSettings
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
+import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -231,7 +232,7 @@ update msg model =
                 { model
                     | settingsState =
                         SettingsState.updateGlobalSettings
-                            (CardBoardSettings.updateTaskUpdateFormat taskUpdateFormat)
+                            (GlobalSettings.updateTaskUpdateFormat taskUpdateFormat)
                             model.settingsState
                 }
 
@@ -922,14 +923,14 @@ taskUpdateFormatSelect taskUpdateFormat =
         , onInput TaskUpdateFormatSelected
         ]
         (case taskUpdateFormat of
-            ObsidianCardBoard ->
+            GlobalSettings.ObsidianCardBoard ->
                 [ Html.option [ value "ObsidianCardBoard", selected True ]
                     [ Html.text "CardBoard" ]
                 , Html.option [ value "ObsidianTasks" ]
                     [ Html.text "Tasks" ]
                 ]
 
-            ObsidianTasks ->
+            GlobalSettings.ObsidianTasks ->
                 [ Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
                 , Html.option [ value "ObsidianTasks", selected True ]

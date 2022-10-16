@@ -26,8 +26,9 @@ module Session exposing
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
-import CardBoardSettings exposing (GlobalSettings)
+import CardBoardSettings
 import Filter
+import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
 import State exposing (State)
@@ -68,7 +69,7 @@ default : Session
 default =
     Session
         { boardConfigs = SafeZipper.empty
-        , globalSettings = CardBoardSettings.defaultGlobalSettings
+        , globalSettings = GlobalSettings.default
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
