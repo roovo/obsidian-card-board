@@ -461,15 +461,7 @@ modalConfirmDelete =
         ]
 
 
-
--- Html.div
---     [ class "vertical-tab-nav-item is-active"
---     , onClick <| BoardNameClicked index
---     ]
---     [ Html.text <| BoardConfig.title boardConfig ]
-
-
-settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> Html Msg -> Html Msg
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> List (Html Msg) -> Html Msg
 settingsSurroundView currentSection configs formContents =
     let
         boardMapFn =
@@ -531,7 +523,10 @@ settingsSurroundView currentSection configs formContents =
                             )
                         ]
                     ]
-                , formContents
+                , Html.div [ class "vertical-tab-content-container" ]
+                    [ Html.div [ class "vertical-tab-content" ]
+                        formContents
+                    ]
                 ]
             ]
         ]
@@ -548,25 +543,22 @@ globalSettingsView boardConfigs gs =
     settingsSurroundView Options boardConfigs <| globalSettingsForm gs
 
 
-globalSettingsForm : GlobalSettings -> Html Msg
+globalSettingsForm : GlobalSettings -> List (Html Msg)
 globalSettingsForm gs =
-    Html.div [ class "vertical-tab-content-container" ]
-        [ Html.div [ class "vertical-tab-content" ]
-            [ Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Task update format" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.text "Which format to use when updating tasks." ]
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ taskUpdateFormatSelect gs.taskUpdateFormat ]
-                ]
+    [ Html.div [ class "setting-item" ]
+        [ Html.div [ class "setting-item-info" ]
+            [ Html.div [ class "setting-item-name" ]
+                [ Html.text "Task update format" ]
+            , Html.div [ class "setting-item-description" ]
+                [ Html.text "Which format to use when updating tasks." ]
             ]
+        , Html.div [ class "setting-item-control" ]
+            [ taskUpdateFormatSelect gs.taskUpdateFormat ]
         ]
+    ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> Html Msg
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
 boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
         ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
@@ -587,117 +579,116 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     else
                         ""
             in
-            Html.div [ class "vertical-tab-content-container" ]
-                [ Html.div [ class "vertical-tab-content" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
+            [ Html.div [ class "setting-items-inner" ]
+                [ Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Title" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "The name of this board" ]
                         ]
-                    , Html.div [ class "setting-item setting-item-heading" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filters" ]
-                            , Html.div [ class "setting-item-description" ] []
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value config.title
+                            , onInput EnteredTitle
                             ]
-                        , Html.div [ class "setting-item-control" ] []
+                            []
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Definitions" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Filter tasks by files, paths, and/or tags." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ MultiSelect.view multiselect
-                            ]
+                    ]
+                , Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Filters" ]
+                        , Html.div [ class "setting-item-description" ] []
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Polarity" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters as an Allow or Deny list." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ polaritySelect config.filterPolarity ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Definitions" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Filter tasks by files, paths, and/or tags." ]
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show filter tags on cards" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                                , onClick ToggleShowFilteredTags
-                                ]
-                                []
-                            ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ MultiSelect.view multiselect
                         ]
-                    , Html.div [ class "setting-item setting-item-heading" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Columns" ]
-                            , Html.div [ class "setting-item-description" ] []
-                            ]
-                        , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Polarity" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Use the filters as an Allow or Deny list." ]
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include undated" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no due date." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUndatedStyle
-                                , onClick ToggleIncludeUndated
-                                ]
-                                []
-                            ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ polaritySelect config.filterPolarity ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Show filter tags on cards" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                            , onClick ToggleShowFilteredTags
                             ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
+                            []
                         ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
+                    ]
+                , Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Columns" ]
+                        , Html.div [ class "setting-item-description" ] []
+                        ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include undated" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Whether to include a column for tasks with no due date." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ includeUndatedStyle
+                            , onClick ToggleIncludeUndated
                             ]
-                            [ Html.text "Delete this board"
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Completed count" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| String.fromInt config.completedCount
+                            , onInput EnteredCompletedCount
                             ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item dialog-buttons" ]
+                    [ Html.button
+                        [ class "mod-warning"
+                        , onClick <| DeleteBoardRequested
+                        ]
+                        [ Html.text "Delete this board"
                         ]
                     ]
                 ]
+            ]
 
         ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
@@ -739,177 +730,174 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
                         |> String.join "\n"
             in
-            Html.div [ class "vertical-tab-content-container" ]
-                [ Html.div [ class "vertical-tab-content" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
+            [ Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Title" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "The name of this board" ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.input
+                        [ type_ "text"
+                        , value config.title
+                        , onInput EnteredTitle
                         ]
-                    , Html.div [ class "setting-item setting-item-heading" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filters" ]
-                            , Html.div [ class "setting-item-description" ] []
-                            ]
-                        , Html.div [ class "setting-item-control" ] []
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item setting-item-heading" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Filters" ]
+                    , Html.div [ class "setting-item-description" ] []
+                    ]
+                , Html.div [ class "setting-item-control" ] []
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Definitions" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Filter tasks by files, paths, and/or tags." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ MultiSelect.view multiselect
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Polarity" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Use the filters defined above as an Allow or Deny list." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ polaritySelect config.filterPolarity ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Show filter tags on cards" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                        , onClick ToggleShowFilteredTags
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Definitions" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Filter tasks by files, paths, and/or tags." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ MultiSelect.view multiselect
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Polarity" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters defined above as an Allow or Deny list." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ polaritySelect config.filterPolarity ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show filter tags on cards" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                                , onClick ToggleShowFilteredTags
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item setting-item-heading" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Columns" ]
-                            , Html.div [ class "setting-item-description" ] []
-                            ]
-                        , Html.div [ class "setting-item-control" ] []
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Definitions" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.div []
-                                    [ Html.text "The tags to use to define board columns." ]
-                                , Html.div []
-                                    [ Html.text
-                                        ("Each line should be a tag followed by the column heading.  "
-                                            ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                            ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                        )
-                                    ]
-                                ]
-                            ]
-                        , Html.Keyed.node "div"
-                            [ class "setting-item-control" ]
-                            [ ( String.fromInt index
-                              , Html.textarea
-                                    [ onInput EnteredTags
-                                    , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                                    ]
-                                    [ Html.text tagText ]
-                              )
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show column tags on cards" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this on if you want to display the tags used to define columns on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showColumnTagsStyle
-                                , onClick ToggleShowColumnTags
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include others" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeOthersStyle
-                                , onClick ToggleIncludeOthers
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include untagged" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no tags." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUntaggedStyle
-                                , onClick ToggleIncludeUntagged
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
-                            ]
-                            [ Html.text "Delete this board"
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item setting-item-heading" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Columns" ]
+                    , Html.div [ class "setting-item-description" ] []
+                    ]
+                , Html.div [ class "setting-item-control" ] []
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Definitions" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.div []
+                            [ Html.text "The tags to use to define board columns." ]
+                        , Html.div []
+                            [ Html.text
+                                ("Each line should be a tag followed by the column heading.  "
+                                    ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
+                                    ++ "If you do not specify the heading it will be auto-generated from the tag."
+                                )
                             ]
                         ]
                     ]
+                , Html.Keyed.node "div"
+                    [ class "setting-item-control" ]
+                    [ ( String.fromInt index
+                      , Html.textarea
+                            [ onInput EnteredTags
+                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
+                            ]
+                            [ Html.text tagText ]
+                      )
+                    ]
                 ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Show column tags on cards" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Turn this on if you want to display the tags used to define columns on cards on this board." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ showColumnTagsStyle
+                        , onClick ToggleShowColumnTags
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Include others" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ includeOthersStyle
+                        , onClick ToggleIncludeOthers
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Include untagged" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Whether to include a column for tasks with no tags." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ includeUntaggedStyle
+                        , onClick ToggleIncludeUntagged
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Completed count" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.input
+                        [ type_ "text"
+                        , value <| String.fromInt config.completedCount
+                        , onInput EnteredCompletedCount
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item dialog-buttons" ]
+                [ Html.button
+                    [ class "mod-warning"
+                    , onClick <| DeleteBoardRequested
+                    ]
+                    [ Html.text "Delete this board"
+                    ]
+                ]
+            ]
 
         _ ->
-            Html.text ""
+            [ Html.text "" ]
 
 
 taskUpdateFormatSelect : TaskUpdateFormat -> Html Msg

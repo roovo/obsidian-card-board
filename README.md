@@ -24,7 +24,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 Please install via the regular Community Plugins setting tab within Obsidian.
 
 If you want to keep up to date with any Beta releases then add it to the v.handy
-[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
+[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).  Please do
+ensure that you have your vault backed up if you do this (you should do this anyway):
+ including the  `.obsidian` folder.
 
 ## Use
 When installed, you can launch the plugin:

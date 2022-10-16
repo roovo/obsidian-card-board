@@ -330,8 +330,9 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0;
 }
 
-.card-board-view .vertical-tab-content-container::before {
-  display: none;
+.setting-items-inner {
+  position: relative;
+  height: auto;
 }
 
 .vertical-tab-header-group-title-icon {
@@ -466,7 +467,6 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;
-  position: relative;
   padding: 5px 8px;
   font-size: var(--font-small);
   text-align: left;

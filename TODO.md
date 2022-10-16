@@ -1,5 +1,4 @@
 - settings modal fixes needed
-  - the multiselect shifts the form contents down when it appears
   - can I make it so if you click outside the modal it closes it (would solve this
     in the more general case and is expected behaviour!)
 - describe task update format options in the global settings dialog
