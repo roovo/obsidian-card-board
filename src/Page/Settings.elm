@@ -481,7 +481,11 @@ settingsSurroundView currentSection configs formContents =
                     "vertical-tab-nav-item"
     in
     Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
+        [ Html.div
+            [ class "modal-bg"
+            , onClick ModalCloseClicked
+            ]
+            []
         , Html.div [ class "modal mod-settings mod-sidebar-layout" ]
             [ Html.div
                 [ class "modal-close-button"

@@ -1,6 +1,3 @@
-- settings modal fixes needed
-  - can I make it so if you click outside the modal it closes it (would solve this
-    in the more general case and is expected behaviour!)
 - describe task update format options in the global settings dialog
 
 - tabs are not very visible
@@ -15,7 +12,6 @@
 - does everything work with the about-to-be released tag coloring plugin
 - don't prefix the tag class with 'tag-' as that can be inferred!
 - review coverage report and add tests where needed
-- make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
