@@ -227,7 +227,7 @@ editGlobalSettings settingsState =
             EditingGlobalSettings cs gs
 
         EditingBoard cs gs ->
-            EditingGlobalSettings cs (Debug.log "plop4" gs)
+            EditingGlobalSettings cs gs
 
         EditingGlobalSettings _ _ ->
             settingsState

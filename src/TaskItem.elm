@@ -35,6 +35,7 @@ module TaskItem exposing
 
 import Date exposing (Date)
 import FNV1a
+import GlobalSettings exposing (TaskUpdateFormat)
 import Iso8601
 import Maybe.Extra as ME
 import ObsidianTasksDate
@@ -367,22 +368,13 @@ parser pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : { a | now : Time.Posix } -> TaskItem -> String
-toToggledString timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : TaskUpdateFormat -> { a | now : Time.Posix } -> TaskItem -> String
+toToggledString taskUpdateFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
             Maybe.withDefault Regex.never <|
                 Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
-
-        toggledCheckbox : TaskItem -> String
-        toggledCheckbox t_ =
-            case completion t_ of
-                Incomplete ->
-                    "- [x]"
-
-                _ ->
-                    "- [ ]"
 
         checkboxRegex : Regex
         checkboxRegex =
@@ -400,7 +392,12 @@ toToggledString timeWithZone ((TaskItem fields_ _) as taskItem) =
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
-                    " @completed(" ++ completionString ++ ")"
+                    case taskUpdateFormat of
+                        GlobalSettings.ObsidianCardBoard ->
+                            " @completed(" ++ completionString ++ ")"
+
+                        GlobalSettings.ObsidianTasks ->
+                            " ✅ " ++ String.left 10 completionString
 
                 _ ->
                     ""
@@ -427,9 +424,10 @@ toToggledString timeWithZone ((TaskItem fields_ _) as taskItem) =
                 Nothing ->
                     original
 
-        removeCompletionTag : String -> String
-        removeCompletionTag =
+        removeCompletionTags : String -> String
+        removeCompletionTags =
             regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "")
+                >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
 
         replaceCheckbox : TaskItem -> String -> String
         replaceCheckbox t_ taskString =
@@ -446,10 +444,19 @@ toToggledString timeWithZone ((TaskItem fields_ _) as taskItem) =
                 checkboxIndex
                 (checkboxIndex + 5)
                 taskString
+
+        toggledCheckbox : TaskItem -> String
+        toggledCheckbox t_ =
+            case completion t_ of
+                Incomplete ->
+                    "- [x]"
+
+                _ ->
+                    "- [ ]"
     in
     fields_.originalText
         |> replaceCheckbox taskItem
-        |> removeCompletionTag
+        |> removeCompletionTags
         |> insertCompletionTag taskItem
 
 

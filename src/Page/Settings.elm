@@ -197,7 +197,7 @@ update msg model =
             )
 
         GlobalSettingsClicked ->
-            wrap { model | settingsState = SettingsState.editGlobalSettings (Debug.log "plop3" model.settingsState) }
+            wrap { model | settingsState = SettingsState.editGlobalSettings model.settingsState }
 
         ModalCancelClicked ->
             handleClose model
@@ -362,14 +362,10 @@ view model =
                 ]
 
         SettingsState.EditingBoard allConfigs gs ->
-            let
-                plop =
-                    Debug.log "plop2" gs
-            in
             boardSettingsView allConfigs model.multiSelect
 
         SettingsState.EditingGlobalSettings allConfigs gs ->
-            globalSettingsView allConfigs <| Debug.log "plop" gs
+            globalSettingsView allConfigs gs
 
 
 modalAddBoard : BoardConfig -> Html Msg

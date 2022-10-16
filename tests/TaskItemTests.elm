@@ -2,6 +2,7 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
+import GlobalSettings exposing (TaskUpdateFormat)
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
@@ -845,23 +846,29 @@ title =
 toToggledString : Test
 toToggledString =
     describe "toToggledString"
-        [ test "outputs a string for a completed task, given an INCOMPLETE item" <|
+        [ test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
-        , test "outputs a string for an incomplete task given an item with an 'x' in the checkbox" <|
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
             \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ^12345"
+                "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianTasks { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
+        , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
+            \() ->
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
-        , test "outputs a string for an incomplete task given an item with an 'X' in the checkbox" <|
+        , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [X] foo #tag1 @completed(2020-03-22T00:00:00) bar #tag2"
+                "- [X] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
@@ -869,7 +876,7 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map (TaskItem.toToggledString { now = Time.millisToPosix 0 })
+                    |> List.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
 

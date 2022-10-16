@@ -15,7 +15,7 @@ port module InteropPorts exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import CardBoardSettings
-import GlobalSettings exposing (GlobalSettings)
+import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
@@ -85,14 +85,14 @@ requestFilterCandidates =
         |> interopFromElm
 
 
-rewriteTasks : TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTasks timeWithZone filePath taskItems =
+rewriteTasks : TaskUpdateFormat -> TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTasks taskUpdateFormat timeWithZone filePath taskItems =
     let
         rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = TaskItem.toToggledString timeWithZone taskItem
+            , newText = TaskItem.toToggledString taskUpdateFormat timeWithZone taskItem
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
@@ -103,7 +103,7 @@ rewriteTasks timeWithZone filePath taskItems =
 updateSettings : SafeZipper BoardConfig -> GlobalSettings -> Cmd msg
 updateSettings boardConfigs gs =
     { version = CardBoardSettings.currentVersion
-    , globalSettings = Debug.log "plop updating" gs
+    , globalSettings = gs
     , boardConfigs = SafeZipper.toList boardConfigs
     }
         |> encodeVariant "updateSettings" CardBoardSettings.encoder

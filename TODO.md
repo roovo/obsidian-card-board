@@ -4,8 +4,9 @@
     - can I make it so if you click outside the modal it closes it (would solve this
       in the more general case and is expected behaviour!
   - the add board icon needs to be better positioned
-- use the configured completion format
-- desribe task update format options in the global settings dialog
+- describe task update format options in the global settings dialog
+
+- tabs are not very visible
 
 - use Settings everywehere
   - when decoding -> SafeZipper
@@ -14,6 +15,7 @@
 
 
 # Cleanups
+- does everything work with the about-to-be released tag coloring plugin
 - don't prefix the tag class with 'tag-' as that can be inferred!
 - review coverage report and add tests where needed
 - make it so if you click outside the modal it closes it

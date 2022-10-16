@@ -21,6 +21,7 @@ npm run dev             # run dev build
 - check with no config (data.json file)
 - check with previous config file versions
 - is README up to date?
+- is TODO up to date?
 - pre-release new version
   - main.js
   - manifest.json (the version in here is what is displaye as the current plugin version
