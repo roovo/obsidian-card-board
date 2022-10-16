@@ -1,7 +1,4 @@
-- describe task update format options in the global settings dialog
-
 - tabs are not very visible
-
 - use Settings everywehere
   - when decoding -> SafeZipper
   - encode to SafeZipper

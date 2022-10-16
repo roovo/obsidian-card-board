@@ -554,7 +554,22 @@ globalSettingsForm gs =
             [ Html.div [ class "setting-item-name" ]
                 [ Html.text "Task update format" ]
             , Html.div [ class "setting-item-description" ]
-                [ Html.text "Which format to use when updating tasks." ]
+                [ Html.text "Which format to use when marking tasks as completed:"
+                , Html.br [] []
+                , Html.br [] []
+                , Html.strong [] [ Html.text "CardBoard" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
+                , Html.br [] []
+                , Html.text "or "
+                , Html.strong [] [ Html.text "Tasks" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "✅ 1999-12-31" ]
+                , Html.br [] []
+                , Html.br [] []
+                , Html.text "When reading tasks, CardBoard understands either format.  It also understands"
+                , Html.text " due dates whether in CardBoard or Tasks format."
+                ]
             ]
         , Html.div [ class "setting-item-control" ]
             [ taskUpdateFormatSelect gs.taskUpdateFormat ]
