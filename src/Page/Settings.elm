@@ -2,8 +2,9 @@ module Page.Settings exposing
     ( Model
     , Msg(..)
     , init
-    , mapSession
-    , mapSessionConfig
+    ,  mapSession
+       -- , mapSessionConfig
+
     , toSession
     , update
     , view
@@ -11,7 +12,6 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
-import CardBoardSettings
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
@@ -24,6 +24,7 @@ import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
+import Settings exposing (Settings)
 import SettingsState exposing (SettingsState)
 import State exposing (State)
 
@@ -42,21 +43,17 @@ type alias Model =
 
 init : Session -> Model
 init session =
-    let
-        boardConfigs : SafeZipper BoardConfig
-        boardConfigs =
-            Session.boardConfigs session
-    in
-    { multiSelect = MultiSelect.init multiSelectConfig (currentFilters boardConfigs)
+    { multiSelect = MultiSelect.init multiSelectConfig (currentFilters <| Session.boardConfigs session)
     , pathCache = State.Waiting
     , session = session
-    , settingsState = SettingsState.init boardConfigs (Session.globalSettings session)
+    , settingsState = SettingsState.init (Session.settings session)
     }
 
 
 currentFilters : SafeZipper BoardConfig -> Dict String Filter
 currentFilters boardConfigs =
-    SafeZipper.current boardConfigs
+    boardConfigs
+        |> SafeZipper.current
         |> Maybe.map BoardConfig.filters
         |> Maybe.map (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
         |> Maybe.withDefault []
@@ -73,9 +70,11 @@ mapSession fn model =
     { model | session = fn model.session }
 
 
-mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
-mapSessionConfig fn model =
-    { model | session = Session.mapConfig fn model.session }
+
+--
+-- mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
+-- mapSessionConfig fn model =
+--     { model | session = Session.mapConfig fn model.session }
 
 
 multiSelectConfig : MultiSelect.Config Msg Filter
@@ -124,10 +123,10 @@ update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            wrap { model | settingsState = SettingsState.addBoardRequested model.settingsState }
+            mapSettingsState SettingsState.addBoardRequested model
 
         AddBoardConfirmed ->
-            wrap { model | settingsState = SettingsState.confirmAddBoard model.settingsState }
+            mapSettingsState SettingsState.confirmAddBoard model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
@@ -139,7 +138,7 @@ update msg model =
 
                 newSettingsState =
                     model.settingsState
-                        |> SettingsState.updateBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
+                        |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
                         |> SettingsState.editBoardAt index
 
                 newFilters =
@@ -152,25 +151,25 @@ update msg model =
                 }
 
         BoardTypeSelected boardType ->
-            updateBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+            mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
-            wrap { model | settingsState = SettingsState.deleteBoardRequested model.settingsState }
+            mapSettingsState SettingsState.deleteBoardRequested model
 
         DeleteBoardConfirmed ->
-            wrap { model | settingsState = SettingsState.confirmDeleteBoard model.settingsState }
+            mapSettingsState SettingsState.confirmDeleteBoard model
 
         EnteredCompletedCount value ->
-            updateBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
+            mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
 
         EnteredNewBoardTitle title ->
-            updateBoardBeingAdded (BoardConfig.updateTitle title) model
+            mapBoardBeingAdded (BoardConfig.updateTitle title) model
 
         EnteredTags tags ->
-            updateBoardBeingEdited (BoardConfig.updateTags tags) model
+            mapBoardBeingEdited (BoardConfig.updateTags tags) model
 
         EnteredTitle title ->
-            updateBoardBeingEdited (BoardConfig.updateTitle title) model
+            mapBoardBeingEdited (BoardConfig.updateTitle title) model
 
         FilterCandidatesReceived filterCandidates ->
             let
@@ -197,7 +196,7 @@ update msg model =
             )
 
         GlobalSettingsClicked ->
-            wrap { model | settingsState = SettingsState.editGlobalSettings model.settingsState }
+            mapSettingsState SettingsState.editGlobalSettings model
 
         ModalCancelClicked ->
             handleClose model
@@ -225,31 +224,31 @@ update msg model =
             )
 
         PolaritySelected polarity ->
-            updateBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+            mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
         TaskUpdateFormatSelected taskUpdateFormat ->
             wrap
                 { model
                     | settingsState =
-                        SettingsState.updateGlobalSettings
+                        SettingsState.mapGlobalSettings
                             (GlobalSettings.updateTaskUpdateFormat taskUpdateFormat)
                             model.settingsState
                 }
 
         ToggleIncludeOthers ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
+            mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
 
         ToggleIncludeUndated ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeUndated model
+            mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
 
         ToggleIncludeUntagged ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+            mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
 
         ToggleShowColumnTags ->
-            updateBoardBeingEdited BoardConfig.toggleShowColumnTags model
+            mapBoardBeingEdited BoardConfig.toggleShowColumnTags model
 
         ToggleShowFilteredTags ->
-            updateBoardBeingEdited BoardConfig.toggleShowFilteredTags model
+            mapBoardBeingEdited BoardConfig.toggleShowFilteredTags model
 
 
 selectedItemLabel : Filter -> String
@@ -284,16 +283,6 @@ ensureAllTypes list =
     List.map typeOrDefault Filter.filterTypes
 
 
-updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
-updateBoardBeingAdded fn model =
-    wrap { model | settingsState = SettingsState.updateBoardBeingAdded fn model.settingsState }
-
-
-updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
-updateBoardBeingEdited fn model =
-    wrap { model | settingsState = SettingsState.updateBoardBeingEdited fn model.settingsState }
-
-
 handleClose : Model -> ( Model, Cmd Msg, Session.Msg )
 handleClose model =
     let
@@ -307,7 +296,7 @@ handleClose model =
             SettingsState.globalSettings newSettingsState
     in
     case newSettingsState of
-        SettingsState.ClosingPlugin cs gs ->
+        SettingsState.ClosingPlugin _ ->
             ( { model | settingsState = newSettingsState }
             , Cmd.batch
                 [ InteropPorts.updateSettings newBoardConfigs newGlobalSettings
@@ -316,7 +305,7 @@ handleClose model =
             , Session.SettingsClosed newBoardConfigs
             )
 
-        SettingsState.ClosingSettings cs gs ->
+        SettingsState.ClosingSettings _ ->
             ( { model | settingsState = newSettingsState }
             , InteropPorts.updateSettings newBoardConfigs newGlobalSettings
             , Session.SettingsClosed newBoardConfigs
@@ -324,6 +313,21 @@ handleClose model =
 
         _ ->
             wrap { model | settingsState = newSettingsState }
+
+
+mapSettingsState : (SettingsState -> SettingsState) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapSettingsState fn model =
+    wrap { model | settingsState = fn model.settingsState }
+
+
+mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded fn model =
+    wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
+
+
+mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingEdited fn model =
+    wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
 wrap : Model -> ( Model, Cmd Msg, Session.Msg )
@@ -343,29 +347,29 @@ type CurrentSection
 view : Model -> Html Msg
 view model =
     case model.settingsState of
-        SettingsState.AddingBoard newConfig allConfigs gs ->
+        SettingsState.AddingBoard newConfig settings ->
             Html.div []
-                [ boardSettingsView allConfigs model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.ClosingPlugin allConfigs gs ->
+        SettingsState.ClosingPlugin settings ->
             Html.text ""
 
-        SettingsState.ClosingSettings allConfigs gs ->
+        SettingsState.ClosingSettings settings ->
             Html.text ""
 
-        SettingsState.DeletingBoard allConfigs gs ->
+        SettingsState.DeletingBoard settings ->
             Html.div []
-                [ boardSettingsView allConfigs model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard allConfigs gs ->
-            boardSettingsView allConfigs model.multiSelect
+        SettingsState.EditingBoard settings ->
+            boardSettingsView (Settings.boardConfigs settings) model.multiSelect
 
-        SettingsState.EditingGlobalSettings allConfigs gs ->
-            globalSettingsView allConfigs gs
+        SettingsState.EditingGlobalSettings settings ->
+            globalSettingsView settings
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -542,9 +546,12 @@ boardSettingsView boardConfigs multiselect =
         |> settingsSurroundView Boards boardConfigs
 
 
-globalSettingsView : SafeZipper BoardConfig -> GlobalSettings -> Html Msg
-globalSettingsView boardConfigs gs =
-    settingsSurroundView Options boardConfigs <| globalSettingsForm gs
+globalSettingsView : Settings -> Html Msg
+globalSettingsView settings =
+    settings
+        |> Settings.globalSettings
+        |> globalSettingsForm
+        |> settingsSurroundView Options (Settings.boardConfigs settings)
 
 
 globalSettingsForm : GlobalSettings -> List (Html Msg)

@@ -97,7 +97,7 @@ to the task:
 ```
 
 If you are using this in conjunction with the
-[Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin, then set the
+[Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin, you can set the
 Task update format to Tasks in the plugin settings.  You will find this in the Global Settings
 pane.  If you do this, the appended completion date will be in tasks format:
 

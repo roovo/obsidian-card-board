@@ -5,7 +5,6 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
-import CardBoardSettings exposing (Settings)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -17,6 +16,7 @@ import Page.Board as BoardPage
 import Page.Settings as SettingsPage
 import SafeZipper
 import Session exposing (Session)
+import Settings exposing (Settings)
 import State
 import Task
 import TaskItem
@@ -85,16 +85,6 @@ type Model
     | Settings SettingsPage.Model
 
 
-mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
-mapSessionConfig fn model =
-    case model of
-        Boards session ->
-            Boards <| Session.mapConfig fn session
-
-        Settings settingsPageModel ->
-            Settings <| SettingsPage.mapSessionConfig fn settingsPageModel
-
-
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
@@ -146,7 +136,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ActiveStateUpdated isActiveView, _ ) ->
-            ( mapSessionConfig (\c -> { c | isActiveView = isActiveView }) model
+            ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
             )
 
@@ -214,17 +204,17 @@ update msg model =
             ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
-            ( mapSessionConfig (\c -> { c | timeWithZone = { zone = zone, now = posix } }) model
+            ( mapSession (Session.timeWIthZoneIs zone posix) model
             , Cmd.none
             )
 
         ( ShowBoard index, _ ) ->
-            ( mapSessionConfig (\c -> { c | boardConfigs = SafeZipper.atIndex index c.boardConfigs }) model
+            ( mapSession (Session.switchToBoardAt index) model
             , Cmd.none
             )
 
         ( Tick time, _ ) ->
-            ( mapSessionConfig (\c -> { c | timeWithZone = TimeWithZone.now time c.timeWithZone }) model
+            ( mapSession (Session.timeIs time) model
             , Cmd.none
             )
 
@@ -299,7 +289,6 @@ cmdForTaskRedraws newPath session =
         cards : List Card
         cards =
             Session.taskList session
-                |> State.withDefault TaskList.empty
                 |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
                 |> Boards.init (Session.boardConfigs session)
                 |> Boards.cards (Session.timeWithZone session)
@@ -329,7 +318,7 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
         Session.SettingsClosed newConfigs ->
             toModel subModel
                 |> toSession
-                |> Session.mapConfig (\c -> { c | boardConfigs = newConfigs })
+                |> Session.updateConfigs newConfigs
                 |> Boards
     , Cmd.map toMsg subCmd
     )

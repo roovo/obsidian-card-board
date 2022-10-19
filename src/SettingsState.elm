@@ -10,15 +10,15 @@ module SettingsState exposing
     , editGlobalSettings
     , globalSettings
     , init
-    , updateBoardBeingAdded
-    , updateBoardBeingEdited
-    , updateGlobalSettings
+    , mapBoardBeingAdded
+    , mapBoardBeingEdited
+    , mapGlobalSettings
     )
 
 import BoardConfig exposing (BoardConfig)
-import CardBoardSettings
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
+import Settings exposing (Settings)
 
 
 
@@ -26,25 +26,25 @@ import SafeZipper exposing (SafeZipper)
 
 
 type SettingsState
-    = AddingBoard BoardConfig (SafeZipper BoardConfig) GlobalSettings
-    | ClosingPlugin (SafeZipper BoardConfig) GlobalSettings
-    | ClosingSettings (SafeZipper BoardConfig) GlobalSettings
-    | DeletingBoard (SafeZipper BoardConfig) GlobalSettings
-    | EditingBoard (SafeZipper BoardConfig) GlobalSettings
-    | EditingGlobalSettings (SafeZipper BoardConfig) GlobalSettings
+    = AddingBoard BoardConfig Settings
+    | ClosingPlugin Settings
+    | ClosingSettings Settings
+    | DeletingBoard Settings
+    | EditingBoard Settings
+    | EditingGlobalSettings Settings
 
 
 
 -- CREATE
 
 
-init : SafeZipper BoardConfig -> GlobalSettings -> SettingsState
-init cs gs =
-    if SafeZipper.length cs == 0 then
-        AddingBoard BoardConfig.default cs gs
+init : Settings -> SettingsState
+init settings_ =
+    if Settings.hasAnyBordsConfigured settings_ then
+        EditingBoard settings_
 
     else
-        EditingBoard cs gs
+        AddingBoard BoardConfig.default settings_
 
 
 
@@ -53,46 +53,12 @@ init cs gs =
 
 boardConfigs : SettingsState -> SafeZipper BoardConfig
 boardConfigs settingsState =
-    case settingsState of
-        AddingBoard _ cs _ ->
-            cs
-
-        ClosingPlugin cs _ ->
-            cs
-
-        ClosingSettings cs _ ->
-            cs
-
-        DeletingBoard cs _ ->
-            cs
-
-        EditingBoard cs _ ->
-            cs
-
-        EditingGlobalSettings cs _ ->
-            cs
+    Settings.boardConfigs <| settings settingsState
 
 
 globalSettings : SettingsState -> GlobalSettings
 globalSettings settingsState =
-    case settingsState of
-        AddingBoard _ _ gs ->
-            gs
-
-        ClosingPlugin _ gs ->
-            gs
-
-        ClosingSettings _ gs ->
-            gs
-
-        DeletingBoard _ gs ->
-            gs
-
-        EditingBoard _ gs ->
-            gs
-
-        EditingGlobalSettings _ gs ->
-            gs
+    Settings.globalSettings <| settings settingsState
 
 
 
@@ -102,56 +68,56 @@ globalSettings settingsState =
 addBoardRequested : SettingsState -> SettingsState
 addBoardRequested settingsState =
     case settingsState of
-        AddingBoard _ _ _ ->
+        AddingBoard _ _ ->
             settingsState
 
-        ClosingPlugin cs gs ->
-            AddingBoard BoardConfig.default cs gs
+        ClosingPlugin settings_ ->
+            AddingBoard BoardConfig.default settings_
 
-        ClosingSettings cs gs ->
-            AddingBoard BoardConfig.default cs gs
+        ClosingSettings settings_ ->
+            AddingBoard BoardConfig.default settings_
 
-        DeletingBoard cs gs ->
-            AddingBoard BoardConfig.default cs gs
+        DeletingBoard settings_ ->
+            AddingBoard BoardConfig.default settings_
 
-        EditingBoard cs gs ->
-            AddingBoard BoardConfig.default cs gs
+        EditingBoard settings_ ->
+            AddingBoard BoardConfig.default settings_
 
-        EditingGlobalSettings cs gs ->
-            AddingBoard BoardConfig.default cs gs
+        EditingGlobalSettings settings_ ->
+            AddingBoard BoardConfig.default settings_
 
 
 cancelCurrentState : SettingsState -> SettingsState
 cancelCurrentState settingsState =
     case settingsState of
-        AddingBoard _ cs gs ->
-            if SafeZipper.length cs == 0 then
-                ClosingPlugin cs gs
+        AddingBoard _ settings_ ->
+            if Settings.hasAnyBordsConfigured settings_ then
+                init settings_
 
             else
-                init cs gs
+                ClosingPlugin settings_
 
-        ClosingPlugin cs gs ->
-            ClosingPlugin cs gs
+        ClosingPlugin settings_ ->
+            ClosingPlugin settings_
 
-        ClosingSettings cs gs ->
-            ClosingSettings cs gs
+        ClosingSettings settings_ ->
+            ClosingSettings settings_
 
-        DeletingBoard cs gs ->
-            EditingBoard cs gs
+        DeletingBoard settings_ ->
+            EditingBoard settings_
 
-        EditingBoard cs gs ->
-            ClosingSettings cs gs
+        EditingBoard settings_ ->
+            ClosingSettings settings_
 
-        EditingGlobalSettings cs gs ->
-            ClosingSettings cs gs
+        EditingGlobalSettings settings_ ->
+            ClosingSettings settings_
 
 
 confirmAddBoard : SettingsState -> SettingsState
 confirmAddBoard settingsState =
     case settingsState of
-        AddingBoard c cs gs ->
-            EditingBoard (SafeZipper.last <| SafeZipper.add c cs) gs
+        AddingBoard c settings_ ->
+            EditingBoard <| Settings.addBoard c settings_
 
         _ ->
             settingsState
@@ -160,8 +126,8 @@ confirmAddBoard settingsState =
 confirmDeleteBoard : SettingsState -> SettingsState
 confirmDeleteBoard settingsState =
     case settingsState of
-        DeletingBoard cs gs ->
-            init (SafeZipper.deleteCurrent cs) gs
+        DeletingBoard settings_ ->
+            init (Settings.deleteCurrentBoard settings_)
 
         _ ->
             settingsState
@@ -170,94 +136,120 @@ confirmDeleteBoard settingsState =
 deleteBoardRequested : SettingsState -> SettingsState
 deleteBoardRequested settingsState =
     case settingsState of
-        AddingBoard c cs gs ->
-            DeletingBoard cs gs
+        AddingBoard c settings_ ->
+            DeletingBoard settings_
 
-        ClosingPlugin cs gs ->
-            DeletingBoard cs gs
+        ClosingPlugin settings_ ->
+            DeletingBoard settings_
 
-        ClosingSettings cs gs ->
-            DeletingBoard cs gs
+        ClosingSettings settings_ ->
+            DeletingBoard settings_
 
-        DeletingBoard cs gs ->
+        DeletingBoard settings_ ->
             settingsState
 
-        EditingBoard cs gs ->
-            DeletingBoard cs gs
+        EditingBoard settings_ ->
+            DeletingBoard settings_
 
-        EditingGlobalSettings cs gs ->
-            DeletingBoard cs gs
+        EditingGlobalSettings settings_ ->
+            DeletingBoard settings_
 
 
 editBoardAt : Int -> SettingsState -> SettingsState
 editBoardAt index settingsState =
     case settingsState of
-        AddingBoard _ cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        AddingBoard _ settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
-        ClosingPlugin cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        ClosingPlugin settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
-        ClosingSettings cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        ClosingSettings settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
-        DeletingBoard cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        DeletingBoard settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
-        EditingBoard cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        EditingBoard settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
-        EditingGlobalSettings cs gs ->
-            EditingBoard (SafeZipper.atIndex index cs) gs
+        EditingGlobalSettings settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
 
 
 editGlobalSettings : SettingsState -> SettingsState
 editGlobalSettings settingsState =
     case settingsState of
-        AddingBoard _ cs gs ->
-            EditingGlobalSettings cs gs
+        AddingBoard _ settings_ ->
+            EditingGlobalSettings settings_
 
-        ClosingPlugin cs gs ->
-            EditingGlobalSettings cs gs
+        ClosingPlugin settings_ ->
+            EditingGlobalSettings settings_
 
-        ClosingSettings cs gs ->
-            EditingGlobalSettings cs gs
+        ClosingSettings settings_ ->
+            EditingGlobalSettings settings_
 
-        DeletingBoard cs gs ->
-            EditingGlobalSettings cs gs
+        DeletingBoard settings_ ->
+            EditingGlobalSettings settings_
 
-        EditingBoard cs gs ->
-            EditingGlobalSettings cs gs
+        EditingBoard settings_ ->
+            EditingGlobalSettings settings_
 
-        EditingGlobalSettings _ _ ->
+        EditingGlobalSettings _ ->
             settingsState
 
 
-updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
-updateBoardBeingAdded fn settingsState =
+mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+mapBoardBeingAdded fn settingsState =
     case settingsState of
-        AddingBoard c cs gs ->
-            AddingBoard (fn c) cs gs
+        AddingBoard c settings_ ->
+            AddingBoard (fn c) settings_
 
         _ ->
             settingsState
 
 
-updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
-updateBoardBeingEdited fn settingsState =
+mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+mapBoardBeingEdited fn settingsState =
     case settingsState of
-        EditingBoard cs gs ->
-            EditingBoard (SafeZipper.mapCurrent fn cs) gs
+        EditingBoard settings_ ->
+            EditingBoard <| Settings.updateCurrentBoard fn settings_
 
         _ ->
             settingsState
 
 
-updateGlobalSettings : (GlobalSettings -> GlobalSettings) -> SettingsState -> SettingsState
-updateGlobalSettings fn settingsState =
+mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> SettingsState -> SettingsState
+mapGlobalSettings fn settingsState =
     case settingsState of
-        EditingGlobalSettings cs gs ->
-            EditingGlobalSettings cs (fn gs)
+        EditingGlobalSettings settings_ ->
+            EditingGlobalSettings (Settings.mapGlobalSettings fn settings_)
 
         _ ->
             settingsState
+
+
+
+-- PRIVATE
+
+
+settings : SettingsState -> Settings
+settings settingsState =
+    case settingsState of
+        AddingBoard _ settings_ ->
+            settings_
+
+        ClosingPlugin settings_ ->
+            settings_
+
+        ClosingSettings settings_ ->
+            settings_
+
+        DeletingBoard settings_ ->
+            settings_
+
+        EditingBoard settings_ ->
+            settings_
+
+        EditingGlobalSettings settings_ ->
+            settings_

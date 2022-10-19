@@ -10,10 +10,10 @@ module InteropDefinitions exposing
     , updateTasksEncoder
     )
 
-import CardBoardSettings exposing (Settings)
 import DecodeHelpers
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
+import Settings exposing (Settings)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
 
@@ -113,7 +113,7 @@ updateTasksEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "settings" CardBoardSettings.decoder)
+        |> TsDecode.andMap (TsDecode.field "settings" Settings.decoder)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 
@@ -128,7 +128,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
         , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
-        , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated CardBoardSettings.decoder
+        , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]
 
@@ -169,7 +169,7 @@ fromElm =
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
-        |> TsEncode.variantTagged "updateSettings" CardBoardSettings.encoder
+        |> TsEncode.variantTagged "updateSettings" Settings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion
 
