@@ -1,8 +1,6 @@
-- tabs are not very visible
-
-
-
 # Cleanups
+- tabs are not very visible
+- check coverage and add tests
 - I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
 - does everything work with the about-to-be released tag coloring plugin
 - don't prefix the tag class with 'tag-' as that can be inferred!
