@@ -15,10 +15,10 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 ## New
 - Compatible with [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
-  date formats (due and completed dates).  See the 
-  [Cards section](https://github.com/roovo/obsidian-card-board/tree/compatible#cards),
-  specially around the *Marking a task as complete* heading.
-  [Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
+  date formats (due and completed dates).  See the
+  [Tasks Compatibility section](https://github.com/roovo/obsidian-card-board/tree/junk#compatibility-obsidian-tasks)
+  below.
+- [Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -82,14 +82,6 @@ It will look something like this on a card on your board:
 
 ![example card](/images/card.png?raw=true)
 
-Note that CardBoard is equally happy reading tasks which have due dates specified
-in the format used by [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/),
-so will recognise:
-
-```
-- [ ] something with a due date in Tasks format 📅 2021-10-30
-```
-
 #### Marking a task as complete
 If you mark an item as complete on the board it will be marked as completed in the markdown
 (and vice-versa).  If you mark as complete on the board, a completion timestamp is appended
@@ -97,15 +89,6 @@ to the task:
 
 ```
 - [x] Task title @completed(2021-10-30T13:57:48)
-```
-
-If you are using this in conjunction with the
-[Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin, you can set the
-Task update format to Tasks in the plugin settings.  You will find this in the Global Settings
-pane.  If you do this, the appended completion date will be in tasks format:
-
-```
-- [x] Task title ✅ 2021-10-30
 ```
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
@@ -117,7 +100,6 @@ task will be marked as complete when you tick off the final subtask:
   - [ ] Do this next
   - [ ] Finally do this and you are done
 ```
-
 
 ### Deleting a task
 You can delete a task using the trash icon on the card.  This will not actually delete
@@ -226,6 +208,39 @@ above the board to the left of the tabs.  You can:
 - Configure your boards.
 - Delete any boards you no longer need.
 - Choose whether to use Cardboard or Tasks format for marking task completion.
+
+## Compatibility: Obsidian Tasks
+CardBoard now has baked in compatibility with the date format used by
+[Obsidian Tasks](), recognising both *Due* and *Completion* Tasks dates.  So:
+
+```
+- [ ] something with a due date in Tasks format 📅 2021-10-30 ✅ 2021-10-29
+```
+
+Will be read as a task with a due date of 30th Oct 2021 which was completed a day early.
+
+If you wish to use the comnpletion/done format used in Tasks when you mark a task as complete,
+you can set this in CardBoard's Global Settings:
+
+![task update format setting panel](/images/taskUpdateFormatSetting.png?raw=true)
+
+### Recurring Tasks
+**CardBoard does not understand recurring tasks**, even if you have set it up to use Tasks
+format for marking tasks as complete.   Checking off a recurring task from
+the CardBoard board view will add the completion date in Tasks format but **will
+not generate a new instance of the recurring task**.
+
+
+
+
+
+
+
+
+
+To get the correct behavior for recurring tasks, click the edit icon on the card
+to go to the file where the task is written, and then use the
+*"Tasks: Toggle Done"* command or click the checkbox from there.
 
 ## Scaling Board Size
 You can scale the size of the board relative to the size of stuff in Obsidian using
