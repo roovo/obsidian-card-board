@@ -3,11 +3,11 @@ module SessionTests exposing (suite)
 import BoardConfig
 import Expect
 import Filter
+import GlobalSettings
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
 import Session
-import State
 import TaskItem
 import TaskList
 import Test exposing (..)
@@ -20,6 +20,7 @@ suite =
         , default
         , deleteItemsFromFile
         , finishAdding
+        , globalSettings
         , replaceTaskItems
         , updatePath
         ]
@@ -28,63 +29,65 @@ suite =
 addTaskList : Test
 addTaskList =
     describe "addTaskList"
-        [ test "if Waiting, sets to be Loading the added tasks" <|
+        [ test "can add a tasklist to a new session" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loading [ "a1", "a2" ])
-        , test "if Loading, adds the tasks to those already loaded" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
+        , test "can add tasklists onto a session which already contains one" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loading [ "a1", "a2", "g1", "g2" ])
-        , test "if Loaded, adds the tasks to those already loaded" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2", "g1", "g2" ]
+        , test "can add tasklist even if previously finished adding" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.finishAdding
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loaded [ "a1", "a2", "g1", "g2" ])
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2", "g1", "g2" ]
         ]
 
 
 default : Test
 default =
     describe "default"
-        [ test "sets the tasklist state to waiting" <|
+        [ test "empty task list" <|
             \() ->
                 Session.default
                     |> Session.taskList
-                    |> Expect.equal State.Waiting
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
         ]
 
 
 deleteItemsFromFile : Test
 deleteItemsFromFile =
     describe "deleteItemsFromFile"
-        [ test "if Waiting, leaves as Waiting" <|
+        [ test "does nothing to the tasklist of a new session" <|
             \() ->
                 Session.default
                     |> Session.deleteItemsFromFile ""
                     |> Session.taskList
-                    |> Expect.equal State.Waiting
-        , test "if Loading, removes tasks from the file from the Loading list" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        , test "remove tasks from the given file during loading" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.deleteItemsFromFile "g"
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loading [ "a1", "a2" ])
-        , test "if Loaded, removes tasks from the file from the Loaded list" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
+        , test "remove tasks from the given file after loading has finished" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
@@ -92,28 +95,28 @@ deleteItemsFromFile =
                     |> Session.finishAdding
                     |> Session.deleteItemsFromFile "g"
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loaded [ "a1", "a2" ])
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
         ]
 
 
 finishAdding : Test
 finishAdding =
     describe "finishAdding"
-        [ test "if Waiting, sets to be Loaded with no tasks in the list" <|
+        [ test "results in an empty tasklist if none have been added to the default Session" <|
             \() ->
                 Session.default
                     |> Session.finishAdding
                     |> Session.taskList
-                    |> Expect.equal (State.Loaded TaskList.empty)
-        , test "if Loading, sets to be Loaded with the loaded tasks in the list" <|
+                    |> Expect.equal TaskList.empty
+        , test "if Loading, there are the loaded tasks in the list" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.finishAdding
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loaded [ "a1", "a2" ])
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
         , test "if Loaded, stays Loaded" <|
             \() ->
                 Session.default
@@ -121,8 +124,19 @@ finishAdding =
                     |> Session.finishAdding
                     |> Session.finishAdding
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loaded [ "a1", "a2" ])
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
+globalSettings : Test
+globalSettings =
+    describe "globalSettings"
+        [ test "set to their default in a default Session" <|
+            \() ->
+                Session.default
+                    |> Session.globalSettings
+                    |> Expect.equal GlobalSettings.default
         ]
 
 
@@ -135,12 +149,12 @@ updatePath =
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.updatePath "a" "b"
                     |> Session.taskList
-                    |> State.map (\tl -> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) [] tl)
-                    |> Expect.equal (State.Loading [ "b", "b" ])
+                    |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
+                    |> Expect.equal [ "b", "b" ]
         , test "updates filter paths" <|
             \() ->
                 Session.default
-                    |> Session.mapConfig (\c -> { c | boardConfigs = SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ] })
+                    |> Session.updateConfigs (SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ])
                     |> Session.updatePath "a/path" "a"
                     |> Session.updatePath "b/path" "b"
                     |> Session.boardConfigs
@@ -154,23 +168,23 @@ updatePath =
 replaceTaskItems : Test
 replaceTaskItems =
     describe "replaceTaskItems"
-        [ test "if Waiting, leave as Waiting" <|
+        [ test "does nothing on a new session" <|
             \() ->
                 Session.default
                     |> Session.replaceTaskItems "" TaskListHelpers.taskListFromFileA
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal State.Waiting
-        , test "if Loading, replaces tasks from the file with those given" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        , test "replaces tasks from the file with those given whilst loading tasklists" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.replaceTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loading [ "n1", "n2", "g1", "g2" ])
-        , test "if Loaded, replaces tasks from the file with those given" <|
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2", "g1", "g2" ]
+        , test "replaces tasks from the file with those given whilst loading tasklists even if finished adding" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
@@ -178,8 +192,8 @@ replaceTaskItems =
                     |> Session.finishAdding
                     |> Session.replaceTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
                     |> Session.taskList
-                    |> State.map TaskList.taskTitles
-                    |> Expect.equal (State.Loaded [ "n1", "n2", "a1", "a2" ])
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2", "a1", "a2" ]
         ]
 
 

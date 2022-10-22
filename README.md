@@ -14,9 +14,11 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
-- Tags used in the definition of Boards can be hidden from view on Cards
-- Board can be scaled using css snippet
-- Per-board filtering can be used in either Allow or Deny mode
+- Compatible with [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
+  date formats (due and completed dates).  See the 
+  [Cards section](https://github.com/roovo/obsidian-card-board/tree/compatible#cards),
+  specially around the *Marking a task as complete* heading.
+  [Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -24,7 +26,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 Please install via the regular Community Plugins setting tab within Obsidian.
 
 If you want to keep up to date with any Beta releases then add it to the v.handy
-[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
+[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).  Please do
+ensure that you have your vault backed up if you do this (you should do this anyway):
+ including the  `.obsidian` folder.
 
 ## Use
 When installed, you can launch the plugin:
@@ -78,6 +82,14 @@ It will look something like this on a card on your board:
 
 ![example card](/images/card.png?raw=true)
 
+Note that CardBoard is equally happy reading tasks which have due dates specified
+in the format used by [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/),
+so will recognise:
+
+```
+- [ ] something with a due date in Tasks format 📅 2021-10-30
+```
+
 #### Marking a task as complete
 If you mark an item as complete on the board it will be marked as completed in the markdown
 (and vice-versa).  If you mark as complete on the board, a completion timestamp is appended
@@ -85,6 +97,15 @@ to the task:
 
 ```
 - [x] Task title @completed(2021-10-30T13:57:48)
+```
+
+If you are using this in conjunction with the
+[Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin, you can set the
+Task update format to Tasks in the plugin settings.  You will find this in the Global Settings
+pane.  If you do this, the appended completion date will be in tasks format:
+
+```
+- [x] Task title ✅ 2021-10-30
 ```
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
@@ -204,6 +225,7 @@ above the board to the left of the tabs.  You can:
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
 - Delete any boards you no longer need.
+- Choose whether to use Cardboard or Tasks format for marking task completion.
 
 ## Scaling Board Size
 You can scale the size of the board relative to the size of stuff in Obsidian using

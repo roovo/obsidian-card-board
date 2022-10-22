@@ -45,7 +45,7 @@ update msg session =
             )
 
         TabSelected tabIndex ->
-            ( Session.mapConfig (\c -> { c | boardConfigs = SafeZipper.atIndex tabIndex (Session.boardConfigs session) }) session
+            ( Session.switchToBoardAt tabIndex session
             , Cmd.none
             , Session.NoOp
             )
@@ -71,6 +71,7 @@ update msg session =
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
+                        (Session.globalSettings session |> .taskUpdateFormat)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
@@ -110,7 +111,7 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init (Session.boardConfigs session) (Session.currentTaskList session)
+                Boards.init (Session.boardConfigs session) (Session.taskList session)
 
             currentIndex : Maybe Int
             currentIndex =

@@ -1,6 +1,6 @@
 module Main exposing (Model, Msg, main)
 
-import BoardConfig exposing (BoardConfig)
+import BoardConfig
 import Boards
 import Browser
 import Browser.Events as Browser
@@ -16,12 +16,11 @@ import Page.Board as BoardPage
 import Page.Settings as SettingsPage
 import SafeZipper
 import Session exposing (Session)
-import State
+import Settings exposing (Settings)
 import Task
 import TaskItem
 import TaskList exposing (TaskList)
 import Time
-import TimeWithZone
 
 
 main : Program JD.Value Model Msg
@@ -54,7 +53,7 @@ init flags =
             ( Boards session
                 |> forceAddWhenNoBoards
             , Cmd.batch
-                [ InteropPorts.updateSettings (Session.boardConfigs session)
+                [ InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
                 , InteropPorts.elmInitialized
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
@@ -82,16 +81,6 @@ forceAddWhenNoBoards model =
 type Model
     = Boards Session
     | Settings SettingsPage.Model
-
-
-mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
-mapSessionConfig fn model =
-    case model of
-        Boards session ->
-            Boards <| Session.mapConfig fn session
-
-        Settings settingsPageModel ->
-            Settings <| SettingsPage.mapSessionConfig fn settingsPageModel
 
 
 mapSession : (Session -> Session) -> Model -> Model
@@ -127,7 +116,7 @@ type Msg
     = ActiveStateUpdated Bool
     | AllMarkdownLoaded
     | BadInputFromTypeScript
-    | BoardConfigsUpdated (List BoardConfig)
+    | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
@@ -145,7 +134,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model ) of
         ( ActiveStateUpdated isActiveView, _ ) ->
-            ( mapSessionConfig (\c -> { c | isActiveView = isActiveView }) model
+            ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
             )
 
@@ -160,11 +149,13 @@ update msg model =
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
-        ( BoardConfigsUpdated newConfigs, _ ) ->
+        ( SettingsUpdated newSettings, _ ) ->
             let
                 newModel : Model
                 newModel =
-                    mapSession (Session.updateConfigs newConfigs) model
+                    model
+                        |> mapSession (Session.updateConfigs newSettings.boardConfigs)
+                        |> mapSession (Session.updateGlobalSettings newSettings.globalSettings)
             in
             ( newModel
             , Cmd.batch
@@ -211,17 +202,17 @@ update msg model =
             ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
-            ( mapSessionConfig (\c -> { c | timeWithZone = { zone = zone, now = posix } }) model
+            ( mapSession (Session.timeWIthZoneIs zone posix) model
             , Cmd.none
             )
 
         ( ShowBoard index, _ ) ->
-            ( mapSessionConfig (\c -> { c | boardConfigs = SafeZipper.atIndex index c.boardConfigs }) model
+            ( mapSession (Session.switchToBoardAt index) model
             , Cmd.none
             )
 
         ( Tick time, _ ) ->
-            ( mapSessionConfig (\c -> { c | timeWithZone = TimeWithZone.now time c.timeWithZone }) model
+            ( mapSession (Session.timeIs time) model
             , Cmd.none
             )
 
@@ -284,7 +275,7 @@ cmdForFilterPathRename newPath session =
                 |> List.any (\f -> Filter.value f == newPath)
     in
     if anyUpdatedFilters then
-        InteropPorts.updateSettings (Session.boardConfigs session)
+        InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
 
     else
         Cmd.none
@@ -296,7 +287,6 @@ cmdForTaskRedraws newPath session =
         cards : List Card
         cards =
             Session.taskList session
-                |> State.withDefault TaskList.empty
                 |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
                 |> Boards.init (Session.boardConfigs session)
                 |> Boards.cards (Session.timeWithZone session)
@@ -326,7 +316,7 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
         Session.SettingsClosed newConfigs ->
             toModel subModel
                 |> toSession
-                |> Session.mapConfig (\c -> { c | boardConfigs = newConfigs })
+                |> Session.updateConfigs newConfigs
                 |> Boards
     , Cmd.map toMsg subCmd
     )
@@ -369,7 +359,7 @@ subscriptions _ =
                                     AllMarkdownLoaded
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
-                                    BoardConfigsUpdated newSettings.boardConfigs
+                                    SettingsUpdated newSettings
 
                                 InteropDefinitions.ShowBoard index ->
                                     ShowBoard index

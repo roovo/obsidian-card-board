@@ -2,8 +2,9 @@ module Page.Settings exposing
     ( Model
     , Msg(..)
     , init
-    , mapSession
-    , mapSessionConfig
+    ,  mapSession
+       -- , mapSessionConfig
+
     , toSession
     , update
     , view
@@ -13,6 +14,7 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
+import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -22,6 +24,7 @@ import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
+import Settings exposing (Settings)
 import SettingsState exposing (SettingsState)
 import State exposing (State)
 
@@ -31,8 +34,7 @@ import State exposing (State)
 
 
 type alias Model =
-    { boardConfigs : SafeZipper BoardConfig
-    , multiSelect : MultiSelect.Model Msg Filter
+    { multiSelect : MultiSelect.Model Msg Filter
     , pathCache : State (List Filter)
     , session : Session
     , settingsState : SettingsState
@@ -41,46 +43,21 @@ type alias Model =
 
 init : Session -> Model
 init session =
-    let
-        boardConfigs : SafeZipper BoardConfig
-        boardConfigs =
-            Session.boardConfigs session
-    in
-    { boardConfigs = boardConfigs
-    , multiSelect = MultiSelect.init multiSelectConfig (currentFilters boardConfigs)
+    { multiSelect = MultiSelect.init multiSelectConfig (currentFilters <| Session.boardConfigs session)
     , pathCache = State.Waiting
     , session = session
-    , settingsState = SettingsState.init (Session.boardConfigs session)
+    , settingsState = SettingsState.init (Session.settings session)
     }
 
 
 currentFilters : SafeZipper BoardConfig -> Dict String Filter
 currentFilters boardConfigs =
-    SafeZipper.current boardConfigs
+    boardConfigs
+        |> SafeZipper.current
         |> Maybe.map BoardConfig.filters
         |> Maybe.map (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
         |> Maybe.withDefault []
         |> Dict.fromList
-
-
-switchBoardConfig : (SafeZipper BoardConfig -> SafeZipper BoardConfig) -> Model -> Model
-switchBoardConfig fn model =
-    let
-        selectedFilters : List Filter
-        selectedFilters =
-            Dict.values <| MultiSelect.selectedItems model.multiSelect
-
-        newBoardConfigs : SafeZipper BoardConfig
-        newBoardConfigs =
-            model.boardConfigs
-                |> SafeZipper.mapCurrent (BoardConfig.updateFilters selectedFilters)
-                |> fn
-
-        newMultiSelect : MultiSelect.Model Msg Filter
-        newMultiSelect =
-            MultiSelect.updateSelectedItems (currentFilters newBoardConfigs) model.multiSelect
-    in
-    { model | boardConfigs = newBoardConfigs, multiSelect = newMultiSelect }
 
 
 toSession : Model -> Session
@@ -93,9 +70,11 @@ mapSession fn model =
     { model | session = fn model.session }
 
 
-mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
-mapSessionConfig fn model =
-    { model | session = Session.mapConfig fn model.session }
+
+--
+-- mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
+-- mapSessionConfig fn model =
+--     { model | session = Session.mapConfig fn model.session }
 
 
 multiSelectConfig : MultiSelect.Config Msg Filter
@@ -117,6 +96,7 @@ type Msg
     = AddBoardClicked
     | AddBoardConfirmed
     | BackspacePressed
+    | BoardNameClicked Int
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
@@ -125,12 +105,13 @@ type Msg
     | EnteredTags String
     | EnteredTitle String
     | FilterCandidatesReceived (List Filter)
+    | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
     | PathsRequested Int String
     | PolaritySelected String
-    | SettingsBoardNameClicked Int
+    | TaskUpdateFormatSelected String
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
@@ -142,34 +123,56 @@ update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         AddBoardClicked ->
-            wrap { model | settingsState = SettingsState.addState }
+            mapSettingsState SettingsState.addBoardRequested model
 
         AddBoardConfirmed ->
-            processsAction (SettingsState.confirmAdd model.settingsState) model
+            mapSettingsState SettingsState.confirmAddBoard model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
 
+        BoardNameClicked index ->
+            let
+                currentSelectedFilters : List Filter
+                currentSelectedFilters =
+                    Dict.values <| MultiSelect.selectedItems model.multiSelect
+
+                newSettingsState : SettingsState
+                newSettingsState =
+                    model.settingsState
+                        |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
+                        |> SettingsState.editBoardAt index
+
+                newFilters : Dict String Filter
+                newFilters =
+                    currentFilters <| SettingsState.boardConfigs newSettingsState
+            in
+            wrap
+                { model
+                    | settingsState = newSettingsState
+                    , multiSelect = MultiSelect.updateSelectedItems newFilters model.multiSelect
+                }
+
         BoardTypeSelected boardType ->
-            updateBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+            mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
-            wrap { model | settingsState = SettingsState.deleteState }
+            mapSettingsState SettingsState.deleteBoardRequested model
 
         DeleteBoardConfirmed ->
-            processsAction (SettingsState.confirmDelete model.settingsState) model
+            mapSettingsState SettingsState.confirmDeleteBoard model
 
         EnteredCompletedCount value ->
-            updateBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
+            mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
 
         EnteredNewBoardTitle title ->
-            updateBoardBeingAdded (BoardConfig.updateTitle title) model
+            mapBoardBeingAdded (BoardConfig.updateTitle title) model
 
         EnteredTags tags ->
-            updateBoardBeingEdited (BoardConfig.updateTags tags) model
+            mapBoardBeingEdited (BoardConfig.updateTags tags) model
 
         EnteredTitle title ->
-            updateBoardBeingEdited (BoardConfig.updateTitle title) model
+            mapBoardBeingEdited (BoardConfig.updateTitle title) model
 
         FilterCandidatesReceived filterCandidates ->
             let
@@ -195,11 +198,14 @@ update msg model =
             , Session.NoOp
             )
 
+        GlobalSettingsClicked ->
+            mapSettingsState SettingsState.editGlobalSettings model
+
         ModalCancelClicked ->
-            processsAction (SettingsState.cancelCurrentState model.settingsState) model
+            handleClose model
 
         ModalCloseClicked ->
-            processsAction (SettingsState.cancelCurrentState model.settingsState) model
+            handleClose model
 
         PathsRequested page searchTerm ->
             let
@@ -221,25 +227,31 @@ update msg model =
             )
 
         PolaritySelected polarity ->
-            updateBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+            mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
-        SettingsBoardNameClicked index ->
-            wrap <| switchBoardConfig (SafeZipper.atIndex index) model
+        TaskUpdateFormatSelected taskUpdateFormat ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            (GlobalSettings.updateTaskUpdateFormat taskUpdateFormat)
+                            model.settingsState
+                }
 
         ToggleIncludeOthers ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeOthers model
+            mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
 
         ToggleIncludeUndated ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeUndated model
+            mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
 
         ToggleIncludeUntagged ->
-            updateBoardBeingEdited BoardConfig.toggleIncludeUntagged model
+            mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
 
         ToggleShowColumnTags ->
-            updateBoardBeingEdited BoardConfig.toggleShowColumnTags model
+            mapBoardBeingEdited BoardConfig.toggleShowColumnTags model
 
         ToggleShowFilteredTags ->
-            updateBoardBeingEdited BoardConfig.toggleShowFilteredTags model
+            mapBoardBeingEdited BoardConfig.toggleShowFilteredTags model
 
 
 selectedItemLabel : Filter -> String
@@ -274,78 +286,54 @@ ensureAllTypes list =
     List.map typeOrDefault Filter.filterTypes
 
 
-updateBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
-updateBoardBeingAdded fn model =
+handleClose : Model -> ( Model, Cmd Msg, Session.Msg )
+handleClose model =
+    let
+        newSettingsState : SettingsState
+        newSettingsState =
+            SettingsState.cancelCurrentState model.settingsState
+
+        newBoardConfigs : SafeZipper BoardConfig
+        newBoardConfigs =
+            SettingsState.boardConfigs newSettingsState
+
+        newGlobalSettings : GlobalSettings
+        newGlobalSettings =
+            SettingsState.globalSettings newSettingsState
+    in
+    case newSettingsState of
+        SettingsState.ClosingPlugin _ ->
+            ( { model | settingsState = newSettingsState }
+            , Cmd.batch
+                [ InteropPorts.updateSettings newBoardConfigs newGlobalSettings
+                , InteropPorts.closeView
+                ]
+            , Session.SettingsClosed newBoardConfigs
+            )
+
+        SettingsState.ClosingSettings _ ->
+            ( { model | settingsState = newSettingsState }
+            , InteropPorts.updateSettings newBoardConfigs newGlobalSettings
+            , Session.SettingsClosed newBoardConfigs
+            )
+
+        _ ->
+            wrap { model | settingsState = newSettingsState }
+
+
+mapSettingsState : (SettingsState -> SettingsState) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapSettingsState fn model =
+    wrap { model | settingsState = fn model.settingsState }
+
+
+mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
 
-updateBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
-updateBoardBeingEdited fn model =
-    wrap { model | boardConfigs = SafeZipper.mapCurrent fn model.boardConfigs }
-
-
-processsAction : SettingsState.Action -> Model -> ( Model, Cmd Msg, Session.Msg )
-processsAction action model =
-    case action of
-        SettingsState.AddBoard newConfig newState ->
-            let
-                newModel : Model
-                newModel =
-                    switchBoardConfig (SafeZipper.add newConfig >> SafeZipper.last) model
-            in
-            wrap { newModel | settingsState = newState }
-
-        SettingsState.AddCancelled newState ->
-            let
-                sessionMsg : Session.Msg
-                sessionMsg =
-                    if SafeZipper.length model.boardConfigs == 0 then
-                        Session.SettingsClosed model.boardConfigs
-
-                    else
-                        Session.NoOp
-            in
-            ( { model | settingsState = newState }
-            , exitCmdOr Cmd.none model.boardConfigs
-            , sessionMsg
-            )
-
-        SettingsState.DeleteCurrent ->
-            let
-                newModel : Model
-                newModel =
-                    switchBoardConfig SafeZipper.deleteCurrent model
-            in
-            wrap { newModel | settingsState = SettingsState.init newModel.boardConfigs }
-
-        SettingsState.SetToState newState ->
-            wrap { model | settingsState = newState }
-
-        SettingsState.Exit ->
-            let
-                newModel : Model
-                newModel =
-                    switchBoardConfig identity model
-            in
-            ( newModel
-            , exitCmdOr (InteropPorts.updateSettings newModel.boardConfigs) newModel.boardConfigs
-            , Session.SettingsClosed newModel.boardConfigs
-            )
-
-        SettingsState.NoAction ->
-            wrap model
-
-
-exitCmdOr : Cmd Msg -> SafeZipper BoardConfig -> Cmd Msg
-exitCmdOr orCmd boardConfigs =
-    if SafeZipper.length boardConfigs == 0 then
-        Cmd.batch
-            [ InteropPorts.updateSettings boardConfigs
-            , InteropPorts.closeView
-            ]
-
-    else
-        orCmd
+mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingEdited fn model =
+    wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
 wrap : Model -> ( Model, Cmd Msg, Session.Msg )
@@ -357,23 +345,37 @@ wrap model =
 -- VIEW
 
 
+type CurrentSection
+    = Options
+    | Boards
+
+
 view : Model -> Html Msg
 view model =
     case model.settingsState of
-        SettingsState.AddingBoard newConfig ->
+        SettingsState.AddingBoard newConfig settings ->
             Html.div []
-                [ modalSettingsView model.boardConfigs model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.DeletingBoard ->
+        SettingsState.ClosingPlugin _ ->
+            Html.text ""
+
+        SettingsState.ClosingSettings _ ->
+            Html.text ""
+
+        SettingsState.DeletingBoard settings ->
             Html.div []
-                [ modalSettingsView model.boardConfigs model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard ->
-            modalSettingsView model.boardConfigs model.multiSelect
+        SettingsState.EditingBoard settings ->
+            boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+
+        SettingsState.EditingGlobalSettings settings ->
+            globalSettingsView settings
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -469,43 +471,129 @@ modalConfirmDelete =
         ]
 
 
-modalSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
-modalSettingsView configs multiselect =
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> List (Html Msg) -> Html Msg
+settingsSurroundView currentSection configs formContents =
+    let
+        boardMapFn : Int -> BoardConfig -> Html Msg
+        boardMapFn =
+            case currentSection of
+                Options ->
+                    settingTitleView
+
+                Boards ->
+                    settingTitleSelectedView
+
+        globalSettingsClass : String
+        globalSettingsClass =
+            case currentSection of
+                Options ->
+                    "vertical-tab-nav-item is-active"
+
+                Boards ->
+                    "vertical-tab-nav-item"
+    in
     Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal mod-settings" ]
+        [ Html.div
+            [ class "modal-bg"
+            , onClick ModalCloseClicked
+            ]
+            []
+        , Html.div [ class "modal mod-settings mod-sidebar-layout" ]
             [ Html.div
                 [ class "modal-close-button"
                 , onClick ModalCloseClicked
                 ]
                 []
-            , Html.div [ class "modal-content" ]
+            , Html.div [ class "modal-title" ]
+                [ Html.text "The Modal Title" ]
+            , Html.div [ class "modal-content vertical-tabs-container" ]
                 [ Html.div [ class "settings-menu vertical-tab-header" ]
-                    (Html.div [ class "vertical-tab-header-group-title" ]
-                        [ Html.text "Boards"
-                        , Html.div
-                            [ class "vertical-tab-header-group-title-icon"
-                            , onClick AddBoardClicked
-                            ]
-                            [ FeatherIcons.plus
-                                |> FeatherIcons.withSize 1
-                                |> FeatherIcons.withSizeUnit "em"
-                                |> FeatherIcons.toHtml []
+                    [ Html.div [ class "vertical-tab-header-group" ]
+                        [ Html.div [ class "vertical-tab-header-group-title" ]
+                            [ Html.text "Options" ]
+                        , Html.div [ class "vertical-tab-header-group-items" ]
+                            [ Html.div
+                                [ class globalSettingsClass
+                                , onClick GlobalSettingsClicked
+                                ]
+                                [ Html.text "Global Settings" ]
                             ]
                         ]
-                        :: (configs
-                                |> SafeZipper.indexedMapSelectedAndRest settingTitleSelectedView settingTitleView
+                    , Html.div [ class "vertical-tab-header-group" ]
+                        [ Html.div [ class "vertical-tab-header-group-title" ]
+                            [ Html.text "Boards"
+                            , Html.div
+                                [ class "vertical-tab-header-group-title-icon"
+                                , onClick AddBoardClicked
+                                ]
+                                [ FeatherIcons.plus
+                                    |> FeatherIcons.withSize 1
+                                    |> FeatherIcons.withSizeUnit "em"
+                                    |> FeatherIcons.toHtml []
+                                ]
+                            ]
+                        , Html.div [ class "vertical-tab-header-group-items" ]
+                            (configs
+                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
                                 |> SafeZipper.toList
-                           )
-                    )
-                , settingsFormView (SafeZipper.current configs) (SafeZipper.currentIndex configs) multiselect
+                            )
+                        ]
+                    ]
+                , Html.div [ class "vertical-tab-content-container" ]
+                    [ Html.div [ class "vertical-tab-content" ]
+                        formContents
+                    ]
                 ]
             ]
         ]
 
 
-settingsFormView : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> Html Msg
-settingsFormView boardConfig boardIndex multiselect =
+boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
+boardSettingsView boardConfigs multiselect =
+    boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
+        |> settingsSurroundView Boards boardConfigs
+
+
+globalSettingsView : Settings -> Html Msg
+globalSettingsView settings =
+    settings
+        |> Settings.globalSettings
+        |> globalSettingsForm
+        |> settingsSurroundView Options (Settings.boardConfigs settings)
+
+
+globalSettingsForm : GlobalSettings -> List (Html Msg)
+globalSettingsForm gs =
+    [ Html.div [ class "setting-item" ]
+        [ Html.div [ class "setting-item-info" ]
+            [ Html.div [ class "setting-item-name" ]
+                [ Html.text "Task update format" ]
+            , Html.div [ class "setting-item-description" ]
+                [ Html.text "Which format to use when marking tasks as completed:"
+                , Html.br [] []
+                , Html.br [] []
+                , Html.strong [] [ Html.text "CardBoard" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
+                , Html.br [] []
+                , Html.text "or "
+                , Html.strong [] [ Html.text "Tasks" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "✅ 1999-12-31" ]
+                , Html.br [] []
+                , Html.br [] []
+                , Html.text "When reading tasks, CardBoard understands either format.  It also understands"
+                , Html.text " due dates whether in CardBoard or Tasks format."
+                ]
+            ]
+        , Html.div [ class "setting-item-control" ]
+            [ taskUpdateFormatSelect gs.taskUpdateFormat ]
+        ]
+    ]
+
+
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
+boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
         ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
             let
@@ -525,101 +613,116 @@ settingsFormView boardConfig boardIndex multiselect =
                     else
                         ""
             in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
+            [ Html.div [ class "setting-items-inner" ]
+                [ Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Title" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "The name of this board" ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filters" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value config.title
+                            , onInput EnteredTitle
                             ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ MultiSelect.view multiselect
-                            ]
+                            []
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filter Polarity" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters as an Allow or Deny list" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ polaritySelect config.filterPolarity ]
+                    ]
+                , Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Filters" ]
+                        , Html.div [ class "setting-item-description" ] []
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Filter Tags" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                                , onClick ToggleShowFilteredTags
-                                ]
-                                []
-                            ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Definitions" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Filter tasks by files, paths, and/or tags." ]
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Undated" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no due date" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUndatedStyle
-                                , onClick ToggleIncludeUndated
-                                ]
-                                []
-                            ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ MultiSelect.view multiselect
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Polarity" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Use the filters as an Allow or Deny list." ]
                         ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
+                    , Html.div [ class "setting-item-control" ]
+                        [ polaritySelect config.filterPolarity ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Show filter tags on cards" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                            , onClick ToggleShowFilteredTags
                             ]
-                            [ Html.text "Delete this board"
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Columns" ]
+                        , Html.div [ class "setting-item-description" ] []
+                        ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Include undated" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Whether to include a column for tasks with no due date." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div
+                            [ class <| "checkbox-container" ++ includeUndatedStyle
+                            , onClick ToggleIncludeUndated
                             ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Completed count" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| String.fromInt config.completedCount
+                            , onInput EnteredCompletedCount
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item dialog-buttons" ]
+                    [ Html.button
+                        [ class "mod-warning"
+                        , onClick <| DeleteBoardRequested
+                        ]
+                        [ Html.text "Delete this board"
                         ]
                     ]
                 ]
+            ]
 
         ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
@@ -661,161 +764,197 @@ settingsFormView boardConfig boardIndex multiselect =
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
                         |> String.join "\n"
             in
-            Html.div [ class "settings-form-container" ]
-                [ Html.div [ class "settings-form" ]
-                    [ Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Title" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "The name of this board" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value config.title
-                                , onInput EnteredTitle
-                                ]
-                                []
-                            ]
+            [ Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Title" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "The name of this board" ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.input
+                        [ type_ "text"
+                        , value config.title
+                        , onInput EnteredTitle
                         ]
-                    , Html.div [ class "setting-item", class "new-section" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filters" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Limit the board to the chosen files, paths, and/or tags." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ MultiSelect.view multiselect
-                            ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item setting-item-heading" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Filters" ]
+                    , Html.div [ class "setting-item-description" ] []
+                    ]
+                , Html.div [ class "setting-item-control" ] []
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Definitions" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Filter tasks by files, paths, and/or tags." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ MultiSelect.view multiselect
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Polarity" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Use the filters defined above as an Allow or Deny list." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ polaritySelect config.filterPolarity ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Show filter tags on cards" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ showFilteredTagsStyle
+                        , onClick ToggleShowFilteredTags
                         ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Filter Polarity" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Use the filters as an Allow or Deny list" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ polaritySelect config.filterPolarity ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Filter Tags" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used in filters on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                                , onClick ToggleShowFilteredTags
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item", class "new-section" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Columns" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.div []
-                                    [ Html.text "The tags to use to define board columns." ]
-                                , Html.div []
-                                    [ Html.text
-                                        ("Each line should be a tag followed by the column heading.  "
-                                            ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                            ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                        )
-                                    ]
-                                ]
-                            ]
-                        , Html.Keyed.node "div"
-                            [ class "setting-item-control" ]
-                            [ ( String.fromInt index
-                              , Html.textarea
-                                    [ onInput EnteredTags
-                                    , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                                    ]
-                                    [ Html.text tagText ]
-                              )
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Show Column Tags" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Turn this off if you don't want to display any tags used to define columns on cards on this board." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ showColumnTagsStyle
-                                , onClick ToggleShowColumnTags
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Others" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with tags other than those specified" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeOthersStyle
-                                , onClick ToggleIncludeOthers
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Include Untagged" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "Whether to include a column for tasks with no tags" ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.div
-                                [ class <| "checkbox-container" ++ includeUntaggedStyle
-                                , onClick ToggleIncludeUntagged
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item" ]
-                        [ Html.div [ class "setting-item-info" ]
-                            [ Html.div [ class "setting-item-name" ]
-                                [ Html.text "Completed Count" ]
-                            , Html.div [ class "setting-item-description" ]
-                                [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                            ]
-                        , Html.div [ class "setting-item-control" ]
-                            [ Html.input
-                                [ type_ "text"
-                                , value <| String.fromInt config.completedCount
-                                , onInput EnteredCompletedCount
-                                ]
-                                []
-                            ]
-                        ]
-                    , Html.div [ class "setting-item dialog-buttons" ]
-                        [ Html.button
-                            [ class "mod-warning"
-                            , onClick <| DeleteBoardRequested
-                            ]
-                            [ Html.text "Delete this board"
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item setting-item-heading" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Columns" ]
+                    , Html.div [ class "setting-item-description" ] []
+                    ]
+                , Html.div [ class "setting-item-control" ] []
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Definitions" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.div []
+                            [ Html.text "The tags to use to define board columns." ]
+                        , Html.div []
+                            [ Html.text
+                                ("Each line should be a tag followed by the column heading.  "
+                                    ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
+                                    ++ "If you do not specify the heading it will be auto-generated from the tag."
+                                )
                             ]
                         ]
                     ]
+                , Html.Keyed.node "div"
+                    [ class "setting-item-control" ]
+                    [ ( String.fromInt index
+                      , Html.textarea
+                            [ onInput EnteredTags
+                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
+                            ]
+                            [ Html.text tagText ]
+                      )
+                    ]
                 ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Show column tags on cards" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Turn this on if you want to display the tags used to define columns on cards on this board." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ showColumnTagsStyle
+                        , onClick ToggleShowColumnTags
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Include others" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ includeOthersStyle
+                        , onClick ToggleIncludeOthers
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Include untagged" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Whether to include a column for tasks with no tags." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div
+                        [ class <| "checkbox-container" ++ includeUntaggedStyle
+                        , onClick ToggleIncludeUntagged
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Completed count" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.input
+                        [ type_ "text"
+                        , value <| String.fromInt config.completedCount
+                        , onInput EnteredCompletedCount
+                        ]
+                        []
+                    ]
+                ]
+            , Html.div [ class "setting-item dialog-buttons" ]
+                [ Html.button
+                    [ class "mod-warning"
+                    , onClick <| DeleteBoardRequested
+                    ]
+                    [ Html.text "Delete this board"
+                    ]
+                ]
+            ]
 
         _ ->
-            Html.text ""
+            [ Html.text "" ]
+
+
+taskUpdateFormatSelect : TaskUpdateFormat -> Html Msg
+taskUpdateFormatSelect taskUpdateFormat =
+    Html.select
+        [ class "dropdown"
+        , onInput TaskUpdateFormatSelected
+        ]
+        (case taskUpdateFormat of
+            GlobalSettings.ObsidianCardBoard ->
+                [ Html.option [ value "ObsidianCardBoard", selected True ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            GlobalSettings.ObsidianTasks ->
+                [ Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianTasks", selected True ]
+                    [ Html.text "Tasks" ]
+                ]
+        )
 
 
 polaritySelect : Polarity -> Html Msg
@@ -845,7 +984,7 @@ settingTitleSelectedView : Int -> BoardConfig -> Html Msg
 settingTitleSelectedView index boardConfig =
     Html.div
         [ class "vertical-tab-nav-item is-active"
-        , onClick <| SettingsBoardNameClicked index
+        , onClick <| BoardNameClicked index
         ]
         [ Html.text <| BoardConfig.title boardConfig ]
 
@@ -854,6 +993,6 @@ settingTitleView : Int -> BoardConfig -> Html Msg
 settingTitleView index boardConfig =
     Html.div
         [ class "vertical-tab-nav-item"
-        , onClick <| SettingsBoardNameClicked index
+        , onClick <| BoardNameClicked index
         ]
         [ Html.text <| BoardConfig.title boardConfig ]

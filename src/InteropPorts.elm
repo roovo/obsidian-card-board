@@ -14,11 +14,12 @@ port module InteropPorts exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CardBoardSettings
+import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
 import SafeZipper exposing (SafeZipper)
+import Settings
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
@@ -84,14 +85,14 @@ requestFilterCandidates =
         |> interopFromElm
 
 
-rewriteTasks : TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTasks timeWithZone filePath taskItems =
+rewriteTasks : TaskUpdateFormat -> TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTasks taskUpdateFormat timeWithZone filePath taskItems =
     let
         rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = TaskItem.toToggledString timeWithZone taskItem
+            , newText = TaskItem.toToggledString taskUpdateFormat timeWithZone taskItem
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
@@ -99,12 +100,13 @@ rewriteTasks timeWithZone filePath taskItems =
         |> interopFromElm
 
 
-updateSettings : SafeZipper BoardConfig -> Cmd msg
-updateSettings boardConfigs =
-    { version = CardBoardSettings.currentVersion
-    , boardConfigs = SafeZipper.toList boardConfigs
+updateSettings : SafeZipper BoardConfig -> GlobalSettings -> Cmd msg
+updateSettings boardConfigs gs =
+    { version = Settings.currentVersion
+    , globalSettings = gs
+    , boardConfigs = boardConfigs
     }
-        |> encodeVariant "updateSettings" CardBoardSettings.encoder
+        |> encodeVariant "updateSettings" Settings.encoder
         |> interopFromElm
 
 

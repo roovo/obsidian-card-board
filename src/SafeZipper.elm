@@ -6,6 +6,7 @@ module SafeZipper exposing
     , currentIndex
     , deleteCurrent
     , empty
+    , first
     , fromList
     , indexedMapSelectedAndRest
     , last

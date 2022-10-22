@@ -78,6 +78,11 @@ File.open(undated_tasks, "w") do |file|
 - [ ] #important and this is a task tagged as important #projects/project1 #status/backlog
 - [ ] and this is a task NOT tagged as important #projects/project1 #status/wip
 
+- [ ] a Tasks plugin task with just a due date 📅 #{(Date.today).strftime("%Y-%m-%d")}
+- [ ] a Tasks plugin task with just a scheduled date ⏳ #{(Date.today - 1).strftime("%Y-%m-%d")}
+- [ ] a Tasks plugin task with a due and a scheduled date ⏳ #{(Date.today - 2).strftime("%Y-%m-%d")} 📅 #{(Date.today - 1).strftime("%Y-%m-%d")}
+- [x] a completed Tasks plugin task with just a due date 📅 #{(Date.today - 1).strftime("%Y-%m-%d")} ✅ #{(Date.today - 1).strftime("%Y-%m-%d")}
+
 - [x] a completed task with no @completed
 - [x] thought a bit about yoga #wellbeing
 - [ ] this task has a pretty long title so it won't all fit in the task title on the card

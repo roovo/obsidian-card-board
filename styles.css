@@ -16,10 +16,6 @@
   overflow: hidden;
 }
 
-.card-board-container .modal.mod-settings .vertical-tab-header::before {
-  display: none;
-}
-
 .card-board-container .modal.mod-settings .vertical-tab-header::after {
   display: none;
   content: "";
@@ -334,23 +330,19 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   margin-top: 0;
 }
 
-.settings-menu .vertical-tab-header-group-title {
-  display: grid;
-  grid-auto-flow: column;
+.setting-items-inner {
+  position: relative;
+  height: auto;
 }
 
 .vertical-tab-header-group-title-icon {
   justify-self: end;
   cursor: pointer;
+  float: right;
 }
 
 .modal.mod-settings {
   width: 80%;
-}
-
-.modal.mod-settings .settings-menu.vertical-tab-header {
-  grid-area: select;
-  padding-top: 1.5em;
 }
 
 .card-board-view .vertical-tab-nav-item {
@@ -377,19 +369,6 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   justify-self: end;
 }
 
-.settings-form-container {
-  grid-area: form;
-  padding: 2em 0 0.5em 0;
-  overflow: hidden;
-  height: 70vh;
-}
-
-.settings-form {
-  padding: 0 2.5em 0 2em;
-  overflow-y: auto;
-  height: 100%;
-}
-
 .dialog-buttons {
   display: grid;
   grid-auto-flow: column;
@@ -398,17 +377,6 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 }
 
 .modal-form .dialog-buttons {
-  border-top: 1px solid var(--background-modifier-border);
-}
-
-.card-board-view .setting-item:first-child {
-  padding-top: 0;
-  border-top: none;
-}
-
-.card-board-view .setting-item.new-section {
-  padding: 18px 0 18px 0;
-  margin-top: 5px;
   border-top: 1px solid var(--background-modifier-border);
 }
 
@@ -499,7 +467,6 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;
-  position: relative;
   padding: 5px 8px;
   font-size: var(--font-small);
   text-align: left;

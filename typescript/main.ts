@@ -29,6 +29,9 @@ export default class CardBoardPlugin extends Plugin {
             tag : "dateBoardConfig"
           }
         )[];
+        globalSettings : {
+          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+        }
       };
       version : string
   };
@@ -136,6 +139,9 @@ export default class CardBoardPlugin extends Plugin {
             tag : "dateBoardConfig"
           }
         )[];
+        globalSettings : {
+          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+        }
       };
       version : string
     }

@@ -322,6 +322,9 @@ export class CardBoardView extends ItemView {
             tag : "dateBoardConfig"
           }
         )[];
+        globalSettings : {
+          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+        }
       };
       version : string
   }) {

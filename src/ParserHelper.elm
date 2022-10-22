@@ -32,21 +32,6 @@ type ParseResult b
 -- TESTS
 
 
-isLineEnd : Char -> Bool
-isLineEnd char =
-    case Char.toCode char of
-        10 ->
-            -- new line
-            True
-
-        13 ->
-            -- carriage return
-            True
-
-        _ ->
-            False
-
-
 isSpaceOrTab : Char -> Bool
 isSpaceOrTab char =
     case char of
@@ -60,18 +45,21 @@ isSpaceOrTab char =
             False
 
 
-isSpaceTabOrLineEnd : Char -> Bool
-isSpaceTabOrLineEnd char =
-    isSpaceOrTab char || isLineEnd char
-
-
-isNotWhitespace : Char -> Bool
-isNotWhitespace char =
-    not <| isSpaceTabOrLineEnd char
-
-
 
 -- PARSERS
+
+
+anyLineParser : Parser String
+anyLineParser =
+    let
+        removeTrailingEol : String -> Parser String
+        removeTrailingEol parsedLine =
+            P.succeed <| String.dropRight 1 parsedLine
+    in
+    P.succeed identity
+        |= nonEmptyLineParser
+        |. lineEnd
+        |> P.andThen removeTrailingEol
 
 
 booleanParser : Parser Bool
@@ -82,6 +70,41 @@ booleanParser =
         , P.succeed False
             |. P.keyword "false"
         ]
+
+
+checkIsNotNumeric : String -> String -> Parser String
+checkIsNotNumeric calledFrom parsedString =
+    case String.toInt parsedString of
+        Just _ ->
+            P.problem <| "Numeric string found in " ++ calledFrom
+
+        Nothing ->
+            P.succeed parsedString
+
+
+checkWhitespaceFollows : Parser a -> Parser a
+checkWhitespaceFollows xp =
+    P.succeed ParseResult
+        |= P.backtrackable xp
+        |= P.oneOf
+            [ P.map (\_ -> True) (P.backtrackable (P.chompIf isNotWhitespace))
+            , P.succeed False
+            ]
+        |> P.andThen checkEnding
+
+
+dateParser : Parser Date
+dateParser =
+    let
+        convertToDate : String -> Parser Date
+        convertToDate dateString =
+            dateString
+                |> Date.fromIsoString
+                |> Result.map P.succeed
+                |> Result.withDefault (P.problem "not a valid date")
+    in
+    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-')
+        |> P.andThen convertToDate
 
 
 indentParser : Parser a -> Parser (List a)
@@ -110,35 +133,89 @@ indentParser parser =
         ]
 
 
-step : Parser a -> List a -> Parser (P.Step (List a) (List a))
-step parser_ values =
-    let
-        finish : P.Step (List a) (List a)
-        finish =
-            P.Done (List.reverse values)
+lineEndOrEnd : Parser ()
+lineEndOrEnd =
+    P.oneOf
+        [ lineEnd
+        , P.end
+        ]
 
-        next : a -> P.Step (List a) (List a)
-        next value_ =
-            P.Loop (value_ :: values)
+
+nonEmptyStringParser : Parser String
+nonEmptyStringParser =
+    P.getChompedString chompToEndOfLine
+        |> P.andThen (checkIfEmpty "nonEmptyStringParser")
+
+
+spaces : Parser ()
+spaces =
+    P.chompWhile isSpaceOrTab
+
+
+timeParser : Parser Time.Posix
+timeParser =
+    let
+        convertToTime : String -> Parser Time.Posix
+        convertToTime timeString =
+            timeString
+                |> Iso8601.toTime
+                |> Result.map P.succeed
+                |> Result.withDefault (P.problem "not a valid date")
     in
-    indented
-        { smaller =
-            P.succeed finish
-        , exactly =
-            P.oneOf
-                [ P.succeed next
-                    |= parser_
-                , P.succeed finish
-                ]
-        , larger =
-            P.oneOf
-                [ P.succeed next
-                    |= parser_
-                , P.succeed finish
-                ]
-        , ending =
-            P.succeed finish
-        }
+    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-' || c == 'T' || c == ':')
+        |> P.andThen convertToTime
+
+
+wordParser : Parser String
+wordParser =
+    P.getChompedString chompToEndOfWord
+        |> P.andThen (checkIfEmpty "wordParser")
+        |> checkWhitespaceFollows
+
+
+
+-- PRIVATE
+
+
+carriageReturn : Char
+carriageReturn =
+    Char.fromCode 13
+
+
+checkEnding : ParseResult b -> Parser b
+checkEnding (ParseResult p isBadEnding) =
+    if isBadEnding then
+        P.problem "expecting whitespace after the parsed token"
+
+    else
+        P.commit p
+
+
+checkIfEmpty : String -> String -> Parser String
+checkIfEmpty calledFrom parsedString =
+    if String.length parsedString == 0 then
+        P.problem <| "Empty string found in " ++ calledFrom
+
+    else
+        P.succeed parsedString
+
+
+chompToEndOfLine : Parser ()
+chompToEndOfLine =
+    P.chompWhile (not << isLineEnd)
+
+
+chompToEndOfWord : Parser ()
+chompToEndOfWord =
+    P.succeed ()
+        |. P.chompWhile (not << isSpaceTabOrLineEnd)
+
+
+chompWithEndOfLine : Parser ()
+chompWithEndOfLine =
+    P.succeed ()
+        |. P.chompWhile (not << isLineEnd)
+        |. P.chompIf isLineEnd
 
 
 type alias NextParser a =
@@ -173,27 +250,34 @@ indented next =
         |> P.andThen proceed
 
 
-spaces : Parser ()
-spaces =
-    P.chompWhile isSpaceOrTab
+isLineEnd : Char -> Bool
+isLineEnd char =
+    case Char.toCode char of
+        10 ->
+            -- new line
+            True
+
+        13 ->
+            -- carriage return
+            True
+
+        _ ->
+            False
 
 
-spacesOrLineEnd : Parser ()
-spacesOrLineEnd =
-    P.chompWhile isSpaceTabOrLineEnd
+isNotWhitespace : Char -> Bool
+isNotWhitespace char =
+    not <| isSpaceTabOrLineEnd char
 
 
-anyLineParser : Parser String
-anyLineParser =
-    let
-        removeTrailingEol : String -> Parser String
-        removeTrailingEol parsedLine =
-            P.succeed <| String.dropRight 1 parsedLine
-    in
-    P.succeed identity
-        |= nonEmptyLineParser
-        |. lineEnd
-        |> P.andThen removeTrailingEol
+isSpaceTabOrLineEnd : Char -> Bool
+isSpaceTabOrLineEnd char =
+    isSpaceOrTab char || isLineEnd char
+
+
+lineEnd : Parser ()
+lineEnd =
+    P.chompWhile (\c -> c == '\n' || c == carriageReturn)
 
 
 nonEmptyLineParser : Parser String
@@ -202,121 +286,37 @@ nonEmptyLineParser =
         |> P.andThen (checkIfEmpty "nonEmptyLineParser")
 
 
-dateParser : Parser Date
-dateParser =
+spacesOrLineEnd : Parser ()
+spacesOrLineEnd =
+    P.chompWhile isSpaceTabOrLineEnd
+
+
+step : Parser a -> List a -> Parser (P.Step (List a) (List a))
+step parser_ values =
     let
-        convertToDate : String -> Parser Date
-        convertToDate dateString =
-            dateString
-                |> Date.fromIsoString
-                |> Result.map P.succeed
-                |> Result.withDefault (P.problem "not a valid date")
+        finish : P.Step (List a) (List a)
+        finish =
+            P.Done (List.reverse values)
+
+        next : a -> P.Step (List a) (List a)
+        next value_ =
+            P.Loop (value_ :: values)
     in
-    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-')
-        |> P.andThen convertToDate
-
-
-timeParser : Parser Time.Posix
-timeParser =
-    let
-        convertToTime : String -> Parser Time.Posix
-        convertToTime timeString =
-            timeString
-                |> Iso8601.toTime
-                |> Result.map P.succeed
-                |> Result.withDefault (P.problem "not a valid date")
-    in
-    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-' || c == 'T' || c == ':')
-        |> P.andThen convertToTime
-
-
-lineEndOrEnd : Parser ()
-lineEndOrEnd =
-    P.oneOf
-        [ lineEnd
-        , P.end
-        ]
-
-
-nonEmptyStringParser : Parser String
-nonEmptyStringParser =
-    P.getChompedString chompToEndOfLine
-        |> P.andThen (checkIfEmpty "nonEmptyStringParser")
-
-
-wordParser : Parser String
-wordParser =
-    P.getChompedString chompToEndOfWord
-        |> P.andThen (checkIfEmpty "wordParser")
-        |> checkWhitespaceFollows
-
-
-checkWhitespaceFollows : Parser a -> Parser a
-checkWhitespaceFollows xp =
-    P.succeed ParseResult
-        |= P.backtrackable xp
-        |= P.oneOf
-            [ P.map (\_ -> True) (P.backtrackable (P.chompIf isNotWhitespace))
-            , P.succeed False
-            ]
-        |> P.andThen checkEnding
-
-
-checkEnding : ParseResult b -> Parser b
-checkEnding (ParseResult p isBadEnding) =
-    if isBadEnding then
-        P.problem "expecting whitespace after the parsed token"
-
-    else
-        P.commit p
-
-
-
--- HELPERS
-
-
-chompToEndOfLine : Parser ()
-chompToEndOfLine =
-    P.chompWhile (not << isLineEnd)
-
-
-chompToEndOfWord : Parser ()
-chompToEndOfWord =
-    P.succeed ()
-        |. P.chompWhile (not << isSpaceTabOrLineEnd)
-
-
-checkIfEmpty : String -> String -> Parser String
-checkIfEmpty calledFrom parsedString =
-    if String.length parsedString == 0 then
-        P.problem <| "Empty string found in " ++ calledFrom
-
-    else
-        P.succeed parsedString
-
-
-checkIsNotNumeric : String -> String -> Parser String
-checkIsNotNumeric calledFrom parsedString =
-    case String.toInt parsedString of
-        Just _ ->
-            P.problem <| "Numeric string found in " ++ calledFrom
-
-        Nothing ->
-            P.succeed parsedString
-
-
-chompWithEndOfLine : Parser ()
-chompWithEndOfLine =
-    P.succeed ()
-        |. P.chompWhile (not << isLineEnd)
-        |. P.chompIf isLineEnd
-
-
-lineEnd : Parser ()
-lineEnd =
-    P.chompWhile (\c -> c == '\n' || c == carriageReturn)
-
-
-carriageReturn : Char
-carriageReturn =
-    Char.fromCode 13
+    indented
+        { smaller =
+            P.succeed finish
+        , exactly =
+            P.oneOf
+                [ P.succeed next
+                    |= parser_
+                , P.succeed finish
+                ]
+        , larger =
+            P.oneOf
+                [ P.succeed next
+                    |= parser_
+                , P.succeed finish
+                ]
+        , ending =
+            P.succeed finish
+        }

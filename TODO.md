@@ -1,17 +1,27 @@
-- option to hide tags used in board definitions
-  - allow lists
-  - column definitions of tag boards
+dataview:
+// @ts-ignore
+const dataviewSettings = this.app.plugins.getPlugin("dataview").settings
 
-- link to https://obsidian-plugin-stats.vercel.app from teh readme for finding more plugins
-- don't prefix the tag class with 'tag-' as that can be inferred!
-- don't reorder what appears on the task line when updating it
-  so that tags that are inline with the text stay there!
+taskCompletionDateFormat: "yyyy-MM-dd"
+taskCompletionText: "completion"
+taskCompletionTracking: false
+taskCompletionUseEmojiShorthand: false
+
+# Task Formats
+- https://logseq.github.io/#/page/tasks%20%26%20todos
+- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
+- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
+
 
 # Cleanups
+- check coverage and add tests
+- are there any failure cases for TagBoard.columnConfigsParser?
+- tabs are not very visible
+- I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
+- does everything work with the about-to-be released tag coloring plugin
+- don't prefix the tag class with 'tag-' as that can be inferred!
 - review coverage report and add tests where needed
-- make it so if you click outside the modal it closes it
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
-- add Model tests
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
 - translator pattern for child -> parent comms ??
@@ -24,12 +34,6 @@
   - you'll see the debug messaged double up
   - and tripple up if you do it again
   - ...
-
-# Task Formats
-- https://github.com/schemar/obsidian-tasks
-- https://logseq.github.io/#/page/tasks%20%26%20todos
-- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
-- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
 - nested subtasks are un-nested on cards
@@ -123,15 +127,13 @@
   For a date picker.
 
 # Misc
-- use elm-coverage - as in see what isn't covered
-- should probably think about not using Regex in TaskItem for building the output string
+- should probably think about not using Regex in TaskItem
 - would it be cleaner to have separate multiselects for each board and share
   the dropdown items?
 - I could de-bounce the rewrites of filters in the settings file on rename of path or file
 - look at obsidian://show-plugin?id=card-boardw
 - do I want to do anything with Alternate Checkboxes?
 - supercharged links? - what does it do - does it work with cardBoard?
-- do I want to rename Panel -> Board ??
 - https://allcontributors.org/docs/en/overview
 - how small can I make the compliled js?
   https://discourse.elm-lang.org/t/what-i-ve-learned-about-minifying-elm-code/7632
@@ -150,7 +152,6 @@
   the hover for all edit buttons.  Can I be smarter?  Only matters really if performance
   issues.
 - can I use github runners to build?
-- run elm review
 - where to use fuzz testing
 - review awful typescript code!
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
