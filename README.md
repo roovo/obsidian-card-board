@@ -15,7 +15,10 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 ## New
 - Compatible with [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
-  formatting ([Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next)
+  date formats (due and completed dates).  See the 
+  [Cards section](https://github.com/roovo/obsidian-card-board/tree/compatible#cards),
+  specially around the *Marking a task as complete* heading.
+  [Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
