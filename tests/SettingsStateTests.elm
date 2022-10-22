@@ -6,7 +6,7 @@ import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.FilterHelpers as FilterHelpers
-import SafeZipper exposing (SafeZipper)
+import SafeZipper
 import Settings exposing (Settings)
 import SettingsState
 import TagBoard
@@ -518,11 +518,6 @@ exampleBoardConfigDateBoard =
 exampleBoardConfigTagBoard : BoardConfig
 exampleBoardConfigTagBoard =
     BoardConfig.TagBoardConfig exampleTagBoardConfig
-
-
-exampleBoardConfigsDateBoard : SafeZipper BoardConfig
-exampleBoardConfigsDateBoard =
-    SafeZipper.fromList <| [ exampleBoardConfigDateBoard ]
 
 
 exampleGlobalSettings : GlobalSettings

@@ -2,7 +2,7 @@ module TaskItemTests exposing (suite)
 
 import Date
 import Expect
-import GlobalSettings exposing (TaskUpdateFormat)
+import GlobalSettings
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))

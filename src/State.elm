@@ -1,7 +1,6 @@
 module State exposing
     ( State(..)
     , map
-    , withDefault
     )
 
 --TYPES
@@ -24,16 +23,3 @@ map fn state =
 
         Loaded content ->
             Loaded (fn content)
-
-
-withDefault : a -> State a -> a
-withDefault default state =
-    case state of
-        Waiting ->
-            default
-
-        Loading content ->
-            content
-
-        Loaded content ->
-            content

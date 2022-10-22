@@ -8,8 +8,6 @@ import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
 import Session
-import Settings
-import State
 import TaskItem
 import TaskList
 import Test exposing (..)

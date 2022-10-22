@@ -1,6 +1,6 @@
 module Main exposing (Model, Msg, main)
 
-import BoardConfig exposing (BoardConfig)
+import BoardConfig
 import Boards
 import Browser
 import Browser.Events as Browser
@@ -17,12 +17,10 @@ import Page.Settings as SettingsPage
 import SafeZipper
 import Session exposing (Session)
 import Settings exposing (Settings)
-import State
 import Task
 import TaskItem
 import TaskList exposing (TaskList)
 import Time
-import TimeWithZone
 
 
 main : Program JD.Value Model Msg

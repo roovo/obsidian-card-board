@@ -1,11 +1,8 @@
 module GlobalSettingsTests exposing (suite)
 
-import BoardConfig
 import Expect
 import GlobalSettings exposing (GlobalSettings)
-import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
-import Semver
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 

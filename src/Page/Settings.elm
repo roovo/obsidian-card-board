@@ -133,14 +133,17 @@ update msg model =
 
         BoardNameClicked index ->
             let
+                currentSelectedFilters : List Filter
                 currentSelectedFilters =
                     Dict.values <| MultiSelect.selectedItems model.multiSelect
 
+                newSettingsState : SettingsState
                 newSettingsState =
                     model.settingsState
                         |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
                         |> SettingsState.editBoardAt index
 
+                newFilters : Dict String Filter
                 newFilters =
                     currentFilters <| SettingsState.boardConfigs newSettingsState
             in
@@ -286,12 +289,15 @@ ensureAllTypes list =
 handleClose : Model -> ( Model, Cmd Msg, Session.Msg )
 handleClose model =
     let
+        newSettingsState : SettingsState
         newSettingsState =
             SettingsState.cancelCurrentState model.settingsState
 
+        newBoardConfigs : SafeZipper BoardConfig
         newBoardConfigs =
             SettingsState.boardConfigs newSettingsState
 
+        newGlobalSettings : GlobalSettings
         newGlobalSettings =
             SettingsState.globalSettings newSettingsState
     in
@@ -353,10 +359,10 @@ view model =
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.ClosingPlugin settings ->
+        SettingsState.ClosingPlugin _ ->
             Html.text ""
 
-        SettingsState.ClosingSettings settings ->
+        SettingsState.ClosingSettings _ ->
             Html.text ""
 
         SettingsState.DeletingBoard settings ->
@@ -468,6 +474,7 @@ modalConfirmDelete =
 settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> List (Html Msg) -> Html Msg
 settingsSurroundView currentSection configs formContents =
     let
+        boardMapFn : Int -> BoardConfig -> Html Msg
         boardMapFn =
             case currentSection of
                 Options ->
@@ -476,6 +483,7 @@ settingsSurroundView currentSection configs formContents =
                 Boards ->
                     settingTitleSelectedView
 
+        globalSettingsClass : String
         globalSettingsClass =
             case currentSection of
                 Options ->

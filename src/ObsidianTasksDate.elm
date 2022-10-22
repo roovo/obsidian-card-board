@@ -35,7 +35,7 @@ formatParser emoticon tagger =
         |= ParserHelper.dateParser
 
 
-dateToPosixTime : Date.Date -> Time.Posix
+dateToPosixTime : Date -> Time.Posix
 dateToPosixTime date =
     Time.millisToPosix ((Date.toRataDie date - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
 

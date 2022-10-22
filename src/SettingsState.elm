@@ -136,7 +136,7 @@ confirmDeleteBoard settingsState =
 deleteBoardRequested : SettingsState -> SettingsState
 deleteBoardRequested settingsState =
     case settingsState of
-        AddingBoard c settings_ ->
+        AddingBoard _ settings_ ->
             DeletingBoard settings_
 
         ClosingPlugin settings_ ->
@@ -145,7 +145,7 @@ deleteBoardRequested settingsState =
         ClosingSettings settings_ ->
             DeletingBoard settings_
 
-        DeletingBoard settings_ ->
+        DeletingBoard _ ->
             settingsState
 
         EditingBoard settings_ ->

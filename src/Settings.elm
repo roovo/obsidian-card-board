@@ -21,7 +21,6 @@ module Settings exposing
 import BoardConfig exposing (BoardConfig)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
-import Json.Encode as JE
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -87,17 +86,6 @@ deleteCurrentBoard settings =
 
 loadNewBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
 loadNewBoardConfigs newConfigs settings =
-    let
-        configs : SafeZipper BoardConfig
-        configs =
-            SafeZipper.atIndex newIndex newConfigs
-
-        newIndex : Int
-        newIndex =
-            settings.boardConfigs
-                |> SafeZipper.currentIndex
-                |> Maybe.withDefault 0
-    in
     updateBoardConfigs newConfigs settings
 
 

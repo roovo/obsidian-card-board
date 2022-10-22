@@ -627,7 +627,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
                 DueTag date ->
                     { fields_ | dueTag = Just date }
 
-                CompletedTag time ->
+                CompletedTag _ ->
                     fields_
 
                 ObsidianTag tag ->
@@ -638,7 +638,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
 
         removeTrailingBlockLink : List Content -> List Content
         removeTrailingBlockLink contents_ =
-            case List.reverse contents of
+            case List.reverse contents_ of
                 (Word endWord) :: cs ->
                     if String.startsWith "^" endWord then
                         List.reverse cs

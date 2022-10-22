@@ -1,6 +1,5 @@
 module Session exposing
-    ( Config
-    , Msg(..)
+    ( Msg(..)
     , Session
     , addTaskList
     , boardConfigs
@@ -29,7 +28,6 @@ module Session exposing
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
-import Filter
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -283,11 +281,6 @@ updatePath oldPath newPath (Session config) =
 
 
 -- PRIVATE
-
-
-mapConfig : (Config -> Config) -> Session -> Session
-mapConfig fn (Session conf) =
-    Session (fn conf)
 
 
 updateTaskListState : State TaskList -> Session -> Session

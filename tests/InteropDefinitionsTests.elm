@@ -9,7 +9,6 @@ import Helpers.FilterHelpers as FilterHelpers
 import InteropDefinitions exposing (interop)
 import SafeZipper
 import Semver
-import Settings
 import TagList
 import Test exposing (..)
 import TsJson.Encode as TsEncode
