@@ -19,6 +19,7 @@ suite =
         , encodeDecode
         , fromBoardType
         , isForDateBoard
+        , isForTagBoard
         , mapFilters
         , toggleIncludeOthers
         , toggleIncludeUndated

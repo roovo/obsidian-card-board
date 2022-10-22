@@ -13,7 +13,33 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ updateTaskUpdateFormat
+        [ default
+        , encodeDecode
+        , updateTaskUpdateFormat
+        ]
+
+
+default : Test
+default =
+    describe "default"
+        [ test "has ObsidianCardBoard update format" <|
+            \() ->
+                GlobalSettings.default
+                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+        ]
+
+
+encodeDecode : Test
+encodeDecode =
+    describe "encoding and decoding GlobalSettings"
+        [ test "can decode an encoded string back to the original" <|
+            \() ->
+                { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+                    |> TsEncode.runExample GlobalSettings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder GlobalSettings.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok { taskUpdateFormat = GlobalSettings.ObsidianCardBoard })
         ]
 
 

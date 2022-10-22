@@ -15,6 +15,7 @@ suite =
         , currentIndex
         , deleteCurrent
         , empty
+        , first
         , fromList
         , indexedMapSelectedAndRest
         , last
@@ -202,6 +203,26 @@ empty =
         ]
 
 
+first : Test
+first =
+    describe "first"
+        [ test "returns an empty zipper if given one" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.first
+                    |> Expect.equal SafeZipper.empty
+        , test "returns an zipper focussed on the first item" <|
+            \() ->
+                [ 1, 2, 3, 4 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.first
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 0)
+        ]
+
+
 fromList : Test
 fromList =
     describe "fromIndex"
@@ -223,7 +244,14 @@ fromList =
 indexedMapSelectedAndRest : Test
 indexedMapSelectedAndRest =
     describe "indexedMapSelectedAndRest"
-        [ test "returns a zipper focussed on a mid-list item" <|
+        [ test "returns an empty zipper if given one" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.indexedMapSelectedAndRest (\_ x -> ( 9, x )) Tuple.pair
+                    |> Expect.equal SafeZipper.empty
+        , test "returns a zipper focussed on a mid-list item" <|
             \() ->
                 [ 5, 4, 3, 2, 1 ]
                     |> SafeZipper.fromList
@@ -281,7 +309,13 @@ map =
 mapCurrent : Test
 mapCurrent =
     describe "mapCurrent"
-        [ test "applies the map function to the current item only" <|
+        [ test "returns an empty list if given one" <|
+            \() ->
+                SafeZipper.fromList []
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.mapCurrent ((+) 10)
+                    |> Expect.equal SafeZipper.empty
+        , test "applies the map function to the current item only" <|
             \() ->
                 SafeZipper.fromList [ 1, 2, 3 ]
                     |> SafeZipper.atIndex 1

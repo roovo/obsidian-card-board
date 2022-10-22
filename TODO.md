@@ -1,6 +1,20 @@
+- need to add global settings to the typescript defs!
+
+dataview:
+// @ts-ignore
+const dataviewSettings = this.app.plugins.getPlugin("dataview").settings
+
+taskCompletionDateFormat: "yyyy-MM-dd"
+taskCompletionText: "completion"
+taskCompletionTracking: false
+taskCompletionUseEmojiShorthand: false
+
+
+
 # Cleanups
-- tabs are not very visible
 - check coverage and add tests
+- are there any failure cases for TagBoard.columnConfigsParser?
+- tabs are not very visible
 - I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
 - does everything work with the about-to-be released tag coloring plugin
 - don't prefix the tag class with 'tag-' as that can be inferred!

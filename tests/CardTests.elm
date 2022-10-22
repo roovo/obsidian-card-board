@@ -150,6 +150,21 @@ markdownWithIds =
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]
                         )
+        , test "extracts the taskItem title and descendant task titles with their respective ids (if there are no notes)" <|
+            \() ->
+                """- [ ] foo
+  - [ ] bar
+  """
+                    |> Parser.run (TaskItem.parser "file" Nothing TagList.empty 0)
+                    |> Result.toMaybe
+                    |> Maybe.map (Card.fromTaskItem "prefix")
+                    |> Maybe.map Card.markdownWithIds
+                    |> Expect.equal
+                        (Just
+                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 2, markdown = "bar" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
+                            ]
+                        )
         ]
 
 
