@@ -7,6 +7,10 @@ taskCompletionText: "completion"
 taskCompletionTracking: false
 taskCompletionUseEmojiShorthand: false
 
+# Task Formats
+- https://logseq.github.io/#/page/tasks%20%26%20todos
+- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
+- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 
 # Cleanups
@@ -30,12 +34,6 @@ taskCompletionUseEmojiShorthand: false
   - you'll see the debug messaged double up
   - and tripple up if you do it again
   - ...
-
-# Task Formats
-- https://github.com/schemar/obsidian-tasks
-- https://logseq.github.io/#/page/tasks%20%26%20todos
-- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
-- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # UI Improvements
 - nested subtasks are un-nested on cards
