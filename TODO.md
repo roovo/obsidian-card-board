@@ -1,5 +1,3 @@
-- need to add global settings to the typescript defs!
-
 dataview:
 // @ts-ignore
 const dataviewSettings = this.app.plugins.getPlugin("dataview").settings
