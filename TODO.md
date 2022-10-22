@@ -12,6 +12,7 @@ taskCompletionUseEmojiShorthand: false
 - https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
 - https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
+- InteropPorts.updateSettings should take a Settings type
 
 # Cleanups
 - check coverage and add tests

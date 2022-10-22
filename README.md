@@ -219,7 +219,7 @@ CardBoard now has baked in compatibility with the date format used by
 
 Will be read as a task with a due date of 30th Oct 2021 which was completed a day early.
 
-If you wish to use the comnpletion/done format used in Tasks when you mark a task as complete,
+If you wish to use the completion/done format used in Tasks when you mark a task as complete,
 you can set this in CardBoard's Global Settings:
 
 ![task update format setting panel](/images/taskUpdateFormatSetting.png?raw=true)
@@ -229,14 +229,6 @@ you can set this in CardBoard's Global Settings:
 format for marking tasks as complete.   Checking off a recurring task from
 the CardBoard board view will add the completion date in Tasks format but **will
 not generate a new instance of the recurring task**.
-
-
-
-
-
-
-
-
 
 To get the correct behavior for recurring tasks, click the edit icon on the card
 to go to the file where the task is written, and then use the
