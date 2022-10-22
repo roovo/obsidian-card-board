@@ -24,7 +24,7 @@ npm run dev             # run dev build
 - is TODO up to date?
 - pre-release new version
   - main.js
-  - manifest.json (the version in here is what is displaye as the current plugin version
+  - manifest.json (the version in here is what is displayed as the current plugin version
                    in obsidian)
   - style.css
   - release notes
@@ -34,7 +34,7 @@ npm run dev             # run dev build
 - tag the release
 - release new version
   - main.js
-  - manifest.json (the version in here is what is displaye as the current plugin version
+  - manifest.json (the version in here is what is displayed as the current plugin version
                    in obsidian)
   - style.css
   - release notes
