@@ -14,11 +14,11 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
-- Compatible with [Obsidian Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
+- Compatible with the [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin
   date formats (due and completed dates).  See the
-  [Tasks Compatibility section](https://github.com/roovo/obsidian-card-board/tree/junk#compatibility-obsidian-tasks)
+  [Tasks Compatibility section](https://github.com/roovo/obsidian-card-board#compatibility-obsidian-tasks)
   below.
-- [Obsidian Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
+- [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
