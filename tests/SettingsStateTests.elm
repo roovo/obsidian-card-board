@@ -24,7 +24,6 @@ suite =
         , deleteBoardRequested
         , editBoardAt
         , editGlobalSettings
-        , globalSettings
         , init
         , mapBoardBeingAdded
         , mapBoardBeingEdited
@@ -330,42 +329,6 @@ editGlobalSettings =
         ]
 
 
-globalSettings : Test
-globalSettings =
-    describe "globalSettings"
-        [ test "returns the configs (apart from the one being added) if in AddingBoard state" <|
-            \() ->
-                SettingsState.AddingBoard BoardConfig.default Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        , test "returns the configs if in ClosingPlugin state" <|
-            \() ->
-                SettingsState.ClosingPlugin Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        , test "returns the configs if in ClosingSettings state" <|
-            \() ->
-                SettingsState.ClosingSettings Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        , test "returns the configs if in DeletingBoard state" <|
-            \() ->
-                SettingsState.DeletingBoard Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        , test "returns the configs if in EditingBoard state" <|
-            \() ->
-                SettingsState.EditingBoard Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        , test "returns the configs if in EditingGlobalSettings state" <|
-            \() ->
-                SettingsState.EditingGlobalSettings Settings.default
-                    |> SettingsState.globalSettings
-                    |> Expect.equal GlobalSettings.default
-        ]
-
-
 init : Test
 init =
     describe "init"
@@ -459,37 +422,43 @@ mapGlobalSettings =
             \() ->
                 SettingsState.AddingBoard BoardConfig.default Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal GlobalSettings.default
         , test "does nothing if it is in the ClosingPlugin state" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal GlobalSettings.default
         , test "does nothing if it is in the ClosingSettings state" <|
             \() ->
                 SettingsState.ClosingSettings Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal GlobalSettings.default
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal GlobalSettings.default
         , test "does nothing if it is in the EditingBoard state" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal GlobalSettings.default
         , test "updates the current board if it is in the EditingGlobalSettings state" <|
             \() ->
                 SettingsState.EditingGlobalSettings Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
-                    |> SettingsState.globalSettings
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
                     |> Expect.equal exampleGlobalSettings
         ]
 

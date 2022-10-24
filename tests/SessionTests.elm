@@ -8,6 +8,7 @@ import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
 import Session
+import Settings exposing (Settings)
 import TaskItem
 import TaskList
 import Test exposing (..)
@@ -154,7 +155,7 @@ updatePath =
         , test "updates filter paths" <|
             \() ->
                 Session.default
-                    |> Session.updateConfigs (SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ])
+                    |> Session.updateSettings exampleSettings
                     |> Session.updatePath "a/path" "a"
                     |> Session.updatePath "b/path" "b"
                     |> Session.boardConfigs
@@ -199,3 +200,9 @@ replaceTaskItems =
 
 
 -- HELPERS
+
+
+exampleSettings : Settings
+exampleSettings =
+    Settings.default
+        |> Settings.updateBoardConfigs (SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ])

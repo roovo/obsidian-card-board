@@ -8,11 +8,11 @@ module SettingsState exposing
     , deleteBoardRequested
     , editBoardAt
     , editGlobalSettings
-    , globalSettings
     , init
     , mapBoardBeingAdded
     , mapBoardBeingEdited
     , mapGlobalSettings
+    , settings
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -56,9 +56,26 @@ boardConfigs settingsState =
     Settings.boardConfigs <| settings settingsState
 
 
-globalSettings : SettingsState -> GlobalSettings
-globalSettings settingsState =
-    Settings.globalSettings <| settings settingsState
+settings : SettingsState -> Settings
+settings settingsState =
+    case settingsState of
+        AddingBoard _ settings_ ->
+            settings_
+
+        ClosingPlugin settings_ ->
+            settings_
+
+        ClosingSettings settings_ ->
+            settings_
+
+        DeletingBoard settings_ ->
+            settings_
+
+        EditingBoard settings_ ->
+            settings_
+
+        EditingGlobalSettings settings_ ->
+            settings_
 
 
 
@@ -227,29 +244,3 @@ mapGlobalSettings fn settingsState =
 
         _ ->
             settingsState
-
-
-
--- PRIVATE
-
-
-settings : SettingsState -> Settings
-settings settingsState =
-    case settingsState of
-        AddingBoard _ settings_ ->
-            settings_
-
-        ClosingPlugin settings_ ->
-            settings_
-
-        ClosingSettings settings_ ->
-            settings_
-
-        DeletingBoard settings_ ->
-            settings_
-
-        EditingBoard settings_ ->
-            settings_
-
-        EditingGlobalSettings settings_ ->
-            settings_

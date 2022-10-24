@@ -9,12 +9,10 @@ module Settings exposing
     , encoder
     , globalSettings
     , hasAnyBordsConfigured
-    , loadNewBoardConfigs
     , mapGlobalSettings
     , switchToBoard
     , updateBoardConfigs
     , updateCurrentBoard
-    , updateGlobalSettings
     , updatePath
     )
 
@@ -84,11 +82,6 @@ deleteCurrentBoard settings =
     { settings | boardConfigs = SafeZipper.deleteCurrent settings.boardConfigs }
 
 
-loadNewBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
-loadNewBoardConfigs newConfigs settings =
-    updateBoardConfigs newConfigs settings
-
-
 mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
 mapGlobalSettings fn settings =
     { settings | globalSettings = fn settings.globalSettings }
@@ -107,11 +100,6 @@ updateBoardConfigs newConfigs settings =
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings
 updateCurrentBoard fn settings =
     { settings | boardConfigs = SafeZipper.mapCurrent fn settings.boardConfigs }
-
-
-updateGlobalSettings : GlobalSettings -> Settings -> Settings
-updateGlobalSettings newSettings settings =
-    { settings | globalSettings = newSettings }
 
 
 updatePath : String -> String -> Settings -> Settings

@@ -12,14 +12,12 @@ port module InteropPorts exposing
     , updateSettings
     )
 
-import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
+import GlobalSettings exposing (TaskUpdateFormat)
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
-import SafeZipper exposing (SafeZipper)
-import Settings
+import Settings exposing (Settings)
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
@@ -100,12 +98,9 @@ rewriteTasks taskUpdateFormat timeWithZone filePath taskItems =
         |> interopFromElm
 
 
-updateSettings : SafeZipper BoardConfig -> GlobalSettings -> Cmd msg
-updateSettings boardConfigs gs =
-    { version = Settings.currentVersion
-    , globalSettings = gs
-    , boardConfigs = boardConfigs
-    }
+updateSettings : Settings -> Cmd msg
+updateSettings settings =
+    { settings | version = Settings.currentVersion }
         |> encodeVariant "updateSettings" Settings.encoder
         |> interopFromElm
 

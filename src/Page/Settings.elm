@@ -2,9 +2,7 @@ module Page.Settings exposing
     ( Model
     , Msg(..)
     , init
-    ,  mapSession
-       -- , mapSessionConfig
-
+    , mapSession
     , toSession
     , update
     , view
@@ -286,36 +284,32 @@ ensureAllTypes list =
 handleClose : Model -> ( Model, Cmd Msg, Session.Msg )
 handleClose model =
     let
-        newSettingsState : SettingsState
-        newSettingsState =
-            SettingsState.cancelCurrentState model.settingsState
+        newModel : Model
+        newModel =
+            switchSettingsState SettingsState.cancelCurrentState model
 
-        newBoardConfigs : SafeZipper BoardConfig
-        newBoardConfigs =
-            SettingsState.boardConfigs newSettingsState
-
-        newGlobalSettings : GlobalSettings
-        newGlobalSettings =
-            SettingsState.globalSettings newSettingsState
+        newSettings : Settings
+        newSettings =
+            SettingsState.settings newModel.settingsState
     in
-    case newSettingsState of
+    case newModel.settingsState of
         SettingsState.ClosingPlugin _ ->
-            ( switchSettingsState (always newSettingsState) model
+            ( newModel
             , Cmd.batch
-                [ InteropPorts.updateSettings newBoardConfigs newGlobalSettings
+                [ InteropPorts.updateSettings newSettings
                 , InteropPorts.closeView
                 ]
-            , Session.SettingsClosed newBoardConfigs
+            , Session.SettingsClosed newSettings
             )
 
         SettingsState.ClosingSettings _ ->
-            ( switchSettingsState (always newSettingsState) model
-            , InteropPorts.updateSettings newBoardConfigs newGlobalSettings
-            , Session.SettingsClosed newBoardConfigs
+            ( newModel
+            , InteropPorts.updateSettings newSettings
+            , Session.SettingsClosed newSettings
             )
 
         _ ->
-            wrap { model | settingsState = newSettingsState }
+            wrap newModel
 
 
 mapSettingsState : (SettingsState -> SettingsState) -> Model -> ( Model, Cmd Msg, Session.Msg )

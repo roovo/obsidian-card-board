@@ -53,7 +53,7 @@ init flags =
             ( Boards session
                 |> forceAddWhenNoBoards
             , Cmd.batch
-                [ InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
+                [ InteropPorts.updateSettings <| Session.settings session
                 , InteropPorts.elmInitialized
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
@@ -154,8 +154,7 @@ update msg model =
                 newModel : Model
                 newModel =
                     model
-                        |> mapSession (Session.updateConfigs newSettings.boardConfigs)
-                        |> mapSession (Session.updateGlobalSettings newSettings.globalSettings)
+                        |> mapSession (Session.updateSettings newSettings)
             in
             ( newModel
             , Cmd.batch
@@ -275,7 +274,7 @@ cmdForFilterPathRename newPath session =
                 |> List.any (\f -> Filter.value f == newPath)
     in
     if anyUpdatedFilters then
-        InteropPorts.updateSettings (Session.boardConfigs session) (Session.globalSettings session)
+        InteropPorts.updateSettings <| Session.settings session
 
     else
         Cmd.none
@@ -313,10 +312,10 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
                 |> SettingsPage.init
                 |> Settings
 
-        Session.SettingsClosed newConfigs ->
+        Session.SettingsClosed newSettings ->
             toModel subModel
                 |> toSession
-                |> Session.updateConfigs newConfigs
+                |> Session.updateSettings newSettings
                 |> Boards
     , Cmd.map toMsg subCmd
     )

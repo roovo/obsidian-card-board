@@ -19,10 +19,12 @@ module Session exposing
     , taskList
     , timeIs
     , timeWIthZoneIs
-    , timeWithZone
-    , updateConfigs
-    , updateGlobalSettings
+    ,  timeWithZone
+       -- , updateConfigs
+       -- , updateGlobalSettings
+
     , updatePath
+    , updateSettings
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -58,7 +60,7 @@ type alias Config =
 type Msg
     = NoOp
     | SettingsClicked
-    | SettingsClosed (SafeZipper BoardConfig)
+    | SettingsClosed Settings
 
 
 
@@ -191,22 +193,9 @@ timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, now = time } }
 
 
-updateConfigs : SafeZipper BoardConfig -> Session -> Session
-updateConfigs newConfigs (Session config) =
-    case config.taskList of
-        State.Waiting ->
-            Session { config | settings = Settings.updateBoardConfigs newConfigs config.settings }
-
-        State.Loading _ ->
-            Session { config | settings = Settings.updateBoardConfigs newConfigs config.settings }
-
-        State.Loaded _ ->
-            Session { config | settings = Settings.loadNewBoardConfigs newConfigs config.settings }
-
-
-updateGlobalSettings : GlobalSettings -> Session -> Session
-updateGlobalSettings newSettings (Session config) =
-    Session { config | settings = Settings.updateGlobalSettings newSettings config.settings }
+updateSettings : Settings -> Session -> Session
+updateSettings newSettings (Session config) =
+    Session { config | settings = newSettings }
 
 
 
