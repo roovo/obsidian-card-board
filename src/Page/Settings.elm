@@ -70,13 +70,6 @@ mapSession fn model =
     { model | session = fn model.session }
 
 
-
---
--- mapSessionConfig : (Session.Config -> Session.Config) -> Model -> Model
--- mapSessionConfig fn model =
---     { model | session = Session.mapConfig fn model.session }
-
-
 multiSelectConfig : MultiSelect.Config Msg Filter
 multiSelectConfig =
     { delayMs = 300
@@ -119,6 +112,29 @@ type Msg
     | ToggleShowFilteredTags
 
 
+switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
+switchSettingsState fn model =
+    let
+        currentSelectedFilters : List Filter
+        currentSelectedFilters =
+            Dict.values <| MultiSelect.selectedItems model.multiSelect
+
+        newSettingsState : SettingsState
+        newSettingsState =
+            model.settingsState
+                |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
+                |> fn
+
+        newFilters : Dict String Filter
+        newFilters =
+            currentFilters <| SettingsState.boardConfigs newSettingsState
+    in
+    { model
+        | settingsState = newSettingsState
+        , multiSelect = MultiSelect.updateSelectedItems newFilters model.multiSelect
+    }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
@@ -126,32 +142,13 @@ update msg model =
             mapSettingsState SettingsState.addBoardRequested model
 
         AddBoardConfirmed ->
-            mapSettingsState SettingsState.confirmAddBoard model
+            wrap <| switchSettingsState SettingsState.confirmAddBoard model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
 
         BoardNameClicked index ->
-            let
-                currentSelectedFilters : List Filter
-                currentSelectedFilters =
-                    Dict.values <| MultiSelect.selectedItems model.multiSelect
-
-                newSettingsState : SettingsState
-                newSettingsState =
-                    model.settingsState
-                        |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
-                        |> SettingsState.editBoardAt index
-
-                newFilters : Dict String Filter
-                newFilters =
-                    currentFilters <| SettingsState.boardConfigs newSettingsState
-            in
-            wrap
-                { model
-                    | settingsState = newSettingsState
-                    , multiSelect = MultiSelect.updateSelectedItems newFilters model.multiSelect
-                }
+            wrap <| switchSettingsState (SettingsState.editBoardAt index) model
 
         BoardTypeSelected boardType ->
             mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
@@ -160,7 +157,7 @@ update msg model =
             mapSettingsState SettingsState.deleteBoardRequested model
 
         DeleteBoardConfirmed ->
-            mapSettingsState SettingsState.confirmDeleteBoard model
+            wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
 
         EnteredCompletedCount value ->
             mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
@@ -303,7 +300,7 @@ handleClose model =
     in
     case newSettingsState of
         SettingsState.ClosingPlugin _ ->
-            ( { model | settingsState = newSettingsState }
+            ( switchSettingsState (always newSettingsState) model
             , Cmd.batch
                 [ InteropPorts.updateSettings newBoardConfigs newGlobalSettings
                 , InteropPorts.closeView
@@ -312,7 +309,7 @@ handleClose model =
             )
 
         SettingsState.ClosingSettings _ ->
-            ( { model | settingsState = newSettingsState }
+            ( switchSettingsState (always newSettingsState) model
             , InteropPorts.updateSettings newBoardConfigs newGlobalSettings
             , Session.SettingsClosed newBoardConfigs
             )
