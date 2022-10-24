@@ -19,10 +19,7 @@ module Session exposing
     , taskList
     , timeIs
     , timeWIthZoneIs
-    ,  timeWithZone
-       -- , updateConfigs
-       -- , updateGlobalSettings
-
+    , timeWithZone
     , updatePath
     , updateSettings
     )

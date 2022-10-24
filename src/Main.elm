@@ -149,20 +149,6 @@ update msg model =
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
 
-        ( SettingsUpdated newSettings, _ ) ->
-            let
-                newModel : Model
-                newModel =
-                    model
-                        |> mapSession (Session.updateSettings newSettings)
-            in
-            ( newModel
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession newModel)
-                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession newModel)
-                ]
-            )
-
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
                 |> updateWith Settings GotSettingsPageMsg
@@ -203,6 +189,29 @@ update msg model =
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( mapSession (Session.timeWIthZoneIs zone posix) model
             , Cmd.none
+            )
+
+        ( SettingsUpdated newSettings, _ ) ->
+            let
+                newIndex : Int
+                newIndex =
+                    model
+                        |> toSession
+                        |> Session.boardConfigs
+                        |> SafeZipper.currentIndex
+                        |> Maybe.withDefault 0
+
+                newModel : Model
+                newModel =
+                    model
+                        |> mapSession (Session.updateSettings newSettings)
+                        |> mapSession (Session.switchToBoardAt newIndex)
+            in
+            ( newModel
+            , Cmd.batch
+                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession newModel)
+                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession newModel)
+                ]
             )
 
         ( ShowBoard index, _ ) ->
