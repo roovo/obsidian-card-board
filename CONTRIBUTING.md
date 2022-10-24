@@ -22,14 +22,7 @@ npm run dev             # run dev build
 - check with previous config file versions
 - is README up to date?
 - is TODO up to date?
-- pre-release new version
-  - main.js
-  - manifest.json (the version in here is what is displayed as the current plugin version
-                   in obsidian)
-  - style.css
-  - release notes
-- bump beta version: manifest-beta.json
-- test using BRAT
+- test in real vault
 - bump version: package.json
 - tag the release
 - release new version
