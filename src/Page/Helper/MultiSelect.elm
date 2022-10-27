@@ -482,7 +482,7 @@ fuzzyMatch needle selectionItems =
             let
                 result : Fuzzy.Result
                 result =
-                    Fuzzy.match [] [] (String.toLower needle) (String.toLower selectionItem.label)
+                    Fuzzy.match [ Fuzzy.addPenalty 10, Fuzzy.removePenalty 100 ] [ "/", " ", "\\" ] (String.toLower needle) (String.toLower selectionItem.label)
             in
             if String.isEmpty needle then
                 Just ( 0, selectionItem )
