@@ -33,7 +33,7 @@ File.open(todays_tasks, "w") do |file|
   - [ ] do something with a long title that will truncate when displayed
   - [ ] go to bed
 
-- [x] already got out of bed this morning  @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%d")})
+- [x] already got out of bed this morning  @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")})
 """
 end
 
@@ -69,8 +69,8 @@ File.open(undated_tasks, "w") do |file|
   - [ ] subtask1
   - [ ] subtask 2
 
-- [x] got out of bed last week @completed(#{(Date.today - 7).strftime("%Y-%m-%d")})
-- [x] got out of bed yesterday @completed(#{(Date.today - 1).strftime("%Y-%m-%d")})
+- [x] got out of bed last week @completed(#{(Date.today - 7).strftime("%Y-%m-%dT%H:%M:%S")})
+- [x] got out of bed yesterday @completed(#{(Date.today - 1).strftime("%Y-%m-%dT%H:%M:%S")})
 
 - [ ] an undated task that links to [[tasks_for_today|other file]]
 - [ ] another undated task (but with a block id) ^34d21
@@ -78,12 +78,16 @@ File.open(undated_tasks, "w") do |file|
 - [ ] #important and this is a task tagged as important #projects/project1 #status/backlog
 - [ ] and this is a task NOT tagged as important #projects/project1 #status/wip
 
-- [ ] a Tasks plugin task with just a due date 📅 #{(Date.today).strftime("%Y-%m-%d")}
-- [ ] a Tasks plugin task with just a scheduled date ⏳ #{(Date.today - 1).strftime("%Y-%m-%d")}
-- [ ] a Tasks plugin task with a due and a scheduled date ⏳ #{(Date.today - 2).strftime("%Y-%m-%d")} 📅 #{(Date.today - 1).strftime("%Y-%m-%d")}
-- [x] a completed Tasks plugin task with just a due date 📅 #{(Date.today - 1).strftime("%Y-%m-%d")} ✅ #{(Date.today - 1).strftime("%Y-%m-%d")}
+- [ ] a Dataview task with a due date [due:: #{(Date.today).strftime("%Y-%m-%d")}]
+- [x] a completed Dataview task with a due date [due:: #{(Date.today - 1).strftime("%Y-%m-%d")}] [completion:: #{(Date.today - 1).strftime("%Y-%m-%d")}]
+
+- [ ] a Tasks task with just a due date 📅 #{(Date.today).strftime("%Y-%m-%d")}
+- [ ] a Tasks task with just a scheduled date ⏳ #{(Date.today - 1).strftime("%Y-%m-%d")}
+- [ ] a Tasks task with a due and a scheduled date ⏳ #{(Date.today - 2).strftime("%Y-%m-%d")} 📅 #{(Date.today - 1).strftime("%Y-%m-%d")}
+- [x] a completed Tasks task with just a due date 📅 #{(Date.today - 1).strftime("%Y-%m-%d")} ✅ #{(Date.today - 1).strftime("%Y-%m-%d")}
 
 - [x] a completed task with no @completed
+- [x] a completed task with all varieties of completion tags @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")}) ✅ #{(Date.today - 1).strftime("%Y-%m-%d")} [completion:: #{(Date.today - 1).strftime("%Y-%m-%d")}]
 - [x] thought a bit about yoga #wellbeing
 - [ ] this task has a pretty long title so it won't all fit in the task title on the card
   it also has a nice long block of task notes underneath it
