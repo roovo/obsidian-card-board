@@ -45,10 +45,18 @@ export class CardBoardView extends ItemView {
   async onOpen() {
     this.icon = "card-board"
 
+    // @ts-ignore
+    const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
+
     const mySettings:Flags = {
-      now:          Date.now(),
-      zone:         new Date().getTimezoneOffset(),
-      settings:     this.plugin.settings
+      now:                Date.now(),
+      zone:               new Date().getTimezoneOffset(),
+      settings:           this.plugin.settings,
+      dataviewTaskCompletion:   {
+        taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
+        taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
+        taskCompletionText:               dataviewSettings  === undefined ? "completion"  : dataviewSettings['taskCompletionText']
+      }
     };
 
     const elmDiv = document.createElement('div');

@@ -1,11 +1,7 @@
 dataview:
-// @ts-ignore
-const dataviewSettings = this.app.plugins.getPlugin("dataview").settings
-
-taskCompletionDateFormat: "yyyy-MM-dd"
-taskCompletionText: "completion"
-taskCompletionTracking: false
-taskCompletionUseEmojiShorthand: false
+  - parse completion and due dates
+  - add to settings dropdown (add a None option too whilst I am at it)
+  - write completion if set (following dataview settings)
 
 # Task Formats
 - https://logseq.github.io/#/page/tasks%20%26%20todos

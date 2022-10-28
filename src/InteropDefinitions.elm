@@ -10,6 +10,7 @@ module InteropDefinitions exposing
     , updateTasksEncoder
     )
 
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
@@ -43,6 +44,7 @@ type ToElm
 
 type alias Flags =
     { settings : Settings
+    , dataviewTaskCompletion : DataviewTaskCompletion
     , now : Int
     , zone : Int
     }
@@ -114,6 +116,7 @@ flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
         |> TsDecode.andMap (TsDecode.field "settings" Settings.decoder)
+        |> TsDecode.andMap (TsDecode.field "dataviewTaskCompletion" DataviewTaskCompletion.decoder)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 
