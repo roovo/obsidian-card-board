@@ -5,6 +5,7 @@ module ParserHelper exposing
     , checkIsNotNumeric
     , checkWhitespaceFollows
     , dateParser
+    , dateToPosixTime
     , indentParser
     , isSpaceOrTab
     , lineEndOrEnd
@@ -43,6 +44,15 @@ isSpaceOrTab char =
 
         _ ->
             False
+
+
+
+-- CONVERSIONS
+
+
+dateToPosixTime : Date -> Time.Posix
+dateToPosixTime date =
+    Time.millisToPosix ((Date.toRataDie date - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
 
 
 
@@ -216,6 +226,11 @@ chompWithEndOfLine =
     P.succeed ()
         |. P.chompWhile (not << isLineEnd)
         |. P.chompIf isLineEnd
+
+
+epochStartOffset : Int
+epochStartOffset =
+    719162
 
 
 type alias NextParser a =
