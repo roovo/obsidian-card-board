@@ -49,6 +49,7 @@ init flags =
                 session : Session
                 session =
                     Session.fromFlags okFlags
+                        |> Debug.log "session"
             in
             ( Boards session
                 |> forceAddWhenNoBoards
@@ -228,7 +229,7 @@ update msg model =
             let
                 newTasks : TaskList
                 newTasks =
-                    TaskList.fromMarkdown markdownFile
+                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
 
                 newModel : Model
                 newModel =
@@ -260,7 +261,7 @@ update msg model =
             let
                 newTaskItems : TaskList
                 newTaskItems =
-                    TaskList.fromMarkdown markdownFile
+                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
 
                 newModel : Model
                 newModel =

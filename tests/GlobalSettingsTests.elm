@@ -48,6 +48,12 @@ updateTaskUpdateFormat =
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
                     |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+        , test "can update to be ObsidianDataview format" <|
+            \() ->
+                exampleGlobalSettings
+                    |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
+                    |> GlobalSettings.updateTaskUpdateFormat "ObsidianDataview"
+                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianDataview }
         , test "can update to be ObsidianTasks format" <|
             \() ->
                 exampleGlobalSettings

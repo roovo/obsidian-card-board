@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ decoder
+        , default
         ]
 
 
@@ -43,6 +44,16 @@ decoder =
                     |> DecodeHelpers.runDecoder DataviewTaskCompletion.decoder
                     |> .decoded
                     |> Expect.equal (Ok <| DataviewTaskCompletion.Text text)
+        ]
+
+
+default : Test
+default =
+    describe "default"
+        [ test "is Text 'completion'" <|
+            \() ->
+                DataviewTaskCompletion.default
+                    |> Expect.equal (DataviewTaskCompletion.Text "completion")
         ]
 
 

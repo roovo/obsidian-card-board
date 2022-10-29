@@ -18,6 +18,7 @@ import TsJson.Encode as TsEncode
 
 type TaskUpdateFormat
     = ObsidianCardBoard
+    | ObsidianDataview
     | ObsidianTasks
 
 
@@ -66,6 +67,7 @@ taskUpdateFormatDecoder : TsDecode.Decoder TaskUpdateFormat
 taskUpdateFormatDecoder =
     TsDecode.oneOf
         [ TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
+        , TsDecode.literal ObsidianDataview (JE.string "ObsidianDataview")
         , TsDecode.literal ObsidianTasks (JE.string "ObsidianTasks")
         ]
 
@@ -73,22 +75,29 @@ taskUpdateFormatDecoder =
 taskUpdateFormatEncoder : TsEncode.Encoder TaskUpdateFormat
 taskUpdateFormatEncoder =
     TsEncode.union
-        (\vObsidianCardBoard vObsidianTasks v ->
+        (\vObsidianCardBoard vObsidianDataview vObsidianTasks v ->
             case v of
                 ObsidianCardBoard ->
                     vObsidianCardBoard
+
+                ObsidianDataview ->
+                    vObsidianDataview
 
                 ObsidianTasks ->
                     vObsidianTasks
         )
         |> TsEncode.variantLiteral (JE.string "ObsidianCardBoard")
+        |> TsEncode.variantLiteral (JE.string "ObsidianDataview")
         |> TsEncode.variantLiteral (JE.string "ObsidianTasks")
         |> TsEncode.buildUnion
 
 
 taskUpdateFormatFromString : String -> TaskUpdateFormat
 taskUpdateFormatFromString source =
-    if source == "ObsidianTasks" then
+    if source == "ObsidianDataview" then
+        ObsidianDataview
+
+    else if source == "ObsidianTasks" then
         ObsidianTasks
 
     else

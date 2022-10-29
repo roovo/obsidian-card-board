@@ -10,6 +10,7 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
@@ -366,7 +367,7 @@ view model =
             boardSettingsView (Settings.boardConfigs settings) model.multiSelect
 
         SettingsState.EditingGlobalSettings settings ->
-            globalSettingsView settings
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -545,16 +546,28 @@ boardSettingsView boardConfigs multiselect =
         |> settingsSurroundView Boards boardConfigs
 
 
-globalSettingsView : Settings -> Html Msg
-globalSettingsView settings =
+globalSettingsView : DataviewTaskCompletion -> Settings -> Html Msg
+globalSettingsView dataviewTaskCompletion settings =
     settings
         |> Settings.globalSettings
-        |> globalSettingsForm
+        |> globalSettingsForm dataviewTaskCompletion
         |> settingsSurroundView Options (Settings.boardConfigs settings)
 
 
-globalSettingsForm : GlobalSettings -> List (Html Msg)
-globalSettingsForm gs =
+globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion gs =
+    let
+        dataViewExample =
+            case dataviewTaskCompletion of
+                DataviewTaskCompletion.NoCompletion ->
+                    "no completion date will be added"
+
+                DataviewTaskCompletion.Emoji ->
+                    "✅ 1999-12-31"
+
+                DataviewTaskCompletion.Text t ->
+                    "[" ++ t ++ ":: 1999-12-31]"
+    in
     [ Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
@@ -567,14 +580,23 @@ globalSettingsForm gs =
                 , Html.text ": "
                 , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
                 , Html.br [] []
-                , Html.text "or "
+                , Html.strong [] [ Html.text "Dataview" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text dataViewExample ]
+                , Html.br [] []
                 , Html.strong [] [ Html.text "Tasks" ]
                 , Html.text ": "
                 , Html.code [] [ Html.text "✅ 1999-12-31" ]
                 , Html.br [] []
                 , Html.br [] []
-                , Html.text "When reading tasks, CardBoard understands either format.  It also understands"
-                , Html.text " due dates whether in CardBoard or Tasks format."
+                , Html.strong [] [ Html.text "For Dataview: " ]
+                , Html.text "The task related settings in the dataview plugin (if installed) will be respected"
+                , Html.text " and should be reflected above.  The only exception is that the completion date format"
+                , Html.text " is ignored and yyyy-MM-dd is what CardBoard uses."
+                , Html.br [] []
+                , Html.br [] []
+                , Html.text "When reading tasks, CardBoard understands all these formats.  It also understands"
+                , Html.text " due dates whether in CardBoard, Dataview, or Tasks format."
                 ]
             ]
         , Html.div [ class "setting-item-control" ]
@@ -935,6 +957,17 @@ taskUpdateFormatSelect taskUpdateFormat =
             GlobalSettings.ObsidianCardBoard ->
                 [ Html.option [ value "ObsidianCardBoard", selected True ]
                     [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            GlobalSettings.ObsidianDataview ->
+                [ Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview", selected True ]
+                    [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks" ]
                     [ Html.text "Tasks" ]
                 ]
@@ -942,6 +975,8 @@ taskUpdateFormatSelect taskUpdateFormat =
             GlobalSettings.ObsidianTasks ->
                 [ Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks", selected True ]
                     [ Html.text "Tasks" ]
                 ]

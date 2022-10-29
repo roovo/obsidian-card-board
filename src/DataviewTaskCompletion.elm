@@ -1,6 +1,7 @@
 module DataviewTaskCompletion exposing
     ( DataviewTaskCompletion(..)
     , decoder
+    , default
     )
 
 import TsJson.Decode as TsDecode
@@ -14,6 +15,11 @@ type DataviewTaskCompletion
     = NoCompletion
     | Emoji
     | Text String
+
+
+default : DataviewTaskCompletion
+default =
+    Text "completion"
 
 
 

@@ -398,6 +398,9 @@ toToggledString taskUpdateFormat timeWithZone ((TaskItem fields_ _) as taskItem)
                         GlobalSettings.ObsidianCardBoard ->
                             " @completed(" ++ completionString ++ ")"
 
+                        GlobalSettings.ObsidianDataview ->
+                            " [completion:: " ++ completionString ++ "]"
+
                         GlobalSettings.ObsidianTasks ->
                             " ✅ " ++ String.left 10 completionString
 
