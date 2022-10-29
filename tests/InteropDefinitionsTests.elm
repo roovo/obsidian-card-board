@@ -24,21 +24,12 @@ suite =
         ]
 
 
-
--- dataviewSettings:   {
---   taskCompletionTracking:           true,
---   taskCompletionUseEmojiShorthand:  false,
---   taskCompletionText:               "completion"
--- }
--- "dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},
-
-
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.5.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.5.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.5.0","data":{"globalSettings":{"taskUpdateFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -366,7 +357,7 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
         , test "decodes version 0.5.0 settings data" <|
             \() ->
-                """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianCardBoard"}}}}"""
+                """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskUpdateFormat":"ObsidianCardBoard"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 5 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianCardBoard } })

@@ -1,6 +1,7 @@
 dataview:
-  - add to settings dropdown (add a None option too whilst I am at it)
   - write completion if set (following dataview settings)
+  - new version of settings json with taskUpdateFormat -> taskCompletionFormat
+    (check for taskUpdate in source to catch associated functions)
 
 # Task Formats
 - https://logseq.github.io/#/page/tasks%20%26%20todos

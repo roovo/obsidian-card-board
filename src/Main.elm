@@ -36,7 +36,11 @@ main =
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
-        Err _ ->
+        Err error ->
+            let
+                foo =
+                    Debug.log "flag error" error
+            in
             ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now

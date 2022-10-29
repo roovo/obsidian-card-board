@@ -43,7 +43,12 @@ encodeDecode =
 updateTaskUpdateFormat : Test
 updateTaskUpdateFormat =
     describe "updateTaskUpdateFormat"
-        [ test "can update to be ObsidianCardBoard format" <|
+        [ test "can update to be NoCompletion format" <|
+            \() ->
+                exampleGlobalSettings
+                    |> GlobalSettings.updateTaskUpdateFormat "NoCompletion"
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.NoCompletion }
+        , test "can update to be ObsidianCardBoard format" <|
             \() ->
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"

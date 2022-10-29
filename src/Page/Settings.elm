@@ -576,6 +576,10 @@ globalSettingsForm dataviewTaskCompletion gs =
                 [ Html.text "Which format to use when marking tasks as completed:"
                 , Html.br [] []
                 , Html.br [] []
+                , Html.strong [] [ Html.text "None" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "no completion date will be added" ]
+                , Html.br [] []
                 , Html.strong [] [ Html.text "CardBoard" ]
                 , Html.text ": "
                 , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
@@ -954,8 +958,21 @@ taskUpdateFormatSelect taskCompletionFormat =
         , onInput TaskUpdateFormatSelected
         ]
         (case taskCompletionFormat of
+            GlobalSettings.NoCompletion ->
+                [ Html.option [ value "NoCompletion", selected True ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
             GlobalSettings.ObsidianCardBoard ->
-                [ Html.option [ value "ObsidianCardBoard", selected True ]
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard", selected True ]
                     [ Html.text "CardBoard" ]
                 , Html.option [ value "ObsidianDataview" ]
                     [ Html.text "Dataview" ]
@@ -964,7 +981,9 @@ taskUpdateFormatSelect taskCompletionFormat =
                 ]
 
             GlobalSettings.ObsidianDataview ->
-                [ Html.option [ value "ObsidianCardBoard" ]
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
                 , Html.option [ value "ObsidianDataview", selected True ]
                     [ Html.text "Dataview" ]
@@ -973,7 +992,9 @@ taskUpdateFormatSelect taskCompletionFormat =
                 ]
 
             GlobalSettings.ObsidianTasks ->
-                [ Html.option [ value "ObsidianCardBoard" ]
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
                 , Html.option [ value "ObsidianDataview" ]
                     [ Html.text "Dataview" ]

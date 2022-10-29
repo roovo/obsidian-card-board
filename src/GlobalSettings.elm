@@ -17,7 +17,8 @@ import TsJson.Encode as TsEncode
 
 
 type TaskCompletionFormat
-    = ObsidianCardBoard
+    = NoCompletion
+    | ObsidianCardBoard
     | ObsidianDataview
     | ObsidianTasks
 
@@ -49,34 +50,38 @@ updateTaskUpdateFormat taskCompletionFormat gs =
 encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
-        [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskUpdateFormatEncoder
+        [ TsEncode.required "taskUpdateFormat" .taskCompletionFormat taskCompletionFormatEncoder
         ]
 
 
 decoder : TsDecode.Decoder GlobalSettings
 decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskUpdateFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
 
 
 
 -- PRIVATE
 
 
-taskUpdateFormatDecoder : TsDecode.Decoder TaskCompletionFormat
-taskUpdateFormatDecoder =
+taskCompletionFormatDecoder : TsDecode.Decoder TaskCompletionFormat
+taskCompletionFormatDecoder =
     TsDecode.oneOf
-        [ TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
+        [ TsDecode.literal NoCompletion (JE.string "NoCompletion")
+        , TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
         , TsDecode.literal ObsidianDataview (JE.string "ObsidianDataview")
         , TsDecode.literal ObsidianTasks (JE.string "ObsidianTasks")
         ]
 
 
-taskUpdateFormatEncoder : TsEncode.Encoder TaskCompletionFormat
-taskUpdateFormatEncoder =
+taskCompletionFormatEncoder : TsEncode.Encoder TaskCompletionFormat
+taskCompletionFormatEncoder =
     TsEncode.union
-        (\vObsidianCardBoard vObsidianDataview vObsidianTasks v ->
+        (\vNoCompletion vObsidianCardBoard vObsidianDataview vObsidianTasks v ->
             case v of
+                NoCompletion ->
+                    vNoCompletion
+
                 ObsidianCardBoard ->
                     vObsidianCardBoard
 
@@ -86,6 +91,7 @@ taskUpdateFormatEncoder =
                 ObsidianTasks ->
                     vObsidianTasks
         )
+        |> TsEncode.variantLiteral (JE.string "NoCompletion")
         |> TsEncode.variantLiteral (JE.string "ObsidianCardBoard")
         |> TsEncode.variantLiteral (JE.string "ObsidianDataview")
         |> TsEncode.variantLiteral (JE.string "ObsidianTasks")
@@ -94,11 +100,17 @@ taskUpdateFormatEncoder =
 
 taskUpdateFormatFromString : String -> TaskCompletionFormat
 taskUpdateFormatFromString source =
-    if source == "ObsidianDataview" then
-        ObsidianDataview
+    if source == "ObsidianCardBoard" then
+        ObsidianCardBoard
 
     else if source == "ObsidianTasks" then
         ObsidianTasks
+
+    else if source == "ObsidianDataview" then
+        ObsidianDataview
+
+    else if source == "NoCompletion" then
+        NoCompletion
 
     else
         ObsidianCardBoard

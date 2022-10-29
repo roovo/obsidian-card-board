@@ -395,6 +395,9 @@ toToggledString taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskI
                                 |> String.left 19
                     in
                     case taskCompletionFormat of
+                        GlobalSettings.NoCompletion ->
+                            ""
+
                         GlobalSettings.ObsidianCardBoard ->
                             " @completed(" ++ completionString ++ ")"
 
