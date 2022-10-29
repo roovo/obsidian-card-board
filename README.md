@@ -14,21 +14,16 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
-- Compatible with the [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) plugin
-  date formats (due and completed dates).  See the
-  [Tasks Compatibility section](https://github.com/roovo/obsidian-card-board#compatibility-obsidian-tasks)
+- Compatible with [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) and
+  [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) plugin date formats
+  (due and completed dates).  See the [compatibility section](#compatibility)
   below.
-- [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) is next.
+- Improved fuzzy searching in Filter Definition multiselect for board settings.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Installation
 Please install via the regular Community Plugins setting tab within Obsidian.
-
-If you want to keep up to date with any Beta releases then add it to the v.handy
-[obsidian42 BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).  Please do
-ensure that you have your vault backed up if you do this (you should do this anyway):
- including the  `.obsidian` folder.
 
 ## Use
 When installed, you can launch the plugin:
@@ -83,13 +78,16 @@ It will look something like this on a card on your board:
 ![example card](/images/card.png?raw=true)
 
 #### Marking a task as complete
-If you mark an item as complete on the board it will be marked as completed in the markdown
+If you mark an task as complete on the board it will be marked as completed in the markdown
 (and vice-versa).  If you mark as complete on the board, a completion timestamp is appended
 to the task:
 
 ```
 - [x] Task title @completed(2021-10-30T13:57:48)
 ```
+
+See the [compatibility section](#compatibility) for details on how you can choose to use
+a format compatible with other plugins.
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -149,6 +147,14 @@ You can also assign a date to any task using the format:
 - [ ] My task @due(2021-10-31)
 ```
 
+Cardboard also understands the format used by Dataview and Tasks:
+
+```
+- [ ] My task [due:: 2021-10-31]
+- [ ] My task 📅 2021-10-31
+```
+
+
 ### Overdue tasks
 These will appear in the `Today` column above any  any tasks that are actually
 due today.
@@ -186,12 +192,12 @@ tags: [ project1 ]
 ### Hiding Tags
 If you don't want to see the tags used to configure the board's columns on the cards,
 you can show/hide them in the settings.  If you choose not to show the column tags,
-this will hide all the tags used in the settings wherever cards oare on the board.
-It will only hide tags that exactly match those used in the settings.
+this will hide all the tags used in the settings wherever cards are on the board.
+Only tags that exactly match those used in the settings will be hidden.
 
 ## Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
-types of filter you can use: file, path, and #tags (including front matter tags).  You can
+types of filter you can use: file, path, and #tags (which includes front matter tags).  You can
 use any combination of these on a per-board basis.
 
 You can also:
@@ -207,24 +213,46 @@ above the board to the left of the tabs.  You can:
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
 - Delete any boards you no longer need.
-- Choose whether to use Cardboard or Tasks format for marking task completion.
+- Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
 
-## Compatibility: Obsidian Tasks
-CardBoard now has baked in compatibility with the date format used by
-[Obsidian Tasks](), recognising both *Due* and *Completion* Tasks dates.  So:
+## Compatibility
+Cardboard is compatible with the *Due* and *Completion* date formats used in
+both [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
+and [Dataview](https://blacksmithgu.github.io/obsidian-dataview/).
+Dates from both of these are understood with no configuration.
+
+When marking a task as complete, you can choose which format to use via
+CardBoard's Global Settings:
+
+![task completion format setting panel](/images/taskCompletionFormatSetting.png?raw=true)
+
+You can also set this value to *None* if you don't want any completion date or timestamp adding
+to a task on completion.  **This is not recommended** as if you do this, the task may well not
+appear at (or near) the top of any completed column you have on your board when you mark
+it as complete.  CardBoard uses this time or date so it knows which are the most
+recently completed tasks so they can be shown at the top of the column.
+
+### Dataview Plugin
 
 ```
-- [ ] something with a due date in Tasks format 📅 2021-10-30 ✅ 2021-10-29
+- [ ] todo in Dataview format [due:: 2021-10-30] [completion:: 2021-10-29]
 ```
 
 Will be read as a task with a due date of 30th Oct 2021 which was completed a day early.
 
-If you wish to use the completion/done format used in Tasks when you mark a task as complete,
-you can set this in CardBoard's Global Settings:
+Cardboard will honour the task related settings in Dataview, so if you set Dataview
+to use emoji completion or a different "completion" string (such as "done") then
+CardBoard will mirror this.
 
-![task update format setting panel](/images/taskUpdateFormatSetting.png?raw=true)
+### Tasks Plugin
 
-### Recurring Tasks
+```
+- [ ] todo in Tasks format 📅 2021-10-30 ✅ 2021-10-29
+```
+
+Will be read as a task with a due date of 30th Oct 2021 which was completed a day early.
+
+#### Recurring Tasks
 **CardBoard does not understand recurring tasks**, even if you have set it up to use Tasks
 format for marking tasks as complete.   Checking off a recurring task from
 the CardBoard board view will add the completion date in Tasks format but **will
