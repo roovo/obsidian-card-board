@@ -370,8 +370,8 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : TaskCompletionFormat -> { a | now : Time.Posix } -> TaskItem -> String
-toToggledString taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | now : Time.Posix } -> TaskItem -> String
+toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
@@ -402,7 +402,15 @@ toToggledString taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskI
                             " @completed(" ++ completionString ++ ")"
 
                         GlobalSettings.ObsidianDataview ->
-                            " [completion:: " ++ completionString ++ "]"
+                            case dataviewTaskCompletion of
+                                DataviewTaskCompletion.NoCompletion ->
+                                    ""
+
+                                DataviewTaskCompletion.Emoji ->
+                                    " ✅ " ++ String.left 10 completionString
+
+                                DataviewTaskCompletion.Text t ->
+                                    " [" ++ t ++ ":: " ++ String.left 10 completionString ++ "]"
 
                         GlobalSettings.ObsidianTasks ->
                             " ✅ " ++ String.left 10 completionString
@@ -434,8 +442,21 @@ toToggledString taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskI
 
         removeCompletionTags : String -> String
         removeCompletionTags =
+            let
+                dataviewRemover =
+                    case dataviewTaskCompletion of
+                        DataviewTaskCompletion.NoCompletion ->
+                            identity
+
+                        DataviewTaskCompletion.Emoji ->
+                            identity
+
+                        DataviewTaskCompletion.Text t ->
+                            regexReplacer (" \\[" ++ t ++ ":: \\d{4}-\\d{2}-\\d{2}\\]") (\_ -> "")
+            in
             regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "")
                 >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
+                >> dataviewRemover
 
         replaceCheckbox : TaskItem -> String -> String
         replaceCheckbox t_ taskString =

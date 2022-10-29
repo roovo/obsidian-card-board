@@ -925,29 +925,59 @@ title =
 toToggledString : Test
 toToggledString =
     describe "toToggledString"
-        [ test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
+        [ test "given an INCOMPLETE item it outputs a string for a completed task with no completed tag in NoCompletion format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianTasks { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 [done:: 1970-01-01] ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview emoji format" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview no completion" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
         , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 ^12345"
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+        , test "doesn't remove dataview format if it has been set to NoCompletion" <|
+            \() ->
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
         , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [X] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
+                "- [X] [custom:: 2021-01-01] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
@@ -955,7 +985,7 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map (TaskItem.toToggledString GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
 

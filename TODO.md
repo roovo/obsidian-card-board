@@ -1,12 +1,6 @@
 dataview:
-  - write completion if set (following dataview settings)
   - new version of settings json with taskUpdateFormat -> taskCompletionFormat
     (check for taskUpdate in source to catch associated functions)
-
-# Task Formats
-- https://logseq.github.io/#/page/tasks%20%26%20todos
-- https://blacksmithgu.github.io/obsidian-dataview/data-annotation/
-- https://forum.obsidian.md/t/task-management-devs-add-date-format-standard/26464
 
 # Cleanups
 - check coverage and add tests

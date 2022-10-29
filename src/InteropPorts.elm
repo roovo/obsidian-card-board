@@ -13,6 +13,7 @@ port module InteropPorts exposing
     )
 
 import Card exposing (Card)
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import GlobalSettings exposing (TaskCompletionFormat)
 import InteropDefinitions
 import Json.Decode
@@ -83,14 +84,14 @@ requestFilterCandidates =
         |> interopFromElm
 
 
-rewriteTasks : TaskCompletionFormat -> TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTasks taskCompletionFormat timeWithZone filePath taskItems =
+rewriteTasks : DataviewTaskCompletion -> TaskCompletionFormat -> TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath taskItems =
     let
         rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = TaskItem.toToggledString taskCompletionFormat timeWithZone taskItem
+            , newText = TaskItem.toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone taskItem
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
