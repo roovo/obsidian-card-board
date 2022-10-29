@@ -1,5 +1,6 @@
 module TaskItemTests exposing (suite)
 
+import DataviewTaskCompletion
 import Date
 import Expect
 import GlobalSettings
@@ -88,33 +89,63 @@ completion =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
-        , test "returns CompletedAt for an completed task with a @completed() date" <|
+        , test "returns Incomplete for an incomplete task with a [completion:: date" <|
+            \() ->
+                "- [ ] foo [completion:: 2020-01-01]"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
+        , test "returns CompletedAt for a completed task with a @completed() date" <|
             \() ->
                 "- [x] foo @completed(2020-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
-        , test "returns CompletedAt for an completed task with a ✅ date" <|
+        , test "returns CompletedAt for a completed task with a ✅ date" <|
             \() ->
                 "- [x] foo ✅ 2020-01-01"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
-        , test "returns CompletedAt for an completed task with a 📅 date before the ✅ date" <|
+        , test "returns CompletedAt for a completed task with a [completion:: date" <|
+            \() ->
+                "- [x] foo [completion:: 2020-01-01]"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns CompletedAt for a completed task with a [custom:: date" <|
+            \() ->
+                "- [x] foo [custom:: 2020-01-01]"
+                    |> Parser.run (TaskItem.parser (DataviewTaskCompletion.Text "custom") "" Nothing TagList.empty 0)
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
+        , test "returns CompletedAt for a completed task with a 📅 date before the ✅ date" <|
             \() ->
                 "- [x] foo 📅 2020-01-02 ✅ 2020-01-01"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
-        , test "returns CompletedAt for an completed task with a ✅ date before the 📅 date" <|
+        , test "returns CompletedAt for a completed task with a ✅ date before the 📅 date" <|
             \() ->
                 "- [x] foo ✅ 2020-01-01 📅 2020-01-01"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok <| CompletedAt <| Time.millisToPosix 1577836800000)
-        , test "returns Completed for an completed task with an invalid @completed() date" <|
+        , test "returns Completed for a completed task with an invalid @completed() date" <|
             \() ->
                 "- [x] foo @completed(2020-01-51)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
+        , test "returns Completed for a completed task with an invalid [completion:: date" <|
+            \() ->
+                "- [x] foo [completion:: 2020-01-51]"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Completed)
+        , test "returns Completed for a completed task with an invalid ✅ date" <|
+            \() ->
+                "- [x] foo ✅ 2020-01-51"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Completed)
@@ -124,12 +155,36 @@ completion =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
+        , test "the ✅ date is not included in the title" <|
+            \() ->
+                "- [x] foo ✅ 2020-01-01 bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
+        , test "the [completion:: date is not included in the title" <|
+            \() ->
+                "- [x] foo [completion:: 2020-01-01] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo bar")
         , test "the @completed() date is included in the title if it is not valid" <|
             \() ->
                 "- [x] foo @completed(2020-51-01) bar"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @completed(2020-51-01) bar")
+        , test "the ✅ date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo ✅ 2020-51-01 bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo ✅ 2020-51-01 bar")
+        , test "the [completion:: date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo [completion:: 2020-51-01] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo [completion:: 2020-51-01] bar")
         ]
 
 
@@ -139,19 +194,19 @@ containsId =
         [ test "returns False if the id is not in the task or any descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 4))
                     |> Expect.equal (Ok False)
         , test "returns True if the id is for the task" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 1))
                     |> Expect.equal (Ok True)
         , test "returns True if the id is for one of the descendant tasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz"
-                    |> Parser.run (TaskItem.parser "fileA" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 2))
                     |> Expect.equal (Ok True)
         ]
@@ -169,7 +224,7 @@ due =
         , test "returns Nothing if the file date is invalid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "not a date") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "not a date") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
         , test "returns Nothing if the @due date is invalid" <|
@@ -184,34 +239,46 @@ due =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok Nothing)
+        , test "returns Nothing if the [due:: date is invalid" <|
+            \() ->
+                "- [ ] foo [due:: 2020-51-01]"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
         , test "returns Just the date if the file date is valid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737431)
         , test "@due() date over-rides the file date" <|
             \() ->
                 "- [ ] foo @due(2021-03-03)"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "📅 date over-rides the file date" <|
             \() ->
                 "- [ ] foo 📅 2021-03-03"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "[due:: date over-rides the file date" <|
+            \() ->
+                "- [ ] foo [due:: 2021-03-03]"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "📅 date over-rides the file date when preceeded by a ✅ date" <|
             \() ->
                 "- [ ] foo ✅ 2021-03-02 📅 2021-03-03"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "📅 date over-rides the file date when postceeded by a ✅ date" <|
             \() ->
                 "- [ ] foo 📅 2021-03-03 ✅ 2021-03-02"
-                    |> Parser.run (TaskItem.parser "" (Just "2021-03-01") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "the @due() date is not included in the title" <|
@@ -226,18 +293,30 @@ due =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
-        , test "the 📅 date is included in the title if it is not valid" <|
+        , test "the [due:: date is not included in the title" <|
             \() ->
-                "- [x] foo 📅 2020-51-01 bar"
+                "- [x] foo [due:: 2020-01-01] bar"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
-                    |> Expect.equal (Ok "foo 📅 2020-51-01 bar")
+                    |> Expect.equal (Ok "foo bar")
         , test "the @due() date is included in the title if it is not valid" <|
             \() ->
                 "- [x] foo @due(2020-51-01) bar"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @due(2020-51-01) bar")
+        , test "the 📅 date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo 📅 2020-51-01 bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo 📅 2020-51-01 bar")
+        , test "the [due:: date is included in the title if it is not valid" <|
+            \() ->
+                "- [x] foo [due:: 2020-51-01] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok "foo [due:: 2020-51-01] bar")
         , test "the @due() date is included in the title if it is followed by a non-space character" <|
             \() ->
                 "- [x] foo @due(2020-51-01)x bar"
@@ -253,7 +332,7 @@ filePath =
         [ test "returns the filePath" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
         ]
@@ -433,7 +512,7 @@ id =
         [ test "returns FNVC1a(filePath):row" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.id
                     |> Expect.equal (Ok "1414514984:1")
         ]
@@ -475,13 +554,13 @@ isDated =
         , test "returns False if the date is invalid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "not a date") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "not a date") TagList.empty 0)
                     |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok False)
         , test "returns True if the date is valid" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" (Just "2020-01-07") TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
                     |> Result.map TaskItem.isDated
                     |> Expect.equal (Ok True)
         ]
@@ -493,13 +572,13 @@ isFromFile =
         [ test "returns False if the filenames do NOT match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File B")
                     |> Expect.equal (Ok False)
         , test "returns True if the filenames do match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File A")
                     |> Expect.equal (Ok True)
         , test "returns True if the filenames are both blank" <|
@@ -511,19 +590,19 @@ isFromFile =
         , test "returns False if the filenames do NOT match case" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File a")
                     |> Expect.equal (Ok False)
         , test "returns False if the filenames are a partial match" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         , test "matches id" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "File A" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.isFromFile "File")
                     |> Expect.equal (Ok False)
         ]
@@ -535,13 +614,13 @@ lineNumber =
         [ test "is the actual line number if there is no bodyOffset" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                     |> Result.map TaskItem.lineNumber
                     |> Expect.equal (Ok 1)
         , test "adds in the bodyOffset" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run (TaskItem.parser "" Nothing TagList.empty 3)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 3)
                     |> Result.map TaskItem.lineNumber
                     |> Expect.equal (Ok 4)
         ]
@@ -703,25 +782,25 @@ tags =
         , test "returns all tags from front matter, the top level, and sub tasks" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
                     |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2", "tag3", "tagA", "tagB" ]))
         , test "returns unique list of tags" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag2"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag1" ]) 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tag1" ]) 0)
                     |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "returns the tags in alphabetical order" <|
             \() ->
                 "- [ ] foo #tag2 bar #tag1\n  - [ ] bar #tag1"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList []) 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
                     |> Result.map TaskItem.tags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         , test "tags are not included in the title" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2"
-                    |> Parser.run (TaskItem.parser "" Nothing (TagList.fromList [ "tag3" ]) 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tag3" ]) 0)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
         ]

@@ -1,6 +1,7 @@
 module CardTests exposing (suite)
 
 import Card exposing (Highlight(..))
+import DataviewTaskCompletion
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -139,7 +140,7 @@ markdownWithIds =
   - [ ] bar
  more notes
   """
-                    |> Parser.run (TaskItem.parser "file" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "file" Nothing TagList.empty 0)
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.markdownWithIds
@@ -155,7 +156,7 @@ markdownWithIds =
                 """- [ ] foo
   - [ ] bar
   """
-                    |> Parser.run (TaskItem.parser "file" Nothing TagList.empty 0)
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "file" Nothing TagList.empty 0)
                     |> Result.toMaybe
                     |> Maybe.map (Card.fromTaskItem "prefix")
                     |> Maybe.map Card.markdownWithIds
@@ -228,5 +229,5 @@ janFirstTwentyTwenty =
 taskItem : Maybe TaskItem
 taskItem =
     "- [ ] foo"
-        |> Parser.run (TaskItem.parser "taskItemPath" Nothing TagList.empty 0)
+        |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "taskItemPath" Nothing TagList.empty 0)
         |> Result.toMaybe

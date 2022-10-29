@@ -1,5 +1,4 @@
 dataview:
-  - parse completion and due dates
   - add to settings dropdown (add a None option too whilst I am at it)
   - write completion if set (following dataview settings)
 

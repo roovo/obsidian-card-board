@@ -33,6 +33,8 @@ module TaskItem exposing
     , updateFilePath
     )
 
+import DataviewDate
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import FNV1a
 import GlobalSettings exposing (TaskUpdateFormat)
@@ -343,8 +345,8 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 -- SERIALIZE
 
 
-parser : String -> Maybe String -> TagList -> Int -> Parser TaskItem
-parser pathToFile fileDate frontMatterTags bodyOffset =
+parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskItem
+parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
     (P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
@@ -355,13 +357,13 @@ parser pathToFile fileDate frontMatterTags bodyOffset =
         |= prefixParser
         |. P.chompWhile isSpaceOrTab
         |= fileDateParser fileDate
-        |= contentParser
+        |= contentParser dataviewTaskCompletion
         |= P.getOffset
         |. lineEndOrEnd
         |= P.getSource
     )
         |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset)
+        |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
 
 
 
@@ -464,8 +466,8 @@ toToggledString taskUpdateFormat timeWithZone ((TaskItem fields_ _) as taskItem)
 -- PRIVATE
 
 
-addAnySubtasksAndNotes : String -> Maybe String -> TagList -> Int -> TaskItemFields -> Parser TaskItem
-addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
+addAnySubtasksAndNotes : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> TaskItemFields -> Parser TaskItem
+addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset fields_ =
     let
         buildTaskItem : List IndentedItem -> Parser TaskItem
         buildTaskItem indentedItems =
@@ -499,7 +501,7 @@ addAnySubtasksAndNotes pathToFile fileDate frontMatterTags bodyOffset fields_ =
                 |> String.join "\n"
     in
     P.succeed identity
-        |= ParserHelper.indentParser (indentedItemParser pathToFile fileDate frontMatterTags bodyOffset)
+        |= ParserHelper.indentParser (indentedItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
         |> P.andThen buildTaskItem
 
 
@@ -512,20 +514,20 @@ autoCompleteTagger flag =
         AutoCompleteTag FalseSpecified
 
 
-contentHelp : List Content -> Parser (P.Step (List Content) (List Content))
-contentHelp revContents =
+contentHelp : DataviewTaskCompletion -> List Content -> Parser (P.Step (List Content) (List Content))
+contentHelp dataviewTaskCompletion revContents =
     P.oneOf
         [ P.succeed (\content -> P.Loop (content :: revContents))
-            |= tokenParser
+            |= tokenParser dataviewTaskCompletion
             |. P.chompWhile isSpaceOrTab
         , P.succeed ()
             |> P.map (\_ -> P.Done (List.reverse revContents))
         ]
 
 
-contentParser : Parser (List Content)
-contentParser =
-    P.loop [] contentHelp
+contentParser : DataviewTaskCompletion -> Parser (List Content)
+contentParser dataviewTaskCompletion =
+    P.loop [] <| contentHelp dataviewTaskCompletion
 
 
 fileDateParser : Maybe String -> Parser (Maybe Date)
@@ -537,10 +539,10 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-indentedItemParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
-indentedItemParser pathToFile fileDate frontMatterTags bodyOffset =
+indentedItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser IndentedItem
+indentedItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
     P.oneOf
-        [ subTaskParser pathToFile fileDate frontMatterTags bodyOffset
+        [ subTaskParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset
         , notesParser
         ]
 
@@ -572,8 +574,8 @@ rejectIfNoTitle fields_ =
         P.succeed fields_
 
 
-subTaskParser : String -> Maybe String -> TagList -> Int -> Parser IndentedItem
-subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
+subTaskParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser IndentedItem
+subTaskParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
     P.succeed taskItemFieldsBuilder
         |= P.getOffset
         |= P.getCol
@@ -584,7 +586,7 @@ subTaskParser pathToFile fileDate frontMatterTags bodyOffset =
         |= prefixParser
         |. P.chompWhile isSpaceOrTab
         |= fileDateParser fileDate
-        |= contentParser
+        |= contentParser dataviewTaskCompletion
         |= P.getOffset
         |. lineEndOrEnd
         |= P.getSource
@@ -675,14 +677,16 @@ toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
             TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
 
 
-tokenParser : Parser Content
-tokenParser =
+tokenParser : DataviewTaskCompletion -> Parser Content
+tokenParser dataviewTaskCompletion =
     P.oneOf
         [ P.backtrackable <| TaskPaperTag.completedTagParser CompletedTag
         , P.backtrackable <| TaskPaperTag.dueTagParser DueTag
         , P.backtrackable <| TaskPaperTag.autocompleteTagParser autoCompleteTagger
         , P.backtrackable <| ObsidianTasksDate.dueDateParser DueTag
         , P.backtrackable <| ObsidianTasksDate.completionTimeParser CompletedTag
+        , P.backtrackable <| DataviewDate.dueDateParser DueTag
+        , P.backtrackable <| DataviewDate.completionTimeParser dataviewTaskCompletion CompletedTag
         , P.backtrackable <| P.map ObsidianTag Tag.parser
         , P.succeed Word
             |= ParserHelper.wordParser
