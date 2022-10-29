@@ -1,6 +1,7 @@
 module SessionTests exposing (suite)
 
 import BoardConfig
+import DataviewTaskCompletion
 import Expect
 import Filter
 import GlobalSettings
@@ -21,6 +22,8 @@ suite =
         , default
         , deleteItemsFromFile
         , finishAdding
+
+        -- , fromFlags
         , globalSettings
         , replaceTaskItems
         , updatePath
@@ -60,12 +63,27 @@ addTaskList =
 default : Test
 default =
     describe "default"
-        [ test "empty task list" <|
+        [ test "has an empty task list" <|
             \() ->
                 Session.default
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal []
+        , test "is not the active view" <|
+            \() ->
+                Session.default
+                    |> Session.isActiveView
+                    |> Expect.equal False
+        , test "has default Settings" <|
+            \() ->
+                Session.default
+                    |> Session.settings
+                    |> Expect.equal Settings.default
+        , test "has DataviewTaskCompletion.Text completion" <|
+            \() ->
+                Session.default
+                    |> Session.dataviewTaskCompletion
+                    |> Expect.equal (DataviewTaskCompletion.Text "completion")
         ]
 
 
@@ -128,6 +146,40 @@ finishAdding =
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2" ]
         ]
+
+
+
+-- type alias Flags =
+--     { settings : Settings
+--     , dataviewTaskCompletion : DataviewTaskCompletion
+--     , now : Int
+--     , zone : Int
+--     }
+--
+-- fromFlags : InteropDefinitions.Flags -> Session
+-- fromFlags flags =
+--     Session
+--         { settings = flags.settings
+--         , isActiveView = False
+--         , taskList = State.Waiting
+--         , timeWithZone =
+--             { now = Time.millisToPosix flags.now
+--             , zone = Time.customZone flags.zone []
+--             }
+--         }
+-- fromFlags : Test
+-- fromFlags =
+--     describe "fromFlags"
+--         [ test "plop" <|
+--             \() ->
+--     { settings = Settings.default
+--     , dataviewTaskCompletion = DataviewTaskCompletion.Emoji
+--     , now : 12
+--     , zone : 27
+--     }
+--                     |> Session.fromFlags
+--                     |> Expect.equal TaskList.empty
+--         ]
 
 
 globalSettings : Test

@@ -4,6 +4,7 @@ module Session exposing
     , addTaskList
     , boardConfigs
     , cards
+    , dataviewTaskCompletion
     , default
     , deleteItemsFromFile
     , finishAdding
@@ -27,6 +28,7 @@ module Session exposing
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -48,6 +50,7 @@ type Session
 
 type alias Config =
     { settings : Settings
+    , dataviewTaskCompletion : DataviewTaskCompletion
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -68,6 +71,7 @@ default : Session
 default =
     Session
         { settings = Settings.default
+        , dataviewTaskCompletion = DataviewTaskCompletion.default
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -81,6 +85,7 @@ fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
         { settings = flags.settings
+        , dataviewTaskCompletion = flags.dataviewTaskCompletion
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -105,6 +110,11 @@ cards ((Session config) as session) =
         |> taskList
         |> Boards.init (Settings.boardConfigs config.settings)
         |> Boards.cards config.timeWithZone
+
+
+dataviewTaskCompletion : Session -> DataviewTaskCompletion
+dataviewTaskCompletion (Session config) =
+    config.dataviewTaskCompletion
 
 
 globalSettings : Session -> GlobalSettings

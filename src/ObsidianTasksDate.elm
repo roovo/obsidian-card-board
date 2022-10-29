@@ -20,7 +20,7 @@ dueDateParser tagger =
 
 completionTimeParser : (Time.Posix -> a) -> Parser a
 completionTimeParser tagger =
-    formatParser "✅ " dateToPosixTime
+    formatParser "✅ " ParserHelper.dateToPosixTime
         |> P.map tagger
 
 
@@ -33,13 +33,3 @@ formatParser emoticon tagger =
     P.succeed tagger
         |. P.token emoticon
         |= ParserHelper.dateParser
-
-
-dateToPosixTime : Date -> Time.Posix
-dateToPosixTime date =
-    Time.millisToPosix ((Date.toRataDie date - epochStartOffset) * (1000 * 60 * 60 * 24) - (1000 * 60 * 60 * 24))
-
-
-epochStartOffset : Int
-epochStartOffset =
-    719162

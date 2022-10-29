@@ -1,10 +1,11 @@
 module GlobalSettings exposing
     ( GlobalSettings
-    , TaskUpdateFormat(..)
-    , decoder
+    , TaskCompletionFormat(..)
     , default
     , encoder
-    , updateTaskUpdateFormat
+    , updateTaskCompletionFormat
+    , v_0_5_0_decoder
+    , v_0_6_0_decoder
     )
 
 import Json.Encode as JE
@@ -16,19 +17,21 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type TaskUpdateFormat
-    = ObsidianCardBoard
+type TaskCompletionFormat
+    = NoCompletion
+    | ObsidianCardBoard
+    | ObsidianDataview
     | ObsidianTasks
 
 
 type alias GlobalSettings =
-    { taskUpdateFormat : TaskUpdateFormat
+    { taskCompletionFormat : TaskCompletionFormat
     }
 
 
 default : GlobalSettings
 default =
-    { taskUpdateFormat = ObsidianCardBoard
+    { taskCompletionFormat = ObsidianCardBoard
     }
 
 
@@ -36,9 +39,9 @@ default =
 -- UTILITIES
 
 
-updateTaskUpdateFormat : String -> GlobalSettings -> GlobalSettings
-updateTaskUpdateFormat taskUpdateFormat gs =
-    { gs | taskUpdateFormat = taskUpdateFormatFromString taskUpdateFormat }
+updateTaskCompletionFormat : String -> GlobalSettings -> GlobalSettings
+updateTaskCompletionFormat taskCompletionFormat gs =
+    { gs | taskCompletionFormat = taskCompletionFormatFromString taskCompletionFormat }
 
 
 
@@ -48,48 +51,73 @@ updateTaskUpdateFormat taskUpdateFormat gs =
 encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
-        [ TsEncode.required "taskUpdateFormat" .taskUpdateFormat taskUpdateFormatEncoder
+        [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
         ]
 
 
-decoder : TsDecode.Decoder GlobalSettings
-decoder =
+v_0_6_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_6_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskUpdateFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+
+
+v_0_5_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_5_0_decoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
 
 
 
 -- PRIVATE
 
 
-taskUpdateFormatDecoder : TsDecode.Decoder TaskUpdateFormat
-taskUpdateFormatDecoder =
+taskCompletionFormatDecoder : TsDecode.Decoder TaskCompletionFormat
+taskCompletionFormatDecoder =
     TsDecode.oneOf
-        [ TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
+        [ TsDecode.literal NoCompletion (JE.string "NoCompletion")
+        , TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
+        , TsDecode.literal ObsidianDataview (JE.string "ObsidianDataview")
         , TsDecode.literal ObsidianTasks (JE.string "ObsidianTasks")
         ]
 
 
-taskUpdateFormatEncoder : TsEncode.Encoder TaskUpdateFormat
-taskUpdateFormatEncoder =
+taskCompletionFormatEncoder : TsEncode.Encoder TaskCompletionFormat
+taskCompletionFormatEncoder =
     TsEncode.union
-        (\vObsidianCardBoard vObsidianTasks v ->
+        (\vNoCompletion vObsidianCardBoard vObsidianDataview vObsidianTasks v ->
             case v of
+                NoCompletion ->
+                    vNoCompletion
+
                 ObsidianCardBoard ->
                     vObsidianCardBoard
+
+                ObsidianDataview ->
+                    vObsidianDataview
 
                 ObsidianTasks ->
                     vObsidianTasks
         )
+        |> TsEncode.variantLiteral (JE.string "NoCompletion")
         |> TsEncode.variantLiteral (JE.string "ObsidianCardBoard")
+        |> TsEncode.variantLiteral (JE.string "ObsidianDataview")
         |> TsEncode.variantLiteral (JE.string "ObsidianTasks")
         |> TsEncode.buildUnion
 
 
-taskUpdateFormatFromString : String -> TaskUpdateFormat
-taskUpdateFormatFromString source =
-    if source == "ObsidianTasks" then
+taskCompletionFormatFromString : String -> TaskCompletionFormat
+taskCompletionFormatFromString source =
+    if source == "ObsidianCardBoard" then
+        ObsidianCardBoard
+
+    else if source == "ObsidianTasks" then
         ObsidianTasks
+
+    else if source == "ObsidianDataview" then
+        ObsidianDataview
+
+    else if source == "NoCompletion" then
+        NoCompletion
 
     else
         ObsidianCardBoard

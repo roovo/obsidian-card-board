@@ -10,9 +10,10 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
-import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
+import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -102,7 +103,7 @@ type Msg
     | ModalCloseClicked
     | PathsRequested Int String
     | PolaritySelected String
-    | TaskUpdateFormatSelected String
+    | TaskCompletionFormatSelected String
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
@@ -224,12 +225,12 @@ update msg model =
         PolaritySelected polarity ->
             mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
-        TaskUpdateFormatSelected taskUpdateFormat ->
+        TaskCompletionFormatSelected taskCompletionFormat ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateTaskUpdateFormat taskUpdateFormat)
+                            (GlobalSettings.updateTaskCompletionFormat taskCompletionFormat)
                             model.settingsState
                 }
 
@@ -366,7 +367,7 @@ view model =
             boardSettingsView (Settings.boardConfigs settings) model.multiSelect
 
         SettingsState.EditingGlobalSettings settings ->
-            globalSettingsView settings
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -545,40 +546,66 @@ boardSettingsView boardConfigs multiselect =
         |> settingsSurroundView Boards boardConfigs
 
 
-globalSettingsView : Settings -> Html Msg
-globalSettingsView settings =
+globalSettingsView : DataviewTaskCompletion -> Settings -> Html Msg
+globalSettingsView dataviewTaskCompletion settings =
     settings
         |> Settings.globalSettings
-        |> globalSettingsForm
+        |> globalSettingsForm dataviewTaskCompletion
         |> settingsSurroundView Options (Settings.boardConfigs settings)
 
 
-globalSettingsForm : GlobalSettings -> List (Html Msg)
-globalSettingsForm gs =
+globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion gs =
+    let
+        dataViewExample : String
+        dataViewExample =
+            case dataviewTaskCompletion of
+                DataviewTaskCompletion.NoCompletion ->
+                    "no completion date will be added"
+
+                DataviewTaskCompletion.Emoji ->
+                    "✅ 1999-12-31"
+
+                DataviewTaskCompletion.Text t ->
+                    "[" ++ t ++ ":: 1999-12-31]"
+    in
     [ Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Task update format" ]
+                [ Html.text "Task completion format" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Which format to use when marking tasks as completed:"
                 , Html.br [] []
+                , Html.br [] []
+                , Html.strong [] [ Html.text "None" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text "no completion date will be added" ]
                 , Html.br [] []
                 , Html.strong [] [ Html.text "CardBoard" ]
                 , Html.text ": "
                 , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
                 , Html.br [] []
-                , Html.text "or "
+                , Html.strong [] [ Html.text "Dataview" ]
+                , Html.text ": "
+                , Html.code [] [ Html.text dataViewExample ]
+                , Html.br [] []
                 , Html.strong [] [ Html.text "Tasks" ]
                 , Html.text ": "
                 , Html.code [] [ Html.text "✅ 1999-12-31" ]
                 , Html.br [] []
                 , Html.br [] []
-                , Html.text "When reading tasks, CardBoard understands either format.  It also understands"
-                , Html.text " due dates whether in CardBoard or Tasks format."
+                , Html.strong [] [ Html.text "For Dataview: " ]
+                , Html.text "The task related settings in the dataview plugin (if installed) will be respected"
+                , Html.text " and should be reflected above.  The only exception is that the completion date format"
+                , Html.text " is ignored and yyyy-MM-dd is what CardBoard uses."
+                , Html.br [] []
+                , Html.br [] []
+                , Html.text "When reading tasks, CardBoard understands all these formats.  It also understands"
+                , Html.text " due dates whether in CardBoard, Dataview, or Tasks format."
                 ]
             ]
         , Html.div [ class "setting-item-control" ]
-            [ taskUpdateFormatSelect gs.taskUpdateFormat ]
+            [ taskCompletionFormatSelect gs.taskCompletionFormat ]
         ]
     ]
 
@@ -925,23 +952,53 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-taskUpdateFormatSelect : TaskUpdateFormat -> Html Msg
-taskUpdateFormatSelect taskUpdateFormat =
+taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
+taskCompletionFormatSelect taskCompletionFormat =
     Html.select
         [ class "dropdown"
-        , onInput TaskUpdateFormatSelected
+        , onInput TaskCompletionFormatSelected
         ]
-        (case taskUpdateFormat of
-            GlobalSettings.ObsidianCardBoard ->
-                [ Html.option [ value "ObsidianCardBoard", selected True ]
+        (case taskCompletionFormat of
+            GlobalSettings.NoCompletion ->
+                [ Html.option [ value "NoCompletion", selected True ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            GlobalSettings.ObsidianCardBoard ->
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard", selected True ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            GlobalSettings.ObsidianDataview ->
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview", selected True ]
+                    [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks" ]
                     [ Html.text "Tasks" ]
                 ]
 
             GlobalSettings.ObsidianTasks ->
-                [ Html.option [ value "ObsidianCardBoard" ]
+                [ Html.option [ value "NoCompletion" ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
                     [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks", selected True ]
                     [ Html.text "Tasks" ]
                 ]

@@ -17,6 +17,7 @@ suite =
         , checkIfEmpty
         , checkIsNotNumeric
         , dateParserTests
+        , dateToPosixTime
         , indentParserTests
         , nonEmptyStringParserTest
         , timeParserTests
@@ -185,6 +186,17 @@ dateParserTests =
                     |> P.run dateParser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        ]
+
+
+dateToPosixTime : Test
+dateToPosixTime =
+    describe "dateToPosixTime"
+        [ test "converts a date to the posix time for the start of that day (utc)" <|
+            \() ->
+                Date.fromCalendarDate 2020 Time.Feb 26
+                    |> ParserHelper.dateToPosixTime
+                    |> Expect.equal (Time.millisToPosix 1582675200000)
         ]
 
 

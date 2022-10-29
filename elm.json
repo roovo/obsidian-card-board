@@ -27,6 +27,7 @@
             "tripokey/elm-fuzzy": "5.2.1"
         },
         "indirect": {
+            "elm/random": "1.0.0",
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
@@ -35,10 +36,10 @@
     },
     "test-dependencies": {
         "direct": {
-            "elm-explorations/test": "1.2.2"
+            "elm-explorations/test": "2.0.1"
         },
         "indirect": {
-            "elm/random": "1.0.0"
+            "elm/bytes": "1.0.8"
         }
     }
 }

@@ -19,6 +19,7 @@ module TaskList exposing
     , topLevelTasks
     )
 
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
@@ -44,10 +45,11 @@ empty =
     TaskList []
 
 
-fromMarkdown : MarkdownFile -> TaskList
-fromMarkdown markdownFile =
+fromMarkdown : DataviewTaskCompletion -> MarkdownFile -> TaskList
+fromMarkdown dataviewTaskCompletion markdownFile =
     P.run
         (parser
+            dataviewTaskCompletion
             markdownFile.filePath
             markdownFile.fileDate
             markdownFile.frontMatterTags
@@ -61,9 +63,9 @@ fromMarkdown markdownFile =
 -- PARSE
 
 
-parser : String -> Maybe String -> TagList -> Int -> Parser TaskList
-parser filePath fileDate frontMatterTags bodyOffset =
-    P.loop [] (taskItemsHelp filePath fileDate frontMatterTags bodyOffset)
+parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
+parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
         |> P.map (\ts -> TaskList ts)
 
 
@@ -158,11 +160,11 @@ itemsNotFromFile pathToFile =
     List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
 
 
-taskItemsHelp : String -> Maybe String -> TagList -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
-taskItemsHelp filePath fileDate frontMatterTags bodyOffset revTaskItems =
+taskItemsHelp : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))
+taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset revTaskItems =
     P.oneOf
         [ P.backtrackable
-            (TaskItem.parser filePath fileDate frontMatterTags bodyOffset
+            (TaskItem.parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset
                 |> P.map (\taskItem -> P.Loop (taskItem :: revTaskItems))
             )
         , anyLineParser

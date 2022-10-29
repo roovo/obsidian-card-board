@@ -9,6 +9,7 @@ module Helpers.TaskListHelpers exposing
     , taskListFromNewFile
     )
 
+import DataviewTaskCompletion
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Parser exposing (Parser)
 import TagList
@@ -17,12 +18,12 @@ import TaskList exposing (TaskList)
 
 basicParser : Parser TaskList
 basicParser =
-    TaskList.parser "" Nothing TagList.empty 0
+    TaskList.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0
 
 
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser p d TagList.empty 0) ts
+    Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion p d TagList.empty 0) ts
         |> Result.withDefault TaskList.empty
 
 

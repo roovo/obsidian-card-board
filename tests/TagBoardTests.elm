@@ -1,6 +1,7 @@
 module TagBoardTests exposing (suite)
 
 import Column
+import DataviewTaskCompletion
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -246,7 +247,7 @@ columnsBasic =
 - [ ] a #foo @due(2020-01-01)
 - [ ] c #foo @due(2019-01-01)
 """
-                    |> Parser.run (TaskList.parser "file_a" Nothing TagList.empty 0)
+                    |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "file_a" Nothing TagList.empty 0)
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
                         { defaultConfig
