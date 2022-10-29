@@ -491,7 +491,7 @@ exampleBoardConfigTagBoard =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskUpdateFormat = GlobalSettings.ObsidianTasks }
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks }
 
 
 exampleDateBoardConfig : DateBoard.Config

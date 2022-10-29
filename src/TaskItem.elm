@@ -37,7 +37,7 @@ import DataviewDate
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import FNV1a
-import GlobalSettings exposing (TaskUpdateFormat)
+import GlobalSettings exposing (TaskCompletionFormat)
 import Iso8601
 import Maybe.Extra as ME
 import ObsidianTasksDate
@@ -370,8 +370,8 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : TaskUpdateFormat -> { a | now : Time.Posix } -> TaskItem -> String
-toToggledString taskUpdateFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : TaskCompletionFormat -> { a | now : Time.Posix } -> TaskItem -> String
+toToggledString taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
@@ -394,7 +394,7 @@ toToggledString taskUpdateFormat timeWithZone ((TaskItem fields_ _) as taskItem)
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
-                    case taskUpdateFormat of
+                    case taskCompletionFormat of
                         GlobalSettings.ObsidianCardBoard ->
                             " @completed(" ++ completionString ++ ")"
 

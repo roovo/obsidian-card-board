@@ -1,6 +1,6 @@
 module GlobalSettings exposing
     ( GlobalSettings
-    , TaskUpdateFormat(..)
+    , TaskCompletionFormat(..)
     , decoder
     , default
     , encoder
@@ -16,20 +16,20 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type TaskUpdateFormat
+type TaskCompletionFormat
     = ObsidianCardBoard
     | ObsidianDataview
     | ObsidianTasks
 
 
 type alias GlobalSettings =
-    { taskUpdateFormat : TaskUpdateFormat
+    { taskCompletionFormat : TaskCompletionFormat
     }
 
 
 default : GlobalSettings
 default =
-    { taskUpdateFormat = ObsidianCardBoard
+    { taskCompletionFormat = ObsidianCardBoard
     }
 
 
@@ -38,8 +38,8 @@ default =
 
 
 updateTaskUpdateFormat : String -> GlobalSettings -> GlobalSettings
-updateTaskUpdateFormat taskUpdateFormat gs =
-    { gs | taskUpdateFormat = taskUpdateFormatFromString taskUpdateFormat }
+updateTaskUpdateFormat taskCompletionFormat gs =
+    { gs | taskCompletionFormat = taskUpdateFormatFromString taskCompletionFormat }
 
 
 
@@ -49,21 +49,21 @@ updateTaskUpdateFormat taskUpdateFormat gs =
 encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
-        [ TsEncode.required "taskUpdateFormat" .taskUpdateFormat taskUpdateFormatEncoder
+        [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskUpdateFormatEncoder
         ]
 
 
 decoder : TsDecode.Decoder GlobalSettings
 decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskUpdateFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskUpdateFormatDecoder)
 
 
 
 -- PRIVATE
 
 
-taskUpdateFormatDecoder : TsDecode.Decoder TaskUpdateFormat
+taskUpdateFormatDecoder : TsDecode.Decoder TaskCompletionFormat
 taskUpdateFormatDecoder =
     TsDecode.oneOf
         [ TsDecode.literal ObsidianCardBoard (JE.string "ObsidianCardBoard")
@@ -72,7 +72,7 @@ taskUpdateFormatDecoder =
         ]
 
 
-taskUpdateFormatEncoder : TsEncode.Encoder TaskUpdateFormat
+taskUpdateFormatEncoder : TsEncode.Encoder TaskCompletionFormat
 taskUpdateFormatEncoder =
     TsEncode.union
         (\vObsidianCardBoard vObsidianDataview vObsidianTasks v ->
@@ -92,7 +92,7 @@ taskUpdateFormatEncoder =
         |> TsEncode.buildUnion
 
 
-taskUpdateFormatFromString : String -> TaskUpdateFormat
+taskUpdateFormatFromString : String -> TaskCompletionFormat
 taskUpdateFormatFromString source =
     if source == "ObsidianDataview" then
         ObsidianDataview

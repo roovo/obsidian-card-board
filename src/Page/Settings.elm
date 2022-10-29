@@ -13,7 +13,7 @@ import BoardConfig exposing (BoardConfig)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
-import GlobalSettings exposing (GlobalSettings, TaskUpdateFormat)
+import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -225,12 +225,12 @@ update msg model =
         PolaritySelected polarity ->
             mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
-        TaskUpdateFormatSelected taskUpdateFormat ->
+        TaskUpdateFormatSelected taskCompletionFormat ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateTaskUpdateFormat taskUpdateFormat)
+                            (GlobalSettings.updateTaskUpdateFormat taskCompletionFormat)
                             model.settingsState
                 }
 
@@ -571,7 +571,7 @@ globalSettingsForm dataviewTaskCompletion gs =
     [ Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Task update format" ]
+                [ Html.text "Task completion format" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Which format to use when marking tasks as completed:"
                 , Html.br [] []
@@ -600,7 +600,7 @@ globalSettingsForm dataviewTaskCompletion gs =
                 ]
             ]
         , Html.div [ class "setting-item-control" ]
-            [ taskUpdateFormatSelect gs.taskUpdateFormat ]
+            [ taskUpdateFormatSelect gs.taskCompletionFormat ]
         ]
     ]
 
@@ -947,13 +947,13 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-taskUpdateFormatSelect : TaskUpdateFormat -> Html Msg
-taskUpdateFormatSelect taskUpdateFormat =
+taskUpdateFormatSelect : TaskCompletionFormat -> Html Msg
+taskUpdateFormatSelect taskCompletionFormat =
     Html.select
         [ class "dropdown"
         , onInput TaskUpdateFormatSelected
         ]
-        (case taskUpdateFormat of
+        (case taskCompletionFormat of
             GlobalSettings.ObsidianCardBoard ->
                 [ Html.option [ value "ObsidianCardBoard", selected True ]
                     [ Html.text "CardBoard" ]

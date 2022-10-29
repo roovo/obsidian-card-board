@@ -71,7 +71,7 @@ update msg session =
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.globalSettings session |> .taskUpdateFormat)
+                        (Session.globalSettings session |> .taskCompletionFormat)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)

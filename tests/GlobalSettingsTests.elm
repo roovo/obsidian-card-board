@@ -22,7 +22,7 @@ default =
         [ test "has ObsidianCardBoard update format" <|
             \() ->
                 GlobalSettings.default
-                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.ObsidianCardBoard }
         ]
 
 
@@ -31,12 +31,12 @@ encodeDecode =
     describe "encoding and decoding GlobalSettings"
         [ test "can decode an encoded string back to the original" <|
             \() ->
-                { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+                { taskCompletionFormat = GlobalSettings.ObsidianCardBoard }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder GlobalSettings.decoder
                     |> .decoded
-                    |> Expect.equal (Ok { taskUpdateFormat = GlobalSettings.ObsidianCardBoard })
+                    |> Expect.equal (Ok { taskCompletionFormat = GlobalSettings.ObsidianCardBoard })
         ]
 
 
@@ -47,26 +47,26 @@ updateTaskUpdateFormat =
             \() ->
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
-                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.ObsidianCardBoard }
         , test "can update to be ObsidianDataview format" <|
             \() ->
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianDataview"
-                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianDataview }
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.ObsidianDataview }
         , test "can update to be ObsidianTasks format" <|
             \() ->
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianTasks"
-                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianTasks }
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.ObsidianTasks }
         , test "defaults to be ObsidianCardBoard if the string is not recognised" <|
             \() ->
                 exampleGlobalSettings
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianCardBoard"
                     |> GlobalSettings.updateTaskUpdateFormat "ObsidianTasks"
                     |> GlobalSettings.updateTaskUpdateFormat "xxxxxx"
-                    |> Expect.equal { taskUpdateFormat = GlobalSettings.ObsidianCardBoard }
+                    |> Expect.equal { taskCompletionFormat = GlobalSettings.ObsidianCardBoard }
         ]
 
 
@@ -76,4 +76,4 @@ updateTaskUpdateFormat =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskUpdateFormat = GlobalSettings.ObsidianTasks }
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks }

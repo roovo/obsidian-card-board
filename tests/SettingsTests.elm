@@ -72,4 +72,4 @@ exampleSettings =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskUpdateFormat = GlobalSettings.ObsidianTasks }
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks }
