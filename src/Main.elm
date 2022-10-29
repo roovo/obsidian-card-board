@@ -36,11 +36,7 @@ main =
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
-        Err error ->
-            let
-                foo =
-                    Debug.log "flag error" error
-            in
+        Err _ ->
             ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
@@ -53,7 +49,6 @@ init flags =
                 session : Session
                 session =
                     Session.fromFlags okFlags
-                        |> Debug.log "session"
             in
             ( Boards session
                 |> forceAddWhenNoBoards

@@ -557,6 +557,7 @@ globalSettingsView dataviewTaskCompletion settings =
 globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
 globalSettingsForm dataviewTaskCompletion gs =
     let
+        dataViewExample : String
         dataViewExample =
             case dataviewTaskCompletion of
                 DataviewTaskCompletion.NoCompletion ->

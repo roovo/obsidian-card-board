@@ -443,6 +443,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
         removeCompletionTags : String -> String
         removeCompletionTags =
             let
+                dataviewRemover : String -> String
                 dataviewRemover =
                     case dataviewTaskCompletion of
                         DataviewTaskCompletion.NoCompletion ->
