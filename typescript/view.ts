@@ -331,7 +331,7 @@ export class CardBoardView extends ItemView {
           }
         )[];
         globalSettings : {
-          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks"
         }
       };
       version : string

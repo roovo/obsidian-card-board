@@ -1,10 +1,11 @@
 module GlobalSettings exposing
     ( GlobalSettings
     , TaskCompletionFormat(..)
-    , decoder
     , default
     , encoder
-    , updateTaskUpdateFormat
+    , updateTaskCompletionFormat
+    , v_0_5_0_decoder
+    , v_0_6_0_decoder
     )
 
 import Json.Encode as JE
@@ -38,9 +39,9 @@ default =
 -- UTILITIES
 
 
-updateTaskUpdateFormat : String -> GlobalSettings -> GlobalSettings
-updateTaskUpdateFormat taskCompletionFormat gs =
-    { gs | taskCompletionFormat = taskUpdateFormatFromString taskCompletionFormat }
+updateTaskCompletionFormat : String -> GlobalSettings -> GlobalSettings
+updateTaskCompletionFormat taskCompletionFormat gs =
+    { gs | taskCompletionFormat = taskCompletionFormatFromString taskCompletionFormat }
 
 
 
@@ -50,12 +51,18 @@ updateTaskUpdateFormat taskCompletionFormat gs =
 encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
-        [ TsEncode.required "taskUpdateFormat" .taskCompletionFormat taskCompletionFormatEncoder
+        [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
         ]
 
 
-decoder : TsDecode.Decoder GlobalSettings
-decoder =
+v_0_6_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_6_0_decoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+
+
+v_0_5_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_5_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
 
@@ -98,8 +105,8 @@ taskCompletionFormatEncoder =
         |> TsEncode.buildUnion
 
 
-taskUpdateFormatFromString : String -> TaskCompletionFormat
-taskUpdateFormatFromString source =
+taskCompletionFormatFromString : String -> TaskCompletionFormat
+taskCompletionFormatFromString source =
     if source == "ObsidianCardBoard" then
         ObsidianCardBoard
 

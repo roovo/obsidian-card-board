@@ -103,7 +103,7 @@ type Msg
     | ModalCloseClicked
     | PathsRequested Int String
     | PolaritySelected String
-    | TaskUpdateFormatSelected String
+    | TaskCompletionFormatSelected String
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
@@ -225,12 +225,12 @@ update msg model =
         PolaritySelected polarity ->
             mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
-        TaskUpdateFormatSelected taskCompletionFormat ->
+        TaskCompletionFormatSelected taskCompletionFormat ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateTaskUpdateFormat taskCompletionFormat)
+                            (GlobalSettings.updateTaskCompletionFormat taskCompletionFormat)
                             model.settingsState
                 }
 
@@ -604,7 +604,7 @@ globalSettingsForm dataviewTaskCompletion gs =
                 ]
             ]
         , Html.div [ class "setting-item-control" ]
-            [ taskUpdateFormatSelect gs.taskCompletionFormat ]
+            [ taskCompletionFormatSelect gs.taskCompletionFormat ]
         ]
     ]
 
@@ -951,11 +951,11 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-taskUpdateFormatSelect : TaskCompletionFormat -> Html Msg
-taskUpdateFormatSelect taskCompletionFormat =
+taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
+taskCompletionFormatSelect taskCompletionFormat =
     Html.select
         [ class "dropdown"
-        , onInput TaskUpdateFormatSelected
+        , onInput TaskCompletionFormatSelected
         ]
         (case taskCompletionFormat of
             GlobalSettings.NoCompletion ->

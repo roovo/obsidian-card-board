@@ -23,11 +23,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.5.0" <|
+        [ test "is 0.6.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.5.0"
+                    |> Expect.equal "0.6.0"
         ]
 
 

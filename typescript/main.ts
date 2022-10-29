@@ -30,7 +30,7 @@ export default class CardBoardPlugin extends Plugin {
           }
         )[];
         globalSettings : {
-          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks"
         }
       };
       version : string
@@ -140,7 +140,7 @@ export default class CardBoardPlugin extends Plugin {
           }
         )[];
         globalSettings : {
-          taskUpdateFormat : "ObsidianCardBoard" | "ObsidianTasks"
+          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks"
         }
       };
       version : string

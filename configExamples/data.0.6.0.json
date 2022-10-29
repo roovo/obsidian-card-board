@@ -1,0 +1,112 @@
+{
+  "version": "0.6.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 5,
+          "filters": [],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeUndated": true,
+          "title": "Dated"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/",
+              "displayTitle": "Home/"
+            },
+            {
+              "tag": "home",
+              "displayTitle": "Home"
+            },
+            {
+              "tag": "wellbeing",
+              "displayTitle": "Wellbeing"
+            },
+            {
+              "tag": "town",
+              "displayTitle": "Town"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeOthers": true,
+          "includeUntagged": true,
+          "title": "Tagged"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "status/backlog",
+              "displayTitle": "Backlog"
+            },
+            {
+              "tag": "status/wip",
+              "displayTitle": "Wip"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "projects/project1"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "Project 1"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/kitchen",
+              "displayTitle": "Kitchen"
+            },
+            {
+              "tag": "home/outside",
+              "displayTitle": "Outside"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "home"
+            },
+            {
+              "tag": "tagFilter",
+              "data": "home/"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "showFilteredTags": false,
+          "includeOthers": true,
+          "includeUntagged": false,
+          "title": "Home"
+        }
+      }
+    ],
+    "globalSettings": {
+      "taskCompletionFormat": "ObsidianCardBoard"
+    }
+  }
+}

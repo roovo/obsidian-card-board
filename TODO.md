@@ -1,7 +1,3 @@
-dataview:
-  - new version of settings json with taskUpdateFormat -> taskCompletionFormat
-    (check for taskUpdate in source to catch associated functions)
-
 # Cleanups
 - check coverage and add tests
 - are there any failure cases for TagBoard.columnConfigsParser?
