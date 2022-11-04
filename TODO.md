@@ -1,4 +1,3 @@
-- add task-calendar to alternative apps/plugins
 - cross out the text of completed items on the board (works well for subtasks)
 
 - rtl -> https://github.com/mwxgaf/obsidian-dynamic-rtl/blob/master/main.ts
@@ -102,6 +101,9 @@
 - reverse subtag: #class1/week1, #class2/week1 (you could specify week1 to get both class 1 & 2 on a board)
 - eisenhower matrix view
 - #3 define a board from the contents of a file with columns set by the headings on a page
+- Dataview query result board (and/or filter)
+  - https://github.com/702573N/Obsidian-Tasks-Calendar uses DQL
+  - does kanban?
 
 # Drag n Drop
 - on a tagboard when drag-dropping allow alt-drag to duplicate the card

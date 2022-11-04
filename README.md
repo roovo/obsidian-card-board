@@ -288,11 +288,13 @@ the minimum width of the cards.
 
 ## Alternatives
 If the way that this works isn't for for you, there are plenty of other fabulous
-plugins you can use for task management in Obsidian.
+plugins you can use for task management in Obsidian, e.g.
+[Checklist](https://github.com/delashum/obsidian-checklist-plugin),
 [Kanban](https://github.com/mgmeyers/obsidian-kanban),
-[Checklist](https://github.com/delashum/obsidian-checklist-plugin), and
-[Tasks](https://github.com/schemar/obsidian-tasks) are the most popular. There are
-others too, see the list on the wonderful
+[Reminder](https://github.com/uphy/obsidian-reminder),
+[Tasks](https://github.com/schemar/obsidian-tasks), as well as the
+[Tasks Calendar snippet](https://github.com/702573N/Obsidian-Tasks-Calendar).
+There are others too, see the wonderful
 [Obsidian Plugin Stats site](https://obsidian-plugin-stats.vercel.app).
 
 
