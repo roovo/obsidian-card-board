@@ -1,4 +1,10 @@
+- add task-calendar to alternative apps/plugins
+- cross out the text of completed items on the board (works well for subtasks)
+
+- rtl -> https://github.com/mwxgaf/obsidian-dynamic-rtl/blob/master/main.ts
+
 # Cleanups
+- dataview - what if there is a due date in the frontmatter?
 - check coverage and add tests
 - are there any failure cases for TagBoard.columnConfigsParser?
 - tabs are not very visible

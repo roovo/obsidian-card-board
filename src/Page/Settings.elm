@@ -561,7 +561,7 @@ globalSettingsForm dataviewTaskCompletion gs =
         dataViewExample =
             case dataviewTaskCompletion of
                 DataviewTaskCompletion.NoCompletion ->
-                    "no completion date will be added"
+                    "automatic task completion tracking disabled"
 
                 DataviewTaskCompletion.Emoji ->
                     "✅ 1999-12-31"
@@ -579,7 +579,7 @@ globalSettingsForm dataviewTaskCompletion gs =
                 , Html.br [] []
                 , Html.strong [] [ Html.text "None" ]
                 , Html.text ": "
-                , Html.code [] [ Html.text "no completion date will be added" ]
+                , Html.code [] [ Html.text "no completion date/time will be added" ]
                 , Html.br [] []
                 , Html.strong [] [ Html.text "CardBoard" ]
                 , Html.text ": "
@@ -588,6 +588,7 @@ globalSettingsForm dataviewTaskCompletion gs =
                 , Html.strong [] [ Html.text "Dataview" ]
                 , Html.text ": "
                 , Html.code [] [ Html.text dataViewExample ]
+                , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
                 , Html.br [] []
                 , Html.strong [] [ Html.text "Tasks" ]
                 , Html.text ": "
@@ -595,9 +596,11 @@ globalSettingsForm dataviewTaskCompletion gs =
                 , Html.br [] []
                 , Html.br [] []
                 , Html.strong [] [ Html.text "For Dataview: " ]
-                , Html.text "The task related settings in the dataview plugin (if installed) will be respected"
+                , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
                 , Html.text " and should be reflected above.  The only exception is that the completion date format"
                 , Html.text " is ignored and yyyy-MM-dd is what CardBoard uses."
+                , Html.i [] [ Html.text " If you change the settings in" ]
+                , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
                 , Html.br [] []
                 , Html.br [] []
                 , Html.text "When reading tasks, CardBoard understands all these formats.  It also understands"
