@@ -26,7 +26,7 @@ parser : Parser Tag
 parser =
     P.succeed Tag
         |. P.token "#"
-        |= (P.getChompedString (P.chompWhile (not << isInvalidCharacter))
+        |= (P.getChompedString (P.chompWhile isValidCharacter)
                 |> P.andThen (ParserHelper.checkIfEmpty "Tag.parser")
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
                 |> ParserHelper.checkWhitespaceFollows
@@ -60,13 +60,10 @@ toString (Tag s) =
 -- PRIVATE
 
 
-isInvalidCharacter : Char -> Bool
-isInvalidCharacter c =
-    if Char.isAlphaNum c then
-        False
-
-    else if List.member c [ '_', '-', '/' ] then
-        False
-
-    else
-        True
+isValidCharacter : Char -> Bool
+isValidCharacter c =
+    let
+        code =
+            Char.toCode c
+    in
+    Char.isAlphaNum c || code == 0x2D || code == 0x2F || code == 0x5F || code >= 0xA1

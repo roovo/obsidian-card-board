@@ -56,6 +56,12 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
                     |> Expect.equal (Ok "foo/bar")
+        , test "parses '#fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA} '" <|
+            \() ->
+                "#fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA}"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA}")
         , fuzz validTagContentFuzzer "parses all valid tags that start with '#'" <|
             \fuzzedTag ->
                 ("#" ++ fuzzedTag)
@@ -180,39 +186,41 @@ validTagContentFuzzer =
         dropInvalidCharacters : String -> String
         dropInvalidCharacters a =
             String.toList a
+                -- |> Debug.log "original"
                 |> List.filter isValidTagCharacter
                 |> String.fromList
 
-        ensureNotEmpty : String -> String
-        ensureNotEmpty a =
-            if String.length a == 0 then
-                "a"
-
-            else
-                a
+        ensureStartNotModifier : String -> String
+        ensureStartNotModifier a =
+            "a" ++ a
 
         ensureNotNumeric : String -> String
         ensureNotNumeric a =
             case String.toInt a of
                 Just _ ->
-                    "a"
+                    Debug.log "final" "a"
 
                 Nothing ->
-                    a
+                    Debug.log "final" a
+
+        ensureNoWhitespace : String -> String
+        ensureNoWhitespace a =
+            String.words a
+                |> List.head
+                |> Maybe.map String.trim
+                |> Maybe.withDefault "a"
     in
     Fuzz.string
+        |> Fuzz.map ensureStartNotModifier
         |> Fuzz.map dropInvalidCharacters
-        |> Fuzz.map ensureNotEmpty
+        |> Fuzz.map ensureNoWhitespace
         |> Fuzz.map ensureNotNumeric
 
 
 isValidTagCharacter : Char -> Bool
 isValidTagCharacter c =
-    if Char.isAlphaNum c then
-        True
-
-    else if List.member c [ '_', '-', '/' ] then
-        True
-
-    else
-        False
+    let
+        code =
+            Char.toCode c
+    in
+    Char.isAlphaNum c || code == 0x2D || code == 0x2F || code == 0x5F || code >= 0xA1
