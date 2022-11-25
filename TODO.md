@@ -1,9 +1,24 @@
-- cross out the text of completed items on the board (works well for subtasks)
 
 - rtl -> https://github.com/mwxgaf/obsidian-dynamic-rtl/blob/master/main.ts
+  - rtlChars        = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC'A
+  - https://gist.github.com/nobuti/9131387 (bidi detection)A
+  ^[\p{L}\p{M}\p{Nd}]+$A
+    \p{L} matches any kind of letter from any language
+    \p{M} matches a character intended to be combined with another character (e.g. accents, umlauts, enclosing boxes, etc.)
+    \p{Nd} matches a digit zero through nine in any script except ideographic scripts
+  - looks like obsidian allows any unicode symbol as a tag except latin symbols (apart from /-_ which are valid)
+    so disallowed character ranges are: 0020 - 002F, 003A - 0040, 005B - 0060, 007B - 007F (inclusive  apart from the tree above)
+    so disallowed character ranges are: 0020 - 002C, 002E, 003A - 0040, 005B - 005E, 0060, 007B - 007F (inclusive)
+  - #fêteႻ🙂჋ff♆/plo⟅₺⃊  is a valid tag :)
+
+- cross out the text of completed items on the board (works well for subtasks)
+- support colorful tags plugin
 
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?
+- on tagboard if there is a todo with the tag defined in filter allow list
+  but no other tags then it appears in the others column.  It feels like
+  it should really be in the untagged column.
 - check coverage and add tests
 - are there any failure cases for TagBoard.columnConfigsParser?
 - tabs are not very visible
