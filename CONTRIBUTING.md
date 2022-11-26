@@ -23,12 +23,12 @@ npm run dev             # run dev build
 - is README up to date?
 - is TODO up to date?
 - test in real vault
-- bump version: package.json
 - tag the release
 - release new version
   - main.js
   - manifest.json (the version in here is what is displayed as the current plugin version
                    in obsidian)
+  - bump version: package.json
   - style.css
   - release notes
 - bump version: manifest.json
