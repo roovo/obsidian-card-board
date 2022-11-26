@@ -45,6 +45,7 @@ type ToElm
 type alias Flags =
     { settings : Settings
     , dataviewTaskCompletion : DataviewTaskCompletion
+    , rightToLeft : Bool
     , now : Int
     , zone : Int
     }
@@ -117,6 +118,7 @@ flags =
     TsDecode.succeed Flags
         |> TsDecode.andMap (TsDecode.field "settings" Settings.decoder)
         |> TsDecode.andMap (TsDecode.field "dataviewTaskCompletion" DataviewTaskCompletion.decoder)
+        |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 

@@ -29,7 +29,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.6.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.6.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.6.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -61,13 +61,14 @@ flagsTests =
                                 , globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianTasks }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }
                         )
         , test "decodes valid flags for settings version 0.5.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.5.0","data":{"globalSettings":{"taskUpdateFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.5.0","data":{"globalSettings":{"taskUpdateFormat":"ObsidianTasks"},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -99,13 +100,14 @@ flagsTests =
                                 , globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianTasks }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }
                         )
         , test "decodes valid flags for settings version 0.4.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.4.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.4.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -137,13 +139,14 @@ flagsTests =
                                 , globalSettings = GlobalSettings.default
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }
                         )
         , test "decodes valid flags for settings version 0.3.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.3.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.3.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -175,13 +178,14 @@ flagsTests =
                                 , globalSettings = GlobalSettings.default
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }
                         )
         , test "decodes valid flags for settings version 0.2.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":[{"tag":"pathFilter","data":"aPathToIgnore"}],"subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.2.0","data":{"globalSettings":{"hideCompletedSubtasks":true,"ignorePaths":[{"tag":"pathFilter","data":"aPathToIgnore"}],"subTaskDisplayLimit":7},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -213,13 +217,14 @@ flagsTests =
                                 , globalSettings = GlobalSettings.default
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }
                         )
         , test "decodes valid flags for settings version 0.1.0" <|
             \() ->
-                """{"now":11,"zone":22,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.1.0","data":{"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"completedCount":5,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -251,6 +256,7 @@ flagsTests =
                                 , globalSettings = GlobalSettings.default
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
                             , now = 11
                             , zone = 22
                             }

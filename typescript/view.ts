@@ -52,6 +52,7 @@ export class CardBoardView extends ItemView {
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
       settings:           this.plugin.settings,
+      rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {
         taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
         taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
