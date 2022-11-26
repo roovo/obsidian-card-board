@@ -36,6 +36,7 @@ import Settings exposing (Settings)
 import State exposing (State)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TextDirection exposing (TextDirection)
 import Time
 import TimeWithZone exposing (TimeWithZone)
 
@@ -51,6 +52,7 @@ type Session
 type alias Config =
     { settings : Settings
     , dataviewTaskCompletion : DataviewTaskCompletion
+    , textDirection : TextDirection
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -72,6 +74,7 @@ default =
     Session
         { settings = Settings.default
         , dataviewTaskCompletion = DataviewTaskCompletion.default
+        , textDirection = TextDirection.default
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -86,6 +89,7 @@ fromFlags flags =
     Session
         { settings = flags.settings
         , dataviewTaskCompletion = flags.dataviewTaskCompletion
+        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
