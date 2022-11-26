@@ -14,11 +14,12 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
+- Improved #tag parsing. Now (I think) inline with how it is done in obsidian itself
+  so unicode characters can be included in tags (hello emojis and other languages).
 - Compatible with [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) and
   [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) plugin date formats
   (due and completed dates).  See the [compatibility section](#compatibility)
   below.
-- Improved fuzzy searching in Filter Definition multiselect for board settings.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
