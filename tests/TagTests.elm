@@ -2,9 +2,11 @@ module TagTests exposing (suite)
 
 import Expect
 import Fuzz exposing (Fuzzer)
+import Helpers.UnicodeHelpers as UnicodeHelpers
 import Parser exposing ((|.), (|=))
 import Tag
 import Test exposing (..)
+import Unicode
 
 
 suite : Test
@@ -56,12 +58,30 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
                     |> Expect.equal (Ok "foo/bar")
+        , test "parses '#fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA}'" <|
+            \() ->
+                "#fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA}"
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "fêteႻ🙂\u{10CB}ff♆/plo⟅₺\u{20CA}")
         , fuzz validTagContentFuzzer "parses all valid tags that start with '#'" <|
             \fuzzedTag ->
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
                     |> Result.map Tag.toString
                     |> Expect.equal (Ok fuzzedTag)
+        , fuzz invalidSymbolFuzzer "parses up to any invalid symbol character" <|
+            \fuzzedSymbol ->
+                ("#as" ++ fuzzedSymbol ++ "r")
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "as")
+        , fuzz UnicodeHelpers.whitespaceFuzzer "parses up to any unicode whitespace character" <|
+            \fuzzedWhitespace ->
+                ("#as" ++ String.fromChar fuzzedWhitespace ++ "r")
+                    |> Parser.run Tag.parser
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "as")
         , test "can parse multiple tags" <|
             \() ->
                 "#foo/bar #baz"
@@ -86,19 +106,13 @@ parser =
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "fails with a '#as@r'" <|
-            \() ->
-                "#as@r"
-                    |> Parser.run Tag.parser
-                    |> Result.toMaybe
-                    |> Expect.equal Nothing
         , fuzz validTagContentFuzzer "fails with strings that don't start with '#'" <|
             \fuzzedTag ->
                 fuzzedTag
                     |> Parser.run Tag.parser
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , fuzz stringWithInvalidCharacters "fails for tags consitting of invalid characters" <|
+        , fuzz stringOfInvalidSymbols "fails for tags consitting of invalid symbols" <|
             \fuzzedTag ->
                 ("#" ++ fuzzedTag)
                     |> Parser.run Tag.parser
@@ -147,15 +161,9 @@ toString =
 -- HELPERS
 
 
-stringWithInvalidCharacters : Fuzzer String
-stringWithInvalidCharacters =
+stringOfInvalidSymbols : Fuzzer String
+stringOfInvalidSymbols =
     let
-        dropValidCharacters : String -> String
-        dropValidCharacters a =
-            String.toList a
-                |> List.filter (not << isValidTagCharacter)
-                |> String.fromList
-
         ensureNotEmpty : String -> String
         ensureNotEmpty a =
             if String.length a == 0 then
@@ -164,14 +172,20 @@ stringWithInvalidCharacters =
             else
                 a
     in
-    Fuzz.string
-        |> Fuzz.map dropValidCharacters
+    invalidSymbolFuzzer
+        |> Fuzz.list
+        |> Fuzz.map String.concat
         |> Fuzz.map ensureNotEmpty
 
 
 numericStringFuzzer : Fuzzer String
 numericStringFuzzer =
     Fuzz.map String.fromInt Fuzz.int
+
+
+invalidSymbolFuzzer : Fuzzer String
+invalidSymbolFuzzer =
+    Fuzz.oneOfValues [ "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", ".", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "`", "{", "|", "}", "~" ]
 
 
 validTagContentFuzzer : Fuzzer String
@@ -183,13 +197,9 @@ validTagContentFuzzer =
                 |> List.filter isValidTagCharacter
                 |> String.fromList
 
-        ensureNotEmpty : String -> String
-        ensureNotEmpty a =
-            if String.length a == 0 then
-                "a"
-
-            else
-                a
+        ensureStartNotModifier : String -> String
+        ensureStartNotModifier a =
+            "a" ++ a
 
         ensureNotNumeric : String -> String
         ensureNotNumeric a =
@@ -199,20 +209,30 @@ validTagContentFuzzer =
 
                 Nothing ->
                     a
+
+        ensureNoWhitespace : String -> String
+        ensureNoWhitespace a =
+            String.words a
+                |> List.head
+                |> Maybe.map String.trim
+                |> Maybe.withDefault "a"
     in
     Fuzz.string
+        |> Fuzz.map ensureStartNotModifier
         |> Fuzz.map dropInvalidCharacters
-        |> Fuzz.map ensureNotEmpty
+        |> Fuzz.map ensureNoWhitespace
         |> Fuzz.map ensureNotNumeric
 
 
 isValidTagCharacter : Char -> Bool
 isValidTagCharacter c =
-    if Char.isAlphaNum c then
-        True
-
-    else if List.member c [ '_', '-', '/' ] then
-        True
-
-    else
-        False
+    let
+        code : Int
+        code =
+            Char.toCode c
+    in
+    Char.isAlphaNum c
+        || (code == Unicode.minusCode)
+        || (code == Unicode.forwardslashCode)
+        || (code == Unicode.underscoreCode)
+        || (code > Unicode.basicLatinEndCode)
