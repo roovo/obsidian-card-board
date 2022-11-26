@@ -28,11 +28,9 @@ npm run dev             # run dev build
   - main.js
   - manifest.json (the version in here is what is displayed as the current plugin version
                    in obsidian)
-  - bump version: package.json
   - style.css
   - release notes
-- bump version: manifest.json
-- bump beta version: manifest-beta.json
+- bump version: manifest.json, package.json
 
 
 ## Run tests
