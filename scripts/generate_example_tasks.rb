@@ -33,7 +33,8 @@ File.open(todays_tasks, "w") do |file|
   - [ ] do something with a long title that will truncate when displayed
   - [ ] go to bed
 
-- [x] already got out of bed this morning  @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")})
+- [x] already got out of bed this morning @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")})
+- [ ] something with an RTL tag @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ/زیرتگ
 """
 end
 
@@ -43,7 +44,7 @@ File.open(tomorrows_tasks, "w") do |file|
   file.write """
 # Tasks For Tomorrow
 
-- [ ] book meal at fancy restaurant @due(#{(Date.today + 1).strftime("%Y-%m-%d")})
+- [ ] book meal at fancy restaurant @due(#{(Date.today + 1).strftime("%Y-%m-%d")}) #Status/🔥Active
 - [ ] meditate @due(#{(Date.today + 1).strftime("%Y-%m-%d")}) #wellbeing #home
 """
 end
