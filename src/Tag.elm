@@ -63,6 +63,7 @@ toString (Tag s) =
 isValidTagCharacter : Char -> Bool
 isValidTagCharacter c =
     let
+        code : Int
         code =
             Char.toCode c
     in

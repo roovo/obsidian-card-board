@@ -1,7 +1,6 @@
 module UnicodeTests exposing (suite)
 
 import Expect
-import Fuzz exposing (Fuzzer)
 import Helpers.UnicodeHelpers as UnicodeHelpers
 import Test exposing (..)
 import Unicode
