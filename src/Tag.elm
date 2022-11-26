@@ -30,7 +30,6 @@ parser =
         |= (P.getChompedString (P.chompWhile isValidTagCharacter)
                 |> P.andThen (ParserHelper.checkIfEmpty "Tag.parser")
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
-                |> ParserHelper.checkWhitespaceFollows
            )
 
 
@@ -71,4 +70,4 @@ isValidTagCharacter c =
         || (code == Unicode.minusCode)
         || (code == Unicode.forwardslashCode)
         || (code == Unicode.underscoreCode)
-        || (code > Unicode.basicLatinEndCode)
+        || (code > Unicode.basicLatinEndCode && not (Unicode.isWhitespace c))
