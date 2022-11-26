@@ -9,7 +9,8 @@
   - looks like obsidian allows any unicode symbol as a tag except latin symbols (apart from /-_ which are valid)
     so disallowed character ranges are: 0020 - 002F, 003A - 0040, 005B - 0060, 007B - 007F (inclusive  apart from the tree above)
     so disallowed character ranges are: 0020 - 002C, 002E, 003A - 0040, 005B - 005E, 0060, 007B - 007F (inclusive)
-  - #fêteႻ🙂჋ff♆/plo⟅₺⃊  is a valid tag :)
+  - #fêteႻ🙂჋ff♆/plo⟅₺ is a valid tag :)
+  - https://emptycharacter.com/
 
 - cross out the text of completed items on the board (works well for subtasks)
 - support colorful tags plugin

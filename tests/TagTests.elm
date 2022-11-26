@@ -5,6 +5,7 @@ import Fuzz exposing (Fuzzer)
 import Parser exposing ((|.), (|=))
 import Tag
 import Test exposing (..)
+import Unicode
 
 
 suite : Test
@@ -169,9 +170,17 @@ stringWithInvalidCharacters =
 
             else
                 a
+
+        ensureNoWhitespace : String -> String
+        ensureNoWhitespace a =
+            String.words a
+                |> List.head
+                |> Maybe.map String.trim
+                |> Maybe.withDefault "!"
     in
     Fuzz.string
         |> Fuzz.map dropValidCharacters
+        |> Fuzz.map ensureNoWhitespace
         |> Fuzz.map ensureNotEmpty
 
 
@@ -186,7 +195,6 @@ validTagContentFuzzer =
         dropInvalidCharacters : String -> String
         dropInvalidCharacters a =
             String.toList a
-                -- |> Debug.log "original"
                 |> List.filter isValidTagCharacter
                 |> String.fromList
 
@@ -198,10 +206,10 @@ validTagContentFuzzer =
         ensureNotNumeric a =
             case String.toInt a of
                 Just _ ->
-                    Debug.log "final" "a"
+                    "a"
 
                 Nothing ->
-                    Debug.log "final" a
+                    a
 
         ensureNoWhitespace : String -> String
         ensureNoWhitespace a =
@@ -223,4 +231,8 @@ isValidTagCharacter c =
         code =
             Char.toCode c
     in
-    Char.isAlphaNum c || code == 0x2D || code == 0x2F || code == 0x5F || code >= 0xA1
+    Char.isAlphaNum c
+        || (code == Unicode.minusCode)
+        || (code == Unicode.forwardslashCode)
+        || (code == Unicode.underscoreCode)
+        || (code > Unicode.basicLatinEndCode)

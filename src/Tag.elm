@@ -8,6 +8,7 @@ module Tag exposing
 
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
+import Unicode
 
 
 
@@ -26,7 +27,7 @@ parser : Parser Tag
 parser =
     P.succeed Tag
         |. P.token "#"
-        |= (P.getChompedString (P.chompWhile isValidCharacter)
+        |= (P.getChompedString (P.chompWhile isValidTagCharacter)
                 |> P.andThen (ParserHelper.checkIfEmpty "Tag.parser")
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
                 |> ParserHelper.checkWhitespaceFollows
@@ -60,10 +61,14 @@ toString (Tag s) =
 -- PRIVATE
 
 
-isValidCharacter : Char -> Bool
-isValidCharacter c =
+isValidTagCharacter : Char -> Bool
+isValidTagCharacter c =
     let
         code =
             Char.toCode c
     in
-    Char.isAlphaNum c || code == 0x2D || code == 0x2F || code == 0x5F || code >= 0xA1
+    Char.isAlphaNum c
+        || (code == Unicode.minusCode)
+        || (code == Unicode.forwardslashCode)
+        || (code == Unicode.underscoreCode)
+        || (code > Unicode.basicLatinEndCode)
