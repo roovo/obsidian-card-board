@@ -5,10 +5,6 @@ module TextDirection exposing
     , toString
     )
 
-import TsJson.Decode as TsDecode
-
-
-
 -- TYPES
 
 

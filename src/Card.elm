@@ -128,6 +128,7 @@ markdownWithIds card =
         tagsWithId : List { id : String, markdown : String }
         tagsWithId =
             let
+                tagsMarkdown : String
                 tagsMarkdown =
                     TaskItem.tags item
                         |> TagList.toList

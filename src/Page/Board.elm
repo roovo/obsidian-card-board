@@ -18,7 +18,6 @@ import InteropPorts
 import Json.Decode as JD
 import SafeZipper
 import Session exposing (Session)
-import TagList exposing (TagList)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TextDirection
 import TimeWithZone exposing (TimeWithZone)
