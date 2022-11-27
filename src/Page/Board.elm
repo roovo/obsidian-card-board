@@ -11,15 +11,15 @@ import Column exposing (Column)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, type_)
+import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
 import SafeZipper
 import Session exposing (Session)
-import TagList exposing (TagList)
 import TaskItem exposing (TaskItem, TaskItemFields)
+import TextDirection
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -122,7 +122,7 @@ view session =
             timeWithZone =
                 Session.timeWithZone session
         in
-        Html.div []
+        Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.ul [ class "card-board-tab-list" ]
                 (tabHeaders currentIndex boards)
             , Html.div [ class "card-board-boards" ]
@@ -293,7 +293,7 @@ cardView timeWithZone card =
                 []
             , Html.div [ class "card-board-card-title", id cardId ]
                 []
-            , cardTagsView (TaskItem.tags taskItem)
+            , cardTagsView (Card.tagsId card)
                 |> when (TaskItem.hasTags taskItem)
             , subtasksView (Card.descendantTasks card)
                 |> when (TaskItem.hasSubtasks taskItem)
@@ -309,22 +309,10 @@ cardView timeWithZone card =
         |> Tuple.pair cardId
 
 
-cardTagsView : TagList -> Html Msg
-cardTagsView tags =
-    Html.div [ class "card-board-card-tag-area" ]
-        (List.map cardTagView <| TagList.toList tags)
-
-
-cardTagView : String -> Html Msg
-cardTagView tagText =
-    Html.div [ class ("card-board-card-tag tag-" ++ String.replace "/" "-" tagText) ]
-        [ Html.span [ class "cm-hashtag-begin cm-hashtag" ]
-            [ Html.text "#" ]
-        , Html.span [ class "cm-list-1 cm-hashtag cm-hashtag-end" ]
-            [ Html.text tagText ]
-        , Html.span [ class "cm-list-1" ]
-            [ Html.text " " ]
-        ]
+cardTagsView : String -> Html Msg
+cardTagsView tagsId =
+    Html.div [ class "card-board-card-tag-area", id tagsId ]
+        []
 
 
 notesView : String -> Html Msg

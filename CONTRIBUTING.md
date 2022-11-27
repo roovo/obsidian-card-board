@@ -22,6 +22,8 @@ npm run dev             # run dev build
 - check with previous config file versions
 - is README up to date?
 - is TODO up to date?
+- is the example generation up to date?
+- are the example configs up to date?
 - test in real vault
 - tag the release
 - release new version

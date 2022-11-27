@@ -171,7 +171,7 @@ ul.card-board-column-list > li.card-board-card::before {
 .card-board-card-content-area {
   grid-area: contents;
   display: grid;
-  padding: 0.5em;
+  padding: 0.5em 0;
   grid: "tags        tags"
         "checkbox    title"
         "subtasks    subtasks"
@@ -182,7 +182,7 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-card-tag-area {
   grid-area: tags;
-  margin-bottom: 0.5em;
+  margin: 0 0.2em 0.5em 0.2em;
 }
 
 .card-board-card-tag {
@@ -227,7 +227,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .card-board-card input.task-list-item-checkbox {
   grid-area: checkbox;
   align-self: top;
-  margin-top: 0.2em;
+  margin: 0.2em;
   width: 1em;
   height: 1em;
   font-size: 1em;
@@ -242,6 +242,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 
 .card-board-card-title {
   grid-area: title;
+  margin: 0 0.2em;
   font-weight: var(--bold-weight);
   display: -webkit-box;
   color: var(--text-title-h1);
@@ -249,6 +250,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card-board-card-tag-area p {
+  display: inline;
 }
 
 .card-board-card-title p {
@@ -284,6 +289,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .card-board-card-notes-area {
   grid-area: notes;
   font-size: var(--font-small);
+  margin: 0 0.2em;
 }
 
 .card-board-card-notes-area > ul::before {
@@ -303,7 +309,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   grid: "due              actions"
         / minmax(0, 1fr)  auto;
   font-size: var(--font-small);
-  margin-top: 0.5em;
+  margin: 0.5em 0.2em 0 0.2em;
 }
 
 .card-board-card-action-area-due {
@@ -316,6 +322,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   display: grid;
   grid-auto-flow: column;
   grid-gap: 0.5em;
+  margin: 0 0.2em;
 }
 
 .card-board-card-action-area-button {

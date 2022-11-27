@@ -2,6 +2,8 @@
 
 ![License](https://img.shields.io/github/license/roovo/obsidian-card-board)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/roovo/obsidian-card-board?style=flat-square)
+![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22card-board%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json)
+
 
 An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 (hopefully anyway).
@@ -14,12 +16,11 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define your boards).
 
 ## New
+- Honours global RTL mode set in obsidian (experimental as I am not an RTL
+  language speaker/writer).
+- Clicking on any tag rendered on a card opens up the obsidian search for the tag.
 - Improved #tag parsing. Now (I think) inline with how it is done in obsidian itself
   so unicode characters can be included in tags (hello emojis and other languages).
-- Compatible with [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/) and
-  [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) plugin date formats
-  (due and completed dates).  See the [compatibility section](#compatibility)
-  below.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 

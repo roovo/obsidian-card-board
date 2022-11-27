@@ -20,6 +20,7 @@ import Settings exposing (Settings)
 import Task
 import TaskItem
 import TaskList exposing (TaskList)
+import TextDirection exposing (TextDirection)
 import Time
 
 
@@ -116,6 +117,7 @@ type Msg
     = ActiveStateUpdated Bool
     | AllMarkdownLoaded
     | BadInputFromTypeScript
+    | ConfigChanged TextDirection
     | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
@@ -148,6 +150,9 @@ update msg model =
 
         ( BadInputFromTypeScript, _ ) ->
             ( model, Cmd.none )
+
+        ( ConfigChanged textDirection, _ ) ->
+            ( mapSession (Session.updateTextDirection textDirection) model, Cmd.none )
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
@@ -347,6 +352,9 @@ subscriptions _ =
                             case toElm of
                                 InteropDefinitions.ActiveStateUpdated flag ->
                                     ActiveStateUpdated flag
+
+                                InteropDefinitions.ConfigChanged textDirection ->
+                                    ConfigChanged textDirection
 
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile

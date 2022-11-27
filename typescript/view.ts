@@ -52,6 +52,7 @@ export class CardBoardView extends ItemView {
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
       settings:           this.plugin.settings,
+      rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {
         taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
         taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
@@ -121,6 +122,10 @@ export class CardBoardView extends ItemView {
 
     this.registerEvent(this.app.vault.on("rename",
       (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+
+    // @ts-ignore
+    this.registerEvent(this.app.vault.on("config-changed",
+      () => this.handleConfigChanged()));
   }
 
   async onClose() {
@@ -231,6 +236,18 @@ export class CardBoardView extends ItemView {
                   that.app.workspace.openLinkText(internalLink.getAttribute("href"), card.filePath, true, {
                       active: !0
                   });
+                });
+              }
+            }
+
+            const tags = Array.from(element.getElementsByClassName("tag"));
+
+            for (const tag of tags) {
+              if (tag instanceof HTMLElement) {
+                tag.addEventListener("mouseup", (event: MouseEvent) => {
+                  event.preventDefault();
+
+                  (that.app as any).internalPlugins.plugins["global-search"].instance.openGlobalSearch("tag:"+ (event.target as HTMLElement).textContent);
                 });
               }
             }
@@ -377,6 +394,15 @@ export class CardBoardView extends ItemView {
     this.elm.ports.interopToElm.send({
       tag: "activeStateUpdated",
       data: isActive
+    });
+  }
+
+  async handleConfigChanged() {
+    this.elm.ports.interopToElm.send({
+      tag: "configChanged",
+      data: {
+        rightToLeft: (this.app.vault as any).getConfig("rightToLeft"),
+      }
     });
   }
 

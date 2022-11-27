@@ -18,11 +18,13 @@ module Session exposing
     , taskContainingId
     , taskFromId
     , taskList
+    , textDirection
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
     , updatePath
     , updateSettings
+    , updateTextDirection
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -36,6 +38,7 @@ import Settings exposing (Settings)
 import State exposing (State)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TextDirection exposing (TextDirection)
 import Time
 import TimeWithZone exposing (TimeWithZone)
 
@@ -51,6 +54,7 @@ type Session
 type alias Config =
     { settings : Settings
     , dataviewTaskCompletion : DataviewTaskCompletion
+    , textDirection : TextDirection
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
@@ -72,6 +76,7 @@ default =
     Session
         { settings = Settings.default
         , dataviewTaskCompletion = DataviewTaskCompletion.default
+        , textDirection = TextDirection.default
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -86,6 +91,7 @@ fromFlags flags =
     Session
         { settings = flags.settings
         , dataviewTaskCompletion = flags.dataviewTaskCompletion
+        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
@@ -171,6 +177,11 @@ taskList (Session config) =
             currentList
 
 
+textDirection : Session -> TextDirection
+textDirection (Session config) =
+    config.textDirection
+
+
 timeWithZone : Session -> TimeWithZone
 timeWithZone (Session config) =
     config.timeWithZone
@@ -203,6 +214,11 @@ timeWIthZoneIs zone time (Session config) =
 updateSettings : Settings -> Session -> Session
 updateSettings newSettings (Session config) =
     Session { config | settings = newSettings }
+
+
+updateTextDirection : TextDirection -> Session -> Session
+updateTextDirection newTextDirection (Session config) =
+    Session { config | textDirection = newTextDirection }
 
 
 
