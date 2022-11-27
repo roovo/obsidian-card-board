@@ -1,6 +1,7 @@
 - rtl -> https://github.com/mwxgaf/obsidian-dynamic-rtl/blob/master/main.ts
   - rtlChars        = '\u0591-\u07FF\u200F\u202B\u202E\uFB1D-\uFDFD\uFE70-\uFEFC'
   - https://gist.github.com/nobuti/9131387 (bidi detection)A
+  - http://unicode.org/faq/bidi.html
   ^[\p{L}\p{M}\p{Nd}]+$A
     \p{L} matches any kind of letter from any language
     \p{M} matches a character intended to be combined with another character (e.g. accents, umlauts, enclosing boxes, etc.)

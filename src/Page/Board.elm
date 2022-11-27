@@ -11,7 +11,7 @@ import Column exposing (Column)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, classList, hidden, id, type_)
+import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
@@ -123,7 +123,8 @@ view session =
             timeWithZone =
                 Session.timeWithZone session
         in
-        Html.div [ classList [ ( "rtl", TextDirection.isRtl <| Session.textDirection session ) ] ]
+        -- Html.div [ classList [ ( "rtl", TextDirection.isRtl <| Session.textDirection session ) ] ]
+        Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.ul [ class "card-board-tab-list" ]
                 (tabHeaders currentIndex boards)
             , Html.div [ class "card-board-boards" ]

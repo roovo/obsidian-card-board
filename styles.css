@@ -28,10 +28,6 @@
   font-size: var(--font-normal);
 }
 
-.card-board-view .rtl {
-  direction: rtl;
-}
-
 ul.card-board-tab-list {
   display: flex;
   list-style-type: none;
