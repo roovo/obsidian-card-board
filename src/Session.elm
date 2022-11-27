@@ -18,6 +18,7 @@ module Session exposing
     , taskContainingId
     , taskFromId
     , taskList
+    , textDirection
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
@@ -173,6 +174,11 @@ taskList (Session config) =
 
         State.Loaded currentList ->
             currentList
+
+
+textDirection : Session -> TextDirection
+textDirection (Session config) =
+    config.textDirection
 
 
 timeWithZone : Session -> TimeWithZone

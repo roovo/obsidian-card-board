@@ -2,6 +2,7 @@ module TextDirection exposing
     ( TextDirection(..)
     , default
     , fromRtlFlag
+    , isRtl
     )
 
 import TsJson.Decode as TsDecode
@@ -16,6 +17,10 @@ type TextDirection
     | RightToLeft
 
 
+
+-- CREATE
+
+
 default : TextDirection
 default =
     LeftToRight
@@ -28,3 +33,17 @@ fromRtlFlag b =
 
     else
         LeftToRight
+
+
+
+-- INFO
+
+
+isRtl : TextDirection -> Bool
+isRtl td =
+    case td of
+        LeftToRight ->
+            False
+
+        RightToLeft ->
+            True

@@ -11,7 +11,7 @@ import Column exposing (Column)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (checked, class, hidden, id, type_)
+import Html.Attributes exposing (checked, class, classList, hidden, id, type_)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import InteropPorts
@@ -20,6 +20,7 @@ import SafeZipper
 import Session exposing (Session)
 import TagList exposing (TagList)
 import TaskItem exposing (TaskItem, TaskItemFields)
+import TextDirection
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -122,7 +123,7 @@ view session =
             timeWithZone =
                 Session.timeWithZone session
         in
-        Html.div []
+        Html.div [ classList [ ( "rtl", TextDirection.isRtl <| Session.textDirection session ) ] ]
             [ Html.ul [ class "card-board-tab-list" ]
                 (tabHeaders currentIndex boards)
             , Html.div [ class "card-board-boards" ]
