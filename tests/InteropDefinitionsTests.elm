@@ -12,6 +12,7 @@ import SafeZipper
 import Semver
 import TagList
 import Test exposing (..)
+import TextDirection
 import TsJson.Encode as TsEncode
 
 
@@ -393,6 +394,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
+        , test "decodes configChanged data" <|
+            \() ->
+                """{"tag":"configChanged","data":{"rightToLeft":true}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

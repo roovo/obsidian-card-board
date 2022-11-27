@@ -6,9 +6,6 @@
     \p{L} matches any kind of letter from any language
     \p{M} matches a character intended to be combined with another character (e.g. accents, umlauts, enclosing boxes, etc.)
     \p{Nd} matches a digit zero through nine in any script except ideographic scripts
-  - https://emptycharacter.com/
-
-- rtl - can I pick up when settings change?
 
 - cross out the text of completed items on the board (works well for subtasks)
 - support colorful tags plugin

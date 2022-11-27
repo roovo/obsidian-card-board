@@ -24,6 +24,7 @@ module Session exposing
     , timeWithZone
     , updatePath
     , updateSettings
+    , updateTextDirection
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -213,6 +214,11 @@ timeWIthZoneIs zone time (Session config) =
 updateSettings : Settings -> Session -> Session
 updateSettings newSettings (Session config) =
     Session { config | settings = newSettings }
+
+
+updateTextDirection : TextDirection -> Session -> Session
+updateTextDirection newTextDirection (Session config) =
+    Session { config | textDirection = newTextDirection }
 
 
 

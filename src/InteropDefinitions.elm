@@ -15,6 +15,7 @@ import DecodeHelpers
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
 
@@ -32,6 +33,7 @@ type FromElm
 
 type ToElm
     = ActiveStateUpdated Bool
+    | ConfigChanged TextDirection
     | FileAdded MarkdownFile
     | FileDeleted String
     | FileRenamed ( String, String )
@@ -127,6 +129,7 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
+        , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
@@ -179,15 +182,14 @@ fromElm =
         |> TsEncode.buildUnion
 
 
-renamedFileDecoder : TsDecode.Decoder ( String, String )
-renamedFileDecoder =
-    TsDecode.succeed Tuple.pair
-        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
-
-
 
 -- HELPERS
+
+
+configChangedDecoder : TsDecode.Decoder TextDirection
+configChangedDecoder =
+    TsDecode.succeed TextDirection.fromRtlFlag
+        |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
 
 
 markdownListEncoder : TsEncode.Encoder { id : String, markdown : String }
@@ -196,6 +198,13 @@ markdownListEncoder =
         [ required "id" .id TsEncode.string
         , required "markdown" .markdown TsEncode.string
         ]
+
+
+renamedFileDecoder : TsDecode.Decoder ( String, String )
+renamedFileDecoder =
+    TsDecode.succeed Tuple.pair
+        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
 
 
 taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalText : String, newText : String }

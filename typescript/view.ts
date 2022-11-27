@@ -122,6 +122,10 @@ export class CardBoardView extends ItemView {
 
     this.registerEvent(this.app.vault.on("rename",
       (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+
+    // @ts-ignore
+    this.registerEvent(this.app.vault.on("config-changed",
+      () => this.handleConfigChanged()));
   }
 
   async onClose() {
@@ -378,6 +382,15 @@ export class CardBoardView extends ItemView {
     this.elm.ports.interopToElm.send({
       tag: "activeStateUpdated",
       data: isActive
+    });
+  }
+
+  async handleConfigChanged() {
+    this.elm.ports.interopToElm.send({
+      tag: "configChanged",
+      data: {
+        rightToLeft: (this.app.vault as any).getConfig("rightToLeft"),
+      }
     });
   }
 
