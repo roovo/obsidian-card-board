@@ -239,6 +239,18 @@ export class CardBoardView extends ItemView {
                 });
               }
             }
+
+            const tags = Array.from(element.getElementsByClassName("tag"));
+
+            for (const tag of tags) {
+              if (tag instanceof HTMLElement) {
+                tag.addEventListener("mouseup", (event: MouseEvent) => {
+                  event.preventDefault();
+
+                  (that.app as any).internalPlugins.plugins["global-search"].instance.openGlobalSearch("tag:"+ (event.target as HTMLElement).textContent);
+                });
+              }
+            }
           }
         }
       }
