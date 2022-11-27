@@ -103,6 +103,33 @@
           "includeUntagged": false,
           "title": "Home"
         }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "تگ",
+              "displayTitle": "تگ"
+            },
+            {
+              "tag": "تگ/",
+              "displayTitle": "تگ"
+            },
+            {
+              "tag": "تگ/زیرتگ",
+              "displayTitle": "تگ زیرتگ"
+            }
+          ],
+          "showColumnTags": true,
+          "completedCount": 10,
+          "filters": [],
+          "filterPolarity": "Allow",
+          "showFilteredTags": true,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "رقت تو لفت"
+        }
       }
     ],
     "globalSettings": {
