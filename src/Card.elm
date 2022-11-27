@@ -9,11 +9,13 @@ module Card exposing
     , id
     , markdownWithIds
     , notesId
+    , tagsId
     , taskItem
     , taskItemId
     )
 
 import Date exposing (Date)
+import TagList
 import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 
@@ -93,17 +95,12 @@ markdownWithIds card =
         item =
             taskItem card
 
-        subtaskMarkdownWithId : ( String, TaskItem ) -> { id : String, markdown : String }
-        subtaskMarkdownWithId ( subtaskId, subtask ) =
-            { id = subtaskId
-            , markdown = TaskItem.title subtask
-            }
-
-        subtasksWithIds : List { id : String, markdown : String }
-        subtasksWithIds =
-            card
-                |> descendantTasks
-                |> List.map subtaskMarkdownWithId
+        markdownWithId : Card -> List { id : String, markdown : String }
+        markdownWithId c =
+            [ { id = id c
+              , markdown = TaskItem.title item
+              }
+            ]
 
         notesWithId : List { id : String, markdown : String }
         notesWithId =
@@ -116,22 +113,51 @@ markdownWithIds card =
             else
                 []
 
-        markdownWithId : Card -> List { id : String, markdown : String }
-        markdownWithId c =
-            [ { id = id c
-              , markdown = TaskItem.title item
-              }
-            ]
+        subtaskMarkdownWithId : ( String, TaskItem ) -> { id : String, markdown : String }
+        subtaskMarkdownWithId ( subtaskId, subtask ) =
+            { id = subtaskId
+            , markdown = TaskItem.title subtask
+            }
+
+        subtasksWithIds : List { id : String, markdown : String }
+        subtasksWithIds =
+            card
+                |> descendantTasks
+                |> List.map subtaskMarkdownWithId
+
+        tagsWithId : List { id : String, markdown : String }
+        tagsWithId =
+            let
+                tagsMarkdown =
+                    TaskItem.tags item
+                        |> TagList.toList
+                        |> List.map (String.append "#")
+                        |> String.join " "
+            in
+            if TaskItem.hasTags item then
+                [ { id = tagsId card
+                  , markdown = tagsMarkdown
+                  }
+                ]
+
+            else
+                []
     in
     card
         |> markdownWithId
         |> List.append subtasksWithIds
         |> List.append notesWithId
+        |> List.append tagsWithId
 
 
 notesId : Card -> String
 notesId card =
     id card ++ ":notes"
+
+
+tagsId : Card -> String
+tagsId card =
+    id card ++ ":tags"
 
 
 descendantTasks : Card -> List ( String, TaskItem )

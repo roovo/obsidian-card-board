@@ -252,6 +252,10 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
   text-overflow: ellipsis;
 }
 
+.card-board-card-tag-area p {
+  display: inline;
+}
+
 .card-board-card-title p {
   display: inline;
 }
@@ -285,6 +289,7 @@ div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
 .card-board-card-notes-area {
   grid-area: notes;
   font-size: var(--font-small);
+  margin: 0 0.2em;
 }
 
 .card-board-card-notes-area > ul::before {

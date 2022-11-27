@@ -22,6 +22,7 @@ suite =
         , id
         , markdownWithIds
         , notesId
+        , tagsId
         , descendantTasks
         , taskItemId
         ]
@@ -133,12 +134,12 @@ id =
 markdownWithIds : Test
 markdownWithIds =
     describe "markdownWithIds"
-        [ test "extracts the taskItem title, descendant task titles, and notes with their respective ids" <|
+        [ test "extracts the taskItem title, descendant task titles, tags, and notes with their respective ids" <|
             \() ->
-                """- [ ] foo
+                """- [ ] foo #tag1
  some note
-  - [ ] bar
- more notes
+  - [ ] bar #tag2
+ more notes #tag3
   """
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "file" Nothing TagList.empty 0)
                     |> Result.toMaybe
@@ -146,7 +147,8 @@ markdownWithIds =
                     |> Maybe.map Card.markdownWithIds
                     |> Expect.equal
                         (Just
-                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes" }
+                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":tags", markdown = "#tag1 #tag2" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes #tag3" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]
@@ -178,6 +180,18 @@ notesId =
                     |> Maybe.map (Card.fromTaskItem "a_prefix")
                     |> Maybe.map Card.notesId
                     |> Expect.equal (Just <| "a_prefix:" ++ TaskHelpers.taskId "taskItemPath" 1 ++ ":notes")
+        ]
+
+
+tagsId : Test
+tagsId =
+    describe "tagsId"
+        [ test "adds :tags on to the end of the Card.id" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
+                    |> Maybe.map Card.tagsId
+                    |> Expect.equal (Just <| "a_prefix:" ++ TaskHelpers.taskId "taskItemPath" 1 ++ ":tags")
         ]
 
 
