@@ -224,6 +224,17 @@ above the board to the left of the tabs.  You can:
 - Delete any boards you no longer need.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
 
+The settings for your boards are saved in the
+
+```
+.obsidian/plugins/card-board/data.json
+```
+
+file inside your vault.  You may see some older versions (e.g. data.0.5.0.json) in there
+as well.  These are saved when the internal version of the settings file is updated, just
+in case something goes wrong!  If you want to ensure you never loose your CardBoard settings
+then do ensure that your .obsidian directory is backed up.
+
 ## Compatibility
 Cardboard is compatible with the *Due* and *Completion* date formats used in
 both [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)

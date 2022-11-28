@@ -1,5 +1,4 @@
 - cross out the text of completed items on the board (works well for subtasks)
-- support colorful tags plugin
 
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?
@@ -10,9 +9,6 @@
 - are there any failure cases for TagBoard.columnConfigsParser?
 - tabs are not very visible
 - I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
-- does everything work with the about-to-be released tag coloring plugin
-- don't prefix the tag class with 'tag-' as that can be inferred!
-- review coverage report and add tests where needed
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
