@@ -140,6 +140,7 @@ markdownWithIds =
  some note
   - [ ] bar #tag2
  more notes #tag3
+  - [x] baz
   """
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "file" Nothing TagList.empty 0)
                     |> Result.toMaybe
@@ -150,12 +151,13 @@ markdownWithIds =
                             [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":tags", markdown = "#tag1 #tag2" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes #tag3" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 5, markdown = "~~baz~~" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]
                         )
         , test "extracts the taskItem title and descendant task titles with their respective ids (if there are no notes)" <|
             \() ->
-                """- [ ] foo
+                """- [x] foo
   - [ ] bar
   """
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "file" Nothing TagList.empty 0)
@@ -165,7 +167,7 @@ markdownWithIds =
                     |> Expect.equal
                         (Just
                             [ { id = "prefix:" ++ TaskHelpers.taskId "file" 2, markdown = "bar" }
-                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "~~foo~~" }
                             ]
                         )
         ]

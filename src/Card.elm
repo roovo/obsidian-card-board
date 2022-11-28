@@ -98,7 +98,9 @@ markdownWithIds card =
         markdownWithId : Card -> List { id : String, markdown : String }
         markdownWithId c =
             [ { id = id c
-              , markdown = TaskItem.title item
+              , markdown =
+                    TaskItem.title item
+                        |> strikeIfCompleted item
               }
             ]
 
@@ -113,10 +115,20 @@ markdownWithIds card =
             else
                 []
 
+        strikeIfCompleted : TaskItem -> String -> String
+        strikeIfCompleted i markdown =
+            if TaskItem.isCompleted i then
+                "~~" ++ markdown ++ "~~"
+
+            else
+                markdown
+
         subtaskMarkdownWithId : ( String, TaskItem ) -> { id : String, markdown : String }
         subtaskMarkdownWithId ( subtaskId, subtask ) =
             { id = subtaskId
-            , markdown = TaskItem.title subtask
+            , markdown =
+                TaskItem.title subtask
+                    |> strikeIfCompleted subtask
             }
 
         subtasksWithIds : List { id : String, markdown : String }
