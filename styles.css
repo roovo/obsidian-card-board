@@ -185,45 +185,6 @@ ul.card-board-column-list > li.card-board-card::before {
   margin: 0 0.2em 0.5em 0.2em;
 }
 
-.card-board-card-tag {
-  display: inline-block;
-  margin-right: 0.3em;
-}
-
-.cm-s-obsidian div.card-board-card-tag > span.cm-hashtag {
-    background-color: var(--background-secondary-alt);
-    border: 1px solid var(--background-modifier-border);
-    color: var(--text-muted);
-    font-family: var(--font-ui);
-    text-align: center;
-    text-decoration: none;
-    line-height: 1.5em;
-    display: inline-block;
-    margin: 2px 0;
-    vertical-align: middle;
-    padding-top: 1px;
-    border-left: none;
-    border-right: none;
-    padding-bottom: 2px;
-    cursor: text;
-}
-
-div.card-board-card-tag > span.cm-hashtag.cm-hashtag-begin {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
-    padding-left: 6px;
-    border-right: none;
-    border-left: 1px solid var(--background-modifier-border);
-}
-
-div.card-board-card-tag > span.cm-hashtag.cm-hashtag-end {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-left: none;
-    padding-right: 6px;
-    border-right: 1px solid var(--background-modifier-border);
-}
-
 .card-board-card input.task-list-item-checkbox {
   grid-area: checkbox;
   align-self: top;
