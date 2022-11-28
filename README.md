@@ -8,19 +8,21 @@
 An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 (hopefully anyway).
 
-- Keep your tasks wherever you like in your vault.
-- View them on kanban style boards.
-- Use regular tasks and subtasks.
+- Uses regular tasks/subtasks wherever they are in your vault.
+- Shows them on kanban style boards.
 - Two board types supported:
   - Date based (with daily/periodic notes support).
-  - Tag based (use `#tags` to define your boards).
+  - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Honours global RTL mode set in obsidian (experimental as I am not an RTL
-  language speaker/writer).
-- Clicking on any tag rendered on a card opens up the obsidian search for the tag.
-- Improved #tag parsing. Now (I think) inline with how it is done in obsidian itself
-  so unicode characters can be included in tags (hello emojis and other languages).
+- Honours global RTL mode set in obsidian.
+- Clicking on any tag rendered on a card opens up the obsidian search for that tag.
+- Works with the [Colorful Tag](https://obsidian.md/plugins?id=obsidian-colorful-tag)
+  plugin. Adding this has changed the way tags can be customised using CSS Snippets.  See the
+  [Customising Tags](#customising-tags) section below for info on what any snippets now
+  need to look like to work with the latest version.
+- Improved `#tag` parsing. Now (I think/hope) inline with how it is done in obsidian itself,
+  meaning unicode characters can be included in tags; hello emojis and other languages.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -126,17 +128,22 @@ The current behaviour for the different columns is:
 I am not convinced that this is the best strategy so this may well change in a future release.
 
 ### Customising Tags
-If you like to apply custom styles to your tags, this is now possible
-(thank you @darthmachina).  Tags have a class that reflects the tag name.
-So if you have a tag `#foo/bar` you will be able to style it with your favorite
-color for foo/bars (which just has to be HotPink) using:
+I have to recommend using the wonderful
+[Colorful Tag](https://obsidian.md/plugins?id=obsidian-colorful-tag) plugin as this
+will allow you to style tags on your markdown pages as well as in CardBoard.
+
+If you would like to "roll your own", you can using a CSS snippet containing something
+along the lines of:
 
 ```css
-.card-board-view .card-board-card-tag.tag-foo-bar > span.cm-hashtag {
+.card-board-view a.tag[href="#foo/bar"] {
   background-color: HotPink;
   color: DimGrey;
 }
 ```
+
+This will style the tag `#foo/bar` wherever it appears in the CardBoard view with your favorite
+color for foo/bars, which just has to be HotPink :)
 
 ## Date boards
 You will get the best out of these if you are using the (core) Daily Notes
