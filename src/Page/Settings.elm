@@ -569,46 +569,180 @@ globalSettingsForm dataviewTaskCompletion gs =
                 DataviewTaskCompletion.Text t ->
                     "[" ++ t ++ ":: 1999-12-31]"
     in
-    [ Html.div [ class "setting-item" ]
-        [ Html.div [ class "setting-item-info" ]
-            [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Task completion format" ]
-            , Html.div [ class "setting-item-description" ]
-                [ Html.text "Which format to use when marking tasks as completed:"
-                , Html.br [] []
-                , Html.br [] []
-                , Html.strong [] [ Html.text "None" ]
-                , Html.text ": "
-                , Html.code [] [ Html.text "no completion date/time will be added" ]
-                , Html.br [] []
-                , Html.strong [] [ Html.text "CardBoard" ]
-                , Html.text ": "
-                , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
-                , Html.br [] []
-                , Html.strong [] [ Html.text "Dataview" ]
-                , Html.text ": "
-                , Html.code [] [ Html.text dataViewExample ]
-                , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
-                , Html.br [] []
-                , Html.strong [] [ Html.text "Tasks" ]
-                , Html.text ": "
-                , Html.code [] [ Html.text "✅ 1999-12-31" ]
-                , Html.br [] []
-                , Html.br [] []
-                , Html.strong [] [ Html.text "For Dataview: " ]
-                , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
-                , Html.text " and should be reflected above.  The only exception is that the completion date format"
-                , Html.text " is ignored and yyyy-MM-dd is what CardBoard uses."
-                , Html.i [] [ Html.text " If you change the settings in" ]
-                , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
-                , Html.br [] []
-                , Html.br [] []
-                , Html.text "When reading tasks, CardBoard understands all these formats.  It also understands"
-                , Html.text " due dates whether in CardBoard, Dataview, or Tasks format."
+    [ Html.div [ class "setting-items-inner" ]
+        [ Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Column Names" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Customise names used for auto-generated columns." ]
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Today" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for today's tasks (Date boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Today"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
                 ]
             ]
-        , Html.div [ class "setting-item-control" ]
-            [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Tomorrow" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for tomorrow's tasks (Date boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Tomorrow"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Future" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for tasks due beyond tomorrow (Date boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Future"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Undated" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for undated tasks (Tag boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Undated"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Others" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for tasks with other tags (Tag boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Others"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Untagged" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for tasks with no tag (Tag boards)." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Untagged"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Completed" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Column name for completed tasks." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder "Completed"
+                    , value ""
+                    , onInput EnteredTitle
+                    ]
+                    []
+                ]
+            ]
+        , Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Task completion format" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+        , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-description" ]
+                    [ Html.text "Format to use when marking tasks as completed:"
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "None" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "no completion date/time will be added" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "CardBoard" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "Dataview" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text dataViewExample ]
+                    , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "Tasks" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "✅ 1999-12-31" ]
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "For Dataview: " ]
+                    , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
+                    , Html.text " and should be reflected above."
+                    , Html.i [] [ Html.text " If you change the settings in" ]
+                    , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.text "When reading tasks, CardBoard understands all these formats."
+                    ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+            ]
         ]
     ]
 

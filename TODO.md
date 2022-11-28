@@ -1,3 +1,5 @@
+- new screenshot as completed tasks are now crossed out
+
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?
 - on tagboard if there is a todo with the tag defined in filter allow list
