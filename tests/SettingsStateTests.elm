@@ -1,6 +1,7 @@
 module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import ColumnNames
 import DateBoard
 import Expect
 import Filter
@@ -491,7 +492,9 @@ exampleBoardConfigTagBoard =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks }
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks
+    , columnNames = ColumnNames.default
+    }
 
 
 exampleDateBoardConfig : DateBoard.Config
