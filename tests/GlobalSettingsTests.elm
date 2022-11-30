@@ -13,6 +13,7 @@ suite =
     concat
         [ default
         , encodeDecode
+        , updateColumnName
         , updateTaskCompletionFormat
         ]
 
@@ -64,6 +65,26 @@ encodeDecode =
                                 }
                             }
                         )
+        ]
+
+
+updateColumnName : Test
+updateColumnName =
+    describe "updateColumnName"
+        [ test "can update a valid column name" <|
+            \() ->
+                GlobalSettings.default
+                    |> GlobalSettings.updateColumnName "future" "Back to the"
+                    |> .columnNames
+                    |> Expect.equal
+                        { today = Nothing
+                        , tomorrow = Nothing
+                        , future = Just "Back to the"
+                        , undated = Nothing
+                        , others = Nothing
+                        , untagged = Nothing
+                        , completed = Nothing
+                        }
         ]
 
 

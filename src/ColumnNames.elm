@@ -3,6 +3,7 @@ module ColumnNames exposing
     , decoder
     , default
     , encoder
+    , updateColumnName
     )
 
 import TsJson.Decode as TsDecode
@@ -63,6 +64,38 @@ encoder =
         , TsEncode.required "untagged" (fromMaybe .untagged) TsEncode.string
         , TsEncode.required "completed" (fromMaybe .completed) TsEncode.string
         ]
+
+
+
+-- MODIFICATION
+
+
+updateColumnName : String -> String -> ColumnNames -> ColumnNames
+updateColumnName column newName columnNames =
+    case column of
+        "today" ->
+            { columnNames | today = toMaybe newName }
+
+        "tomorrow" ->
+            { columnNames | tomorrow = toMaybe newName }
+
+        "future" ->
+            { columnNames | future = toMaybe newName }
+
+        "undated" ->
+            { columnNames | undated = toMaybe newName }
+
+        "others" ->
+            { columnNames | others = toMaybe newName }
+
+        "untagged" ->
+            { columnNames | untagged = toMaybe newName }
+
+        "completed" ->
+            { columnNames | completed = toMaybe newName }
+
+        _ ->
+            columnNames
 
 
 

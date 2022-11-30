@@ -3,6 +3,7 @@ module GlobalSettings exposing
     , TaskCompletionFormat(..)
     , default
     , encoder
+    , updateColumnName
     , updateTaskCompletionFormat
     , v_0_5_0_decoder
     , v_0_6_0_decoder
@@ -41,6 +42,11 @@ default =
 
 
 -- UTILITIES
+
+
+updateColumnName : String -> String -> GlobalSettings -> GlobalSettings
+updateColumnName column name gs =
+    { gs | columnNames = ColumnNames.updateColumnName column name gs.columnNames }
 
 
 updateTaskCompletionFormat : String -> GlobalSettings -> GlobalSettings

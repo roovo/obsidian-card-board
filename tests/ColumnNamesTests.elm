@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ encodeDecode
+        , updateColumnName
         ]
 
 
@@ -35,6 +36,55 @@ encodeDecode =
                     |> .output
                     |> Expect.equal exampleColumnNames
         ]
+
+
+updateColumnName : Test
+updateColumnName =
+    describe "updateColumnName"
+        [ test "updates a valid column name" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.updateColumnName "future" "Back to the"
+                    |> Expect.equal
+                        { today = Nothing
+                        , tomorrow = Nothing
+                        , future = Just "Back to the"
+                        , undated = Nothing
+                        , others = Nothing
+                        , untagged = Nothing
+                        , completed = Nothing
+                        }
+        , test "sets a column name to Nothing if it is an empty string" <|
+            \() ->
+                { today = Nothing
+                , tomorrow = Nothing
+                , future = Just "Back to the"
+                , undated = Nothing
+                , others = Nothing
+                , untagged = Nothing
+                , completed = Nothing
+                }
+                    |> ColumnNames.updateColumnName "future" ""
+                    |> Expect.equal
+                        ColumnNames.default
+        , test "does nothing if the column name is not recognised" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.updateColumnName "xxx" "Back to the"
+                    |> Expect.equal
+                        { today = Nothing
+                        , tomorrow = Nothing
+                        , future = Nothing
+                        , undated = Nothing
+                        , others = Nothing
+                        , untagged = Nothing
+                        , completed = Nothing
+                        }
+        ]
+
+
+
+-- HELPERS
 
 
 exampleColumnNames : String
