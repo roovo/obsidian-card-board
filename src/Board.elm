@@ -7,6 +7,7 @@ module Board exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column exposing (Column)
+import ColumnNames exposing (ColumnNames)
 import DateBoard
 import Filter exposing (Filter, Polarity)
 import TagBoard
@@ -20,16 +21,16 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Board
-    = Board BoardConfig TaskList
+    = Board ColumnNames BoardConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : BoardConfig -> TaskList -> Board
-init config taskList =
-    Board config taskList
+init : ColumnNames -> BoardConfig -> TaskList -> Board
+init columnNames config taskList =
+    Board columnNames config taskList
 
 
 
@@ -37,18 +38,18 @@ init config taskList =
 
 
 columns : TimeWithZone -> Int -> Board -> List (Column Card)
-columns timeWithZone boardIndex (Board config taskList) =
+columns timeWithZone boardIndex (Board columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             taskList
                 |> filterTaskList config
-                |> DateBoard.columns timeWithZone dateBoardConfig
+                |> DateBoard.columns columnNames timeWithZone dateBoardConfig
                 |> placeCardsInColumns boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
                 |> filterTaskList config
-                |> TagBoard.columns tagBoardConfig
+                |> TagBoard.columns columnNames tagBoardConfig
                 |> placeCardsInColumns boardIndex
 
 

@@ -3,6 +3,7 @@ module BoardTests exposing (suite)
 import Board
 import BoardConfig
 import Card
+import ColumnNames
 import DateBoard
 import Expect
 import Filter
@@ -31,6 +32,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -53,6 +55,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -80,6 +83,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -96,6 +100,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -112,6 +117,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -128,6 +134,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -151,6 +158,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -175,6 +183,7 @@ columnsDateBoard =
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.DateBoardConfig
                             { defaultDateBoardConfig
                                 | includeUndated = True
@@ -203,6 +212,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -223,6 +233,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -246,6 +257,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -266,6 +278,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -289,6 +302,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -309,6 +323,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -332,6 +347,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True
@@ -358,6 +374,7 @@ columnsTagBoard =
             \() ->
                 TaskListHelpers.exampleTagBoardTaskList
                     |> Board.init
+                        ColumnNames.default
                         (BoardConfig.TagBoardConfig
                             { defaultTagBoardConfig
                                 | includeOthers = True

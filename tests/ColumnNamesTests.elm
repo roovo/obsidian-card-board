@@ -1,6 +1,6 @@
 module ColumnNamesTests exposing (suite)
 
-import ColumnNames
+import ColumnNames exposing (ColumnNames)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ encodeDecode
+        , nameFor
         , updateColumnName
         ]
 
@@ -35,6 +36,82 @@ encodeDecode =
                     |> TsEncode.runExample ColumnNames.encoder
                     |> .output
                     |> Expect.equal exampleColumnNames
+        ]
+
+
+nameFor : Test
+nameFor =
+    describe "nameFor"
+        [ test "default for today is Today" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "today"
+                    |> Expect.equal "Today"
+        , test "default for tomorrow is Tomorrow" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "tomorrow"
+                    |> Expect.equal "Tomorrow"
+        , test "default for future is Future" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "future"
+                    |> Expect.equal "Future"
+        , test "default for undated is Undated" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "undated"
+                    |> Expect.equal "Undated"
+        , test "default for others is Others" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "others"
+                    |> Expect.equal "Others"
+        , test "default for untagged is Untagged" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "untagged"
+                    |> Expect.equal "Untagged"
+        , test "default for completed is Completed" <|
+            \() ->
+                ColumnNames.default
+                    |> ColumnNames.nameFor "completed"
+                    |> Expect.equal "Completed"
+        , test "can set the value for today" <|
+            \() ->
+                { defaultNames | today = Just "Foo" }
+                    |> ColumnNames.nameFor "today"
+                    |> Expect.equal "Foo"
+        , test "can set the value for tomorrow" <|
+            \() ->
+                { defaultNames | tomorrow = Just "Foo" }
+                    |> ColumnNames.nameFor "tomorrow"
+                    |> Expect.equal "Foo"
+        , test "can set the value for future" <|
+            \() ->
+                { defaultNames | future = Just "Foo" }
+                    |> ColumnNames.nameFor "future"
+                    |> Expect.equal "Foo"
+        , test "can set the value for undated" <|
+            \() ->
+                { defaultNames | undated = Just "Foo" }
+                    |> ColumnNames.nameFor "undated"
+                    |> Expect.equal "Foo"
+        , test "can set the value for others" <|
+            \() ->
+                { defaultNames | others = Just "Foo" }
+                    |> ColumnNames.nameFor "others"
+                    |> Expect.equal "Foo"
+        , test "can set the value for untagged" <|
+            \() ->
+                { defaultNames | untagged = Just "Foo" }
+                    |> ColumnNames.nameFor "untagged"
+                    |> Expect.equal "Foo"
+        , test "can set the value for completed" <|
+            \() ->
+                { defaultNames | completed = Just "Foo" }
+                    |> ColumnNames.nameFor "completed"
+                    |> Expect.equal "Foo"
         ]
 
 
@@ -85,6 +162,11 @@ updateColumnName =
 
 
 -- HELPERS
+
+
+defaultNames : ColumnNames
+defaultNames =
+    ColumnNames.default
 
 
 exampleColumnNames : String

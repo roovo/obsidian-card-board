@@ -4,6 +4,7 @@ module Session exposing
     , addTaskList
     , boardConfigs
     , cards
+    , columnNames
     , dataviewTaskCompletion
     , default
     , deleteItemsFromFile
@@ -30,6 +31,7 @@ module Session exposing
 import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
+import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
@@ -114,8 +116,13 @@ cards : Session -> List Card
 cards ((Session config) as session) =
     session
         |> taskList
-        |> Boards.init (Settings.boardConfigs config.settings)
+        |> Boards.init (columnNames session) (Settings.boardConfigs config.settings)
         |> Boards.cards config.timeWithZone
+
+
+columnNames : Session -> ColumnNames
+columnNames =
+    .columnNames << globalSettings
 
 
 dataviewTaskCompletion : Session -> DataviewTaskCompletion

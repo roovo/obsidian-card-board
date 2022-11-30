@@ -10,6 +10,7 @@ module DateBoard exposing
     )
 
 import Column exposing (Column)
+import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import Filter exposing (Filter, Polarity(..))
 import TaskItem exposing (TaskItem)
@@ -108,8 +109,8 @@ configDecoder_v_0_1_0 =
 -- UTILITIES
 
 
-columns : TimeWithZone -> Config -> TaskList -> List (Column TaskItem)
-columns timeWithZone config taskList =
+columns : ColumnNames -> TimeWithZone -> Config -> TaskList -> List (Column TaskItem)
+columns columnNames timeWithZone config taskList =
     let
         tasks : TaskList
         tasks =
@@ -119,20 +120,20 @@ columns timeWithZone config taskList =
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
-    [ Column.init "Today" <| todaysItems datestamp tasks
-    , Column.init "Tomorrow" <| tomorrowsItems datestamp tasks
-    , Column.init "Future" <| futureItems datestamp tasks
+    [ Column.init (ColumnNames.nameFor "today" columnNames) <| todaysItems datestamp tasks
+    , Column.init (ColumnNames.nameFor "tomorrow" columnNames) <| tomorrowsItems datestamp tasks
+    , Column.init (ColumnNames.nameFor "future" columnNames) <| futureItems datestamp tasks
     ]
-        |> prependUndated tasks config
-        |> appendCompleted tasks config
+        |> prependUndated (ColumnNames.nameFor "undated" columnNames) tasks config
+        |> appendCompleted (ColumnNames.nameFor "completed" columnNames) tasks config
 
 
 
 -- PRIVATE
 
 
-appendCompleted : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted taskList config columnList =
+appendCompleted : String -> TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
+appendCompleted columnName taskList config columnList =
     if config.completedCount > 0 then
         TaskList.topLevelTasks taskList
             |> List.filter TaskItem.isCompleted
@@ -141,7 +142,7 @@ appendCompleted taskList config columnList =
             |> List.sortBy TaskItem.completedPosix
             |> List.reverse
             |> List.take config.completedCount
-            |> Column.init "Completed"
+            |> Column.init columnName
             |> List.singleton
             |> List.append columnList
 
@@ -175,8 +176,8 @@ futureItems today taskList =
         |> List.sortBy TaskItem.dueRataDie
 
 
-prependUndated : TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
-prependUndated taskList config columnList =
+prependUndated : String -> TaskList -> Config -> List (Column TaskItem) -> List (Column TaskItem)
+prependUndated columnName taskList config columnList =
     let
         undatedtasks : List TaskItem
         undatedtasks =
@@ -185,7 +186,7 @@ prependUndated taskList config columnList =
                 |> List.sortBy (String.toLower << TaskItem.title)
     in
     if config.includeUndated then
-        Column.init "Undated" undatedtasks :: columnList
+        Column.init columnName undatedtasks :: columnList
 
     else
         columnList

@@ -1,6 +1,7 @@
 module TagBoardTests exposing (suite)
 
 import Column
+import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion
 import Expect
 import Filter
@@ -42,6 +43,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = []
                         }
@@ -56,6 +58,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns =
                                 [ { tag = "foo", displayTitle = "" }
@@ -74,6 +77,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns =
                                 [ { tag = "foo", displayTitle = "foo" }
@@ -94,6 +98,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "hello", displayTitle = "" } ]
                         }
@@ -109,6 +114,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
@@ -124,6 +130,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
@@ -139,6 +146,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
                         }
@@ -154,6 +162,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
@@ -169,6 +178,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "bar/", displayTitle = "Bar Tasks" } ]
                         }
@@ -185,6 +195,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
                         }
@@ -202,6 +213,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "bar" ]
                             , filterPolarity = Filter.Allow
@@ -228,6 +240,7 @@ columnsBasic =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns =
                                 [ { tag = "col1", displayTitle = "Col 1" }
@@ -250,6 +263,7 @@ columnsBasic =
                     |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "file_a" Nothing TagList.empty 0)
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns = [ { tag = "foo", displayTitle = "Foo tasks" } ]
                         }
@@ -268,12 +282,26 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | completedCount = 1
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
                     |> List.map Column.name
                     |> Expect.equal [ "foo", "Completed" ]
+        , test "can customize the 'Completed' column name" <|
+            \() ->
+                ""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultColumnNames | completed = Just "xxx" }
+                        { defaultConfig
+                            | completedCount = 1
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
+                    |> List.map Column.name
+                    |> Expect.equal [ "foo", "xxx" ]
         , test "puts completed tasks with at least one of the tags in the 'Completed' column " <|
             \() ->
                 """- [ ] foo1 #foo
@@ -289,6 +317,7 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | completedCount = 99
                             , columns =
@@ -308,6 +337,7 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | completedCount = 99
                             , columns = [ { tag = "foo", displayTitle = "" } ]
@@ -324,6 +354,7 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | completedCount = 2
                             , columns = [ { tag = "foo", displayTitle = "" } ]
@@ -340,6 +371,7 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "foo" ]
                             , filterPolarity = Filter.Allow
@@ -362,6 +394,7 @@ columnCompleted =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | columns =
                                 [ { tag = "col1", displayTitle = "Col 1" }
@@ -388,12 +421,26 @@ columnOthers =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeOthers = True
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
                     |> List.map Column.name
                     |> Expect.equal [ "Others", "foo" ]
+        , test "allows the 'Other' column name to be customized" <|
+            \() ->
+                ""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultColumnNames | others = Just "xxx" }
+                        { defaultConfig
+                            | includeOthers = True
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
+                    |> List.map Column.name
+                    |> Expect.equal [ "xxx", "foo" ]
         , test "puts tagged tasks with none of the current tags in the  'Other' column " <|
             \() ->
                 """- [ ] foo1 #foo
@@ -408,6 +455,7 @@ columnOthers =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeOthers = True
                             , columns =
@@ -427,6 +475,7 @@ columnOthers =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeOthers = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
@@ -443,6 +492,7 @@ columnOthers =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "foo" ]
                             , filterPolarity = Filter.Allow
@@ -468,12 +518,26 @@ columnUntagged =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeUntagged = True
                             , columns = [ { tag = "foo", displayTitle = "foo" } ]
                         }
                     |> List.map Column.name
                     |> Expect.equal [ "Untagged", "foo" ]
+        , test "allow the 'Untagged' column name to be customized" <|
+            \() ->
+                ""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        { defaultColumnNames | untagged = Just "xxx" }
+                        { defaultConfig
+                            | includeUntagged = True
+                            , columns = [ { tag = "foo", displayTitle = "foo" } ]
+                        }
+                    |> List.map Column.name
+                    |> Expect.equal [ "xxx", "foo" ]
         , test "puts tasks with NO tags in the  'Untagged' column " <|
             \() ->
                 """- [ ] foo1 #foo
@@ -488,6 +552,7 @@ columnUntagged =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeUntagged = True
                             , columns =
@@ -507,6 +572,7 @@ columnUntagged =
                     |> Parser.run TaskListHelpers.basicParser
                     |> Result.withDefault TaskList.empty
                     |> TagBoard.columns
+                        ColumnNames.default
                         { defaultConfig
                             | includeUntagged = True
                             , columns = [ { tag = "bar", displayTitle = "" } ]
@@ -585,6 +651,11 @@ encodeDecode =
 
 
 -- HELPERS
+
+
+defaultColumnNames : ColumnNames
+defaultColumnNames =
+    ColumnNames.default
 
 
 defaultConfig : TagBoard.Config

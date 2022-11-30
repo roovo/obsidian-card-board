@@ -3,6 +3,7 @@ module ColumnNames exposing
     , decoder
     , default
     , encoder
+    , nameFor
     , updateColumnName
     )
 
@@ -35,6 +36,38 @@ default =
     , untagged = Nothing
     , completed = Nothing
     }
+
+
+
+-- INFO
+
+
+nameFor : String -> ColumnNames -> String
+nameFor column columnNames =
+    case column of
+        "today" ->
+            Maybe.withDefault "Today" columnNames.today
+
+        "tomorrow" ->
+            Maybe.withDefault "Tomorrow" columnNames.tomorrow
+
+        "future" ->
+            Maybe.withDefault "Future" columnNames.future
+
+        "undated" ->
+            Maybe.withDefault "Undated" columnNames.undated
+
+        "others" ->
+            Maybe.withDefault "Others" columnNames.others
+
+        "untagged" ->
+            Maybe.withDefault "Untagged" columnNames.untagged
+
+        "completed" ->
+            Maybe.withDefault "Completed" columnNames.completed
+
+        _ ->
+            ""
 
 
 
