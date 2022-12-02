@@ -25,7 +25,7 @@ npm run dev             # run dev build
 - is the example generation up to date?
 - are the example configs up to date?
 - test in real vault
-- tag the release
+- merge and tag the release
 - release new version
   - main.js
   - manifest.json (the version in here is what is displayed as the current plugin version
@@ -33,7 +33,6 @@ npm run dev             # run dev build
   - style.css
   - release notes
 - bump version: manifest.json, package.json
-
 
 ## Run tests
 ```
