@@ -65,7 +65,7 @@ What appears on the card depends on what your task looks like:
 So, if you had the following in one of your markdown files:
 
 ```
-- [ ] run erands @due(2021-10-30)
+- [ ] run erands @due(2022-12-02)
   - [x] do shopping #town
   - [ ] wash car #home/outside
   - [ ] cook dinner #home/kitchen
@@ -175,7 +175,7 @@ date if you want to schedule them later.
 
 ## Tag boards
 If you give your tasks tags, you can use these to set up a tag-board.  So if you
-have the tags `#project1/backlog`, `#project1/triaged`, `project1/blocked`, `#project1/doing`,
+have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
 you can define a board that shows tasks tagged with these in separate columns:
 
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
@@ -220,7 +220,7 @@ above the board to the left of the tabs.  You can:
 
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
-- Customize the names of the built-in column names.
+- Customize the names of the built-in columns.
 - Delete any boards you no longer need.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
 
