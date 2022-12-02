@@ -1,6 +1,4 @@
-- new screenshot as completed tasks are now crossed out
-- https://github.com/users/marcusolsson/projects/4/views/14 -> nice way of arranging issues!
-- link to obsidian-projects in alternatives
+- new screenshots as completed tasks are now crossed out
 
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?

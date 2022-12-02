@@ -161,7 +161,7 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .card-board-card-highlight-area.good {
-  background-color: var(--interactive-success);
+  background-color: var(--text-success);
 }
 
 .card-board-card-highlight-area.important {
