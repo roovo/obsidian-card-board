@@ -3,11 +3,14 @@ module GlobalSettings exposing
     , TaskCompletionFormat(..)
     , default
     , encoder
+    , updateColumnName
     , updateTaskCompletionFormat
     , v_0_5_0_decoder
     , v_0_6_0_decoder
+    , v_0_7_0_decoder
     )
 
+import ColumnNames exposing (ColumnNames)
 import Json.Encode as JE
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -26,17 +29,24 @@ type TaskCompletionFormat
 
 type alias GlobalSettings =
     { taskCompletionFormat : TaskCompletionFormat
+    , columnNames : ColumnNames
     }
 
 
 default : GlobalSettings
 default =
     { taskCompletionFormat = ObsidianCardBoard
+    , columnNames = ColumnNames.default
     }
 
 
 
 -- UTILITIES
+
+
+updateColumnName : String -> String -> GlobalSettings -> GlobalSettings
+updateColumnName column name gs =
+    { gs | columnNames = ColumnNames.updateColumnName column name gs.columnNames }
 
 
 updateTaskCompletionFormat : String -> GlobalSettings -> GlobalSettings
@@ -52,19 +62,29 @@ encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
         [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
+        , TsEncode.required "columnNames" .columnNames ColumnNames.encoder
         ]
+
+
+v_0_7_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_7_0_decoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "columnNames" ColumnNames.decoder)
 
 
 v_0_6_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_6_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed ColumnNames.default)
 
 
 v_0_5_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_5_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed ColumnNames.default)
 
 
 

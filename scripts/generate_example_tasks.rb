@@ -35,12 +35,10 @@ File.open(todays_tasks, "w") do |file|
 
 - [x] already got out of bed this morning @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")})
 - [ ] ی گت وت اف بد تهیس مورنینگ @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ/زیرتگ
-- [ ] something with #foobar an RTL NON-sub tag @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ
+- [ ] something with #foobar an RTL non-sub tag @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ
 	foo bar baz #تگ/زیرتگ #one two
 	and another line #foobar something else
 	#تگ/زیرتگ #foo #زیرتگ #one
-- [ ] something tag on the other end @due(#{Date.today.strftime("%Y-%m-%d")}) زیرتگ#
-
 """
 end
 

@@ -1,6 +1,7 @@
 module DateBoardTests exposing (suite)
 
 import Column
+import ColumnNames exposing (ColumnNames)
 import DateBoard
 import Expect
 import Filter
@@ -33,34 +34,41 @@ columns =
         [ test "default columns are just today tomorrow and future" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone defaultConfig
                     |> List.map Column.name
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
+        , test "default column names can be customised" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns { defaultColumnNames | today = Just "0", tomorrow = Just "1", future = Just "2" } DateTimeHelpers.nowWithZone defaultConfig
+                    |> List.map Column.name
+                    |> Expect.equal [ "0", "1", "2" ]
         , test "todaysItems are sorted by due date (then task title ascending)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.thingsInColumn "Today"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "another yesterday incomplete", "yesterday incomplete", "today incomplete" ]
         , test "tommorrowsItems are sorted by task title ascending" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.thingsInColumn "Tomorrow"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a task for tomorrow", "tomorrow incomplete" ]
         , test "futureItems are sorted by due date ascending (then task title)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone defaultConfig
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone defaultConfig
                     |> BoardHelpers.thingsInColumn "Future"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "future incomplete", "far future incomplete", "zapping into the future" ]
         , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                    |> DateBoard.columns ColumnNames.default
+                        DateTimeHelpers.nowWithZone
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "tag1" ]
                             , filterPolarity = Filter.Allow
@@ -81,13 +89,19 @@ columnCompleted =
         [ test "a Completed column is appended if config sets includeCompleted" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
                     |> List.map Column.name
                     |> Expect.equal [ "Today", "Tomorrow", "Future", "Completed" ]
+        , test "the Completed column name can be customized" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns { defaultColumnNames | completed = Just "xxx" } DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 1 }
+                    |> List.map Column.name
+                    |> Expect.equal [ "Today", "Tomorrow", "Future", "xxx" ]
         , test "completedItems are sorted by completion date desc (then task title asc)" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 99 }
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone { defaultConfig | completedCount = 99 }
                     |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -103,7 +117,8 @@ columnCompleted =
         , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                    |> DateBoard.columns ColumnNames.default
+                        DateTimeHelpers.nowWithZone
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "tag1" ]
                             , filterPolarity = Filter.Allow
@@ -125,13 +140,19 @@ columnUndated =
         [ test "an Undated column is prepended if config sets includeUndated" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> List.map Column.name
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future" ]
+        , test "the Undated column name can be customized" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> DateBoard.columns { defaultColumnNames | undated = Just "xxx" } DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
+                    |> List.map Column.name
+                    |> Expect.equal [ "xxx", "Today", "Tomorrow", "Future" ]
         , test "undatedItems are sorted by title ascending" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
+                    |> DateBoard.columns ColumnNames.default DateTimeHelpers.nowWithZone { defaultConfig | includeUndated = True }
                     |> BoardHelpers.thingsInColumn "Undated"
                     |> List.map TaskItem.title
                     |> Expect.equal
@@ -145,7 +166,8 @@ columnUndated =
         , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
-                    |> DateBoard.columns DateTimeHelpers.nowWithZone
+                    |> DateBoard.columns ColumnNames.default
+                        DateTimeHelpers.nowWithZone
                         { defaultConfig
                             | filters = [ FilterHelpers.tagFilter "tag1" ]
                             , filterPolarity = Filter.Allow
@@ -178,6 +200,11 @@ encodeDecode =
 
 
 -- HELPERS
+
+
+defaultColumnNames : ColumnNames
+defaultColumnNames =
+    ColumnNames.default
 
 
 defaultConfig : DateBoard.Config

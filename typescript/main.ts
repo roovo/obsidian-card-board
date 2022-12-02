@@ -30,7 +30,16 @@ export default class CardBoardPlugin extends Plugin {
           }
         )[];
         globalSettings : {
-          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks"
+          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
+          columnNames : {
+            today : string;
+            tomorrow : string;
+            future : string;
+            undated : string;
+            others : string;
+            untagged : string
+            completed : string;
+          }
         }
       };
       version : string
@@ -140,7 +149,16 @@ export default class CardBoardPlugin extends Plugin {
           }
         )[];
         globalSettings : {
-          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks"
+          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
+          columnNames : {
+            today : string;
+            tomorrow : string;
+            future : string;
+            undated : string;
+            others : string;
+            untagged : string
+            completed : string;
+          }
         }
       };
       version : string

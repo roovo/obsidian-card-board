@@ -1,6 +1,7 @@
 module SettingsTests exposing (suite)
 
 import BoardConfig
+import ColumnNames
 import Expect
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -23,11 +24,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.6.0" <|
+        [ test "is 0.7.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.6.0"
+                    |> Expect.equal "0.7.0"
         ]
 
 
@@ -72,4 +73,6 @@ exampleSettings =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks }
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks
+    , columnNames = ColumnNames.default
+    }

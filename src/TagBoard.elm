@@ -12,6 +12,7 @@ module TagBoard exposing
     )
 
 import Column exposing (Column)
+import ColumnNames exposing (ColumnNames)
 import Filter exposing (Filter, Polarity)
 import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
@@ -154,14 +155,14 @@ columnConfigDecoder =
 -- UTILITIES
 
 
-columns : Config -> TaskList -> List (Column TaskItem)
-columns config taskList =
+columns : ColumnNames -> Config -> TaskList -> List (Column TaskItem)
+columns columnNames config taskList =
     config.columns
         |> LE.uniqueBy .tag
         |> List.foldl (fillColumn taskList config) []
-        |> prependOthers config taskList
-        |> prependUntagged config taskList
-        |> appendCompleted config taskList
+        |> prependOthers (ColumnNames.nameFor "others" columnNames) config taskList
+        |> prependUntagged (ColumnNames.nameFor "untagged" columnNames) config taskList
+        |> appendCompleted (ColumnNames.nameFor "completed" columnNames) config taskList
 
 
 
@@ -177,8 +178,8 @@ columnConfigsParser =
 -- PRIVATE
 
 
-appendCompleted : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted config taskList columnList =
+appendCompleted : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+appendCompleted columnName config taskList columnList =
     let
         completedTasks : List TaskItem
         completedTasks =
@@ -203,7 +204,7 @@ appendCompleted config taskList columnList =
                 |> List.map .tag
     in
     if config.completedCount > 0 then
-        List.append columnList [ Column.init "Completed" completedTasks ]
+        List.append columnList [ Column.init columnName completedTasks ]
 
     else
         columnList
@@ -277,8 +278,8 @@ fillColumn taskList config columnConfig acc =
         |> List.append acc
 
 
-prependOthers : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependOthers config taskList columnList =
+prependOthers : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+prependOthers columnName config taskList columnList =
     let
         cards : List TaskItem
         cards =
@@ -300,14 +301,14 @@ prependOthers config taskList columnList =
                 |> List.map .tag
     in
     if config.includeOthers then
-        Column.init "Others" cards :: columnList
+        Column.init columnName cards :: columnList
 
     else
         columnList
 
 
-prependUntagged : Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependUntagged config taskList columnList =
+prependUntagged : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+prependUntagged columnName config taskList columnList =
     let
         cards : List TaskItem
         cards =
@@ -322,7 +323,7 @@ prependUntagged config taskList columnList =
             not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
     in
     if config.includeUntagged then
-        Column.init "Untagged" cards :: columnList
+        Column.init columnName cards :: columnList
 
     else
         columnList

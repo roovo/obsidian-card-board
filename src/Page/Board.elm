@@ -8,6 +8,7 @@ import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
+import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
@@ -112,7 +113,12 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init (Session.boardConfigs session) (Session.taskList session)
+                Boards.init columnNames (Session.boardConfigs session) (Session.taskList session)
+
+            columnNames : ColumnNames
+            columnNames =
+                Session.globalSettings session
+                    |> .columnNames
 
             currentIndex : Maybe Int
             currentIndex =

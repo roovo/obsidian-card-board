@@ -15,14 +15,13 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
+- Auto-generated column names (e.g. Untagged, Today, Completed...) can be customized.
 - Honours global RTL mode set in obsidian.
 - Clicking on any tag rendered on a card opens up the obsidian search for that tag.
 - Works with the [Colorful Tag](https://obsidian.md/plugins?id=obsidian-colorful-tag)
   plugin. Adding this has changed the way tags can be customised using CSS Snippets.  See the
   [Customising Tags](#customising-tags) section below for info on what any snippets now
   need to look like to work with the latest version.
-- Improved `#tag` parsing. Now (I think/hope) inline with how it is done in obsidian itself,
-  meaning unicode characters can be included in tags; hello emojis and other languages.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -66,7 +65,7 @@ What appears on the card depends on what your task looks like:
 So, if you had the following in one of your markdown files:
 
 ```
-- [ ] run erands @due(2021-10-30)
+- [ ] run erands @due(2022-12-02)
   - [x] do shopping #town
   - [ ] wash car #home/outside
   - [ ] cook dinner #home/kitchen
@@ -90,7 +89,7 @@ to the task:
 - [x] Task title @completed(2021-10-30T13:57:48)
 ```
 
-See the [compatibility section](#compatibility) for details on how you can choose to use
+See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
 a format compatible with other plugins.
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
@@ -176,7 +175,7 @@ date if you want to schedule them later.
 
 ## Tag boards
 If you give your tasks tags, you can use these to set up a tag-board.  So if you
-have the tags `#project1/backlog`, `#project1/triaged`, `project1/blocked`, `#project1/doing`,
+have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
 you can define a board that shows tasks tagged with these in separate columns:
 
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
@@ -221,6 +220,7 @@ above the board to the left of the tabs.  You can:
 
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
+- Customize the names of the built-in columns.
 - Delete any boards you no longer need.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
 
@@ -235,7 +235,7 @@ as well.  These are saved when the internal version of the settings file is upda
 in case something goes wrong!  If you want to ensure you never loose your CardBoard settings
 then do ensure that your .obsidian directory is backed up.
 
-## Compatibility
+## Other Plugin Compatibility
 Cardboard is compatible with the *Due* and *Completion* date formats used in
 both [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
 and [Dataview](https://blacksmithgu.github.io/obsidian-dataview/).
@@ -312,7 +312,8 @@ plugins you can use for task management in Obsidian, e.g.
 [Checklist](https://github.com/delashum/obsidian-checklist-plugin),
 [Kanban](https://github.com/mgmeyers/obsidian-kanban),
 [Reminder](https://github.com/uphy/obsidian-reminder),
-[Tasks](https://github.com/schemar/obsidian-tasks), as well as the
+[Tasks](https://github.com/schemar/obsidian-tasks),
+[Projects](https://github.com/marcusolsson/obsidian-projects), as well as the
 [Tasks Calendar snippet](https://github.com/702573N/Obsidian-Tasks-Calendar).
 There are others too, see the wonderful
 [Obsidian Plugin Stats site](https://obsidian-plugin-stats.vercel.app).

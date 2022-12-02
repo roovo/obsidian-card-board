@@ -12,6 +12,7 @@ import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column
+import ColumnNames exposing (ColumnNames)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -22,16 +23,16 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Boards
-    = Boards (SafeZipper BoardConfig) TaskList
+    = Boards ColumnNames (SafeZipper BoardConfig) TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : SafeZipper BoardConfig -> TaskList -> Boards
-init configs taskList =
-    Boards configs taskList
+init : ColumnNames -> SafeZipper BoardConfig -> TaskList -> Boards
+init columnNames configs taskList =
+    Boards columnNames configs taskList
 
 
 
@@ -39,12 +40,12 @@ init configs taskList =
 
 
 boardZipper : Boards -> SafeZipper Board
-boardZipper (Boards configs taskList) =
-    SafeZipper.indexedMapSelectedAndRest (board taskList) (board taskList) configs
+boardZipper (Boards columnNames configs taskList) =
+    SafeZipper.indexedMapSelectedAndRest (board columnNames taskList) (board columnNames taskList) configs
 
 
 titles : Boards -> SafeZipper String
-titles (Boards configs _) =
+titles (Boards _ configs _) =
     SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
 
 
@@ -60,12 +61,12 @@ cards timeWithZone boards_ =
 
 
 currentIndex : Boards -> Maybe Int
-currentIndex (Boards config _) =
+currentIndex (Boards _ config _) =
     SafeZipper.selectedIndex config
 
 
 length : Boards -> Int
-length (Boards config _) =
+length (Boards _ config _) =
     SafeZipper.length config
 
 
@@ -83,6 +84,6 @@ tabTitle _ config =
             tagBoardConfig.title
 
 
-board : TaskList -> Int -> BoardConfig -> Board
-board taskList _ config =
-    Board.init config taskList
+board : ColumnNames -> TaskList -> Int -> BoardConfig -> Board
+board columnNames taskList _ config =
+    Board.init columnNames config taskList
