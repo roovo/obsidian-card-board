@@ -1,3 +1,7 @@
+- make a better example using rtl tags (use google translate to generate the board/task/tag details that make
+  sense (in so much as google translate is up to the job of course).
+
+
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?
 - on tagboard if there is a todo with the tag defined in filter allow list

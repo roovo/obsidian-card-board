@@ -110,4 +110,20 @@ File.open(undated_tasks, "w") do |file|
           }
   ```
 """
+
+colab_tasks = File.join(target_directory, "colab.md")
+
+File.open(colab_tasks, "w") do |file|
+  file.write """
+# Colaboration examples
+
+- [ ] need to ask #people/fred if he can loan me is dinosaur @due(#{Date.today.strftime("%Y-%m-%d")})
+
+- [ ] decorate my cave @due(#{(Date.today + 7).strftime("%Y-%m-%d")})
+  - [x] ask #people/wilma to do a cave painting @due(#{(Date.today).strftime("%Y-%m-%d")})
+  - [ ] borrow design book from #people/barney
+  - [ ] check everyone can make the painting party @due(#{(Date.today + 4).strftime("%Y-%m-%d")})
+
+"""
+end
 end
