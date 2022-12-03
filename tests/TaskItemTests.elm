@@ -39,6 +39,7 @@ suite =
         , tags
         , tasksToToggle
         , title
+        , titleWithTags
         , toToggledString
         , updateFilePath
         ]
@@ -919,6 +920,24 @@ title =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "the task")
+        ]
+
+
+titleWithTags : Test
+titleWithTags =
+    describe "titleWithTags"
+        [ test "returns the title when there are no #tags or special date/tag fields" <|
+            \() ->
+                "- [ ]   foo bar    baz   "
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.titleWithTags
+                    |> Expect.equal (Ok "foo bar baz")
+        , test "returns the title including any #tags when there are no special date/tag fields" <|
+            \() ->
+                "- [ ]   foo #bar    baz   "
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.titleWithTags
+                    |> Expect.equal (Ok "foo #bar baz")
         ]
 
 

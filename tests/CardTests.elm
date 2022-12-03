@@ -150,7 +150,7 @@ markdownWithIds =
                         (Just
                             [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":tags", markdown = "#tag1 #tag2" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes #tag3" }
-                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar #tag2" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 5, markdown = "~~baz~~" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]

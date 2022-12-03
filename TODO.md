@@ -1,3 +1,5 @@
+- if something is on a board because of a subtask tag and that line also has a due date on it, should I use
+  that as the due date of the card?
 - make a better example using rtl tags (use google translate to generate the board/task/tag details that make
   sense (in so much as google translate is up to the job of course).
 

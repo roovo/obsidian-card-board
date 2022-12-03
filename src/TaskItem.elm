@@ -29,6 +29,7 @@ module TaskItem exposing
     , tags
     , tasksToToggle
     , title
+    , titleWithTags
     , toToggledString
     , updateFilePath
     )
@@ -66,6 +67,7 @@ type alias TaskItemFields =
     , originalText : String
     , tags : TagList
     , title : List String
+    , contents : List Content
     }
 
 
@@ -115,6 +117,7 @@ defaultFields =
     , originalText = ""
     , tags = TagList.empty
     , title = []
+    , contents = []
     }
 
 
@@ -310,6 +313,32 @@ tasksToToggle id_ timeWithZone taskItem =
 title : TaskItem -> String
 title =
     String.join " " << .title << fields
+
+
+titleWithTags : TaskItem -> String
+titleWithTags taskItem =
+    let
+        buildContents : List Content -> List String
+        buildContents =
+            List.foldl extractContent []
+
+        extractContent : Content -> List String -> List String
+        extractContent content strings =
+            case content of
+                Word word ->
+                    word :: strings
+
+                ObsidianTag tag ->
+                    ("#" ++ Tag.toString tag) :: strings
+
+                _ ->
+                    strings
+    in
+    taskItem
+        |> fields
+        |> .contents
+        |> buildContents
+        |> String.join " "
 
 
 
@@ -689,6 +718,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> (\tif -> { tif | originalText = sourceText })
         |> (\tif -> { tif | tags = TagList.append tif.tags frontMatterTags })
         |> (\tif -> { tif | title = List.reverse tif.title })
+        |> (\tif -> { tif | contents = List.reverse contents })
         |> addCompletionTime
 
 

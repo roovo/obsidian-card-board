@@ -127,7 +127,7 @@ markdownWithIds card =
         subtaskMarkdownWithId ( subtaskId, subtask ) =
             { id = subtaskId
             , markdown =
-                TaskItem.title subtask
+                TaskItem.titleWithTags subtask
                     |> strikeIfCompleted subtask
             }
 
