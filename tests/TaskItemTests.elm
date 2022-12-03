@@ -27,6 +27,7 @@ suite =
         , hasThisTagBasic
         , hasThisTagWithSubtag
         , hasThisTagWithSubtagWildcard
+        , hasTopLevelTags
         , id
         , isCompleted
         , isFromFile
@@ -40,6 +41,7 @@ suite =
         , tasksToToggle
         , title
         , titleWithTags
+        , topLevelTags
         , toToggledString
         , updateFilePath
         ]
@@ -372,6 +374,12 @@ hasTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok True)
+        , test "returns True if the task has only front matter tags" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tagA" ]) 0)
+                    |> Result.map TaskItem.hasTags
+                    |> Expect.equal (Ok True)
         , test "returns False if the task and all descendant tasks have no tags" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
@@ -504,6 +512,36 @@ hasThisTagWithSubtagWildcard =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.hasThisTag "bar/")
                     |> Expect.equal (Ok True)
+        ]
+
+
+hasTopLevelTags : Test
+hasTopLevelTags =
+    describe "hasTopLevelTags"
+        [ test "returns True if the task has tags" <|
+            \() ->
+                "- [ ] foo #baz #bar #foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.hasTopLevelTags
+                    |> Expect.equal (Ok True)
+        , test "returns False if the task only has any descendant tasks with tags" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar #baz #bar #foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.hasTopLevelTags
+                    |> Expect.equal (Ok False)
+        , test "returns True if the task has only front matter tags" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tagA" ]) 0)
+                    |> Result.map TaskItem.hasTopLevelTags
+                    |> Expect.equal (Ok True)
+        , test "returns False if the task and all descendant tasks and the front matter have no tags" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
+                    |> Result.map TaskItem.hasTopLevelTags
+                    |> Expect.equal (Ok False)
         ]
 
 
@@ -771,6 +809,30 @@ descendantTasks =
         ]
 
 
+removeTags : Test
+removeTags =
+    describe "removeTags"
+        [ test "removes from a TaskItem with no subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/ #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
+        , test "removes from a TaskItem and it's subtasks" <|
+            \() ->
+                "- [ ] foo #foo #foo/\n  - [ ] bar #bar #baz #baza #qux"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toList
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
+        ]
+
+
 tags : Test
 tags =
     describe "tags"
@@ -804,30 +866,6 @@ tags =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tag3" ]) 0)
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
-        ]
-
-
-removeTags : Test
-removeTags =
-    describe "removeTags"
-        [ test "removes from a TaskItem with no subtasks" <|
-            \() ->
-                "- [ ] foo #foo #foo/ #bar #baz #baza #qux"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
-                    |> Result.map TaskItem.tags
-                    |> Result.map TagList.toList
-                    |> Result.map List.sort
-                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
-        , test "removes from a TaskItem and it's subtasks" <|
-            \() ->
-                "- [ ] foo #foo #foo/\n  - [ ] bar #bar #baz #baza #qux"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
-                    |> Result.map TaskItem.tags
-                    |> Result.map TagList.toList
-                    |> Result.map List.sort
-                    |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
         ]
 
 
@@ -938,6 +976,36 @@ titleWithTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.titleWithTags
                     |> Expect.equal (Ok "foo #bar baz")
+        ]
+
+
+topLevelTags : Test
+topLevelTags =
+    describe "topLevelTags"
+        [ test "returns an empty array for a task with no tags or substasks" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.topLevelTags
+                    |> Expect.equal (Ok TagList.empty)
+        , test "returns all tags from front matter and the top level, but NOT sub tasks" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2\n  - [ ] bar #tag3"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tagA", "tagB" ]) 0)
+                    |> Result.map TaskItem.topLevelTags
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2", "tagA", "tagB" ]))
+        , test "returns unique list of tags" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "tag1" ]) 0)
+                    |> Result.map TaskItem.topLevelTags
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
+        , test "returns the tags in alphabetical order" <|
+            \() ->
+                "- [ ] foo #tag2 bar #tag1"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
+                    |> Result.map TaskItem.topLevelTags
+                    |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
         ]
 
 

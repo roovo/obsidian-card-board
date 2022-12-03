@@ -17,6 +17,7 @@ module TaskItem exposing
     , hasSubtasks
     , hasTags
     , hasThisTag
+    , hasTopLevelTags
     , id
     , isCompleted
     , isDated
@@ -31,6 +32,7 @@ module TaskItem exposing
     , title
     , titleWithTags
     , toToggledString
+    , topLevelTags
     , updateFilePath
     )
 
@@ -191,6 +193,11 @@ hasTags =
     not << TagList.isEmpty << tags
 
 
+hasTopLevelTags : TaskItem -> Bool
+hasTopLevelTags =
+    not << TagList.isEmpty << topLevelTags
+
+
 hasOneOfTheTags : List String -> TaskItem -> Bool
 hasOneOfTheTags tagsToMatch taskItem =
     List.any (\t -> hasThisTag t taskItem) tagsToMatch
@@ -254,6 +261,15 @@ tags ((TaskItem fields_ _) as taskItem) =
         |> List.map (fields >> .tags)
         |> List.foldl TagList.append TagList.empty
         |> TagList.append fields_.tags
+        |> TagList.unique
+        |> TagList.sort
+
+
+topLevelTags : TaskItem -> TagList
+topLevelTags ((TaskItem fields_ _) as taskItem) =
+    taskItem
+        |> fields
+        |> .tags
         |> TagList.unique
         |> TagList.sort
 
