@@ -22,6 +22,7 @@ suite =
         , descendantTasks
         , due
         , filePath
+        , hasIncompleteTaskWithThisTag
         , hasOneOfTheTags
         , hasTags
         , hasThisTagBasic
@@ -338,6 +339,54 @@ filePath =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.filePath
                     |> Expect.equal (Ok "File A")
+        ]
+
+
+hasIncompleteTaskWithThisTag : Test
+hasIncompleteTaskWithThisTag =
+    describe "hasIncompleteTaskWithTag - basic operation"
+        [ test "returns True for a task with no sub-tasks that has the tag" <|
+            \() ->
+                "- [ ] foo #bar #foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok True)
+        , test "returns True for a task without the tag with no sub-tasks, but the tag is in the front matter" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok True)
+        , test "returns True for a task with no matching tag but a sub-tasks has the tag" <|
+            \() ->
+                "- [ ] foo #foo\n  - [ ] bar #bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok True)
+        , test "returns False for a task with no sub-tasks that doesn't have the tag" <|
+            \() ->
+                "- [ ] foo #bar #foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "baz")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a task with no sub-tasks that has the tag but is completed" <|
+            \() ->
+                "- [x] foo #bar #foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a completed task with no sub-tasks without the tag, but the tag is in the front matter" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a task with no matching tag plus a sub-tasks has the tag but is completed" <|
+            \() ->
+                "- [ ] foo #foo\n  - [x] bar #bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
+                    |> Expect.equal (Ok False)
         ]
 
 

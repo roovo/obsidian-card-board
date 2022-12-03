@@ -263,12 +263,7 @@ columnConfigParser =
 
 fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
 fillColumn taskList config columnConfig acc =
-    let
-        isIncompleteWithTag : String -> TaskItem -> Bool
-        isIncompleteWithTag tag item =
-            not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
-    in
-    TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
+    TaskList.filter (\ti -> TaskItem.hasIncompleteTaskWithThisTag columnConfig.tag ti && not (TaskItem.isCompleted ti)) taskList
         |> taskListWithTagsRemoved config
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)

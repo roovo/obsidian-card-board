@@ -121,6 +121,54 @@ columnsBasic =
                     |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar2" ]
+        , test "returns columns containing incomplete sub tasks with the given tag if the top level task is incomplete" <|
+            \() ->
+                """- [ ] foo #foo
+  - [ ] bar1 #bar
+- [x] bar2 #bar
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        ColumnNames.default
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo" ]
+        , test "does not return column containing complete sub-task with the given tag if the top level task is incomplete" <|
+            \() ->
+                """- [ ] foo #foo
+  - [x] bar1 #bar
+- [x] bar2 #bar
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        ColumnNames.default
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
+                    |> List.map TaskItem.title
+                    |> Expect.equal []
+        , test "does not return column containing incomplete sub tasks with the given tag if the top level task is complete" <|
+            \() ->
+                """- [x] foo #foo
+  - [ ] bar1 #bar
+- [x] bar2 #bar
+"""
+                    |> Parser.run TaskListHelpers.basicParser
+                    |> Result.withDefault TaskList.empty
+                    |> TagBoard.columns
+                        ColumnNames.default
+                        { defaultConfig
+                            | columns = [ { tag = "bar", displayTitle = "Bar Tasks" } ]
+                        }
+                    |> BoardHelpers.thingsInColumn "Bar Tasks"
+                    |> List.map TaskItem.title
+                    |> Expect.equal []
         , test "does not include tasks with tags that start with the given tag" <|
             \() ->
                 """- [ ] foo #foo
@@ -185,7 +233,7 @@ columnsBasic =
                     |> BoardHelpers.thingsInColumn "Bar Tasks"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "bar1", "bar2" ]
-        , test "ensure only matches subtasks when using subtags" <|
+        , test "ensure only matches subtags when using subtags" <|
             \() ->
                 """- [ ] bar1 #at
 - [ ] bar2 #at/foo
@@ -197,11 +245,11 @@ columnsBasic =
                     |> TagBoard.columns
                         ColumnNames.default
                         { defaultConfig
-                            | columns = [ { tag = "at/", displayTitle = "At Tasks" } ]
+                            | columns = [ { tag = "at/foo", displayTitle = "At Tasks" } ]
                         }
                     |> BoardHelpers.thingsInColumn "At Tasks"
                     |> List.map TaskItem.title
-                    |> Expect.equal [ "bar1", "bar2" ]
+                    |> Expect.equal [ "bar2" ]
         , test "removes exact matches of tags defined in config.filters from all task items if the config says not to show them" <|
             \() ->
                 """- [ ] foo #foo

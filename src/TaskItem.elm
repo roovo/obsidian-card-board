@@ -12,6 +12,7 @@ module TaskItem exposing
     , dummy
     , fields
     , filePath
+    , hasIncompleteTaskWithThisTag
     , hasNotes
     , hasOneOfTheTags
     , hasSubtasks
@@ -181,6 +182,16 @@ fields (TaskItem f _) =
 filePath : TaskItem -> String
 filePath =
     .filePath << fields
+
+
+hasIncompleteTaskWithThisTag : String -> TaskItem -> Bool
+hasIncompleteTaskWithThisTag tagToMatch taskItem =
+    let
+        isIncompleteWithMatchingTag : TaskItem -> Bool
+        isIncompleteWithMatchingTag ti =
+            TagList.containsTagMatching tagToMatch (topLevelTags ti) && not (isCompleted ti)
+    in
+    List.any isIncompleteWithMatchingTag (taskItem :: descendantTasks taskItem)
 
 
 hasNotes : TaskItem -> Bool
