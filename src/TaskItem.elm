@@ -586,10 +586,16 @@ prefixParser =
     P.oneOf
         [ P.succeed Incomplete
             |. P.token "- [ ] "
+        , P.succeed Incomplete
+            |. P.token "* [ ] "
         , P.succeed Completed
             |. P.token "- [x] "
         , P.succeed Completed
             |. P.token "- [X] "
+        , P.succeed Completed
+            |. P.token "* [x] "
+        , P.succeed Completed
+            |. P.token "* [X] "
         ]
 
 
