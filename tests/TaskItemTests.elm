@@ -171,6 +171,12 @@ completion =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.completion
                     |> Expect.equal (Ok Incomplete)
+        , test "returns Incomplete for an incomplete task marked with an asterisk" <|
+            \() ->
+                "* [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completion
+                    |> Expect.equal (Ok Incomplete)
         , test "returns Complete for a completed task with no inline completion date" <|
             \() ->
                 "- [x] foo"
@@ -1133,12 +1139,12 @@ parsing =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
-        , test "fails to parse a task with a '*' as the list marker" <|
+        , test "successfully parses a task with '*' as the list marker" <|
             \() ->
                 "* [X] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.mapError (always "failed")
-                    |> Expect.equal (Err "failed")
+                    |> Result.map (always "success")
+                    |> Expect.equal (Ok "success")
         , test "fails to parse a task when there is no gap between the title and the ']'" <|
             \() ->
                 "- [X]foo"

@@ -51,7 +51,7 @@ do this, it must:
 
 - Be in a markdown file.
 - Not be indented.
-- Have the format: `- [ ] Task title`.
+- Have the format: `- [ ] Task title`. The format `* [ ] Task title` will also be recognised, but won't stay in that format when you edit the task.
 
 What appears on the card depends on what your task looks like:
 
