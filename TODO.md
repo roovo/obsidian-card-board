@@ -1,8 +1,15 @@
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
+
+- add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
+  always be empty as by definition tasks on the board will always have one of the allow filter tags. Even
+  better, as well as this disable the input and set it to off so the column cannot be displayed.
+
+- redo screenshots as things like sub-task tags are now inline
 - make a better example using rtl tags (use google translate to generate the board/task/tag details that make
   sense (in so much as google translate is up to the job of course).
 
+- simplify parsing as per typing tutor
 
 # Cleanups
 - dataview - what if there is a due date in the frontmatter?
