@@ -1,3 +1,11 @@
+- check the Project 1 board -> I have something with the top level task with tags for project1 and wip
+  in there which doesn't seem correct as that is the definition for the wip column.  It's there cause
+  it has the project1 tag. There is another card in the column but that has the important tag - is this
+  one OKay?
+- make the completion time the most recent of the subtasks if the top level task has no completion
+- how do I want taskListWithTagsRemoved to work for the completed column; do I want to hide the tags for
+  the column definitions or just the filter definitions?
+- also do I want taskListWithTagsRemoved to only remove the column tag for the column that the card appears in?
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
 
