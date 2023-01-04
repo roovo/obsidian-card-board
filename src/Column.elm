@@ -1,5 +1,6 @@
 module Column exposing
     ( Column
+    , PlacementResult(..)
     , hasName
     , init
     , items
@@ -11,6 +12,12 @@ module Column exposing
 
 type Column a
     = Column String (List a)
+
+
+type PlacementResult
+    = CompletedInThisColumn
+    | DoesNotBelong
+    | Placed
 
 
 

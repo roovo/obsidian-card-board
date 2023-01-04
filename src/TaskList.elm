@@ -1,5 +1,6 @@
 module TaskList exposing
     ( TaskList
+    , add
     , append
     , concat
     , empty
@@ -57,6 +58,11 @@ fromMarkdown dataviewTaskCompletion markdownFile =
         )
         (markdownFile.body ++ "\n")
         |> Result.withDefault empty
+
+
+add : TaskItem -> TaskList -> TaskList
+add item (TaskList list) =
+    TaskList (item :: list)
 
 
 

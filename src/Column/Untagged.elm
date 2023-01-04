@@ -1,13 +1,16 @@
 module Column.Untagged exposing
     ( UntaggedColumn
+    , addTaskItem
     , init
     , isEnabled
     , name
     , taskList
     )
 
+import Column
 import ColumnNames exposing (ColumnNames)
 import TagBoard
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
 
@@ -39,6 +42,19 @@ init tagboardConfig columnNames =
         }
 
 
+addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, Column.PlacementResult )
+addTaskItem taskItem ((UntaggedColumn c) as untaggedColumn) =
+    if belongs taskItem then
+        if isCompleted taskItem then
+            ( untaggedColumn, Column.CompletedInThisColumn )
+
+        else
+            ( UntaggedColumn { c | taskList = TaskList.add taskItem c.taskList }, Column.Placed )
+
+    else
+        ( untaggedColumn, Column.DoesNotBelong )
+
+
 
 -- INFO
 
@@ -60,6 +76,16 @@ taskList =
 
 
 -- PRIVATE
+
+
+belongs : TaskItem -> Bool
+belongs =
+    not << TaskItem.hasTags
+
+
+isCompleted : TaskItem -> Bool
+isCompleted taskItem =
+    TaskItem.isCompleted taskItem
 
 
 config : UntaggedColumn -> Config

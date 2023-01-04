@@ -3,11 +3,12 @@ module TaskListTests exposing (suite)
 import DataviewTaskCompletion
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import List.Extra as LE
 import Parser
 import TagList
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
 
@@ -15,7 +16,8 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ combine
+        [ add
+        , combine
         , filter
         , map
         , parsing
@@ -25,6 +27,25 @@ suite =
         , taskContainingId
         , taskFromId
         , tasks
+        ]
+
+
+add : Test
+add =
+    describe "add"
+        [ test "adds a TaskItem to an empty TaskList" <|
+            \() ->
+                TaskList.empty
+                    |> TaskList.add (taskItem "- [ ] foo")
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "foo" ]
+        , test "adds a TaskItem to the start of a non empty TaskList" <|
+            \() ->
+                TaskList.empty
+                    |> TaskList.add (taskItem "- [ ] foo")
+                    |> TaskList.add (taskItem "- [ ] bar")
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "bar", "foo" ]
         ]
 
 
@@ -391,3 +412,13 @@ tasks =
                     |> List.map TaskItem.title
                     |> Expect.equal [ "g1", "subtask complete" ]
         ]
+
+
+
+-- HELPERS
+
+
+taskItem : String -> TaskItem
+taskItem markdown =
+    Parser.run TaskItemHelpers.basicParser markdown
+        |> Result.withDefault TaskItem.dummy
