@@ -3,6 +3,7 @@ module TaskItem exposing
     , Completion(..)
     , TaskItem
     , TaskItemFields
+    , allSubtasksWithMatchingTagCompleted
     , completedPosix
     , completion
     , containsId
@@ -126,6 +127,22 @@ defaultFields =
 
 
 -- INFO
+
+
+allSubtasksWithMatchingTagCompleted : String -> TaskItem -> Bool
+allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
+    let
+        subtasksWithMatchingTag =
+            taskItem
+                |> descendantTasks
+                |> List.filter (hasThisTag tagToMatch)
+    in
+    case subtasksWithMatchingTag of
+        [] ->
+            False
+
+        matchingSubtasks ->
+            List.all isCompleted matchingSubtasks
 
 
 completedPosix : TaskItem -> Int

@@ -16,7 +16,8 @@ import Time
 suite : Test
 suite =
     concat
-        [ blockLink
+        [ allSubtasksWithMatchingTagCompleted
+        , blockLink
         , completion
         , containsId
         , descendantTasks
@@ -45,6 +46,60 @@ suite =
         , topLevelTags
         , toToggledString
         , updateFilePath
+        ]
+
+
+allSubtasksWithMatchingTagCompleted : Test
+allSubtasksWithMatchingTagCompleted =
+    describe "allSubtasksWithMatchingTagCompleted"
+        [ test "returns False for an incompleted task with no sub-tasks" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a completed task with no sub-tasks" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for an incompleted task with incompleted sub-tasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a completed task with incompleted sub-tasks" <|
+            \() ->
+                "- [x] foo\n  - [ ] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a completed task with completed sub-tasks" <|
+            \() ->
+                "- [x] foo\n  - [x] bar\n  - [x] baz"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "bar")
+                    |> Expect.equal (Ok False)
+        , test "returns True for a completed task with a completed sub-task with a matching tag" <|
+            \() ->
+                "- [x] foo\n  - [x] bar #plop\n  - [x] baz"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "plop")
+                    |> Expect.equal (Ok True)
+        , test "returns False for a completed task with an incomplete sub-task with a matching tag and another the same but completed" <|
+            \() ->
+                "- [x] foo\n  - [ ] bar #plop\n  - [x] baz #plop"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "plop")
+                    |> Expect.equal (Ok False)
+        , test "returns False for a completed task with an incomplete sub-task with a matching sub-tag" <|
+            \() ->
+                "- [x] foo\n  - [ ] bar #plop/ploppy\n  - [x] baz"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.allSubtasksWithMatchingTagCompleted "plop/")
+                    |> Expect.equal (Ok False)
         ]
 
 
