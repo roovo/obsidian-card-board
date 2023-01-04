@@ -3,6 +3,7 @@ module Column exposing
     , PlacementResult(..)
     , hasName
     , init
+    , isEmpty
     , items
     , name
     )
@@ -33,6 +34,16 @@ init name_ items_ =
 -- INFO
 
 
+hasName : String -> Column a -> Bool
+hasName n (Column name_ _) =
+    n == name_
+
+
+isEmpty : Column a -> Bool
+isEmpty =
+    List.isEmpty << items
+
+
 items : Column a -> List a
 items (Column _ items_) =
     items_
@@ -41,8 +52,3 @@ items (Column _ items_) =
 name : Column a -> String
 name (Column name_ _) =
     name_
-
-
-hasName : String -> Column a -> Bool
-hasName n (Column name_ _) =
-    n == name_

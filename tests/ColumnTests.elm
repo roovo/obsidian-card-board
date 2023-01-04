@@ -9,6 +9,7 @@ suite : Test
 suite =
     concat
         [ name
+        , isEmpty
         , items
         , hasName
         ]
@@ -22,6 +23,22 @@ name =
                 Column.init "a name" []
                     |> Column.name
                     |> Expect.equal "a name"
+        ]
+
+
+isEmpty : Test
+isEmpty =
+    describe "isEmpty"
+        [ test "returns True for an empty Column" <|
+            \() ->
+                Column.init "a name" []
+                    |> Column.isEmpty
+                    |> Expect.equal True
+        , test "returns False for a non empty Column" <|
+            \() ->
+                Column.init "a name" [ 1 ]
+                    |> Column.isEmpty
+                    |> Expect.equal False
         ]
 
 

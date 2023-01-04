@@ -1,7 +1,7 @@
 module Column.UntaggedTests exposing (suite)
 
 import Column
-import Column.Untagged as UntaggedColumn
+import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import ColumnNames exposing (ColumnNames)
 import Expect
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -16,6 +16,7 @@ suite : Test
 suite =
     concat
         [ addTaskItem
+        , asColumn
         , init
         , isEnabled
         , name
@@ -29,72 +30,101 @@ addTaskItem =
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], Column.Placed )
         , test "Places an incomplete task item with no tags and incomplete sub-tasks with no tags" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], Column.Placed )
         , test "Places an incomplete task item with no tags and completed sub-tasks with no tags" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], Column.Placed )
         , test "DoesNotBelong an incomplete task item with a tag which has no sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo #foo")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.DoesNotBelong )
         , test "DoesNotBelong an incomplete task item with no tags that has a tagged sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.DoesNotBelong )
         , test "CompletedInThisColumn a completed task item with no tags and no sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [x] foo")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.CompletedInThisColumn )
         , test "CompletedInThisColumn a completed task with no tags and incomplete sub-tasks with no tags" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [x] foo\n  - [ ] bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.CompletedInThisColumn )
         , test "CompletedInThisColumn a completed task item with no tags and completed sub-tasks with no tags" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [x] foo\n  - [x] bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.CompletedInThisColumn )
         , test "DoesNotBelong a completed task item with a tag which has no sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [x] foo #foo")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.DoesNotBelong )
         , test "DoesNotBelong a completed task item with no tags that has a tagged sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
                     |> UntaggedColumn.addTaskItem (taskItem "- [x] foo\n  - [ ] bar #bar")
-                    |> Tuple.mapFirst UntaggedColumn.taskList
-                    |> Tuple.mapFirst TaskList.taskTitles
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [], Column.DoesNotBelong )
+        ]
+
+
+asColumn : Test
+asColumn =
+    describe "asColumn"
+        [ test "sorts by due date then (case insensitive) title" <|
+            \() ->
+                UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
+                    |> justAdd (taskItem "- [ ] f @due(2022-01-01)")
+                    |> justAdd (taskItem "- [ ] d @due(2022-01-02)")
+                    |> justAdd (taskItem "- [ ] E @due(2022-01-01)")
+                    |> justAdd (taskItem "- [ ] c @due(2022-01-02)")
+                    |> justAdd (taskItem "- [ ] a @due(2022-01-03)")
+                    |> justAdd (taskItem "- [ ] B @due(2022-01-03)")
+                    |> UntaggedColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
         ]
 
 
@@ -104,8 +134,9 @@ init =
         [ test "initializes with an empty TaskList" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
-                    |> UntaggedColumn.taskList
-                    |> Expect.equal TaskList.empty
+                    |> UntaggedColumn.asColumn
+                    |> Column.isEmpty
+                    |> Expect.equal True
         ]
 
 
@@ -161,6 +192,13 @@ defaultColumnNames =
 defaultTagBoardConfig : TagBoard.Config
 defaultTagBoardConfig =
     TagBoard.defaultConfig
+
+
+justAdd : TaskItem -> UntaggedColumn -> UntaggedColumn
+justAdd item column =
+    column
+        |> UntaggedColumn.addTaskItem item
+        |> Tuple.first
 
 
 taskItem : String -> TaskItem

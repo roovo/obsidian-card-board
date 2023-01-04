@@ -1,3 +1,4 @@
+- add isEnabled flag to Column
 - check the Project 1 board -> I have something with the top level task with tags for project1 and wip
   in there which doesn't seem correct as that is the definition for the wip column.  It's there cause
   it has the project1 tag. There is another card in the column but that has the important tag - is this

@@ -1,13 +1,13 @@
 module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
+    , asColumn
     , init
     , isEnabled
     , name
-    , taskList
     )
 
-import Column
+import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import TagBoard
 import TaskItem exposing (TaskItem)
@@ -59,6 +59,16 @@ addTaskItem taskItem ((UntaggedColumn c) as untaggedColumn) =
 -- INFO
 
 
+asColumn : UntaggedColumn -> Column TaskItem
+asColumn untaggedColumn =
+    config untaggedColumn
+        |> .taskList
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
+        |> Column.init (name untaggedColumn)
+
+
 isEnabled : UntaggedColumn -> Bool
 isEnabled =
     .enabled << config
@@ -67,11 +77,6 @@ isEnabled =
 name : UntaggedColumn -> String
 name =
     .name << config
-
-
-taskList : UntaggedColumn -> TaskList
-taskList =
-    .taskList << config
 
 
 
