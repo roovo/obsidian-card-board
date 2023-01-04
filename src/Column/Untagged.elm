@@ -4,7 +4,6 @@ module Column.Untagged exposing
     , asColumn
     , init
     , isEnabled
-    , name
     )
 
 import Column exposing (Column)
@@ -74,11 +73,6 @@ isEnabled =
     .enabled << config
 
 
-name : UntaggedColumn -> String
-name =
-    .name << config
-
-
 
 -- PRIVATE
 
@@ -88,11 +82,16 @@ belongs =
     not << TaskItem.hasTags
 
 
+config : UntaggedColumn -> Config
+config (UntaggedColumn c) =
+    c
+
+
 isCompleted : TaskItem -> Bool
 isCompleted taskItem =
     TaskItem.isCompleted taskItem
 
 
-config : UntaggedColumn -> Config
-config (UntaggedColumn c) =
-    c
+name : UntaggedColumn -> String
+name =
+    .name << config

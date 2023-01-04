@@ -145,16 +145,12 @@ isEnabled =
     describe "isEnabled"
         [ test "returns True if the config.includeUntagged is True" <|
             \() ->
-                UntaggedColumn.init
-                    { defaultTagBoardConfig | includeUntagged = True }
-                    defaultColumnNames
+                UntaggedColumn.init { defaultTagBoardConfig | includeUntagged = True } defaultColumnNames
                     |> UntaggedColumn.isEnabled
                     |> Expect.equal True
         , test "returns False if the config.includeUntagged is False" <|
             \() ->
-                UntaggedColumn.init
-                    { defaultTagBoardConfig | includeUntagged = False }
-                    defaultColumnNames
+                UntaggedColumn.init { defaultTagBoardConfig | includeUntagged = False } defaultColumnNames
                     |> UntaggedColumn.isEnabled
                     |> Expect.equal False
         ]
@@ -165,17 +161,15 @@ name =
     describe "name"
         [ test "defaults to 'Untagged'" <|
             \() ->
-                UntaggedColumn.init
-                    defaultTagBoardConfig
-                    defaultColumnNames
-                    |> UntaggedColumn.name
+                UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
+                    |> UntaggedColumn.asColumn
+                    |> Column.name
                     |> Expect.equal "Untagged"
         , test "can be customized" <|
             \() ->
-                UntaggedColumn.init
-                    defaultTagBoardConfig
-                    { defaultColumnNames | untagged = Just "Foo" }
-                    |> UntaggedColumn.name
+                UntaggedColumn.init defaultTagBoardConfig { defaultColumnNames | untagged = Just "Foo" }
+                    |> UntaggedColumn.asColumn
+                    |> Column.name
                     |> Expect.equal "Foo"
         ]
 
