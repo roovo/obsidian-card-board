@@ -120,9 +120,9 @@ columns columnNames timeWithZone config taskList =
         datestamp =
             TimeWithZone.toDate timeWithZone
     in
-    [ Column.init (ColumnNames.nameFor "today" columnNames) <| todaysItems datestamp tasks
-    , Column.init (ColumnNames.nameFor "tomorrow" columnNames) <| tomorrowsItems datestamp tasks
-    , Column.init (ColumnNames.nameFor "future" columnNames) <| futureItems datestamp tasks
+    [ Column.init True (ColumnNames.nameFor "today" columnNames) <| todaysItems datestamp tasks
+    , Column.init True (ColumnNames.nameFor "tomorrow" columnNames) <| tomorrowsItems datestamp tasks
+    , Column.init True (ColumnNames.nameFor "future" columnNames) <| futureItems datestamp tasks
     ]
         |> prependUndated (ColumnNames.nameFor "undated" columnNames) tasks config
         |> appendCompleted (ColumnNames.nameFor "completed" columnNames) tasks config
@@ -142,7 +142,7 @@ appendCompleted columnName taskList config columnList =
             |> List.sortBy TaskItem.completedPosix
             |> List.reverse
             |> List.take config.completedCount
-            |> Column.init columnName
+            |> Column.init True columnName
             |> List.singleton
             |> List.append columnList
 
@@ -186,7 +186,7 @@ prependUndated columnName taskList config columnList =
                 |> List.sortBy (String.toLower << TaskItem.title)
     in
     if config.includeUndated then
-        Column.init columnName undatedtasks :: columnList
+        Column.init True columnName undatedtasks :: columnList
 
     else
         columnList

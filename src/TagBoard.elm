@@ -204,7 +204,7 @@ appendCompleted columnName config taskList columnList =
                 |> List.map .tag
     in
     if config.completedCount > 0 then
-        List.append columnList [ Column.init columnName completedTasks ]
+        List.append columnList [ Column.init True columnName completedTasks ]
 
     else
         columnList
@@ -268,7 +268,7 @@ fillColumn taskList config columnConfig acc =
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init columnConfig.displayTitle
+        |> Column.init True columnConfig.displayTitle
         |> List.singleton
         |> List.append acc
 
@@ -296,7 +296,7 @@ prependOthers columnName config taskList columnList =
                 |> List.map .tag
     in
     if config.includeOthers then
-        Column.init columnName cards :: columnList
+        Column.init True columnName cards :: columnList
 
     else
         columnList
@@ -318,7 +318,7 @@ prependUntagged columnName config taskList columnList =
             not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
     in
     if config.includeUntagged then
-        Column.init columnName cards :: columnList
+        Column.init True columnName cards :: columnList
 
     else
         columnList

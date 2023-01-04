@@ -124,7 +124,7 @@ placeCardsInColumns boardIndex columnList =
         placeCardsInColumn columnIndex column =
             Column.items column
                 |> List.map (Card.fromTaskItem <| cardIdPrefix columnIndex)
-                |> Column.init (Column.name column)
+                |> Column.init True (Column.name column)
     in
     columnList
         |> List.indexedMap placeCardsInColumn

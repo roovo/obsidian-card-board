@@ -146,12 +146,14 @@ isEnabled =
         [ test "returns True if the config.includeUntagged is True" <|
             \() ->
                 UntaggedColumn.init { defaultTagBoardConfig | includeUntagged = True } defaultColumnNames
-                    |> UntaggedColumn.isEnabled
+                    |> UntaggedColumn.asColumn
+                    |> Column.isEnabled
                     |> Expect.equal True
         , test "returns False if the config.includeUntagged is False" <|
             \() ->
                 UntaggedColumn.init { defaultTagBoardConfig | includeUntagged = False } defaultColumnNames
-                    |> UntaggedColumn.isEnabled
+                    |> UntaggedColumn.asColumn
+                    |> Column.isEnabled
                     |> Expect.equal False
         ]
 
