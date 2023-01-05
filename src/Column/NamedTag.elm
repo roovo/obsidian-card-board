@@ -7,6 +7,7 @@ module Column.NamedTag exposing
 
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
+import Filter
 import TagBoard
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -33,12 +34,34 @@ type alias Config =
 
 
 init : TagBoard.Config -> TagBoard.ColumnConfig -> NamedTagColumn
-init tagboardConfig columnConfig =
+init tagBoardConfig columnConfig =
+    let
+        columnTagsToHide : List String
+        columnTagsToHide =
+            if tagBoardConfig.showColumnTags then
+                []
+
+            else
+                tagBoardConfig
+                    |> .columns
+                    |> List.map .tag
+
+        filterTagsToHide : List String
+        filterTagsToHide =
+            if tagBoardConfig.showFilteredTags then
+                []
+
+            else
+                tagBoardConfig
+                    |> .filters
+                    |> List.filter (\f -> Filter.filterType f == "Tags")
+                    |> List.map Filter.value
+    in
     NamedTagColumn
         { name = columnConfig.displayTitle
         , tag = columnConfig.tag
         , taskList = TaskList.empty
-        , tagsToHide = []
+        , tagsToHide = columnTagsToHide ++ filterTagsToHide
         }
 
 
@@ -67,6 +90,7 @@ asColumn : NamedTagColumn -> Column TaskItem
 asColumn namedTagColumn =
     config namedTagColumn
         |> .taskList
+        |> TaskList.removeTags (tagsToRemove namedTagColumn)
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
@@ -101,3 +125,8 @@ name =
 tag : NamedTagColumn -> String
 tag =
     .tag << config
+
+
+tagsToRemove : NamedTagColumn -> List String
+tagsToRemove =
+    .tagsToHide << config

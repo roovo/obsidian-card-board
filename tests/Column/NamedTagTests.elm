@@ -4,9 +4,11 @@ import Column
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import ColumnNames exposing (ColumnNames)
 import Expect
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoard
+import TagList
 import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
@@ -152,7 +154,7 @@ addTaskItem =
 asColumn : Test
 asColumn =
     describe "asColumn"
-        [ test "sorts by due date then (case insensitive) title" <|
+        [ test "sorts the Column TaskItems by due date then (case insensitive) title" <|
             \() ->
                 NamedTagColumn.init defaultTagBoardConfig { displayTitle = "", tag = "atag" }
                     |> justAdd (taskItem "- [ ] f #atag @due(2022-01-01)")
@@ -165,6 +167,64 @@ asColumn =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
+        , test "removes top level tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
+            \() ->
+                NamedTagColumn.init
+                    { defaultTagBoardConfig
+                        | showColumnTags = False
+                        , columns = [ { tag = "xtag", displayTitle = "" } ]
+                    }
+                    { displayTitle = "", tag = "atag" }
+                    |> justAdd (taskItem "- [ ] a #atag #xtag")
+                    |> NamedTagColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.topLevelTags
+                    |> List.concatMap TagList.toList
+                    |> Expect.equal [ "atag" ]
+        , test "removes sub-task tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
+            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
+            \() ->
+                NamedTagColumn.init
+                    { defaultTagBoardConfig
+                        | showColumnTags = False
+                        , columns = [ { tag = "xtag", displayTitle = "" } ]
+                    }
+                    { displayTitle = "", tag = "atag" }
+                    |> justAdd (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
+                    |> NamedTagColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.tags
+                    |> List.concatMap TagList.toList
+                    |> Expect.equal [ "atag" ]
+        , test "removes filter tags from the Column TaskItems (if so configured)" <|
+            \() ->
+                NamedTagColumn.init
+                    { defaultTagBoardConfig
+                        | showFilteredTags = False
+                        , filters = [ FilterHelpers.tagFilter "xtag" ]
+                    }
+                    { displayTitle = "", tag = "atag" }
+                    |> justAdd (taskItem "- [ ] a #atag #xtag")
+                    |> NamedTagColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.topLevelTags
+                    |> List.concatMap TagList.toList
+                    |> Expect.equal [ "atag" ]
+        , test "removes filter tags from the Column ub-askItems (if so configured)" <|
+            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
+            \() ->
+                NamedTagColumn.init
+                    { defaultTagBoardConfig
+                        | showFilteredTags = False
+                        , filters = [ FilterHelpers.tagFilter "xtag" ]
+                    }
+                    { displayTitle = "", tag = "atag" }
+                    |> justAdd (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
+                    |> NamedTagColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.tags
+                    |> List.concatMap TagList.toList
+                    |> Expect.equal [ "atag" ]
         ]
 
 
