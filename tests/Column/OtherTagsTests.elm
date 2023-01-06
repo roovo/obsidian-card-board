@@ -46,6 +46,16 @@ addTaskItem =
                             |> Tuple.mapFirst Column.items
                             |> Tuple.mapFirst (List.map TaskItem.title)
                             |> Expect.equal ( [ "foo" ], Column.Placed )
+                , test "DoesNotBelong (Q: _none_) - [ ] foo #atag (if includeOthers is False)" <|
+                    \() ->
+                        OtherTagsColumn.init
+                            { defaultTagBoardConfig | includeOthers = False }
+                            defaultColumnNames
+                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #atag")
+                            |> Tuple.mapFirst OtherTagsColumn.asColumn
+                            |> Tuple.mapFirst Column.items
+                            |> Tuple.mapFirst (List.map TaskItem.title)
+                            |> Expect.equal ( [], Column.DoesNotBelong )
                 , test "DoesNotBelong (Q: _none_) - [ ] foo" <|
                     \() ->
                         OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
@@ -395,7 +405,11 @@ defaultColumnNames =
 
 defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoardConfig.default
+    let
+        default =
+            TagBoardConfig.default
+    in
+    { default | includeOthers = True }
 
 
 justAdd : TaskItem -> OtherTagsColumn -> OtherTagsColumn

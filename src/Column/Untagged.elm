@@ -42,7 +42,7 @@ init tagboardConfig columnNames =
 
 addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, Column.PlacementResult )
 addTaskItem taskItem ((UntaggedColumn c) as untaggedColumn) =
-    if belongs taskItem then
+    if isEnabled untaggedColumn && belongs taskItem then
         if isCompleted taskItem then
             ( untaggedColumn, Column.CompletedInThisColumn )
 

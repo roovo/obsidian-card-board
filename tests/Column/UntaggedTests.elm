@@ -50,6 +50,16 @@ addTaskItem =
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], Column.Placed )
+        , test "DoesNotBelong an incomplete task item with no tags and no sub-tasks if there is no untagged column" <|
+            \() ->
+                UntaggedColumn.init
+                    { defaultTagBoardConfig | includeUntagged = False }
+                    defaultColumnNames
+                    |> UntaggedColumn.addTaskItem (taskItem "- [ ] foo")
+                    |> Tuple.mapFirst UntaggedColumn.asColumn
+                    |> Tuple.mapFirst Column.items
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], Column.DoesNotBelong )
         , test "DoesNotBelong an incomplete task item with a tag which has no sub-tasks" <|
             \() ->
                 UntaggedColumn.init defaultTagBoardConfig defaultColumnNames
@@ -187,7 +197,11 @@ defaultColumnNames =
 
 defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoardConfig.default
+    let
+        default =
+            TagBoardConfig.default
+    in
+    { default | includeUntagged = True }
 
 
 justAdd : TaskItem -> UntaggedColumn -> UntaggedColumn

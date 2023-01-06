@@ -73,7 +73,7 @@ init tagBoardConfig columnNames =
 
 addTaskItem : TaskItem -> OtherTagsColumn -> ( OtherTagsColumn, Column.PlacementResult )
 addTaskItem taskItem ((OtherTagsColumn c) as otherTagsColumn) =
-    if belongs c.columnTags taskItem then
+    if isEnabled otherTagsColumn && belongs c.columnTags taskItem then
         if isCompleted c.columnTags taskItem then
             ( otherTagsColumn, Column.CompletedInThisColumn )
 

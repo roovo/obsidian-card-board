@@ -24,8 +24,8 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        -- [ columns
-        [ addTaskItem
+        [ columns
+        , addTaskItem
         ]
 
 
@@ -104,6 +104,14 @@ addTaskItem =
                     |> BoardHelpers.thingsInColumn "Completed"
                     |> List.map TaskItem.title
                     |> Expect.equal [ "foo" ]
+        , test "does not add a completed task item with no tag to the completed column" <|
+            \() ->
+                columnsWithNoUntagged
+                    |> TagBoardColumns.addTaskItem (taskItem "- [x] foo")
+                    |> TagBoardColumns.columns
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.title
+                    |> Expect.equal []
         ]
 
 
@@ -116,6 +124,7 @@ columns =
                     ColumnNames.default
                     { defaultConfig
                         | columns = []
+                        , completedCount = 0
                     }
                     |> TagBoardColumns.columns
                     |> List.length
@@ -131,10 +140,11 @@ columns =
                             ]
                         , includeOthers = True
                         , includeUntagged = True
+                        , completedCount = 10
                     }
                     |> TagBoardColumns.columns
                     |> List.map Column.name
-                    |> Expect.equal [ "Untagged", "Others", "name1", "name2" ]
+                    |> Expect.equal [ "Untagged", "Others", "name1", "name2", "Completed" ]
         , test "ensures there is only one column per tag" <|
             \() ->
                 TagBoardColumns.init
@@ -148,6 +158,7 @@ columns =
                             ]
                         , includeOthers = False
                         , includeUntagged = True
+                        , completedCount = 0
                     }
                     |> TagBoardColumns.columns
                     |> List.map Column.name
@@ -157,6 +168,20 @@ columns =
 
 
 -- HELPERS
+
+
+columnsWithNoUntagged : TagBoardColumns
+columnsWithNoUntagged =
+    TagBoardColumns.init
+        ColumnNames.default
+        { defaultConfig
+            | columns =
+                [ { displayTitle = "name1", tag = "tag1" }
+                , { displayTitle = "name2", tag = "tag2" }
+                ]
+            , includeOthers = True
+            , includeUntagged = False
+        }
 
 
 defaultConfig : TagBoardConfig

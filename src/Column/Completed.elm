@@ -72,11 +72,14 @@ init tagBoardConfig columnNames =
 addTaskItem : List PlacementResult -> TaskItem -> CompletedColumn -> CompletedColumn
 addTaskItem placementResults taskItem ((CompletedColumn c) as completedColumn) =
     let
-        shouldBeAdded =
+        filteredPlacements =
             placementResults
                 |> List.filter (\r -> r /= Column.DoesNotBelong)
+
+        shouldBeAdded =
+            filteredPlacements
                 |> List.all (\r -> r == Column.CompletedInThisColumn)
-                |> (&&) (not <| List.isEmpty placementResults)
+                |> (&&) (not <| List.isEmpty filteredPlacements)
     in
     if shouldBeAdded then
         CompletedColumn { c | taskList = TaskList.add taskItem c.taskList }

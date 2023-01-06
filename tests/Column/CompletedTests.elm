@@ -48,6 +48,16 @@ addTaskItem =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal []
+        , test "does not add the task item if all the PlacementResults are DoesNotBelong" <|
+            \() ->
+                CompletedColumn.init defaultTagBoardConfig defaultColumnNames
+                    |> CompletedColumn.addTaskItem
+                        [ Column.DoesNotBelong, Column.DoesNotBelong, Column.DoesNotBelong ]
+                        (taskItem "- [ ] foo")
+                    |> CompletedColumn.asColumn
+                    |> Column.items
+                    |> List.map TaskItem.title
+                    |> Expect.equal []
         , test "does not add the task item if there is one of each PlacementResult" <|
             \() ->
                 CompletedColumn.init defaultTagBoardConfig defaultColumnNames
