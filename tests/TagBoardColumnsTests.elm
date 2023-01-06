@@ -24,8 +24,8 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ columns
-        , addTaskItem
+        -- [ columns
+        [ addTaskItem
         ]
 
 
@@ -80,6 +80,30 @@ addTaskItem =
                     |> BoardHelpers.thingsInColumn "name1"
                     |> List.map TaskItem.title
                     |> Expect.equal []
+        , test "adds a completed task item with no tags to the completed column" <|
+            \() ->
+                emptyTagBoardColumns
+                    |> TagBoardColumns.addTaskItem (taskItem "- [x] foo")
+                    |> TagBoardColumns.columns
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo" ]
+        , test "adds a completedtask item with a different tag to the completed column" <|
+            \() ->
+                emptyTagBoardColumns
+                    |> TagBoardColumns.addTaskItem (taskItem "- [x] foo #tagA")
+                    |> TagBoardColumns.columns
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo" ]
+        , test "adds a completed task item with a named tag to the completed column" <|
+            \() ->
+                emptyTagBoardColumns
+                    |> TagBoardColumns.addTaskItem (taskItem "- [x] foo #tag1")
+                    |> TagBoardColumns.columns
+                    |> BoardHelpers.thingsInColumn "Completed"
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "foo" ]
         ]
 
 

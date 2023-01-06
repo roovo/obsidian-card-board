@@ -1,28 +1,35 @@
-- completed column
-- add tests for subtag matching
-- check the Project 1 board -> I have something with the top level task with tags for project1 and wip
-  in there which doesn't seem correct as that is the definition for the wip column.  It's there cause
-  it has the project1 tag. There is another card in the column but that has the important tag - is this
-  one OKay?
 - make the completion time the most recent of the subtasks if the top level task has no completion
-- how do I want taskListWithTagsRemoved to work for the completed column; do I want to hide the tags for
-  the column definitions or just the filter definitions?
-- also do I want taskListWithTagsRemoved to only remove the column tag for the column that the card appears in?
-- if something is on a board because of a subtask tag and that line also has a due date on it, should I use
-  that as the due date of the card?
+- DateBoard logic needs doing too
 
 - add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
   always be empty as by definition tasks on the board will always have one of the allow filter tags. Even
   better, as well as this disable the input and set it to off so the column cannot be displayed.
 
 - redo screenshots as things like sub-task tags are now inline
+- explain in the readme the rules for what appears on boards
+  - the column definitions define what is visible on the board.  This
+    includes the completed column
+  - if a card is on a board then it will always be placed in the completed column
+    (assuming it is visible) when it is marked as complete
+  - and vice-vera (so if marked incomplete
+  - a card will always look the same (apart from the completion tick)
+    when it is marked as completed
+  - the completed column can contain tasks that are not marked as completed
+    at the top level - completed just means completed in the context of the
+    current board.
+  - if a card is only on a board due to tags of sub-tasks then it will be
+    considered as complete in the relevant column when all subtasks with
+    that tag are completed.
+- explain in readme the pipleline of filter first then place on the board
 - make a better example using rtl tags (use google translate to generate the board/task/tag details that make
   sense (in so much as google translate is up to the job of course).
 
-- what about case sensitivity when matching tags?
+
 - simplify parsing as per typing tutor
 
 # Cleanups
+- if something is on a board because of a subtask tag and that line also has a due date on it, should I use
+  that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?
 - on tagboard if there is a todo with the tag defined in filter allow list
   but no other tags then it appears in the others column.  It feels like
