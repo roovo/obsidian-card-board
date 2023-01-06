@@ -18,6 +18,7 @@ suite =
     concat
         [ allSubtasksWithMatchingTagCompleted
         , blockLink
+        , completedPosix
         , completion
         , containsId
         , descendantTasks
@@ -120,6 +121,42 @@ blockLink =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo ^bar baz")
+        ]
+
+
+completedPosix : Test
+completedPosix =
+    describe "completedPosix"
+        [ test "returns the completed time for a completed top level task if present" <|
+            \() ->
+                "- [x] foo @completed(2023-01-01T00:00:00)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completedPosix
+                    |> Expect.equal (Ok 1672531200000)
+        , test "returns 0 for a completed top level task if no @completed tag" <|
+            \() ->
+                "- [x] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completedPosix
+                    |> Expect.equal (Ok 0)
+        , test "returns 0 for an incomplete top level task" <|
+            \() ->
+                "- [ ] foo @completed(2023-01-01T00:00:00)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completedPosix
+                    |> Expect.equal (Ok 0)
+        , test "returns the completed time for a completed subtask level task if present" <|
+            \() ->
+                "- [ ] foo\n  - [x] bar @completed(2023-01-01T00:00:00)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completedPosix
+                    |> Expect.equal (Ok 1672531200000)
+        , test "the completed time for the top level task takes precedence" <|
+            \() ->
+                "- [x] foo @completed(2023-01-01T00:00:00)\n  - [x] bar @completed(2022-01-01T00:00:00)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.completedPosix
+                    |> Expect.equal (Ok 1672531200000)
         ]
 
 

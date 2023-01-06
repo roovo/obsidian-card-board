@@ -148,13 +148,33 @@ allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
 
 
 completedPosix : TaskItem -> Int
-completedPosix taskItem =
-    case completion taskItem of
-        CompletedAt time_ ->
-            Time.posixToMillis time_
+completedPosix ((TaskItem _ subtasks_) as taskItem) =
+    let
+        mostRecentCompletedSubtaskMillis : Int
+        mostRecentCompletedSubtaskMillis =
+            subtasks_
+                |> List.map posix
+                |> List.maximum
+                |> Maybe.withDefault 0
 
-        _ ->
-            0
+        posix : TaskItemFields -> Int
+        posix f =
+            case f.completion of
+                CompletedAt time_ ->
+                    Time.posixToMillis time_
+
+                _ ->
+                    0
+
+        topLevelCompletion : Int
+        topLevelCompletion =
+            posix (fields taskItem)
+    in
+    if topLevelCompletion > 0 then
+        topLevelCompletion
+
+    else
+        mostRecentCompletedSubtaskMillis
 
 
 completion : TaskItem -> Completion

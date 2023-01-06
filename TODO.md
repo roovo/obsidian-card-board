@@ -1,4 +1,4 @@
-- make the completion time the most recent of the subtasks if the top level task has no completion
+- if untagged (or other) column is disabled, untagged/other tasks still appear in completed column
 - DateBoard logic needs doing too
 
 - add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
