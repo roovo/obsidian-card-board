@@ -12,8 +12,8 @@ import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
-import TagBoard
 import TagBoardColumns exposing (TagBoardColumns)
+import TagBoardConfig exposing (TagBoardConfig)
 import TagList
 import TaskItem exposing (TaskItem)
 import TaskList
@@ -135,9 +135,9 @@ columns =
 -- HELPERS
 
 
-defaultConfig : TagBoard.Config
+defaultConfig : TagBoardConfig
 defaultConfig =
-    TagBoard.defaultConfig
+    TagBoardConfig.default
 
 
 emptyTagBoardColumns : TagBoardColumns

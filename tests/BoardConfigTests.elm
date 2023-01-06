@@ -7,7 +7,7 @@ import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -174,7 +174,7 @@ toggleIncludeUndated =
                 BoardConfig.fromBoardType "tagBoard" ""
                     |> BoardConfig.toggleIncludeUndated
                     |> extractTagBoardConfig
-                    |> Expect.equal (Just TagBoard.defaultConfig)
+                    |> Expect.equal (Just TagBoardConfig.default)
         ]
 
 
@@ -383,9 +383,9 @@ defaultDateBoardConfig =
     DateBoard.defaultConfig
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoard.defaultConfig
+    TagBoardConfig.default
 
 
 extractDateBoardConfig : BoardConfig -> Maybe DateBoard.Config
@@ -398,7 +398,7 @@ extractDateBoardConfig boardConfig =
             Nothing
 
 
-extractTagBoardConfig : BoardConfig -> Maybe TagBoard.Config
+extractTagBoardConfig : BoardConfig -> Maybe TagBoardConfig
 extractTagBoardConfig boardConfig =
     case boardConfig of
         BoardConfig.TagBoardConfig config ->

@@ -15,7 +15,7 @@ import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import String.Extra as SE
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
@@ -41,7 +41,7 @@ type alias Config =
 -- BUILDING
 
 
-init : ColumnNames -> TagBoard.Config -> TagBoardColumns
+init : ColumnNames -> TagBoardConfig -> TagBoardColumns
 init columnNames tagBoardConfig =
     TagBoardColumns
         { untaggedColumn = UntaggedColumn.init tagBoardConfig columnNames

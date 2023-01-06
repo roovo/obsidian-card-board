@@ -10,7 +10,7 @@ import Helpers.FilterHelpers as FilterHelpers
 import SafeZipper
 import Settings exposing (Settings)
 import SettingsState
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 
 
@@ -508,7 +508,7 @@ exampleDateBoardConfig =
     }
 
 
-exampleTagBoardConfig : TagBoard.Config
+exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , showColumnTags = True

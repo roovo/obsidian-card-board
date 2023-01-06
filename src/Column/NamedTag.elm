@@ -8,7 +8,7 @@ module Column.NamedTag exposing
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Filter
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -33,7 +33,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoard.Config -> TagBoard.ColumnConfig -> NamedTagColumn
+init : TagBoardConfig -> TagBoardConfig.ColumnConfig -> NamedTagColumn
 init tagBoardConfig columnConfig =
     let
         columnTagsToHide : List String

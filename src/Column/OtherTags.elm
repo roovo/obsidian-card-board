@@ -8,7 +8,7 @@ module Column.OtherTags exposing
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Filter
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -34,7 +34,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoard.Config -> ColumnNames -> OtherTagsColumn
+init : TagBoardConfig -> ColumnNames -> OtherTagsColumn
 init tagBoardConfig columnNames =
     let
         columnTags : List String

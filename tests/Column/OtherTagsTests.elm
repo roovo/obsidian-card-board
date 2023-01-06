@@ -7,7 +7,7 @@ import Expect
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TagList
 import TaskItem exposing (TaskItem)
 import TaskList
@@ -393,9 +393,9 @@ defaultColumnNames =
     ColumnNames.default
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoard.defaultConfig
+    TagBoardConfig.default
 
 
 justAdd : TaskItem -> OtherTagsColumn -> OtherTagsColumn

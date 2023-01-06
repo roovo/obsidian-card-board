@@ -12,7 +12,7 @@ import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem
 import Test exposing (..)
 
@@ -404,6 +404,6 @@ defaultDateBoardConfig =
     BoardConfigHelpers.defaultDateBoardConfig
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
     BoardConfigHelpers.defaultTagBoardConfig

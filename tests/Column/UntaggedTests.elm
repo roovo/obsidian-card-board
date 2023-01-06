@@ -6,7 +6,7 @@ import ColumnNames exposing (ColumnNames)
 import Expect
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
@@ -185,9 +185,9 @@ defaultColumnNames =
     ColumnNames.default
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoard.defaultConfig
+    TagBoardConfig.default
 
 
 justAdd : TaskItem -> UntaggedColumn -> UntaggedColumn

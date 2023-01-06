@@ -10,7 +10,7 @@ import BoardConfig exposing (BoardConfig)
 import DateBoard
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 
 
 defaultDateBoardConfig : DateBoard.Config
@@ -40,7 +40,7 @@ exampleDateBoardConfig =
     }
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
     { columns = []
     , showColumnTags = True
@@ -54,7 +54,7 @@ defaultTagBoardConfig =
     }
 
 
-exampleTagBoardConfig : TagBoard.Config
+exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , showColumnTags = True

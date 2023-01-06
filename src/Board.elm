@@ -10,7 +10,7 @@ import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import DateBoard
 import Filter exposing (Filter, Polarity)
-import TagBoard
+import TagBoardConfig
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -49,7 +49,7 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
                 |> filterTaskList config
-                |> TagBoard.columns columnNames tagBoardConfig
+                |> TagBoardConfig.columns columnNames tagBoardConfig
                 |> placeCardsInColumns boardIndex
 
 

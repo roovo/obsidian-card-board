@@ -1,6 +1,6 @@
-module TagBoard exposing
+module TagBoardConfig exposing
     ( ColumnConfig
-    , Config
+    , TagBoardConfig
     , columnConfigsParser
     , columns
     , configDecoder_v_0_1_0
@@ -8,7 +8,7 @@ module TagBoard exposing
     , configDecoder_v_0_3_0
     , configDecoder_v_0_4_0
     , configEncoder
-    , defaultConfig
+    , default
     )
 
 import Column exposing (Column)
@@ -28,7 +28,7 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type alias Config =
+type alias TagBoardConfig =
     { columns : List ColumnConfig
     , showColumnTags : Bool
     , completedCount : Int
@@ -47,8 +47,8 @@ type alias ColumnConfig =
     }
 
 
-defaultConfig : Config
-defaultConfig =
+default : TagBoardConfig
+default =
     { columns = []
     , showColumnTags = True
     , completedCount = 10
@@ -65,7 +65,7 @@ defaultConfig =
 -- SERIALIZE
 
 
-configEncoder : TsEncode.Encoder Config
+configEncoder : TsEncode.Encoder TagBoardConfig
 configEncoder =
     TsEncode.object
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
@@ -88,9 +88,9 @@ columnConfigEncoder =
         ]
 
 
-configDecoder_v_0_4_0 : TsDecode.Decoder Config
+configDecoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
 configDecoder_v_0_4_0 =
-    TsDecode.succeed Config
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "showColumnTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -102,9 +102,9 @@ configDecoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_3_0 : TsDecode.Decoder Config
+configDecoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
 configDecoder_v_0_3_0 =
-    TsDecode.succeed Config
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -116,9 +116,9 @@ configDecoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_2_0 : TsDecode.Decoder Config
+configDecoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
 configDecoder_v_0_2_0 =
-    TsDecode.succeed Config
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -130,9 +130,9 @@ configDecoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_1_0 : TsDecode.Decoder Config
+configDecoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
 configDecoder_v_0_1_0 =
-    TsDecode.succeed Config
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -155,7 +155,7 @@ columnConfigDecoder =
 -- UTILITIES
 
 
-columns : ColumnNames -> Config -> TaskList -> List (Column TaskItem)
+columns : ColumnNames -> TagBoardConfig -> TaskList -> List (Column TaskItem)
 columns columnNames config taskList =
     config.columns
         |> LE.uniqueBy .tag
@@ -178,7 +178,7 @@ columnConfigsParser =
 -- PRIVATE
 
 
-appendCompleted : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+appendCompleted : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 appendCompleted columnName config taskList columnList =
     let
         completedTasks : List TaskItem
@@ -261,7 +261,7 @@ columnConfigParser =
         |> P.andThen buildColumnConfig
 
 
-fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
+fillColumn : TaskList -> TagBoardConfig -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
 fillColumn taskList config columnConfig acc =
     TaskList.filter (\ti -> TaskItem.hasIncompleteTaskWithThisTag columnConfig.tag ti && not (TaskItem.isCompleted ti)) taskList
         |> taskListWithTagsRemoved config
@@ -273,7 +273,7 @@ fillColumn taskList config columnConfig acc =
         |> List.append acc
 
 
-prependOthers : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+prependOthers : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 prependOthers columnName config taskList columnList =
     let
         cards : List TaskItem
@@ -302,7 +302,7 @@ prependOthers columnName config taskList columnList =
         columnList
 
 
-prependUntagged : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
+prependUntagged : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
 prependUntagged columnName config taskList columnList =
     let
         cards : List TaskItem
@@ -324,7 +324,7 @@ prependUntagged columnName config taskList columnList =
         columnList
 
 
-taskListWithTagsRemoved : Config -> TaskList -> TaskList
+taskListWithTagsRemoved : TagBoardConfig -> TaskList -> TaskList
 taskListWithTagsRemoved config taskList =
     let
         columnTags : List String
