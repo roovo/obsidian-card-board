@@ -1,4 +1,3 @@
-- add isEnabled flag to Column
 - check the Project 1 board -> I have something with the top level task with tags for project1 and wip
   in there which doesn't seem correct as that is the definition for the wip column.  It's there cause
   it has the project1 tag. There is another card in the column but that has the important tag - is this
@@ -18,6 +17,7 @@
 - make a better example using rtl tags (use google translate to generate the board/task/tag details that make
   sense (in so much as google translate is up to the job of course).
 
+- what about case sensitivity when matching tags?
 - simplify parsing as per typing tutor
 
 # Cleanups

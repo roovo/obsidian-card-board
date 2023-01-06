@@ -23,9 +23,11 @@ suite =
         , descendantTasks
         , due
         , filePath
+        , hasAnyIncompleteSubtasksWithTagsOtherThanThese
         , hasIncompleteTaskWithThisTag
         , hasOneOfTheTags
         , hasTags
+        , hasTaskWithTagOtherThanThese
         , hasThisTagBasic
         , hasThisTagWithSubtag
         , hasThisTagWithSubtagWildcard
@@ -397,6 +399,100 @@ filePath =
         ]
 
 
+hasAnyIncompleteSubtasksWithTagsOtherThanThese : Test
+hasAnyIncompleteSubtasksWithTagsOtherThanThese =
+    describe "hasAnyIncompleteSubtasksWithTagsOtherThanThese"
+        [ describe "incomplete task"
+            [ test "returns False for a task with no sub-tasks that has another tag" <|
+                \() ->
+                    "- [ ] foo #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task with an incomplete sub-task with no tag" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [ ] bar"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task with an incomplete sub-task with one of the given tags" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [ ] bar #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns True for a task with an incomplete sub-task with a different tag" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [ ] bar #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True for a task with an incomplete sub-task with a different tag and another that matches" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [ ] bar #atag  - [ ] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True for a task with an incomplete sub-task with a different tag and another that is complete and matches" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [ ] bar #atag  - [x] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns False for a task with a completed sub-task with a different tag and another that is not complete and matches" <|
+                \() ->
+                    "- [ ] foo #atag\n  - [x] bar #atag  - [ ] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            ]
+        , describe "completed task"
+            [ test "returns False for a task with no sub-tasks that has another tag" <|
+                \() ->
+                    "- [x] foo #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task with an incomplete sub-task with no tag" <|
+                \() ->
+                    "- [x] foo #atag\n  - [ ] bar"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task with an incomplete sub-task with one of the given tags" <|
+                \() ->
+                    "- [x] foo #atag\n  - [ ] bar #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns True for a task with an incomplete sub-task with a different tag" <|
+                \() ->
+                    "- [x] foo #atag\n  - [ ] bar #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True for a task with an incomplete sub-task with a different tag and another that matches" <|
+                \() ->
+                    "- [x] foo #atag\n  - [ ] bar #atag  - [ ] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True for a task with an incomplete sub-task with a different tag and another that is complete and matches" <|
+                \() ->
+                    "- [x] foo #atag\n  - [ ] bar #atag  - [x] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns False for a task with a completed sub-task with a different tag and another that is not complete and matches" <|
+                \() ->
+                    "- [x] foo #atag\n  - [x] bar #atag  - [ ] baz #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
+                        |> Expect.equal (Ok False)
+            ]
+        ]
+
+
 hasIncompleteTaskWithThisTag : Test
 hasIncompleteTaskWithThisTag =
     describe "hasIncompleteTaskWithTag - basic operation"
@@ -490,6 +586,82 @@ hasTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok False)
+        ]
+
+
+hasTaskWithTagOtherThanThese : Test
+hasTaskWithTagOtherThanThese =
+    describe "hasTaskWithTagOtherThanThese"
+        [ describe "with no sub-tasks"
+            [ test "returns True for a task which has a tag, but none of those given" <|
+                \() ->
+                    "- [ ] foo #aTag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True for a task which has a tag, in addition to those given" <|
+                \() ->
+                    "- [ ] foo #aTag #yTag #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns False for a task which has no tags when none are given either" <|
+                \() ->
+                    "- [ ] foo"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task which has no tags" <|
+                \() ->
+                    "- [ ] foo"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task which has no tags other than one of those given" <|
+                \() ->
+                    "- [ ] foo #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False for a task which has exaclty the same as the given tags" <|
+                \() ->
+                    "- [ ] foo #ytag #ztag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok False)
+            ]
+        , describe "with sub-tasks"
+            [ test "returns False where the task and sub-tasks have no tags" <|
+                \() ->
+                    "- [ ] foo\n  - [ ] bar"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok False)
+            , test "returns False where the task and sub-tasks have no tags and none are given" <|
+                \() ->
+                    "- [ ] foo\n  - [ ] bar"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
+                        |> Expect.equal (Ok False)
+            , test "returns True where the sub-task has a tag other than those given" <|
+                \() ->
+                    "- [ ] foo\n  - [ ] bar #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns True where the sub-task has a tag other than those given even if the main task has a matching tag" <|
+                \() ->
+                    "- [ ] foo #ztag\n  - [ ] bar #atag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok True)
+            , test "returns False where the sub- and main task have matching tags" <|
+                \() ->
+                    "- [ ] foo #ztag\n  - [ ] bar #ytag"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
+                        |> Expect.equal (Ok False)
+            ]
         ]
 
 

@@ -2,7 +2,6 @@ module Column.NamedTagTests exposing (suite)
 
 import Column
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
-import ColumnNames exposing (ColumnNames)
 import Expect
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -266,11 +265,6 @@ name =
 
 
 -- HELPERS
-
-
-defaultColumnNames : ColumnNames
-defaultColumnNames =
-    ColumnNames.default
 
 
 defaultTagBoardConfig : TagBoard.Config

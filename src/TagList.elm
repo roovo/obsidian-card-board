@@ -4,6 +4,7 @@ module TagList exposing
     , cons
     , containsTagMatching
     , containsTagMatchingOneOf
+    , containsTagOtherThanThese
     , empty
     , filter
     , fromList
@@ -16,6 +17,7 @@ module TagList exposing
 
 import List.Extra as LE
 import Parser
+import Set
 import Tag exposing (Tag)
 
 
@@ -99,6 +101,21 @@ containsTagMatching candidate =
 containsTagMatchingOneOf : List String -> TagList -> Bool
 containsTagMatchingOneOf candidates tagList =
     List.any (\c -> containsTagMatching c tagList) candidates
+
+
+containsTagOtherThanThese : List String -> TagList -> Bool
+containsTagOtherThanThese candidates tagList =
+    let
+        fromTagList =
+            tagList
+                |> toList
+                |> Set.fromList
+
+        fromCandidates =
+            Set.fromList candidates
+    in
+    Set.diff fromTagList fromCandidates
+        |> (not << Set.isEmpty)
 
 
 isEmpty : TagList -> Bool
