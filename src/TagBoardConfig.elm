@@ -2,7 +2,6 @@ module TagBoardConfig exposing
     ( ColumnConfig
     , TagBoardConfig
     , columnConfigsParser
-    , columns
     , configDecoder_v_0_1_0
     , configDecoder_v_0_2_0
     , configDecoder_v_0_3_0
@@ -152,20 +151,6 @@ columnConfigDecoder =
 
 
 
--- UTILITIES
-
-
-columns : ColumnNames -> TagBoardConfig -> TaskList -> List (Column TaskItem)
-columns columnNames config taskList =
-    config.columns
-        |> LE.uniqueBy .tag
-        |> List.foldl (fillColumn taskList config) []
-        |> prependOthers (ColumnNames.nameFor "others" columnNames) config taskList
-        |> prependUntagged (ColumnNames.nameFor "untagged" columnNames) config taskList
-        |> appendCompleted (ColumnNames.nameFor "completed" columnNames) config taskList
-
-
-
 -- PARSE
 
 
@@ -176,38 +161,6 @@ columnConfigsParser =
 
 
 -- PRIVATE
-
-
-appendCompleted : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted columnName config taskList columnList =
-    let
-        completedTasks : List TaskItem
-        completedTasks =
-            taskList
-                |> TaskList.filter isCompleteWithTags
-                |> taskListWithTagsRemoved config
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.reverse
-                |> List.sortBy TaskItem.completedPosix
-                |> List.reverse
-                |> List.take config.completedCount
-
-        isCompleteWithTags : TaskItem -> Bool
-        isCompleteWithTags item =
-            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
-
-        uniqueColumnTags : List String
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
-    in
-    if config.completedCount > 0 then
-        List.append columnList [ Column.init True columnName completedTasks ]
-
-    else
-        columnList
 
 
 columnConfigHelp : List ColumnConfig -> Parser (P.Step (List ColumnConfig) (List ColumnConfig))
@@ -259,87 +212,3 @@ columnConfigParser =
             , P.succeed Nothing
             ]
         |> P.andThen buildColumnConfig
-
-
-fillColumn : TaskList -> TagBoardConfig -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
-fillColumn taskList config columnConfig acc =
-    TaskList.filter (\ti -> TaskItem.hasIncompleteTaskWithThisTag columnConfig.tag ti && not (TaskItem.isCompleted ti)) taskList
-        |> taskListWithTagsRemoved config
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.sortBy TaskItem.dueRataDie
-        |> Column.init True columnConfig.displayTitle
-        |> List.singleton
-        |> List.append acc
-
-
-prependOthers : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependOthers columnName config taskList columnList =
-    let
-        cards : List TaskItem
-        cards =
-            taskList
-                |> TaskList.filter isIncompleteWithoutTags
-                |> taskListWithTagsRemoved config
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.sortBy TaskItem.dueRataDie
-
-        isIncompleteWithoutTags : TaskItem -> Bool
-        isIncompleteWithoutTags item =
-            not (TaskItem.isCompleted item) && TaskItem.hasTags item && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
-
-        uniqueColumnTags : List String
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
-    in
-    if config.includeOthers then
-        Column.init True columnName cards :: columnList
-
-    else
-        columnList
-
-
-prependUntagged : String -> TagBoardConfig -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependUntagged columnName config taskList columnList =
-    let
-        cards : List TaskItem
-        cards =
-            taskList
-                |> TaskList.filter isIncompleteWithNoTags
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.sortBy TaskItem.dueRataDie
-
-        isIncompleteWithNoTags : TaskItem -> Bool
-        isIncompleteWithNoTags item =
-            not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
-    in
-    if config.includeUntagged then
-        Column.init True columnName cards :: columnList
-
-    else
-        columnList
-
-
-taskListWithTagsRemoved : TagBoardConfig -> TaskList -> TaskList
-taskListWithTagsRemoved config taskList =
-    let
-        columnTags : List String
-        columnTags =
-            List.map .tag config.columns
-
-        filterTags : List String
-        filterTags =
-            config.filters
-                |> List.filter (\f -> Filter.filterType f == "Tags")
-                |> List.map Filter.value
-
-        tagsToRemove : List String
-        tagsToRemove =
-            List.filter (always <| not <| config.showFilteredTags) filterTags
-                ++ List.filter (always <| not <| config.showColumnTags) columnTags
-    in
-    TaskList.removeTags tagsToRemove taskList

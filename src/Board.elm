@@ -10,6 +10,7 @@ import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import DateBoard
 import Filter exposing (Filter, Polarity)
+import TagBoardColumns exposing (TagBoardColumns)
 import TagBoardConfig
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -44,13 +45,19 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
             taskList
                 |> filterTaskList config
                 |> DateBoard.columns columnNames timeWithZone dateBoardConfig
-                |> placeCardsInColumns boardIndex
+                |> convertToCards boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
+            let
+                emptyTagBoardColumns : TagBoardColumns
+                emptyTagBoardColumns =
+                    TagBoardColumns.init columnNames tagBoardConfig
+            in
             taskList
                 |> filterTaskList config
-                |> TagBoardConfig.columns columnNames tagBoardConfig
-                |> placeCardsInColumns boardIndex
+                |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
+                |> TagBoardColumns.columns
+                |> convertToCards boardIndex
 
 
 
@@ -113,8 +120,8 @@ applyFilters taskList polarity filters =
         TaskList.filter (\t -> filterMode (operator << Filter.isAllowed t) filters) taskList
 
 
-placeCardsInColumns : Int -> List (Column TaskItem) -> List (Column Card)
-placeCardsInColumns boardIndex columnList =
+convertToCards : Int -> List (Column TaskItem) -> List (Column Card)
+convertToCards boardIndex columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
