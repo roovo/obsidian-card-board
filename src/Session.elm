@@ -82,7 +82,7 @@ default =
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
-            { now = Time.millisToPosix 0
+            { time = Time.millisToPosix 0
             , zone = Time.customZone 0 []
             }
         }
@@ -97,7 +97,7 @@ fromFlags flags =
         , isActiveView = False
         , taskList = State.Waiting
         , timeWithZone =
-            { now = Time.millisToPosix flags.now
+            { time = Time.millisToPosix flags.now
             , zone = Time.customZone flags.zone []
             }
         }
@@ -210,12 +210,12 @@ switchToBoardAt index (Session config) =
 
 timeIs : Time.Posix -> Session -> Session
 timeIs time (Session config) =
-    Session { config | timeWithZone = TimeWithZone.now time config.timeWithZone }
+    Session { config | timeWithZone = TimeWithZone.time time config.timeWithZone }
 
 
 timeWIthZoneIs : Time.Zone -> Time.Posix -> Session -> Session
 timeWIthZoneIs zone time (Session config) =
-    Session { config | timeWithZone = { zone = zone, now = time } }
+    Session { config | timeWithZone = { zone = zone, time = time } }
 
 
 updateSettings : Settings -> Session -> Session

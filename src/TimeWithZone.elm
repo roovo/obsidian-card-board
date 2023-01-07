@@ -1,6 +1,6 @@
 module TimeWithZone exposing
     ( TimeWithZone
-    , now
+    , time
     , toDate
     )
 
@@ -9,16 +9,16 @@ import Time
 
 
 type alias TimeWithZone =
-    { now : Time.Posix
+    { time : Time.Posix
     , zone : Time.Zone
     }
 
 
-now : Time.Posix -> TimeWithZone -> TimeWithZone
-now time timeWithZone =
-    { timeWithZone | now = time }
+time : Time.Posix -> TimeWithZone -> TimeWithZone
+time t timeWithZone =
+    { timeWithZone | time = t }
 
 
 toDate : TimeWithZone -> Date
 toDate timeWithZone =
-    Date.fromPosix timeWithZone.zone timeWithZone.now
+    Date.fromPosix timeWithZone.zone timeWithZone.time

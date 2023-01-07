@@ -3,6 +3,8 @@ module Helpers.DateTimeHelpers exposing
     , future
     , now
     , nowWithZone
+    , offsetDateString
+    , offsetNowWithZone
     , today
     , tomorrow
     , yearStart
@@ -13,6 +15,10 @@ module Helpers.DateTimeHelpers exposing
 import Iso8601
 import Time
 import TimeWithZone exposing (TimeWithZone)
+
+
+
+-- DATE STRINGS
 
 
 yesterday : String
@@ -40,20 +46,45 @@ farFuture =
     "2020-06-23"
 
 
-nowWithZone : TimeWithZone
-nowWithZone =
-    { now = now
-    , zone = zone
-    }
+
+-- TIME WITH ZONES
 
 
 now : Time.Posix
 now =
-    today
-        |> Iso8601.toTime
-        |> Result.map Time.posixToMillis
-        |> Result.withDefault 0
-        |> Time.millisToPosix
+    offsetNowWithZone 0
+        |> .time
+
+
+nowWithZone : TimeWithZone
+nowWithZone =
+    { time = now
+    , zone = zone
+    }
+
+
+offsetDateString : Int -> String
+offsetDateString offset =
+    offsetNowWithZone offset
+        |> .time
+        |> Iso8601.fromTime
+        |> String.left 10
+
+
+offsetNowWithZone : Int -> TimeWithZone
+offsetNowWithZone offset =
+    let
+        targetTime =
+            today
+                |> Iso8601.toTime
+                |> Result.map Time.posixToMillis
+                |> Result.map ((+) (offset * millisPerDay))
+                |> Result.withDefault 0
+                |> Time.millisToPosix
+    in
+    { time = targetTime
+    , zone = zone
+    }
 
 
 yearStart : Time.Posix
@@ -65,3 +96,12 @@ yearStart =
 zone : Time.Zone
 zone =
     Time.utc
+
+
+
+-- PRIVATE
+
+
+millisPerDay : Int
+millisPerDay =
+    1000 * 60 * 60 * 24
