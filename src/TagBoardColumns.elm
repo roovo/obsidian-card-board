@@ -91,7 +91,7 @@ addTaskItem taskItem (TagBoardColumns config) =
                         |> Tuple.mapFirst (\r -> r :: ntcs)
                         |> Tuple.mapSecond (\r -> r :: pr_)
             in
-            ( { c | namedTagColumns = newColumns }, pr ++ prs )
+            ( { c | namedTagColumns = List.reverse newColumns }, pr ++ prs )
 
         addToCompletedColumn : ( Config, List PlacementResult ) -> Config
         addToCompletedColumn ( c, prs ) =

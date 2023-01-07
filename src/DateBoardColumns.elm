@@ -91,7 +91,7 @@ addTaskItem taskItem (DateBoardColumns config) =
                         |> Tuple.mapFirst (\r -> r :: ntcs)
                         |> Tuple.mapSecond (\r -> r :: pr_)
             in
-            ( { c | dateColumns = newColumns }, pr ++ prs )
+            ( { c | dateColumns = List.reverse newColumns }, pr ++ prs )
 
         addToCompletedColumn : ( Config, List PlacementResult ) -> Config
         addToCompletedColumn ( c, prs ) =
@@ -110,6 +110,6 @@ addTaskItem taskItem (DateBoardColumns config) =
 columns : DateBoardColumns -> List (Column TaskItem)
 columns (DateBoardColumns config) =
     [ CompletedColumn.asColumn config.completedColumn ]
-        |> List.append (List.reverse <| List.map DateColumn.asColumn config.dateColumns)
+        |> List.append (List.map DateColumn.asColumn config.dateColumns)
         |> List.append [ UndatedColumn.asColumn config.undatedColumn ]
         |> List.filter Column.isEnabled
