@@ -1,4 +1,4 @@
-- DateBoard logic needs doing too
+- no ned to call the DateBoardConfig.configEncoder -> it can just be encoder
 
 - add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
   always be empty as by definition tasks on the board will always have one of the allow filter tags. Even

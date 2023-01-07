@@ -2,7 +2,7 @@ module Column.DateTests exposing (suite)
 
 import Column
 import Column.Date as DateColumn exposing (DateColumn)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.FilterHelpers as FilterHelpers
@@ -250,9 +250,9 @@ now =
     DateTimeHelpers.offsetNowWithZone 0
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    DateBoard.defaultConfig
+    DateBoardConfig.default
 
 
 justAdd : TaskItem -> DateColumn -> DateColumn

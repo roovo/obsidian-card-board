@@ -1189,62 +1189,62 @@ tasksToToggle =
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 3) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 3) <| { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok [])
         , test "returns the TaskItem if it matches the id" <|
             \() ->
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the sub-TaskItem if it matches the id and @autocomplete is not set" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is true and all other descendant tasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo", "bar" ])
         , test "returns the TaskItem and the sub-TaskItem if the subtask matches the id and @autocomplete is false and all other descendant tasks are complete" <|
             \() ->
                 "- [ ] foo @autocomplete(false)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id and @autocomplete is set but there are other incomplete descendant tasks" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [ ] bar\n  - [ ] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the sub-TaskItem if the subtask matches the id, @autocomplete is set and the top level task is already completed" <|
             \() ->
                 "- [x] foo @autocomplete(true)\n  - [ ] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 2) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
         , test "returns the TaskItem if it is complete, matches and all descendant tasks are already complete" <|
             \() ->
                 "- [x] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         , test "returns the TaskItem if it is incomplete, matches and all descendant tasks are already complete" <|
             \() ->
                 "- [ ] foo @autocomplete(true)\n  - [x] bar\n  - [x] baz"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.tasksToToggle (TaskHelpers.taskId "" 1) <| { time = Time.millisToPosix 0 })
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "foo" ])
         ]
@@ -1329,55 +1329,55 @@ toToggledString =
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 [done:: 1970-01-01] ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview emoji format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview no completion" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
         , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
                 "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
         , test "doesn't remove dataview format if it has been set to NoCompletion" <|
             \() ->
                 "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
         , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
                 "- [X] [custom:: 2021-01-01] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
@@ -1385,7 +1385,7 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { now = Time.millisToPosix 0 })
+                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         ]
 

@@ -347,7 +347,7 @@ topLevelTags ((TaskItem fields_ _) as taskItem) =
         |> TagList.sort
 
 
-tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
+tasksToToggle : String -> { a | time : Time.Posix } -> TaskItem -> List TaskItem
 tasksToToggle id_ timeWithZone taskItem =
     let
         autoComplete : TaskItem -> AutoCompletion
@@ -488,7 +488,7 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | now : Time.Posix } -> TaskItem -> String
+toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | time : Time.Posix } -> TaskItem -> String
 toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
@@ -508,7 +508,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                     let
                         completionString : String
                         completionString =
-                            timeWithZone.now
+                            timeWithZone.time
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
@@ -826,7 +826,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> addCompletionTime
 
 
-toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
+toggleCompletion : { a | time : Time.Posix } -> TaskItem -> TaskItem
 toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
     case fields_.completion of
         Completed ->
@@ -836,7 +836,7 @@ toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
             TaskItem { fields_ | completion = Incomplete } subtasks_
 
         Incomplete ->
-            TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
+            TaskItem { fields_ | completion = CompletedAt timeWithZone.time } subtasks_
 
 
 tokenParser : DataviewTaskCompletion -> Parser Content

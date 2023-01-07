@@ -7,7 +7,7 @@ module Column.Undated exposing
 
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -33,7 +33,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : DateBoard.Config -> ColumnNames -> UndatedColumn
+init : DateBoardConfig -> ColumnNames -> UndatedColumn
 init dateBoardConfig columnNames =
     let
         filterTagsToHide : List String

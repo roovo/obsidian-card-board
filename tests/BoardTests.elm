@@ -4,7 +4,7 @@ import Board
 import BoardConfig
 import Card
 import ColumnNames
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -399,9 +399,9 @@ columnsTagBoard =
 -- HELPERS
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    BoardConfigHelpers.defaultDateBoardConfig
+    DateBoardConfig.default
 
 
 defaultTagBoardConfig : TagBoardConfig

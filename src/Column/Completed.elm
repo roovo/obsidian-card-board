@@ -8,7 +8,7 @@ module Column.Completed exposing
 
 import Column exposing (Column, PlacementResult)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
@@ -35,7 +35,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-forDateBoard : DateBoard.Config -> ColumnNames -> CompletedColumn
+forDateBoard : DateBoardConfig -> ColumnNames -> CompletedColumn
 forDateBoard dateBoardConfig columnNames =
     let
         filterTagsToHide : List String

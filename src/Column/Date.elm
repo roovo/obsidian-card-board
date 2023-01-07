@@ -8,7 +8,7 @@ module Column.Date exposing
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -36,7 +36,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : DateBoard.Config -> { name : String, from : Maybe Int, to : Maybe Int } -> DateColumn
+init : DateBoardConfig -> { name : String, from : Maybe Int, to : Maybe Int } -> DateColumn
 init dateBoardConfig c =
     let
         filterTagsToHide : List String

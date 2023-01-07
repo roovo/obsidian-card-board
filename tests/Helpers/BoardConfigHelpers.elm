@@ -7,13 +7,13 @@ module Helpers.BoardConfigHelpers exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
 import TagBoardConfig exposing (TagBoardConfig)
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     { completedCount = 0
     , filters = []
@@ -29,7 +29,7 @@ exampleBoardConfig =
     BoardConfig.TagBoardConfig exampleTagBoardConfig
 
 
-exampleDateBoardConfig : DateBoard.Config
+exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { completedCount = 12
     , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]

@@ -1,7 +1,7 @@
 module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -148,7 +148,7 @@ toggleIncludeOthers =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleIncludeOthers
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeOthers for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -186,7 +186,7 @@ toggleIncludeUntagged =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleIncludeUntagged
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeUntagged for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -205,7 +205,7 @@ toggleShowColumnTags =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleShowColumnTags
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeUntagged for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -344,7 +344,7 @@ updateTags =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.updateTags ""
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "updates the tags for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -378,9 +378,9 @@ updateTitle =
 -- HELPERS
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    DateBoard.defaultConfig
+    DateBoardConfig.default
 
 
 defaultTagBoardConfig : TagBoardConfig
@@ -388,7 +388,7 @@ defaultTagBoardConfig =
     TagBoardConfig.default
 
 
-extractDateBoardConfig : BoardConfig -> Maybe DateBoard.Config
+extractDateBoardConfig : BoardConfig -> Maybe DateBoardConfig
 extractDateBoardConfig boardConfig =
     case boardConfig of
         BoardConfig.DateBoardConfig config ->

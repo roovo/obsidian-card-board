@@ -3,7 +3,7 @@ module Column.CompletedTests exposing (suite)
 import Column
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -326,9 +326,9 @@ defaultColumnNames =
     ColumnNames.default
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    DateBoard.defaultConfig
+    DateBoardConfig.default
 
 
 defaultTagBoardConfig : TagBoardConfig

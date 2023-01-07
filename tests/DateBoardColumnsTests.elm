@@ -2,8 +2,8 @@ module DateBoardColumnsTests exposing (suite)
 
 import Column
 import ColumnNames exposing (ColumnNames)
-import DateBoard
 import DateBoardColumns exposing (DateBoardColumns)
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -142,9 +142,9 @@ columns =
 -- HELPERS
 
 
-defaultConfig : DateBoard.Config
+defaultConfig : DateBoardConfig
 defaultConfig =
-    DateBoard.defaultConfig
+    DateBoardConfig.default
 
 
 defaultColumnNames : ColumnNames

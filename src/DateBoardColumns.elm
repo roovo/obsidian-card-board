@@ -11,7 +11,7 @@ import Column.Date as DateColumn exposing (DateColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter exposing (Filter, Polarity(..))
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -40,7 +40,7 @@ type alias Config =
 -- BUILDING
 
 
-init : TimeWithZone -> ColumnNames -> DateBoard.Config -> DateBoardColumns
+init : TimeWithZone -> ColumnNames -> DateBoardConfig -> DateBoardColumns
 init now columnNames dateBoardConfig =
     let
         todayName =
@@ -110,6 +110,6 @@ addTaskItem taskItem (DateBoardColumns config) =
 columns : DateBoardColumns -> List (Column TaskItem)
 columns (DateBoardColumns config) =
     [ CompletedColumn.asColumn config.completedColumn ]
-        |> List.append (List.map DateColumn.asColumn config.dateColumns)
+        |> List.append (List.reverse <| List.map DateColumn.asColumn config.dateColumns)
         |> List.append [ UndatedColumn.asColumn config.undatedColumn ]
         |> List.filter Column.isEnabled

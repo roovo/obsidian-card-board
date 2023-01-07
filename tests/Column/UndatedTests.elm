@@ -3,7 +3,7 @@ module Column.UndatedTests exposing (suite)
 import Column
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -202,11 +202,11 @@ defaultColumnNames =
     ColumnNames.default
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     let
         default =
-            DateBoard.defaultConfig
+            DateBoardConfig.default
     in
     { default | includeUndated = True }
 

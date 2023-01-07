@@ -2,7 +2,7 @@ module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import ColumnNames
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
@@ -497,7 +497,7 @@ exampleGlobalSettings =
     }
 
 
-exampleDateBoardConfig : DateBoard.Config
+exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { completedCount = 12
     , filters = []

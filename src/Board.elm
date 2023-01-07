@@ -8,7 +8,8 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
+import DateBoardColumns exposing (DateBoardColumns)
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter exposing (Filter, Polarity)
 import TagBoardColumns exposing (TagBoardColumns)
 import TagBoardConfig
@@ -42,9 +43,15 @@ columns : TimeWithZone -> Int -> Board -> List (Column Card)
 columns timeWithZone boardIndex (Board columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
+            let
+                emptyDateBoardColumns : DateBoardColumns
+                emptyDateBoardColumns =
+                    DateBoardColumns.init timeWithZone columnNames dateBoardConfig
+            in
             taskList
                 |> filterTaskList config
-                |> DateBoard.columns columnNames timeWithZone dateBoardConfig
+                |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
+                |> DateBoardColumns.columns
                 |> convertToCards boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
