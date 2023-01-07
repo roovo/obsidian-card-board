@@ -2,11 +2,13 @@ module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
     , asColumn
-    , init
+    , forDateBoard
+    , forTagBoard
     )
 
 import Column exposing (Column, PlacementResult)
 import ColumnNames exposing (ColumnNames)
+import DateBoard
 import Filter
 import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
@@ -33,8 +35,30 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoardConfig -> ColumnNames -> CompletedColumn
-init tagBoardConfig columnNames =
+forDateBoard : DateBoard.Config -> ColumnNames -> CompletedColumn
+forDateBoard dateBoardConfig columnNames =
+    let
+        filterTagsToHide : List String
+        filterTagsToHide =
+            if dateBoardConfig.showFilteredTags then
+                []
+
+            else
+                dateBoardConfig
+                    |> .filters
+                    |> List.filter (\f -> Filter.filterType f == "Tags")
+                    |> List.map Filter.value
+    in
+    CompletedColumn
+        { completedCount = dateBoardConfig.completedCount
+        , name = ColumnNames.nameFor "completed" columnNames
+        , taskList = TaskList.empty
+        , tagsToHide = filterTagsToHide
+        }
+
+
+forTagBoard : TagBoardConfig -> ColumnNames -> CompletedColumn
+forTagBoard tagBoardConfig columnNames =
     let
         columnTags : List String
         columnTags =

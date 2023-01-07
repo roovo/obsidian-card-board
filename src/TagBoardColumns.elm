@@ -52,7 +52,7 @@ init columnNames tagBoardConfig =
             List.map
                 (NamedTagColumn.init tagBoardConfig)
                 (LE.uniqueBy .tag tagBoardConfig.columns)
-        , completedColumn = CompletedColumn.init tagBoardConfig columnNames
+        , completedColumn = CompletedColumn.forTagBoard tagBoardConfig columnNames
         }
 
 
