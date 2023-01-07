@@ -1,11 +1,11 @@
 module DateBoardConfig exposing
     ( DateBoardConfig
-    , configDecoder_v_0_1_0
-    , configDecoder_v_0_2_0
-    , configDecoder_v_0_3_0
-    , configDecoder_v_0_4_0
-    , configEncoder
+    , decoder_v_0_1_0
+    , decoder_v_0_2_0
+    , decoder_v_0_3_0
+    , decoder_v_0_4_0
     , default
+    , encoder
     )
 
 import Column exposing (Column)
@@ -48,8 +48,8 @@ default =
 -- SERIALIZE
 
 
-configEncoder : TsEncode.Encoder DateBoardConfig
-configEncoder =
+encoder : TsEncode.Encoder DateBoardConfig
+encoder =
     TsEncode.object
         [ TsEncode.required "completedCount" .completedCount TsEncode.int
         , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
@@ -60,8 +60,8 @@ configEncoder =
         ]
 
 
-configDecoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
-configDecoder_v_0_4_0 =
+decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_4_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
@@ -71,8 +71,8 @@ configDecoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
-configDecoder_v_0_3_0 =
+decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_3_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
@@ -82,8 +82,8 @@ configDecoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
-configDecoder_v_0_2_0 =
+decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_2_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
@@ -93,8 +93,8 @@ configDecoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
-configDecoder_v_0_1_0 =
+decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_1_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])

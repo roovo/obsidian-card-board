@@ -2,12 +2,12 @@ module TagBoardConfig exposing
     ( ColumnConfig
     , TagBoardConfig
     , columnConfigsParser
-    , configDecoder_v_0_1_0
-    , configDecoder_v_0_2_0
-    , configDecoder_v_0_3_0
-    , configDecoder_v_0_4_0
-    , configEncoder
+    , decoder_v_0_1_0
+    , decoder_v_0_2_0
+    , decoder_v_0_3_0
+    , decoder_v_0_4_0
     , default
+    , encoder
     )
 
 import Column exposing (Column)
@@ -64,8 +64,8 @@ default =
 -- SERIALIZE
 
 
-configEncoder : TsEncode.Encoder TagBoardConfig
-configEncoder =
+encoder : TsEncode.Encoder TagBoardConfig
+encoder =
     TsEncode.object
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
         , TsEncode.required "showColumnTags" .showColumnTags TsEncode.bool
@@ -87,8 +87,8 @@ columnConfigEncoder =
         ]
 
 
-configDecoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
-configDecoder_v_0_4_0 =
+decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_4_0 =
     TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "showColumnTags" TsDecode.bool)
@@ -101,8 +101,8 @@ configDecoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
-configDecoder_v_0_3_0 =
+decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_3_0 =
     TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
@@ -115,8 +115,8 @@ configDecoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
-configDecoder_v_0_2_0 =
+decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_2_0 =
     TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
@@ -129,8 +129,8 @@ configDecoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
-configDecoder_v_0_1_0 =
+decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_1_0 =
     TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)

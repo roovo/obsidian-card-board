@@ -31,9 +31,9 @@ encodeDecode =
         [ test "can decode the encoded string back to the original" <|
             \() ->
                 exampleConfig
-                    |> TsEncode.runExample DateBoardConfig.configEncoder
+                    |> TsEncode.runExample DateBoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder DateBoardConfig.configDecoder_v_0_4_0
+                    |> DecodeHelpers.runDecoder DateBoardConfig.decoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
         ]

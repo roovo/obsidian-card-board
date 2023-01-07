@@ -85,9 +85,9 @@ encodeDecode =
         [ test "can decode the encoded string back to the original" <|
             \() ->
                 exampleConfig
-                    |> TsEncode.runExample TagBoardConfig.configEncoder
+                    |> TsEncode.runExample TagBoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder TagBoardConfig.configDecoder_v_0_4_0
+                    |> DecodeHelpers.runDecoder TagBoardConfig.decoder_v_0_4_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
         ]

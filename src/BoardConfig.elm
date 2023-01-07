@@ -143,8 +143,8 @@ encoder =
                 TagBoardConfig config ->
                     vTagBoardConfig config
         )
-        |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.configEncoder
-        |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.configEncoder
+        |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.encoder
+        |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.encoder
         |> TsEncode.buildUnion
 
 
@@ -156,32 +156,32 @@ decoder_v_0_5_0 =
 decoder_v_0_4_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_4_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.configDecoder_v_0_4_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.configDecoder_v_0_4_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_4_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_4_0
         ]
 
 
 decoder_v_0_3_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_3_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.configDecoder_v_0_3_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.configDecoder_v_0_3_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_3_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_3_0
         ]
 
 
 decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_2_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.configDecoder_v_0_2_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.configDecoder_v_0_2_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_2_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_2_0
         ]
 
 
 decoder_v_0_1_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_1_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.configDecoder_v_0_1_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.configDecoder_v_0_1_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_1_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_1_0
         ]
 
 
