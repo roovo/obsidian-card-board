@@ -80,7 +80,7 @@ File.open(undated_tasks, "w") do |file|
 - [ ] another undated task (but with a block id) ^34d21
 
 - [ ] #important and this is a task tagged as important #projects/project1 #status/backlog
-- [ ] and this is a task NOT tagged as important #projects/project1 #status/wip
+- [ ] and this is a task NOT tagged as important #projects/project1 #status/doing
 
 - [ ] a Dataview task with a due date [due:: #{(Date.today).strftime("%Y-%m-%d")}]
 - [x] a completed Dataview task with a due date [due:: #{(Date.today - 1).strftime("%Y-%m-%d")}] [completion:: #{(Date.today - 1).strftime("%Y-%m-%d")}]

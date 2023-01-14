@@ -51,7 +51,7 @@
           "filterScope": "SubTasksOnly",
           "showFilteredTags": false,
           "includeOthers": true,
-          "includeUntagged": false,
+          "includeUntagged": true,
           "title": "Tagged"
         }
       },
@@ -64,8 +64,16 @@
               "displayTitle": "Backlog"
             },
             {
-              "tag": "status/wip",
-              "displayTitle": "Wip"
+              "tag": "status/triaged",
+              "displayTitle": "Triaged"
+            },
+            {
+              "tag": "status/blocked",
+              "displayTitle": "Blocked"
+            },
+            {
+              "tag": "status/doing",
+              "displayTitle": "Doing"
             }
           ],
           "showColumnTags": false,
@@ -79,7 +87,7 @@
           "filterPolarity": "Allow",
           "filterScope": "Both",
           "showFilteredTags": false,
-          "includeOthers": false,
+          "includeOthers": true,
           "includeUntagged": false,
           "title": "Project 1"
         }
