@@ -18,8 +18,6 @@
     considered as complete in the relevant column when all subtasks with
     that tag are completed.
 - explain in readme the pipleline of filter first then place on the board
-- make a better example using rtl tags (use google translate to generate the board/task/tag details that make
-  sense (in so much as google translate is up to the job of course).
 
 
 - simplify parsing as per typing tutor
