@@ -13,15 +13,36 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ encodeDecode
-        , polarityFromString
-        , isAllowed
-        , ofType
+        [ defaultPolarity
+        , defaultScope
+        , encodeDecode
         , filterType
         , filterTypes
+        , isAllowed
+        , ofType
+        , polarityFromString
         , updatePath
         , value
-        , defaultPolarity
+        ]
+
+
+defaultPolarity : Test
+defaultPolarity =
+    describe "defaultPolarity"
+        [ test "is Allow" <|
+            \() ->
+                Filter.defaultPolarity
+                    |> Expect.equal Filter.Allow
+        ]
+
+
+defaultScope : Test
+defaultScope =
+    describe "defaultScope"
+        [ test "is Both" <|
+            \() ->
+                Filter.defaultScope
+                    |> Expect.equal Filter.Both
         ]
 
 
@@ -64,27 +85,79 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder Filter.polarityDecoder
                     |> .decoded
                     |> Expect.equal (Ok Filter.Deny)
+        , test "can decode an encoded Filter.TopLevelOnly Scope string" <|
+            \() ->
+                "\"TopLevelOnly\""
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.TopLevelOnly)
+        , test "can decode an encoded Filter.SubTasksOnly Scope string" <|
+            \() ->
+                "\"SubTasksOnly\""
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.SubTasksOnly)
+        , test "can decode an encoded Filter.Both Scope string" <|
+            \() ->
+                "\"Both\""
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Both)
+        , test "can encode and decode Filter.TopLevelOnly" <|
+            \() ->
+                Filter.TopLevelOnly
+                    |> TsEncode.runExample Filter.scopeEncoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.TopLevelOnly)
+        , test "can encode and decode Filter.SubTasksOnly" <|
+            \() ->
+                Filter.SubTasksOnly
+                    |> TsEncode.runExample Filter.scopeEncoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.SubTasksOnly)
+        , test "can encode and decode Filter.Both" <|
+            \() ->
+                Filter.Both
+                    |> TsEncode.runExample Filter.scopeEncoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Filter.scopeDecoder
+                    |> .decoded
+                    |> Expect.equal (Ok Filter.Both)
         ]
 
 
-polarityFromString : Test
-polarityFromString =
-    describe "polarityFromString"
-        [ test "converts 'Allow' into Polarity.Allow" <|
+filterType : Test
+filterType =
+    describe "filterType"
+        [ test "extracts the filterType from a FileFilter" <|
             \() ->
-                "Allow"
-                    |> Filter.polarityFromString
-                    |> Expect.equal Filter.Allow
-        , test "converts 'Deny' into Polarity.Deny" <|
+                FilterHelpers.fileFilter "some file"
+                    |> Filter.filterType
+                    |> Expect.equal "Files"
+        , test "extracts the filterType from a PathFilter" <|
             \() ->
-                "Deny"
-                    |> Filter.polarityFromString
-                    |> Expect.equal Filter.Deny
-        , test "converts 'BadInput' into Polarity.Allow" <|
+                FilterHelpers.pathFilter "some path"
+                    |> Filter.filterType
+                    |> Expect.equal "Paths"
+        , test "extracts the filterType from a TagFilter" <|
             \() ->
-                "BadInput"
-                    |> Filter.polarityFromString
-                    |> Expect.equal Filter.Allow
+                FilterHelpers.tagFilter "some tag"
+                    |> Filter.filterType
+                    |> Expect.equal "Tags"
+        ]
+
+
+filterTypes : Test
+filterTypes =
+    describe "filterTypes"
+        [ test "return the filter types" <|
+            \() ->
+                Filter.filterTypes
+                    |> Expect.equal [ "Files", "Paths", "Tags" ]
         ]
 
 
@@ -215,34 +288,24 @@ ofType =
         ]
 
 
-filterType : Test
-filterType =
-    describe "filterType"
-        [ test "extracts the filterType from a FileFilter" <|
+polarityFromString : Test
+polarityFromString =
+    describe "polarityFromString"
+        [ test "converts 'Allow' into Polarity.Allow" <|
             \() ->
-                FilterHelpers.fileFilter "some file"
-                    |> Filter.filterType
-                    |> Expect.equal "Files"
-        , test "extracts the filterType from a PathFilter" <|
+                "Allow"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Allow
+        , test "converts 'Deny' into Polarity.Deny" <|
             \() ->
-                FilterHelpers.pathFilter "some path"
-                    |> Filter.filterType
-                    |> Expect.equal "Paths"
-        , test "extracts the filterType from a TagFilter" <|
+                "Deny"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Deny
+        , test "converts 'BadInput' into Polarity.Allow" <|
             \() ->
-                FilterHelpers.tagFilter "some tag"
-                    |> Filter.filterType
-                    |> Expect.equal "Tags"
-        ]
-
-
-filterTypes : Test
-filterTypes =
-    describe "filterTypes"
-        [ test "return the filter types" <|
-            \() ->
-                Filter.filterTypes
-                    |> Expect.equal [ "Files", "Paths", "Tags" ]
+                "BadInput"
+                    |> Filter.polarityFromString
+                    |> Expect.equal Filter.Allow
         ]
 
 
@@ -300,14 +363,4 @@ value =
                 FilterHelpers.tagFilter "some tag"
                     |> Filter.value
                     |> Expect.equal "some tag"
-        ]
-
-
-defaultPolarity : Test
-defaultPolarity =
-    describe "defaultPolarity"
-        [ test "is Allow" <|
-            \() ->
-                Filter.defaultPolarity
-                    |> Expect.equal Filter.Allow
         ]

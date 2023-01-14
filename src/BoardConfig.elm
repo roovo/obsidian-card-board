@@ -5,6 +5,7 @@ module BoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_6_0
     , default
     , encoder
     , filterPolarity
@@ -146,6 +147,14 @@ encoder =
         |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.encoder
         |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.encoder
         |> TsEncode.buildUnion
+
+
+decoder_v_0_6_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_6_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_5_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_5_0
+        ]
 
 
 decoder_v_0_5_0 : TsDecode.Decoder BoardConfig

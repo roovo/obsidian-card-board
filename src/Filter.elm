@@ -1,8 +1,10 @@
 module Filter exposing
     ( Filter
     , Polarity(..)
+    , Scope(..)
     , decoder
     , defaultPolarity
+    , defaultScope
     , dummy
     , encoder
     , filterType
@@ -12,6 +14,8 @@ module Filter exposing
     , polarityDecoder
     , polarityEncoder
     , polarityFromString
+    , scopeDecoder
+    , scopeEncoder
     , updatePath
     , value
     )
@@ -35,6 +39,12 @@ type Polarity
     | Deny
 
 
+type Scope
+    = TopLevelOnly
+    | SubTasksOnly
+    | Both
+
+
 dummy : Filter
 dummy =
     TagFilter ""
@@ -48,6 +58,11 @@ filterTypes =
 defaultPolarity : Polarity
 defaultPolarity =
     Allow
+
+
+defaultScope : Scope
+defaultScope =
+    Both
 
 
 
@@ -114,6 +129,35 @@ polarityFromString source =
 
     else
         Allow
+
+
+scopeEncoder : TsEncode.Encoder Scope
+scopeEncoder =
+    TsEncode.union
+        (\vTopLevelOnly vSubTasksOnly vBoth v ->
+            case v of
+                TopLevelOnly ->
+                    vTopLevelOnly
+
+                SubTasksOnly ->
+                    vSubTasksOnly
+
+                Both ->
+                    vBoth
+        )
+        |> TsEncode.variantLiteral (JE.string "TopLevelOnly")
+        |> TsEncode.variantLiteral (JE.string "SubTasksOnly")
+        |> TsEncode.variantLiteral (JE.string "Both")
+        |> TsEncode.buildUnion
+
+
+scopeDecoder : TsDecode.Decoder Scope
+scopeDecoder =
+    TsDecode.oneOf
+        [ TsDecode.literal TopLevelOnly (JE.string "TopLevelOnly")
+        , TsDecode.literal SubTasksOnly (JE.string "SubTasksOnly")
+        , TsDecode.literal Both (JE.string "Both")
+        ]
 
 
 
