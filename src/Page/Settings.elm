@@ -788,19 +788,27 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagFilterScopeStyle : String
                 tagFilterScopeStyle =
-                    if config.showFilteredTags then
-                        " is-enabled"
+                    case config.filterScope of
+                        Filter.TopLevelOnly ->
+                            ""
 
-                    else
-                        " is-mid-enabled"
+                        Filter.SubTasksOnly ->
+                            " is-mid-enabled"
+
+                        Filter.Both ->
+                            " is-enabled"
 
                 tagFilterScopeText : String
                 tagFilterScopeText =
-                    if config.showFilteredTags then
-                        "Both"
+                    case config.filterScope of
+                        Filter.TopLevelOnly ->
+                            "Top level"
 
-                    else
-                        "Sub-tasks"
+                        Filter.SubTasksOnly ->
+                            "Sub-tasks"
+
+                        Filter.Both ->
+                            "Both"
             in
             [ Html.div [ class "setting-items-inner" ]
                 [ Html.div [ class "setting-item" ]
@@ -965,19 +973,27 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagFilterScopeStyle : String
                 tagFilterScopeStyle =
-                    if config.showFilteredTags then
-                        " is-enabled"
+                    case config.filterScope of
+                        Filter.TopLevelOnly ->
+                            ""
 
-                    else
-                        " is-mid-enabled"
+                        Filter.SubTasksOnly ->
+                            " is-mid-enabled"
+
+                        Filter.Both ->
+                            " is-enabled"
 
                 tagFilterScopeText : String
                 tagFilterScopeText =
-                    if config.showFilteredTags then
-                        "Both"
+                    case config.filterScope of
+                        Filter.TopLevelOnly ->
+                            "Top level"
 
-                    else
-                        "Sub-tasks"
+                        Filter.SubTasksOnly ->
+                            "Sub-tasks"
+
+                        Filter.Both ->
+                            "Both"
 
                 tagText : String
                 tagText =
