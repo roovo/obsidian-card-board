@@ -1,10 +1,6 @@
-- add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
-  always be empty as by definition tasks on the board will always have one of the allow filter tags. Even
-  better, as well as this disable the input and set it to off so the column cannot be displayed.
-
-- simplify parsing as per typing tutor
 
 # Cleanups
+- simplify parsing as per typing tutor
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?

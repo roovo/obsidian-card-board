@@ -944,6 +944,17 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
         ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
+                hasUntaggedWarning : Bool
+                hasUntaggedWarning =
+                    let
+                        hasAnyTagFilters : Bool
+                        hasAnyTagFilters =
+                            (Dict.values <| MultiSelect.selectedItems multiselect)
+                                |> Filter.ofType "tagFilter"
+                                |> (not << List.isEmpty)
+                    in
+                    config.filterPolarity == Filter.Allow && hasAnyTagFilters
+
                 includeOthersStyle : String
                 includeOthersStyle =
                     if config.includeOthers then
@@ -1005,6 +1016,22 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     config.columns
                         |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
                         |> String.join "\n"
+
+                untaggedWarningClass : String
+                untaggedWarningClass =
+                    if hasUntaggedWarning then
+                        " has-error"
+
+                    else
+                        ""
+
+                untaggedWarningText : List (Html Msg)
+                untaggedWarningText =
+                    if hasUntaggedWarning then
+                        [ Html.div [ class "has-error" ] [ Html.text "Will never contain any tasks as you have configured tag filters in Allow mode." ] ]
+
+                    else
+                        []
             in
             [ Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1150,14 +1177,16 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
+                    ([ Html.div [ class "setting-item-name" ]
                         [ Html.text "Include untagged" ]
-                    , Html.div [ class "setting-item-description" ]
+                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "Whether to include a column for tasks with no tags." ]
-                    ]
+                     ]
+                        ++ untaggedWarningText
+                    )
                 , Html.div [ class "setting-item-control" ]
                     [ Html.div
-                        [ class <| "checkbox-container" ++ includeUntaggedStyle
+                        [ class <| "checkbox-container" ++ includeUntaggedStyle ++ untaggedWarningClass
                         , onClick ToggleIncludeUntagged
                         ]
                         []
