@@ -26,6 +26,7 @@ suite =
         , toggleIncludeUntagged
         , toggleShowColumnTags
         , toggleShowFilteredTags
+        , toggleTagFilterScope
         , updateBoardType
         , updateCompletedCount
         , updateFilters
@@ -233,6 +234,66 @@ toggleShowFilteredTags =
                     |> extractTagBoardConfig
                     |> Maybe.map .showFilteredTags
                     |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
+        ]
+
+
+toggleTagFilterScope : Test
+toggleTagFilterScope =
+    describe "toggleTagFilterScope"
+        [ test "toggles TopLevelOnly -> SubTasksOnly for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.TopLevelOnly })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.SubTasksOnly)
+        , test "toggles SubTasksOnly -> Both for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.SubTasksOnly })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.Both)
+        , test "toggles Both -> TopLevelOnly for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.Both })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.TopLevelOnly)
+        , test "toggles TopLevelOnly -> SubTasksOnly for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.TopLevelOnly })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.SubTasksOnly)
+        , test "toggles SubTasksOnly -> Both for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.SubTasksOnly })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.Both)
+        , test "toggles Both -> TopLevelOnly for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.Both })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.TopLevelOnly)
         ]
 
 

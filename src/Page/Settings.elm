@@ -111,6 +111,7 @@ type Msg
     | ToggleIncludeUntagged
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
+    | ToggleTagFilterScope
 
 
 switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
@@ -259,6 +260,9 @@ update msg model =
 
         ToggleShowFilteredTags ->
             mapBoardBeingEdited BoardConfig.toggleShowFilteredTags model
+
+        ToggleTagFilterScope ->
+            mapBoardBeingEdited BoardConfig.toggleTagFilterScope model
 
 
 selectedItemLabel : Filter -> String
@@ -868,6 +872,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                             [ Html.text tagFilterScopeText ]
                         , Html.div
                             [ class <| "checkbox-container" ++ tagFilterScopeStyle
+                            , onClick ToggleTagFilterScope
                             ]
                             []
                         ]
@@ -1058,6 +1063,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         [ Html.text tagFilterScopeText ]
                     , Html.div
                         [ class <| "checkbox-container" ++ tagFilterScopeStyle
+                        , onClick ToggleTagFilterScope
                         ]
                         []
                     ]

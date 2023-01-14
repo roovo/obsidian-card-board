@@ -20,6 +20,7 @@ module BoardConfig exposing
     , toggleIncludeUntagged
     , toggleShowColumnTags
     , toggleShowFilteredTags
+    , toggleTagFilterScope
     , updateBoardType
     , updateCompletedCount
     , updateFilterPolarity
@@ -30,7 +31,7 @@ module BoardConfig exposing
 
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
-import Filter exposing (Filter, Polarity)
+import Filter exposing (Filter, Polarity, Scope)
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
 import TsJson.Decode as TsDecode
@@ -256,6 +257,29 @@ toggleShowFilteredTags config =
 
         TagBoardConfig boardConfig ->
             TagBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
+
+
+toggleTagFilterScope : BoardConfig -> BoardConfig
+toggleTagFilterScope config =
+    let
+        cycleScope : Scope -> Scope
+        cycleScope scope =
+            case scope of
+                Filter.TopLevelOnly ->
+                    Filter.SubTasksOnly
+
+                Filter.SubTasksOnly ->
+                    Filter.Both
+
+                Filter.Both ->
+                    Filter.TopLevelOnly
+    in
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
 
 
 updateBoardType : String -> BoardConfig -> BoardConfig
