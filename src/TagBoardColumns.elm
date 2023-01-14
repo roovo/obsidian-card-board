@@ -11,16 +11,9 @@ import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import ColumnNames exposing (ColumnNames)
-import Filter exposing (Filter, Polarity)
 import List.Extra as LE
-import Parser as P exposing ((|.), (|=), Parser)
-import ParserHelper
-import String.Extra as SE
 import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
-import TsJson.Decode as TsDecode
-import TsJson.Encode as TsEncode
 
 
 

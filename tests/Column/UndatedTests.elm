@@ -10,7 +10,6 @@ import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagList
 import TaskItem exposing (TaskItem)
-import TaskList
 import Test exposing (..)
 
 
@@ -205,6 +204,7 @@ defaultColumnNames =
 defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     let
+        default : DateBoardConfig
         default =
             DateBoardConfig.default
     in

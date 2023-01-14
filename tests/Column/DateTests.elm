@@ -10,7 +10,6 @@ import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagList
 import TaskItem exposing (TaskItem)
-import TaskList
 import Test exposing (..)
 import TimeWithZone exposing (TimeWithZone)
 

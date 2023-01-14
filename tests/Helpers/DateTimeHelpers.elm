@@ -13,7 +13,7 @@ module Helpers.DateTimeHelpers exposing
     )
 
 import Iso8601
-import Time
+import Time exposing (Posix)
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -74,6 +74,7 @@ offsetDateString offset =
 offsetNowWithZone : Int -> TimeWithZone
 offsetNowWithZone offset =
     let
+        targetTime : Posix
         targetTime =
             today
                 |> Iso8601.toTime

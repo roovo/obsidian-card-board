@@ -1,20 +1,10 @@
 module TagBoardConfigTests exposing (suite)
 
-import Column
-import ColumnNames exposing (ColumnNames)
-import DataviewTaskCompletion
 import Expect
-import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
-import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
-import Helpers.FilterHelpers as FilterHelpers
-import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
-import TagList
-import TaskItem
-import TaskList
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 

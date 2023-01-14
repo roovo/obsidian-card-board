@@ -9,13 +9,7 @@ module DateBoardConfig exposing
     , encoder
     )
 
-import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
-import Date exposing (Date)
 import Filter exposing (Filter, Polarity, Scope)
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 

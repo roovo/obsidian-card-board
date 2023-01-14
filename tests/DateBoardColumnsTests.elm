@@ -5,21 +5,13 @@ import ColumnNames exposing (ColumnNames)
 import DateBoardColumns exposing (DateBoardColumns)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
-import Filter
-import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
-import Helpers.DecodeHelpers as DecodeHelpers
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
-import Helpers.TaskListHelpers as TaskListHelpers
-import List.Extra as LE
 import Parser
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import TimeWithZone exposing (TimeWithZone)
-import TsJson.Encode as TsEncode
 
 
 suite : Test

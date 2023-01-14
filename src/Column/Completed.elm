@@ -96,10 +96,12 @@ forTagBoard tagBoardConfig columnNames =
 addTaskItem : List PlacementResult -> TaskItem -> CompletedColumn -> CompletedColumn
 addTaskItem placementResults taskItem ((CompletedColumn c) as completedColumn) =
     let
+        filteredPlacements : List PlacementResult
         filteredPlacements =
             placementResults
                 |> List.filter (\r -> r /= Column.DoesNotBelong)
 
+        shouldBeAdded : Bool
         shouldBeAdded =
             filteredPlacements
                 |> List.all (\r -> r == Column.CompletedInThisColumn)
@@ -134,11 +136,6 @@ asColumn completedColumn =
 -- PRIVATE
 
 
-belongs : TaskItem -> Bool
-belongs =
-    not << TaskItem.hasTags
-
-
 completedCount : CompletedColumn -> Int
 completedCount =
     .completedCount << config
@@ -147,11 +144,6 @@ completedCount =
 config : CompletedColumn -> Config
 config (CompletedColumn c) =
     c
-
-
-isCompleted : TaskItem -> Bool
-isCompleted taskItem =
-    TaskItem.isCompleted taskItem
 
 
 isEnabled : CompletedColumn -> Bool

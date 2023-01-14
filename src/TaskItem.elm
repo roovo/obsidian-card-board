@@ -1,6 +1,7 @@
 module TaskItem exposing
     ( AutoCompletion(..)
     , Completion(..)
+    , Content
     , TaskItem
     , TaskItemFields
     , allSubtasksWithMatchingTagCompleted
@@ -136,6 +137,7 @@ defaultFields =
 allSubtasksWithMatchingTagCompleted : String -> TaskItem -> Bool
 allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
     let
+        subtasksWithMatchingTag : List TaskItem
         subtasksWithMatchingTag =
             taskItem
                 |> descendantTasks
@@ -199,7 +201,7 @@ descendantTaskHasThisTag : String -> TaskItem -> Bool
 descendantTaskHasThisTag tagToMatch =
     let
         descendantTasksTags : TaskItem -> TagList
-        descendantTasksTags ((TaskItem fields_ _) as taskItem) =
+        descendantTasksTags taskItem =
             descendantTasks taskItem
                 |> List.map (fields >> .tags)
                 |> List.foldl TagList.append TagList.empty
@@ -242,6 +244,7 @@ filePath =
 hasAnyIncompleteSubtasksWithTagsOtherThanThese : List String -> TaskItem -> Bool
 hasAnyIncompleteSubtasksWithTagsOtherThanThese tagsToMatch taskItem =
     let
+        subtasksWithTagsOtherThanThese : List TaskItem
         subtasksWithTagsOtherThanThese =
             taskItem
                 |> descendantTasks
@@ -355,7 +358,7 @@ tags ((TaskItem fields_ _) as taskItem) =
 
 
 topLevelTags : TaskItem -> TagList
-topLevelTags ((TaskItem fields_ _) as taskItem) =
+topLevelTags taskItem =
     taskItem
         |> fields
         |> .tags
@@ -450,7 +453,7 @@ topLevelTaskHasThisTag : String -> TaskItem -> Bool
 topLevelTaskHasThisTag tagToMatch =
     let
         topLevelTasksTags : TaskItem -> TagList
-        topLevelTasksTags ((TaskItem fields_ _) as taskItem) =
+        topLevelTasksTags (TaskItem fields_ _) =
             fields_.tags
     in
     TagList.containsTagMatching tagToMatch << topLevelTasksTags

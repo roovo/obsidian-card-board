@@ -10,14 +10,9 @@ import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.Date as DateColumn exposing (DateColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
-import Date exposing (Date)
 import DateBoardConfig exposing (DateBoardConfig)
-import Filter exposing (Filter, Polarity(..))
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
-import TsJson.Decode as TsDecode
-import TsJson.Encode as TsEncode
 
 
 
@@ -43,12 +38,15 @@ type alias Config =
 init : TimeWithZone -> ColumnNames -> DateBoardConfig -> DateBoardColumns
 init now columnNames dateBoardConfig =
     let
+        todayName : String
         todayName =
             ColumnNames.nameFor "today" columnNames
 
+        tomorrowName : String
         tomorrowName =
             ColumnNames.nameFor "tomorrow" columnNames
 
+        futureName : String
         futureName =
             ColumnNames.nameFor "future" columnNames
     in

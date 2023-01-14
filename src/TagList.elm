@@ -17,7 +17,7 @@ module TagList exposing
 
 import List.Extra as LE
 import Parser
-import Set
+import Set exposing (Set)
 import Tag exposing (Tag)
 
 
@@ -106,11 +106,13 @@ containsTagMatchingOneOf candidates tagList =
 containsTagOtherThanThese : List String -> TagList -> Bool
 containsTagOtherThanThese candidates tagList =
     let
+        fromTagList : Set String
         fromTagList =
             tagList
                 |> toList
                 |> Set.fromList
 
+        fromCandidates : Set String
         fromCandidates =
             Set.fromList candidates
     in

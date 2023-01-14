@@ -215,7 +215,7 @@ update msg model =
         ModalCloseClicked ->
             handleClose model
 
-        PathsRequested page searchTerm ->
+        PathsRequested _ _ ->
             let
                 cmd : Cmd Msg
                 cmd =
@@ -772,7 +772,7 @@ columNamesForm columnNames =
 boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
 boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
-        ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
+        ( Just (BoardConfig.DateBoardConfig config), Just _ ) ->
             let
                 includeUndatedStyle : String
                 includeUndatedStyle =

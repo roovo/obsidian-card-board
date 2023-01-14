@@ -11,15 +11,10 @@ module TagBoardConfig exposing
     , encoder
     )
 
-import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
-import List.Extra as LE
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import String.Extra as SE
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 

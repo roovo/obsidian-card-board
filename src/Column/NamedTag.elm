@@ -6,7 +6,6 @@ module Column.NamedTag exposing
     )
 
 import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
 import Filter
 import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
@@ -68,6 +67,7 @@ init tagBoardConfig columnConfig =
 addTaskItem : TaskItem -> NamedTagColumn -> ( NamedTagColumn, Column.PlacementResult )
 addTaskItem taskItem ((NamedTagColumn c) as namedTagColumn) =
     let
+        columnTag : String
         columnTag =
             tag namedTagColumn
     in

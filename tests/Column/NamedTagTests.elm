@@ -9,7 +9,6 @@ import Parser
 import TagBoardConfig exposing (TagBoardConfig)
 import TagList
 import TaskItem exposing (TaskItem)
-import TaskList
 import Test exposing (..)
 
 

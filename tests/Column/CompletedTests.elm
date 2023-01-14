@@ -1,7 +1,7 @@
 module Column.CompletedTests exposing (suite)
 
 import Column
-import Column.Completed as CompletedColumn exposing (CompletedColumn)
+import Column.Completed as CompletedColumn
 import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
@@ -11,7 +11,6 @@ import Parser
 import TagBoardConfig exposing (TagBoardConfig)
 import TagList
 import TaskItem exposing (TaskItem)
-import TaskList
 import Test exposing (..)
 
 

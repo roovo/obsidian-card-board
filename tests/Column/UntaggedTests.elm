@@ -8,7 +8,6 @@ import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
-import TaskList
 import Test exposing (..)
 
 
@@ -198,6 +197,7 @@ defaultColumnNames =
 defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
     let
+        default : TagBoardConfig
         default =
             TagBoardConfig.default
     in
