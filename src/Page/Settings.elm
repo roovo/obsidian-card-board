@@ -770,6 +770,14 @@ boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
         ( Just (BoardConfig.DateBoardConfig config), Just index ) ->
             let
+                includeUndatedStyle : String
+                includeUndatedStyle =
+                    if config.includeUndated then
+                        " is-enabled"
+
+                    else
+                        ""
+
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
                     if config.showFilteredTags then
@@ -778,13 +786,21 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     else
                         ""
 
-                includeUndatedStyle : String
-                includeUndatedStyle =
-                    if config.includeUndated then
+                tagFilterScopeStyle : String
+                tagFilterScopeStyle =
+                    if config.showFilteredTags then
                         " is-enabled"
 
                     else
-                        ""
+                        " is-mid-enabled"
+
+                tagFilterScopeText : String
+                tagFilterScopeText =
+                    if config.showFilteredTags then
+                        "Both"
+
+                    else
+                        "Sub-tasks"
             in
             [ Html.div [ class "setting-items-inner" ]
                 [ Html.div [ class "setting-item" ]
@@ -835,7 +851,23 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 , Html.div [ class "setting-item" ]
                     [ Html.div [ class "setting-item-info" ]
                         [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Show filter tags on cards" ]
+                            [ Html.text "Tag filter scope" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ Html.div []
+                            [ Html.text tagFilterScopeText ]
+                        , Html.div
+                            [ class <| "checkbox-container" ++ tagFilterScopeStyle
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Show tag filters on cards" ]
                         , Html.div [ class "setting-item-description" ]
                             [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
                         ]
@@ -899,6 +931,22 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
         ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
             let
+                includeOthersStyle : String
+                includeOthersStyle =
+                    if config.includeOthers then
+                        " is-enabled"
+
+                    else
+                        ""
+
+                includeUntaggedStyle : String
+                includeUntaggedStyle =
+                    if config.includeUntagged then
+                        " is-enabled"
+
+                    else
+                        ""
+
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
                     if config.showFilteredTags then
@@ -915,21 +963,21 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     else
                         ""
 
-                includeOthersStyle : String
-                includeOthersStyle =
-                    if config.includeOthers then
+                tagFilterScopeStyle : String
+                tagFilterScopeStyle =
+                    if config.showFilteredTags then
                         " is-enabled"
 
                     else
-                        ""
+                        " is-mid-enabled"
 
-                includeUntaggedStyle : String
-                includeUntaggedStyle =
-                    if config.includeUntagged then
-                        " is-enabled"
+                tagFilterScopeText : String
+                tagFilterScopeText =
+                    if config.showFilteredTags then
+                        "Both"
 
                     else
-                        ""
+                        "Sub-tasks"
 
                 tagText : String
                 tagText =
@@ -981,6 +1029,22 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     ]
                 , Html.div [ class "setting-item-control" ]
                     [ polaritySelect config.filterPolarity ]
+                ]
+            , Html.div [ class "setting-item" ]
+                [ Html.div [ class "setting-item-info" ]
+                    [ Html.div [ class "setting-item-name" ]
+                        [ Html.text "Tag filter scope" ]
+                    , Html.div [ class "setting-item-description" ]
+                        [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
+                    ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.div []
+                        [ Html.text tagFilterScopeText ]
+                    , Html.div
+                        [ class <| "checkbox-container" ++ tagFilterScopeStyle
+                        ]
+                        []
+                    ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
