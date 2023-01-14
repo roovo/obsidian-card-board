@@ -1,8 +1,3 @@
-- what about behavior if allowing filter by tag to apply to sub-tasks when one subtask has a tag that
-  means it should be filtered out but another doesn't....  at the moment it filters the whole card out....
-
-- think I might not give an option for this but to only look at the top level task when filtering by tag.
-
 - add a note to tagboard settings that if there is an allow filter that includes tags then the untagged column will
   always be empty as by definition tasks on the board will always have one of the allow filter tags. Even
   better, as well as this disable the input and set it to off so the column cannot be displayed.

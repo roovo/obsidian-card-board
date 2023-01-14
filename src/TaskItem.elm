@@ -7,6 +7,7 @@ module TaskItem exposing
     , completedPosix
     , completion
     , containsId
+    , descendantTaskHasThisTag
     , descendantTasks
     , due
     , dueRataDie
@@ -37,6 +38,7 @@ module TaskItem exposing
     , titleWithTags
     , toToggledString
     , topLevelTags
+    , topLevelTaskHasThisTag
     , updateFilePath
     )
 
@@ -191,6 +193,20 @@ containsId targetId taskItem =
 descendantTasks : TaskItem -> List TaskItem
 descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
+
+
+descendantTaskHasThisTag : String -> TaskItem -> Bool
+descendantTaskHasThisTag tagToMatch =
+    let
+        descendantTasksTags : TaskItem -> TagList
+        descendantTasksTags ((TaskItem fields_ _) as taskItem) =
+            descendantTasks taskItem
+                |> List.map (fields >> .tags)
+                |> List.foldl TagList.append TagList.empty
+                |> TagList.unique
+                |> TagList.sort
+    in
+    TagList.containsTagMatching tagToMatch << descendantTasksTags
 
 
 due : TaskItem -> Maybe Date
@@ -428,6 +444,16 @@ titleWithTags taskItem =
         |> .contents
         |> buildContents
         |> String.join " "
+
+
+topLevelTaskHasThisTag : String -> TaskItem -> Bool
+topLevelTaskHasThisTag tagToMatch =
+    let
+        topLevelTasksTags : TaskItem -> TagList
+        topLevelTasksTags ((TaskItem fields_ _) as taskItem) =
+            fields_.tags
+    in
+    TagList.containsTagMatching tagToMatch << topLevelTasksTags
 
 
 

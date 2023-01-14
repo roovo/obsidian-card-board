@@ -9,6 +9,7 @@ module BoardConfig exposing
     , default
     , encoder
     , filterPolarity
+    , filterScope
     , filters
     , fromBoardType
     , isForDateBoard
@@ -118,6 +119,16 @@ filterPolarity config =
 
         TagBoardConfig boardConfig ->
             boardConfig.filterPolarity
+
+
+filterScope : BoardConfig -> Scope
+filterScope config =
+    case config of
+        DateBoardConfig boardConfig ->
+            boardConfig.filterScope
+
+        TagBoardConfig boardConfig ->
+            boardConfig.filterScope
 
 
 title : BoardConfig -> String

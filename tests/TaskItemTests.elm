@@ -21,6 +21,7 @@ suite =
         , completedPosix
         , completion
         , containsId
+        , descendantTaskHasThisTag
         , descendantTasks
         , due
         , filePath
@@ -47,6 +48,7 @@ suite =
         , title
         , titleWithTags
         , topLevelTags
+        , topLevelTaskHasThisTag
         , toToggledString
         , updateFilePath
         ]
@@ -307,6 +309,73 @@ containsId =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "fileA" Nothing TagList.empty 0)
                     |> Result.map (TaskItem.containsId (TaskHelpers.taskId "fileA" 2))
                     |> Expect.equal (Ok True)
+        ]
+
+
+descendantTaskHasThisTag : Test
+descendantTaskHasThisTag =
+    describe "descendantTaskHasThisTag"
+        [ test "returns False for (theTag) '- [ ] foo" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
+        , test "returns False for (theTag) '- [ ] foo #theTag'" <|
+            \() ->
+                "- [ ] foo #theTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
+        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #otherTag'" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar #otherTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
+        , test "returns True for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar #theTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok True)
+        ]
+
+
+descendantTasks : Test
+descendantTasks =
+    describe "descendantTasks"
+        [ test "parses descendantTasks" <|
+            \() ->
+                "- [ ] foo\n - [ ] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "stops parsing descendantTasks at the end of indentation" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "it is happy even if the level of indentation decreases as long as still indented" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar", "baz" ])
+        , test "consumes <eol> character where there are descendantTasks" <|
+            \() ->
+                "- [X] foo\n - [ ] sub foo\n- [ ] bar"
+                    |> Parser.run
+                        (Parser.succeed (\first second -> [ first, second ])
+                            |= TaskItemHelpers.basicParser
+                            |= TaskItemHelpers.basicParser
+                        )
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "foo", "bar" ])
         ]
 
 
@@ -1085,43 +1154,6 @@ parsing =
         ]
 
 
-descendantTasks : Test
-descendantTasks =
-    describe "descendantTasks"
-        [ test "parses descendantTasks" <|
-            \() ->
-                "- [ ] foo\n - [ ] bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar" ])
-        , test "stops parsing descendantTasks at the end of indentation" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar", "baz" ])
-        , test "it is happy even if the level of indentation decreases as long as still indented" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar\n - [ ] baz\n- [ ] roo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "bar", "baz" ])
-        , test "consumes <eol> character where there are descendantTasks" <|
-            \() ->
-                "- [X] foo\n - [ ] sub foo\n- [ ] bar"
-                    |> Parser.run
-                        (Parser.succeed (\first second -> [ first, second ])
-                            |= TaskItemHelpers.basicParser
-                            |= TaskItemHelpers.basicParser
-                        )
-                    |> Result.map (List.map TaskItem.title)
-                    |> Expect.equal (Ok [ "foo", "bar" ])
-        ]
-
-
 removeTags : Test
 removeTags =
     describe "removeTags"
@@ -1319,6 +1351,36 @@ topLevelTags =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
                     |> Result.map TaskItem.topLevelTags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
+        ]
+
+
+topLevelTaskHasThisTag : Test
+topLevelTaskHasThisTag =
+    describe "topLevelTaskHasThisTag"
+        [ test "returns False for (theTag) '- [ ] foo" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
+        , test "returns True for (theTag) '- [ ] foo #theTag'" <|
+            \() ->
+                "- [ ] foo #theTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok True)
+        , test "returns False for (theTag) '- [ ] foo #otherTag \n  - [ ] bar #otherTag'" <|
+            \() ->
+                "- [ ] foo #otherTag\n  - [ ] bar #otherTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
+        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar #theTag"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
+                    |> Expect.equal (Ok False)
         ]
 
 

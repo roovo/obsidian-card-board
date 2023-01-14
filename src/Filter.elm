@@ -208,8 +208,8 @@ value filter =
             f
 
 
-isAllowed : TaskItem -> Filter -> Bool
-isAllowed taskItem filter =
+isAllowed : Scope -> TaskItem -> Filter -> Bool
+isAllowed scope taskItem filter =
     case filter of
         FileFilter filePath ->
             TaskItem.isFromFile filePath taskItem
@@ -218,7 +218,15 @@ isAllowed taskItem filter =
             fileIsFromPath (TaskItem.filePath taskItem) path
 
         TagFilter tag ->
-            TaskItem.hasThisTag tag taskItem
+            case scope of
+                TopLevelOnly ->
+                    TaskItem.topLevelTaskHasThisTag tag taskItem
+
+                SubTasksOnly ->
+                    TaskItem.descendantTaskHasThisTag tag taskItem
+
+                Both ->
+                    TaskItem.hasThisTag tag taskItem
 
 
 

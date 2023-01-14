@@ -48,7 +48,9 @@ columnsDateBoard =
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "an undated incomplete"
+                        , "an undated incomplete with subtask"
                         , "incomplete with cTag"
+                        , "incomplete with subtask with cTag"
                         , "untagged incomplete"
                         ]
         , test "can filter tasks to NOT be from a given file" <|
@@ -113,7 +115,7 @@ columnsDateBoard =
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal []
-        , test "can filter tasks to have a given tag" <|
+        , test "can filter tasks to have a given tag checking both top level and sub tasks" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
@@ -123,6 +125,25 @@ columnsDateBoard =
                                 | includeUndated = True
                                 , filters = [ FilterHelpers.tagFilter "aTag" ]
                                 , filterPolarity = Filter.Allow
+                                , filterScope = Filter.Both
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.thingsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "invalid date incomplete", "invalid date incomplete with sub-task" ]
+        , test "can filter tasks to have a given tag checking just top level tasks" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        ColumnNames.default
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters = [ FilterHelpers.tagFilter "aTag" ]
+                                , filterPolarity = Filter.Allow
+                                , filterScope = Filter.TopLevelOnly
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -130,7 +151,25 @@ columnsDateBoard =
                     |> List.map Card.taskItem
                     |> List.map TaskItem.title
                     |> Expect.equal [ "invalid date incomplete" ]
-        , test "can filter tasks to NOT have a given tag" <|
+        , test "can filter tasks to have a given tag checking just sub-tasks" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        ColumnNames.default
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters = [ FilterHelpers.tagFilter "aTag" ]
+                                , filterPolarity = Filter.Allow
+                                , filterScope = Filter.SubTasksOnly
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.thingsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "invalid date incomplete with sub-task" ]
+        , test "can filter tasks to NOT have a given tag checking both the top level task and its sub-tasks" <|
             \() ->
                 TaskListHelpers.exampleDateBoardTaskList
                     |> Board.init
@@ -143,6 +182,7 @@ columnsDateBoard =
                                     , FilterHelpers.tagFilter "cTag"
                                     ]
                                 , filterPolarity = Filter.Deny
+                                , filterScope = Filter.Both
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -151,7 +191,65 @@ columnsDateBoard =
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "an undated incomplete"
+                        , "an undated incomplete with subtask"
                         , "more undated incomplete"
+                        , "untagged incomplete"
+                        ]
+        , test "can filter tasks to NOT have a given tag checking just the top level task" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        ColumnNames.default
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters =
+                                    [ FilterHelpers.tagFilter "aTag"
+                                    , FilterHelpers.tagFilter "cTag"
+                                    ]
+                                , filterPolarity = Filter.Deny
+                                , filterScope = Filter.TopLevelOnly
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.thingsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "an undated incomplete with subtask"
+                        , "incomplete with subtask with cTag"
+                        , "invalid date incomplete with sub-task"
+                        , "more undated incomplete"
+                        , "untagged incomplete"
+                        ]
+        , test "can filter tasks to NOT have a given tag checking just the sub tasks" <|
+            \() ->
+                TaskListHelpers.exampleDateBoardTaskList
+                    |> Board.init
+                        ColumnNames.default
+                        (BoardConfig.DateBoardConfig
+                            { defaultDateBoardConfig
+                                | includeUndated = True
+                                , filters =
+                                    [ FilterHelpers.tagFilter "aTag"
+                                    , FilterHelpers.tagFilter "cTag"
+                                    ]
+                                , filterPolarity = Filter.Deny
+                                , filterScope = Filter.SubTasksOnly
+                            }
+                        )
+                    |> Board.columns DateTimeHelpers.nowWithZone 0
+                    |> BoardHelpers.thingsInColumn "Undated"
+                    |> List.map Card.taskItem
+                    |> List.map TaskItem.title
+                    |> Expect.equal
+                        [ "an undated incomplete"
+                        , "an undated incomplete with subtask"
+                        , "incomplete with cTag"
+                        , "invalid date incomplete"
+                        , "more undated incomplete"
+                        , "more undated incomplete with cTag"
                         , "untagged incomplete"
                         ]
         , test "filters tasks that are either in a file or path AND have one of the given tags" <|
@@ -169,6 +267,7 @@ columnsDateBoard =
                                     , FilterHelpers.tagFilter "bTag"
                                     ]
                                 , filterPolarity = Filter.Allow
+                                , filterScope = Filter.Both
                             }
                         )
                     |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -177,7 +276,9 @@ columnsDateBoard =
                     |> List.map TaskItem.title
                     |> Expect.equal
                         [ "an undated incomplete"
+                        , "an undated incomplete with subtask"
                         , "invalid date incomplete"
+                        , "invalid date incomplete with sub-task"
                         ]
         , test "filters tasks that are NOT in the given files and paths AND DO NOT have one of the given tags" <|
             \() ->

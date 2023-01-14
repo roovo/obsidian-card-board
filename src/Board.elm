@@ -10,7 +10,7 @@ import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import DateBoardColumns exposing (DateBoardColumns)
 import DateBoardConfig exposing (DateBoardConfig)
-import Filter exposing (Filter, Polarity)
+import Filter exposing (Filter, Polarity, Scope)
 import TagBoardColumns exposing (TagBoardColumns)
 import TagBoardConfig
 import TaskItem exposing (TaskItem)
@@ -81,26 +81,30 @@ filterTaskList config taskList =
         filterPolarity : Polarity
         filterPolarity =
             BoardConfig.filterPolarity config
+
+        filterScope : Scope
+        filterScope =
+            BoardConfig.filterScope config
     in
     taskList
-        |> filterByFilesystem filterPolarity filters
-        |> filterByTag filterPolarity filters
+        |> filterByFilesystem filterPolarity filterScope filters
+        |> filterByTag filterPolarity filterScope filters
 
 
-filterByFilesystem : Polarity -> List Filter -> TaskList -> TaskList
-filterByFilesystem polarity filters taskList =
+filterByFilesystem : Polarity -> Scope -> List Filter -> TaskList -> TaskList
+filterByFilesystem polarity scope filters taskList =
     List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths") filters
-        |> applyFilters taskList polarity
+        |> applyFilters taskList polarity scope
 
 
-filterByTag : Polarity -> List Filter -> TaskList -> TaskList
-filterByTag polarity filters taskList =
+filterByTag : Polarity -> Scope -> List Filter -> TaskList -> TaskList
+filterByTag polarity scope filters taskList =
     List.filter (\f -> Filter.filterType f == "Tags") filters
-        |> applyFilters taskList polarity
+        |> applyFilters taskList polarity scope
 
 
-applyFilters : TaskList -> Polarity -> List Filter -> TaskList
-applyFilters taskList polarity filters =
+applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
+applyFilters taskList polarity scope filters =
     let
         operator : Bool -> Bool
         operator =
@@ -124,7 +128,7 @@ applyFilters taskList polarity filters =
         taskList
 
     else
-        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed t) filters) taskList
+        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
 convertToCards : Int -> List (Column TaskItem) -> List (Column Card)
