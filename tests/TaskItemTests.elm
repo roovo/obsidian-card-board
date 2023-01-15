@@ -6,6 +6,7 @@ import Expect
 import GlobalSettings
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
+import Maybe.Extra as ME
 import Parser exposing ((|=))
 import TagList
 import TaskItem exposing (Completion(..))
@@ -1474,6 +1475,32 @@ toToggledString =
                     |> Result.withDefault []
                     |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
+        , test "preserves leading whitepace" <|
+            \() ->
+                "- [ ] foo\n   - [ ] bar #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.toMaybe
+                    |> Maybe.map TaskItem.descendantTasks
+                    |> Maybe.map List.head
+                    |> ME.join
+                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
+        , test "preserves a '+' list marker" <|
+            \() ->
+                "+ [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Expect.equal (Ok "+ [x] foo #tag1 bar #tag2 ^12345")
+        , test "preserves leading whitepace with a '*' list marker" <|
+            \() ->
+                "- [ ] foo\n   * [ ] bar #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.toMaybe
+                    |> Maybe.map TaskItem.descendantTasks
+                    |> Maybe.map List.head
+                    |> ME.join
+                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Expect.equal (Just "   * [x] bar #tag1 bar #tag2 ^12345")
         ]
 
 

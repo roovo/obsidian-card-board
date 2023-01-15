@@ -1,9 +1,9 @@
-- check TaskItem.toToggledString doesn't change the list marker
 - check original text
 - docs
 
 # Cleanups
 - simplify parsing as per typing tutor
+- replace regex stuff in TaskItem.toToggledSting with some form of token parsing
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?

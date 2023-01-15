@@ -528,7 +528,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
         checkboxRegex : Regex
         checkboxRegex =
             Maybe.withDefault Regex.never <|
-                Regex.fromString "- \\[[ xX]\\]"
+                Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
 
         completionTag : TaskItem -> String
         completionTag t_ =
@@ -615,21 +615,22 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                         |> List.head
                         |> Maybe.map .index
                         |> Maybe.withDefault 0
+                        |> (+) 2
             in
             SE.replaceSlice
                 (toggledCheckbox t_)
                 checkboxIndex
-                (checkboxIndex + 5)
+                (checkboxIndex + 3)
                 taskString
 
         toggledCheckbox : TaskItem -> String
         toggledCheckbox t_ =
             case completion t_ of
                 Incomplete ->
-                    "- [x]"
+                    "[x]"
 
                 _ ->
-                    "- [ ]"
+                    "[ ]"
     in
     fields_.originalText
         |> replaceCheckbox taskItem
