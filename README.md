@@ -15,6 +15,7 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
+- Suppports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
 - Option to choose whether to apply tag filters to top level tasks, sub-tasks, or
   both.
 - Clean-up of many edge cases that led to odd behavior such as cards vanishing
@@ -51,7 +52,10 @@ do this, it must:
 
 - Be in a markdown file.
 - Not be indented.
-- Have the format: `- [ ] Task title`. The format `* [ ] Task title` will also be recognised, but won't stay in that format when you edit the task.
+- Use one of the commonmark supported unordered list formats:
+  - `- [ ] Task title`
+  - `* [ ] Task title`
+  - `+ [ ] Task title`
 
 What appears on the card depends on what your task looks like:
 

@@ -1,5 +1,3 @@
-- docs
-
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
