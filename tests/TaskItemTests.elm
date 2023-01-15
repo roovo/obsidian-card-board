@@ -358,6 +358,13 @@ descendantTasks =
                     |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
+        , test "parses descendantTasks with a different list marker" <|
+            \() ->
+                "- [ ] foo\n + [ ] bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar" ])
         , test "stops parsing descendantTasks at the end of indentation" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"

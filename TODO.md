@@ -1,5 +1,4 @@
 - check TaskItem.toToggledString doesn't change the list marker
-- check for descendant tasks too
 - check original text
 - docs
 
