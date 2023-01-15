@@ -1,4 +1,3 @@
-- check original text
 - docs
 
 # Cleanups

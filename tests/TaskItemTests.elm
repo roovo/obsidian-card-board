@@ -1096,6 +1096,12 @@ originalText =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.originalText
                     |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title ")
+        , test "retains the original line text even with a '*' list marker" <|
+            \() ->
+                "* [X]  the @due(2019-12-30) task @completed(2020-01-01) title "
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalText
+                    |> Expect.equal (Ok "* [X]  the @due(2019-12-30) task @completed(2020-01-01) title ")
         , test "retains leading whitepace for the original line text for descendantTasks" <|
             \() ->
                 "- [X] task\n   \t - [ ] sub-task"
