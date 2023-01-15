@@ -15,7 +15,7 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Suppports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
+- Supports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
 - Option to choose whether to apply tag filters to top level tasks, sub-tasks, or
   both.
 - Clean-up of many edge cases that led to odd behavior such as cards vanishing
