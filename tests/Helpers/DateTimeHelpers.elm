@@ -50,7 +50,7 @@ farFuture =
 -- TIME WITH ZONES
 
 
-now : Time.Posix
+now : Posix
 now =
     offsetNowWithZone 0
         |> .time
@@ -88,7 +88,7 @@ offsetNowWithZone offset =
     }
 
 
-yearStart : Time.Posix
+yearStart : Posix
 yearStart =
     -- 2020-01-01
     Time.millisToPosix 1577836800000
