@@ -1,3 +1,8 @@
+- all common-mark valid tasks (-, +, *)
+- check failure case too
+- check TaskItem.toToggledString doesn't change the list marker
+- check for descendant tasks too
+- check original text
 
 # Cleanups
 - simplify parsing as per typing tutor

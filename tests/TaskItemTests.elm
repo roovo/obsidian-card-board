@@ -1139,9 +1139,15 @@ parsing =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.mapError (always "failed")
                     |> Expect.equal (Err "failed")
-        , test "successfully parses a task with '*' as the list marker" <|
+        , test " parses a task with '*' as the list marker" <|
             \() ->
                 "* [X] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (always "success")
+                    |> Expect.equal (Ok "success")
+        , test " parses a task with '+' as the list marker" <|
+            \() ->
+                "+ [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (always "success")
                     |> Expect.equal (Ok "success")
