@@ -1,6 +1,6 @@
 {
   "name": "cardboard",
-  "version": "0.6.8",
+  "version": "0.7.0",
   "description": "Card based view for your obsidian Tasks",
   "main": "main.js",
   "scripts": {
