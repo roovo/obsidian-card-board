@@ -1,7 +1,7 @@
 {
 	"id": "card-board",
 	"name": "CardBoard",
-	"description": "Display markdown tasks on kanban-style boards.",
+	"description": "Display markdown tasks on kanban style boards.",
 	"version": "0.7.0",
 	"author": "roovo",
 	"authorUrl": "https://github.com/roovo",
