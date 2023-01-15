@@ -15,13 +15,14 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Auto-generated column names (e.g. Untagged, Today, Completed...) can be customized.
-- Honours global RTL mode set in obsidian.
-- Clicking on any tag rendered on a card opens up the obsidian search for that tag.
-- Works with the [Colorful Tag](https://obsidian.md/plugins?id=obsidian-colorful-tag)
-  plugin. Adding this has changed the way tags can be customised using CSS Snippets.  See the
-  [Customising Tags](#customising-tags) section below for info on what any snippets now
-  need to look like to work with the latest version.
+- Suppports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
+- Option to choose whether to apply tag filters to top level tasks, sub-tasks, or
+  both.
+- Clean-up of many edge cases that led to odd behavior such as cards vanishing
+  from boards when marked as complete, or the information on a card changing depending
+  which column it was displayed in.  If you are used to the way things used to work
+  you may well notice a change (hopefully for the best).
+- Sub-task tags now shown inline rather than at the top of the card.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -51,7 +52,10 @@ do this, it must:
 
 - Be in a markdown file.
 - Not be indented.
-- Have the format: `- [ ] Task title`.
+- Use one of the commonmark supported unordered list formats:
+  - `- [ ] Task title`
+  - `* [ ] Task title`
+  - `+ [ ] Task title`
 
 What appears on the card depends on what your task looks like:
 
@@ -173,12 +177,21 @@ encouraging you to do something about them; like do them or move them to a futur
 date if you want to schedule them later.
 
 
+### Completed tasks
+If you choose to show completed tasks on your date board, you will only see
+completed tasks which have a due date unless the Undated column is enabled.
+
+
 ## Tag boards
 If you give your tasks tags, you can use these to set up a tag-board.  So if you
 have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
 you can define a board that shows tasks tagged with these in separate columns:
 
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
+
+
+### Sub-tasks
+Tasks which have sub-tasks with matching tags will also appear on the board.
 
 ### Subtags
 If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
@@ -203,6 +216,24 @@ you can show/hide them in the settings.  If you choose not to show the column ta
 this will hide all the tags used in the settings wherever cards are on the board.
 Only tags that exactly match those used in the settings will be hidden.
 
+### Completed tasks
+When a task is shown in a column due to tags on sub-tasks it will only show in that
+column if those subtasks are incomplete.  So the following
+task is shown only in the Barney column as the Wilma sub-task is complete:
+
+![wilma_barney](/images/wilma_barney.png?raw=true)
+
+This does mean that a card can appear in the completed column of a tag board even if
+the top level task is not complete, e.g for the above example if the barney task is
+marked as complete the card will move to the Completed column:
+
+![wilma_barney_completed](/images/wilma_barney_completed.png?raw=true)
+
+The board config defines which tasks will appear on a Tag board, and this is true for
+the completed column too; only tasks which would appear on the board if all tasks and
+subtasks were marked as incomplete can ever be in the Completed column.
+
+
 ## Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
 types of filter you can use: file, path, and #tags (which includes front matter tags).  You can
@@ -213,6 +244,12 @@ You can also:
 - Choose whether to use the filters as an allow or a deny list.
 - Choose if you want any tags specified as a filter to be shown or
   hidden on cards on the board.
+
+Filters are applied before tasks are placed onto a board:
+
+![filters](/images/filters.png?raw=true)
+
+
 
 ## Settings
 Plugin settings are accessible from the plugin view itself, via the settings icon
@@ -303,8 +340,10 @@ the minimum width of the cards.
 
 ## Limitations
 - Might not work that great on large vaults (as it parses all markdown files at startup).
-- Might not be great on mobile (see previous, plus I haven't made the interface mobile
-  friendly - yet).
+- Might not work that great on large files (as it parses all markdown files, and doesn't use
+  any form of cache).
+- Might not be great on mobile (see previous, plus I haven't put any particular effort into
+  making the interface mobile friendly - yet).
 
 ## Alternatives
 If the way that this works isn't for for you, there are plenty of other fabulous

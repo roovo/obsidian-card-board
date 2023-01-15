@@ -1,4 +1,8 @@
 # Cleanups
+- simplify parsing as per typing tutor
+- replace regex stuff in TaskItem.toToggledSting with some form of token parsing
+- if something is on a board because of a subtask tag and that line also has a due date on it, should I use
+  that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?
 - on tagboard if there is a todo with the tag defined in filter allow list
   but no other tags then it appears in the others column.  It feels like

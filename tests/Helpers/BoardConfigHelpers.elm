@@ -7,17 +7,18 @@ module Helpers.BoardConfigHelpers exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     { completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
+    , filterScope = Filter.Both
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
@@ -29,24 +30,26 @@ exampleBoardConfig =
     BoardConfig.TagBoardConfig exampleTagBoardConfig
 
 
-exampleDateBoardConfig : DateBoard.Config
+exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { completedCount = 12
     , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
     , filterPolarity = Filter.Deny
+    , filterScope = Filter.TopLevelOnly
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
     }
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
     { columns = []
     , showColumnTags = True
     , completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
+    , filterScope = Filter.Both
     , showFilteredTags = True
     , includeOthers = False
     , includeUntagged = False
@@ -54,13 +57,14 @@ defaultTagBoardConfig =
     }
 
 
-exampleTagBoardConfig : TagBoard.Config
+exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , showColumnTags = True
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , filterPolarity = Filter.Deny
+    , filterScope = Filter.SubTasksOnly
     , showFilteredTags = False
     , includeOthers = False
     , includeUntagged = True

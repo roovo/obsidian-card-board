@@ -200,6 +200,15 @@ ul.card-board-column-list > li.card-board-card::before {
   font-size: 1em;
 }
 
+.checkbox-container.is-mid-enabled {
+  background-color: var(--interactive-accent-hover);
+}
+.checkbox-container.is-mid-enabled:after {
+  transform: translate3d(calc((var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)) / 2), 0, 0);
+}
+.checkbox-container.is-mid-enabled:active:after {
+  left: -4px;
+}
 
 .card-board-card-title {
   grid-area: title;

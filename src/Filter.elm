@@ -1,8 +1,10 @@
 module Filter exposing
     ( Filter
     , Polarity(..)
+    , Scope(..)
     , decoder
     , defaultPolarity
+    , defaultScope
     , dummy
     , encoder
     , filterType
@@ -12,6 +14,8 @@ module Filter exposing
     , polarityDecoder
     , polarityEncoder
     , polarityFromString
+    , scopeDecoder
+    , scopeEncoder
     , updatePath
     , value
     )
@@ -35,6 +39,12 @@ type Polarity
     | Deny
 
 
+type Scope
+    = TopLevelOnly
+    | SubTasksOnly
+    | Both
+
+
 dummy : Filter
 dummy =
     TagFilter ""
@@ -48,6 +58,11 @@ filterTypes =
 defaultPolarity : Polarity
 defaultPolarity =
     Allow
+
+
+defaultScope : Scope
+defaultScope =
+    Both
 
 
 
@@ -116,6 +131,35 @@ polarityFromString source =
         Allow
 
 
+scopeEncoder : TsEncode.Encoder Scope
+scopeEncoder =
+    TsEncode.union
+        (\vTopLevelOnly vSubTasksOnly vBoth v ->
+            case v of
+                TopLevelOnly ->
+                    vTopLevelOnly
+
+                SubTasksOnly ->
+                    vSubTasksOnly
+
+                Both ->
+                    vBoth
+        )
+        |> TsEncode.variantLiteral (JE.string "TopLevelOnly")
+        |> TsEncode.variantLiteral (JE.string "SubTasksOnly")
+        |> TsEncode.variantLiteral (JE.string "Both")
+        |> TsEncode.buildUnion
+
+
+scopeDecoder : TsDecode.Decoder Scope
+scopeDecoder =
+    TsDecode.oneOf
+        [ TsDecode.literal TopLevelOnly (JE.string "TopLevelOnly")
+        , TsDecode.literal SubTasksOnly (JE.string "SubTasksOnly")
+        , TsDecode.literal Both (JE.string "Both")
+        ]
+
+
 
 -- INFO
 
@@ -164,8 +208,8 @@ value filter =
             f
 
 
-isAllowed : TaskItem -> Filter -> Bool
-isAllowed taskItem filter =
+isAllowed : Scope -> TaskItem -> Filter -> Bool
+isAllowed scope taskItem filter =
     case filter of
         FileFilter filePath ->
             TaskItem.isFromFile filePath taskItem
@@ -174,7 +218,15 @@ isAllowed taskItem filter =
             fileIsFromPath (TaskItem.filePath taskItem) path
 
         TagFilter tag ->
-            TaskItem.hasThisTag tag taskItem
+            case scope of
+                TopLevelOnly ->
+                    TaskItem.topLevelTaskHasThisTag tag taskItem
+
+                SubTasksOnly ->
+                    TaskItem.descendantTaskHasThisTag tag taskItem
+
+                Both ->
+                    TaskItem.hasThisTag tag taskItem
 
 
 

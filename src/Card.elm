@@ -127,7 +127,7 @@ markdownWithIds card =
         subtaskMarkdownWithId ( subtaskId, subtask ) =
             { id = subtaskId
             , markdown =
-                TaskItem.title subtask
+                TaskItem.titleWithTags subtask
                     |> strikeIfCompleted subtask
             }
 
@@ -140,16 +140,16 @@ markdownWithIds card =
         tagsWithId : List { id : String, markdown : String }
         tagsWithId =
             let
-                tagsMarkdown : String
-                tagsMarkdown =
-                    TaskItem.tags item
+                topLevelTagsMarkdown : String
+                topLevelTagsMarkdown =
+                    TaskItem.topLevelTags item
                         |> TagList.toList
                         |> List.map (String.append "#")
                         |> String.join " "
             in
-            if TaskItem.hasTags item then
+            if TaskItem.hasTopLevelTags item then
                 [ { id = tagsId card
-                  , markdown = tagsMarkdown
+                  , markdown = topLevelTagsMarkdown
                   }
                 ]
 

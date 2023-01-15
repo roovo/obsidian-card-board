@@ -1,22 +1,29 @@
 module TaskItem exposing
     ( AutoCompletion(..)
     , Completion(..)
+    , Content
     , TaskItem
     , TaskItemFields
+    , allSubtasksWithMatchingTagCompleted
     , completedPosix
     , completion
     , containsId
+    , descendantTaskHasThisTag
     , descendantTasks
     , due
     , dueRataDie
     , dummy
     , fields
     , filePath
+    , hasAnyIncompleteSubtasksWithTagsOtherThanThese
+    , hasIncompleteTaskWithThisTag
     , hasNotes
     , hasOneOfTheTags
     , hasSubtasks
     , hasTags
+    , hasTaskWithTagOtherThanThese
     , hasThisTag
+    , hasTopLevelTags
     , id
     , isCompleted
     , isDated
@@ -29,7 +36,10 @@ module TaskItem exposing
     , tags
     , tasksToToggle
     , title
+    , titleWithTags
     , toToggledString
+    , topLevelTags
+    , topLevelTaskHasThisTag
     , updateFilePath
     )
 
@@ -66,6 +76,7 @@ type alias TaskItemFields =
     , originalText : String
     , tags : TagList
     , title : List String
+    , contents : List Content
     }
 
 
@@ -115,6 +126,7 @@ defaultFields =
     , originalText = ""
     , tags = TagList.empty
     , title = []
+    , contents = []
     }
 
 
@@ -122,14 +134,51 @@ defaultFields =
 -- INFO
 
 
-completedPosix : TaskItem -> Int
-completedPosix taskItem =
-    case completion taskItem of
-        CompletedAt time_ ->
-            Time.posixToMillis time_
+allSubtasksWithMatchingTagCompleted : String -> TaskItem -> Bool
+allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
+    let
+        subtasksWithMatchingTag : List TaskItem
+        subtasksWithMatchingTag =
+            taskItem
+                |> descendantTasks
+                |> List.filter (hasThisTag tagToMatch)
+    in
+    case subtasksWithMatchingTag of
+        [] ->
+            False
 
-        _ ->
-            0
+        matchingSubtasks ->
+            List.all isCompleted matchingSubtasks
+
+
+completedPosix : TaskItem -> Int
+completedPosix ((TaskItem _ subtasks_) as taskItem) =
+    let
+        mostRecentCompletedSubtaskMillis : Int
+        mostRecentCompletedSubtaskMillis =
+            subtasks_
+                |> List.map posix
+                |> List.maximum
+                |> Maybe.withDefault 0
+
+        posix : TaskItemFields -> Int
+        posix f =
+            case f.completion of
+                CompletedAt time_ ->
+                    Time.posixToMillis time_
+
+                _ ->
+                    0
+
+        topLevelCompletion : Int
+        topLevelCompletion =
+            posix (fields taskItem)
+    in
+    if topLevelCompletion > 0 then
+        topLevelCompletion
+
+    else
+        mostRecentCompletedSubtaskMillis
 
 
 completion : TaskItem -> Completion
@@ -146,6 +195,20 @@ containsId targetId taskItem =
 descendantTasks : TaskItem -> List TaskItem
 descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
+
+
+descendantTaskHasThisTag : String -> TaskItem -> Bool
+descendantTaskHasThisTag tagToMatch =
+    let
+        descendantTasksTags : TaskItem -> TagList
+        descendantTasksTags taskItem =
+            descendantTasks taskItem
+                |> List.map (fields >> .tags)
+                |> List.foldl TagList.append TagList.empty
+                |> TagList.unique
+                |> TagList.sort
+    in
+    TagList.containsTagMatching tagToMatch << descendantTasksTags
 
 
 due : TaskItem -> Maybe Date
@@ -178,6 +241,33 @@ filePath =
     .filePath << fields
 
 
+hasAnyIncompleteSubtasksWithTagsOtherThanThese : List String -> TaskItem -> Bool
+hasAnyIncompleteSubtasksWithTagsOtherThanThese tagsToMatch taskItem =
+    let
+        subtasksWithTagsOtherThanThese : List TaskItem
+        subtasksWithTagsOtherThanThese =
+            taskItem
+                |> descendantTasks
+                |> List.filter (hasTagOtherThanThese tagsToMatch)
+    in
+    case subtasksWithTagsOtherThanThese of
+        [] ->
+            False
+
+        matchingSubtasks ->
+            List.any (not << isCompleted) matchingSubtasks
+
+
+hasIncompleteTaskWithThisTag : String -> TaskItem -> Bool
+hasIncompleteTaskWithThisTag tagToMatch taskItem =
+    let
+        isIncompleteWithMatchingTag : TaskItem -> Bool
+        isIncompleteWithMatchingTag ti =
+            TagList.containsTagMatching tagToMatch (topLevelTags ti) && not (isCompleted ti)
+    in
+    List.any isIncompleteWithMatchingTag (taskItem :: descendantTasks taskItem)
+
+
 hasNotes : TaskItem -> Bool
 hasNotes =
     not << String.isEmpty << .notes << fields
@@ -186,6 +276,18 @@ hasNotes =
 hasTags : TaskItem -> Bool
 hasTags =
     not << TagList.isEmpty << tags
+
+
+hasTaskWithTagOtherThanThese : List String -> TaskItem -> Bool
+hasTaskWithTagOtherThanThese tagsToMatch taskItem =
+    (taskItem :: descendantTasks taskItem)
+        |> List.filter hasTopLevelTags
+        |> List.any (hasAtLeastOneTagOtherThanThese tagsToMatch)
+
+
+hasTopLevelTags : TaskItem -> Bool
+hasTopLevelTags =
+    not << TagList.isEmpty << topLevelTags
 
 
 hasOneOfTheTags : List String -> TaskItem -> Bool
@@ -255,7 +357,16 @@ tags ((TaskItem fields_ _) as taskItem) =
         |> TagList.sort
 
 
-tasksToToggle : String -> { a | now : Time.Posix } -> TaskItem -> List TaskItem
+topLevelTags : TaskItem -> TagList
+topLevelTags taskItem =
+    taskItem
+        |> fields
+        |> .tags
+        |> TagList.unique
+        |> TagList.sort
+
+
+tasksToToggle : String -> { a | time : Time.Posix } -> TaskItem -> List TaskItem
 tasksToToggle id_ timeWithZone taskItem =
     let
         autoComplete : TaskItem -> AutoCompletion
@@ -310,6 +421,42 @@ tasksToToggle id_ timeWithZone taskItem =
 title : TaskItem -> String
 title =
     String.join " " << .title << fields
+
+
+titleWithTags : TaskItem -> String
+titleWithTags taskItem =
+    let
+        buildContents : List Content -> List String
+        buildContents =
+            List.foldl extractContent []
+
+        extractContent : Content -> List String -> List String
+        extractContent content strings =
+            case content of
+                Word word ->
+                    word :: strings
+
+                ObsidianTag tag ->
+                    ("#" ++ Tag.toString tag) :: strings
+
+                _ ->
+                    strings
+    in
+    taskItem
+        |> fields
+        |> .contents
+        |> buildContents
+        |> String.join " "
+
+
+topLevelTaskHasThisTag : String -> TaskItem -> Bool
+topLevelTaskHasThisTag tagToMatch =
+    let
+        topLevelTasksTags : TaskItem -> TagList
+        topLevelTasksTags (TaskItem fields_ _) =
+            fields_.tags
+    in
+    TagList.containsTagMatching tagToMatch << topLevelTasksTags
 
 
 
@@ -370,7 +517,7 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | now : Time.Posix } -> TaskItem -> String
+toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | time : Time.Posix } -> TaskItem -> String
 toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
@@ -381,7 +528,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
         checkboxRegex : Regex
         checkboxRegex =
             Maybe.withDefault Regex.never <|
-                Regex.fromString "- \\[[ xX]\\]"
+                Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
 
         completionTag : TaskItem -> String
         completionTag t_ =
@@ -390,7 +537,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                     let
                         completionString : String
                         completionString =
-                            timeWithZone.now
+                            timeWithZone.time
                                 |> Iso8601.fromTime
                                 |> String.left 19
                     in
@@ -468,21 +615,22 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                         |> List.head
                         |> Maybe.map .index
                         |> Maybe.withDefault 0
+                        |> (+) 2
             in
             SE.replaceSlice
                 (toggledCheckbox t_)
                 checkboxIndex
-                (checkboxIndex + 5)
+                (checkboxIndex + 3)
                 taskString
 
         toggledCheckbox : TaskItem -> String
         toggledCheckbox t_ =
             case completion t_ of
                 Incomplete ->
-                    "- [x]"
+                    "[x]"
 
                 _ ->
-                    "- [ ]"
+                    "[ ]"
     in
     fields_.originalText
         |> replaceCheckbox taskItem
@@ -567,6 +715,21 @@ fileDateParser fileDate =
         |> P.succeed
 
 
+hasAtLeastOneTagOtherThanThese : List String -> TaskItem -> Bool
+hasAtLeastOneTagOtherThanThese tagsToMatch taskItem =
+    taskItem
+        |> fields
+        |> .tags
+        |> TagList.containsTagOtherThanThese tagsToMatch
+
+
+hasTagOtherThanThese : List String -> TaskItem -> Bool
+hasTagOtherThanThese tagsToMatch taskItem =
+    fields taskItem
+        |> .tags
+        |> TagList.containsTagOtherThanThese tagsToMatch
+
+
 indentedItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser IndentedItem
 indentedItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
     P.oneOf
@@ -590,6 +753,18 @@ prefixParser =
             |. P.token "- [x] "
         , P.succeed Completed
             |. P.token "- [X] "
+        , P.succeed Incomplete
+            |. P.token "+ [ ] "
+        , P.succeed Completed
+            |. P.token "+ [x] "
+        , P.succeed Completed
+            |. P.token "+ [X] "
+        , P.succeed Incomplete
+            |. P.token "* [ ] "
+        , P.succeed Completed
+            |. P.token "* [x] "
+        , P.succeed Completed
+            |. P.token "* [X] "
         ]
 
 
@@ -689,10 +864,11 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> (\tif -> { tif | originalText = sourceText })
         |> (\tif -> { tif | tags = TagList.append tif.tags frontMatterTags })
         |> (\tif -> { tif | title = List.reverse tif.title })
+        |> (\tif -> { tif | contents = List.reverse contents })
         |> addCompletionTime
 
 
-toggleCompletion : { a | now : Time.Posix } -> TaskItem -> TaskItem
+toggleCompletion : { a | time : Time.Posix } -> TaskItem -> TaskItem
 toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
     case fields_.completion of
         Completed ->
@@ -702,7 +878,7 @@ toggleCompletion timeWithZone (TaskItem fields_ subtasks_) =
             TaskItem { fields_ | completion = Incomplete } subtasks_
 
         Incomplete ->
-            TaskItem { fields_ | completion = CompletedAt timeWithZone.now } subtasks_
+            TaskItem { fields_ | completion = CompletedAt timeWithZone.time } subtasks_
 
 
 tokenParser : DataviewTaskCompletion -> Parser Content

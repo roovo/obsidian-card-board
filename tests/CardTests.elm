@@ -72,49 +72,49 @@ highlight =
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightImportant for a task that is due today" <|
             \() ->
                 "- [ ] foo @due(2020-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightImportant)
         , test "returns HighlightNone for a completed task that is due today" <|
             \() ->
                 "- [x] foo @due(2020-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightCritical for a task that is overdue" <|
             \() ->
                 "- [ ] foo @due(2019-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightCritical)
         , test "returns HighlightNone for a completed task that is overdue" <|
             \() ->
                 "- [x] foo @due(2019-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightGood for a task that is due in the future" <|
             \() ->
                 "- [ ] foo @due(2020-01-02)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightGood)
         , test "returns HighlightNone for a completed task that is due in the future" <|
             \() ->
                 "- [x] foo @due(2020-01-02)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { now = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
                     |> Expect.equal (Ok HighlightNone)
         ]
 
@@ -148,9 +148,9 @@ markdownWithIds =
                     |> Maybe.map Card.markdownWithIds
                     |> Expect.equal
                         (Just
-                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":tags", markdown = "#tag1 #tag2" }
+                            [ { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":tags", markdown = "#tag1" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1 ++ ":notes", markdown = "some note\nmore notes #tag3" }
-                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar" }
+                            , { id = "prefix:" ++ TaskHelpers.taskId "file" 3, markdown = "bar #tag2" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 5, markdown = "~~baz~~" }
                             , { id = "prefix:" ++ TaskHelpers.taskId "file" 1, markdown = "foo" }
                             ]

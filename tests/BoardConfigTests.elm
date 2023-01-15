@@ -1,13 +1,13 @@
 module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -26,6 +26,7 @@ suite =
         , toggleIncludeUntagged
         , toggleShowColumnTags
         , toggleShowFilteredTags
+        , toggleTagFilterScope
         , updateBoardType
         , updateCompletedCount
         , updateFilters
@@ -54,7 +55,7 @@ encodeDecode =
                 BoardConfigHelpers.exampleBoardConfig
                     |> TsEncode.runExample BoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_4_0
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_6_0
                     |> .decoded
                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
         ]
@@ -148,7 +149,7 @@ toggleIncludeOthers =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleIncludeOthers
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeOthers for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -174,7 +175,7 @@ toggleIncludeUndated =
                 BoardConfig.fromBoardType "tagBoard" ""
                     |> BoardConfig.toggleIncludeUndated
                     |> extractTagBoardConfig
-                    |> Expect.equal (Just TagBoard.defaultConfig)
+                    |> Expect.equal (Just TagBoardConfig.default)
         ]
 
 
@@ -186,7 +187,7 @@ toggleIncludeUntagged =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleIncludeUntagged
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeUntagged for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -205,7 +206,7 @@ toggleShowColumnTags =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.toggleShowColumnTags
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "toggles includeUntagged for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -233,6 +234,66 @@ toggleShowFilteredTags =
                     |> extractTagBoardConfig
                     |> Maybe.map .showFilteredTags
                     |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
+        ]
+
+
+toggleTagFilterScope : Test
+toggleTagFilterScope =
+    describe "toggleTagFilterScope"
+        [ test "toggles TopLevelOnly -> SubTasksOnly for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.TopLevelOnly })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.SubTasksOnly)
+        , test "toggles SubTasksOnly -> Both for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.SubTasksOnly })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.Both)
+        , test "toggles Both -> TopLevelOnly for a DateBoard config" <|
+            \() ->
+                DateBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.Both })
+                    |> BoardConfig.DateBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractDateBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.TopLevelOnly)
+        , test "toggles TopLevelOnly -> SubTasksOnly for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.TopLevelOnly })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.SubTasksOnly)
+        , test "toggles SubTasksOnly -> Both for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.SubTasksOnly })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.Both)
+        , test "toggles Both -> TopLevelOnly for a TagBoard config" <|
+            \() ->
+                TagBoardConfig.default
+                    |> (\c -> { c | filterScope = Filter.Both })
+                    |> BoardConfig.TagBoardConfig
+                    |> BoardConfig.toggleTagFilterScope
+                    |> extractTagBoardConfig
+                    |> Maybe.map .filterScope
+                    |> Expect.equal (Just Filter.TopLevelOnly)
         ]
 
 
@@ -344,7 +405,7 @@ updateTags =
                 BoardConfig.fromBoardType "dateBoard" ""
                     |> BoardConfig.updateTags ""
                     |> extractDateBoardConfig
-                    |> Expect.equal (Just DateBoard.defaultConfig)
+                    |> Expect.equal (Just DateBoardConfig.default)
         , test "updates the tags for a TagBoard config" <|
             \() ->
                 BoardConfig.fromBoardType "tagBoard" ""
@@ -378,17 +439,17 @@ updateTitle =
 -- HELPERS
 
 
-defaultDateBoardConfig : DateBoard.Config
+defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    DateBoard.defaultConfig
+    DateBoardConfig.default
 
 
-defaultTagBoardConfig : TagBoard.Config
+defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
-    TagBoard.defaultConfig
+    TagBoardConfig.default
 
 
-extractDateBoardConfig : BoardConfig -> Maybe DateBoard.Config
+extractDateBoardConfig : BoardConfig -> Maybe DateBoardConfig
 extractDateBoardConfig boardConfig =
     case boardConfig of
         BoardConfig.DateBoardConfig config ->
@@ -398,7 +459,7 @@ extractDateBoardConfig boardConfig =
             Nothing
 
 
-extractTagBoardConfig : BoardConfig -> Maybe TagBoard.Config
+extractTagBoardConfig : BoardConfig -> Maybe TagBoardConfig
 extractTagBoardConfig boardConfig =
     case boardConfig of
         BoardConfig.TagBoardConfig config ->

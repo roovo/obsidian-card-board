@@ -17,7 +17,7 @@ module.exports = {
         test: [/\.elm$/],
         exclude: [/elm-stuff/, /node_modules/],
           use: [
-            { loader: "elm-hot-webpack-loader" },
+            { loader: "elm-reloader" },
             {
               loader: "elm-webpack-loader",
               options: {}

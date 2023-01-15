@@ -13,27 +13,27 @@
   "author": "roovo",
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.10",
+    "@types/jest": "^29.2.5",
+    "@types/node": "^18.11.18",
     "@types/webpack": "^5.28.0",
     "chokidar-cli": "^3.0.0",
     "elm": "^0.19.1-5",
     "elm-format": "^0.8.5",
-    "elm-hot-webpack-loader": "^1.1.8",
-    "elm-review": "^2.5.5",
-    "elm-test": "^0.19.1-revision7",
+    "elm-reloader": "^1.0.0",
+    "elm-review": "^2.9.1",
+    "elm-test": "^0.19.1-revision11",
     "elm-ts-interop": "^0.0.8",
-    "elm-webpack-loader": "^7.0.1",
-    "obsidian": "^0.12.11",
+    "elm-webpack-loader": "^8.0.0",
+    "obsidian": "^1.1.1",
     "obsidian-daily-notes-interface": "^0.9.4",
-    "ts-loader": "^9.2.5",
-    "ts-node": "^10.2.1",
-    "tslib": "^2.3.1",
-    "typescript": "^4.4.2",
-    "webpack": "^5.52.0",
-    "webpack-cli": "^4.8.0"
+    "ts-loader": "^9.4.2",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "moment": "^2.29.1"
+    "moment": "^2.29.4"
   }
 }

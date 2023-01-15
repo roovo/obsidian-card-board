@@ -2,7 +2,7 @@ module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import ColumnNames
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
@@ -10,7 +10,7 @@ import Helpers.FilterHelpers as FilterHelpers
 import SafeZipper
 import Settings exposing (Settings)
 import SettingsState
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 
 
@@ -497,24 +497,26 @@ exampleGlobalSettings =
     }
 
 
-exampleDateBoardConfig : DateBoard.Config
+exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { completedCount = 12
     , filters = []
     , filterPolarity = Filter.Deny
+    , filterScope = Filter.SubTasksOnly
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
     }
 
 
-exampleTagBoardConfig : TagBoard.Config
+exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
     , showColumnTags = True
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , filterPolarity = Filter.Deny
+    , filterScope = Filter.TopLevelOnly
     , showFilteredTags = True
     , includeOthers = False
     , includeUntagged = True

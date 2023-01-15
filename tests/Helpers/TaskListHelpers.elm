@@ -126,6 +126,8 @@ exampleDateBoardTasks =
     , yesterdaysTasks
     , ( "f", Just "invalid date", """
 - [ ] invalid date incomplete #aTag
+- [ ] invalid date incomplete with sub-task
+  - [ ] invalid date incomplete sub-task #aTag
 - [x] invalid date complete #tag1 #invalid
 """ )
     ]
@@ -135,7 +137,11 @@ undatedTasks : ( String, Maybe String, String )
 undatedTasks =
     ( "gg/xx/yy.md", Nothing, """
 - [ ] an undated incomplete #bTag #tag1
+- [ ] an undated incomplete with subtask
+  - [ ] the subtask #bTag #tag1
 - [ ] incomplete with cTag #cTag
+- [ ] incomplete with subtask with cTag
+  - [ ] subtask with cTag #cTag
 - [ ] untagged incomplete
 - [x] undated complete @completed(2020-06-02)
 """ )

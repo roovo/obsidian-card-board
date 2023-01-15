@@ -5,9 +5,11 @@ module BoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_6_0
     , default
     , encoder
     , filterPolarity
+    , filterScope
     , filters
     , fromBoardType
     , isForDateBoard
@@ -19,6 +21,7 @@ module BoardConfig exposing
     , toggleIncludeUntagged
     , toggleShowColumnTags
     , toggleShowFilteredTags
+    , toggleTagFilterScope
     , updateBoardType
     , updateCompletedCount
     , updateFilterPolarity
@@ -27,11 +30,11 @@ module BoardConfig exposing
     , updateTitle
     )
 
-import DateBoard
+import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
-import Filter exposing (Filter, Polarity)
+import Filter exposing (Filter, Polarity, Scope)
 import Parser
-import TagBoard
+import TagBoardConfig exposing (TagBoardConfig)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -41,8 +44,8 @@ import TsJson.Encode as TsEncode
 
 
 type BoardConfig
-    = DateBoardConfig DateBoard.Config
-    | TagBoardConfig TagBoard.Config
+    = DateBoardConfig DateBoardConfig
+    | TagBoardConfig TagBoardConfig
 
 
 
@@ -51,7 +54,7 @@ type BoardConfig
 
 default : BoardConfig
 default =
-    TagBoardConfig TagBoard.defaultConfig
+    TagBoardConfig TagBoardConfig.default
 
 
 fromBoardType : String -> String -> BoardConfig
@@ -59,17 +62,17 @@ fromBoardType boardType title_ =
     case boardType of
         "dateBoard" ->
             let
-                newBoardConfig : DateBoard.Config
+                newBoardConfig : DateBoardConfig
                 newBoardConfig =
-                    DateBoard.defaultConfig
+                    DateBoardConfig.default
             in
             DateBoardConfig { newBoardConfig | title = title_ }
 
         _ ->
             let
-                newBoardConfig : TagBoard.Config
+                newBoardConfig : TagBoardConfig
                 newBoardConfig =
-                    TagBoard.defaultConfig
+                    TagBoardConfig.default
             in
             TagBoardConfig { newBoardConfig | title = title_ }
 
@@ -118,6 +121,16 @@ filterPolarity config =
             boardConfig.filterPolarity
 
 
+filterScope : BoardConfig -> Scope
+filterScope config =
+    case config of
+        DateBoardConfig boardConfig ->
+            boardConfig.filterScope
+
+        TagBoardConfig boardConfig ->
+            boardConfig.filterScope
+
+
 title : BoardConfig -> String
 title config =
     case config of
@@ -143,9 +156,17 @@ encoder =
                 TagBoardConfig config ->
                     vTagBoardConfig config
         )
-        |> TsEncode.variantTagged "dateBoardConfig" DateBoard.configEncoder
-        |> TsEncode.variantTagged "tagBoardConfig" TagBoard.configEncoder
+        |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.encoder
+        |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.encoder
         |> TsEncode.buildUnion
+
+
+decoder_v_0_6_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_6_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_5_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_5_0
+        ]
 
 
 decoder_v_0_5_0 : TsDecode.Decoder BoardConfig
@@ -156,32 +177,32 @@ decoder_v_0_5_0 =
 decoder_v_0_4_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_4_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_4_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_4_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_4_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_4_0
         ]
 
 
 decoder_v_0_3_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_3_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_3_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_3_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_3_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_3_0
         ]
 
 
 decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_2_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_2_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_2_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_2_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_2_0
         ]
 
 
 decoder_v_0_1_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_1_0 =
     TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoard.configDecoder_v_0_1_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoard.configDecoder_v_0_1_0
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_1_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_1_0
         ]
 
 
@@ -249,6 +270,29 @@ toggleShowFilteredTags config =
             TagBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
 
 
+toggleTagFilterScope : BoardConfig -> BoardConfig
+toggleTagFilterScope config =
+    let
+        cycleScope : Scope -> Scope
+        cycleScope scope =
+            case scope of
+                Filter.TopLevelOnly ->
+                    Filter.SubTasksOnly
+
+                Filter.SubTasksOnly ->
+                    Filter.Both
+
+                Filter.Both ->
+                    Filter.TopLevelOnly
+    in
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
+
+
 updateBoardType : String -> BoardConfig -> BoardConfig
 updateBoardType boardType config =
     fromBoardType boardType (title config)
@@ -295,9 +339,9 @@ updateTags tags config =
 
         TagBoardConfig boardConfig ->
             let
-                columnsConfig : Result (List Parser.DeadEnd) (List TagBoard.ColumnConfig)
+                columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.ColumnConfig)
                 columnsConfig =
-                    Parser.run TagBoard.columnConfigsParser tags
+                    Parser.run TagBoardConfig.columnConfigsParser tags
             in
             case columnsConfig of
                 Ok parsedConfig ->

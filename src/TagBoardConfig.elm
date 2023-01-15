@@ -1,25 +1,20 @@
-module TagBoard exposing
+module TagBoardConfig exposing
     ( ColumnConfig
-    , Config
+    , TagBoardConfig
     , columnConfigsParser
-    , columns
-    , configDecoder_v_0_1_0
-    , configDecoder_v_0_2_0
-    , configDecoder_v_0_3_0
-    , configDecoder_v_0_4_0
-    , configEncoder
-    , defaultConfig
+    , decoder_v_0_1_0
+    , decoder_v_0_2_0
+    , decoder_v_0_3_0
+    , decoder_v_0_4_0
+    , decoder_v_0_5_0
+    , default
+    , encoder
     )
 
-import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
-import Filter exposing (Filter, Polarity)
-import List.Extra as LE
+import Filter exposing (Filter, Polarity, Scope)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import String.Extra as SE
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -28,12 +23,13 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type alias Config =
+type alias TagBoardConfig =
     { columns : List ColumnConfig
     , showColumnTags : Bool
     , completedCount : Int
     , filters : List Filter
     , filterPolarity : Polarity
+    , filterScope : Scope
     , showFilteredTags : Bool
     , includeOthers : Bool
     , includeUntagged : Bool
@@ -47,13 +43,14 @@ type alias ColumnConfig =
     }
 
 
-defaultConfig : Config
-defaultConfig =
+default : TagBoardConfig
+default =
     { columns = []
     , showColumnTags = True
     , completedCount = 10
     , filters = []
     , filterPolarity = Filter.defaultPolarity
+    , filterScope = Filter.defaultScope
     , showFilteredTags = True
     , includeOthers = False
     , includeUntagged = False
@@ -65,14 +62,15 @@ defaultConfig =
 -- SERIALIZE
 
 
-configEncoder : TsEncode.Encoder Config
-configEncoder =
+encoder : TsEncode.Encoder TagBoardConfig
+encoder =
     TsEncode.object
         [ TsEncode.required "columns" .columns <| TsEncode.list columnConfigEncoder
         , TsEncode.required "showColumnTags" .showColumnTags TsEncode.bool
         , TsEncode.required "completedCount" .completedCount TsEncode.int
         , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
         , TsEncode.required "filterPolarity" .filterPolarity Filter.polarityEncoder
+        , TsEncode.required "filterScope" .filterScope Filter.scopeEncoder
         , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
         , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
         , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
@@ -88,56 +86,75 @@ columnConfigEncoder =
         ]
 
 
-configDecoder_v_0_4_0 : TsDecode.Decoder Config
-configDecoder_v_0_4_0 =
-    TsDecode.succeed Config
+decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_5_0 =
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.field "showColumnTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.field "filterScope" <| Filter.scopeDecoder)
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_3_0 : TsDecode.Decoder Config
-configDecoder_v_0_3_0 =
-    TsDecode.succeed Config
+decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_4_0 =
+    TsDecode.succeed TagBoardConfig
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "showColumnTags" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.succeed Filter.Both)
+        |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_3_0 =
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.succeed Filter.Both)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_2_0 : TsDecode.Decoder Config
-configDecoder_v_0_2_0 =
-    TsDecode.succeed Config
+decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_2_0 =
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
+        |> TsDecode.andMap (TsDecode.succeed Filter.Both)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
 
 
-configDecoder_v_0_1_0 : TsDecode.Decoder Config
-configDecoder_v_0_1_0 =
-    TsDecode.succeed Config
+decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_1_0 =
+    TsDecode.succeed TagBoardConfig
         |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
+        |> TsDecode.andMap (TsDecode.succeed Filter.Both)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
@@ -152,20 +169,6 @@ columnConfigDecoder =
 
 
 
--- UTILITIES
-
-
-columns : ColumnNames -> Config -> TaskList -> List (Column TaskItem)
-columns columnNames config taskList =
-    config.columns
-        |> LE.uniqueBy .tag
-        |> List.foldl (fillColumn taskList config) []
-        |> prependOthers (ColumnNames.nameFor "others" columnNames) config taskList
-        |> prependUntagged (ColumnNames.nameFor "untagged" columnNames) config taskList
-        |> appendCompleted (ColumnNames.nameFor "completed" columnNames) config taskList
-
-
-
 -- PARSE
 
 
@@ -176,38 +179,6 @@ columnConfigsParser =
 
 
 -- PRIVATE
-
-
-appendCompleted : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-appendCompleted columnName config taskList columnList =
-    let
-        completedTasks : List TaskItem
-        completedTasks =
-            taskList
-                |> TaskList.filter isCompleteWithTags
-                |> taskListWithTagsRemoved config
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.reverse
-                |> List.sortBy TaskItem.completedPosix
-                |> List.reverse
-                |> List.take config.completedCount
-
-        isCompleteWithTags : TaskItem -> Bool
-        isCompleteWithTags item =
-            TaskItem.isCompleted item && TaskItem.hasOneOfTheTags uniqueColumnTags item
-
-        uniqueColumnTags : List String
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
-    in
-    if config.completedCount > 0 then
-        List.append columnList [ Column.init columnName completedTasks ]
-
-    else
-        columnList
 
 
 columnConfigHelp : List ColumnConfig -> Parser (P.Step (List ColumnConfig) (List ColumnConfig))
@@ -259,92 +230,3 @@ columnConfigParser =
             , P.succeed Nothing
             ]
         |> P.andThen buildColumnConfig
-
-
-fillColumn : TaskList -> Config -> ColumnConfig -> List (Column TaskItem) -> List (Column TaskItem)
-fillColumn taskList config columnConfig acc =
-    let
-        isIncompleteWithTag : String -> TaskItem -> Bool
-        isIncompleteWithTag tag item =
-            not (TaskItem.isCompleted item) && TaskItem.hasThisTag tag item
-    in
-    TaskList.filter (isIncompleteWithTag columnConfig.tag) taskList
-        |> taskListWithTagsRemoved config
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.sortBy TaskItem.dueRataDie
-        |> Column.init columnConfig.displayTitle
-        |> List.singleton
-        |> List.append acc
-
-
-prependOthers : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependOthers columnName config taskList columnList =
-    let
-        cards : List TaskItem
-        cards =
-            taskList
-                |> TaskList.filter isIncompleteWithoutTags
-                |> taskListWithTagsRemoved config
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.sortBy TaskItem.dueRataDie
-
-        isIncompleteWithoutTags : TaskItem -> Bool
-        isIncompleteWithoutTags item =
-            not (TaskItem.isCompleted item) && TaskItem.hasTags item && not (TaskItem.hasOneOfTheTags uniqueColumnTags item)
-
-        uniqueColumnTags : List String
-        uniqueColumnTags =
-            config.columns
-                |> LE.uniqueBy .tag
-                |> List.map .tag
-    in
-    if config.includeOthers then
-        Column.init columnName cards :: columnList
-
-    else
-        columnList
-
-
-prependUntagged : String -> Config -> TaskList -> List (Column TaskItem) -> List (Column TaskItem)
-prependUntagged columnName config taskList columnList =
-    let
-        cards : List TaskItem
-        cards =
-            taskList
-                |> TaskList.filter isIncompleteWithNoTags
-                |> TaskList.topLevelTasks
-                |> List.sortBy (String.toLower << TaskItem.title)
-                |> List.sortBy TaskItem.dueRataDie
-
-        isIncompleteWithNoTags : TaskItem -> Bool
-        isIncompleteWithNoTags item =
-            not (TaskItem.isCompleted item) && not (TaskItem.hasTags item)
-    in
-    if config.includeUntagged then
-        Column.init columnName cards :: columnList
-
-    else
-        columnList
-
-
-taskListWithTagsRemoved : Config -> TaskList -> TaskList
-taskListWithTagsRemoved config taskList =
-    let
-        columnTags : List String
-        columnTags =
-            List.map .tag config.columns
-
-        filterTags : List String
-        filterTags =
-            config.filters
-                |> List.filter (\f -> Filter.filterType f == "Tags")
-                |> List.map Filter.value
-
-        tagsToRemove : List String
-        tagsToRemove =
-            List.filter (always <| not <| config.showFilteredTags) filterTags
-                ++ List.filter (always <| not <| config.showColumnTags) columnTags
-    in
-    TaskList.removeTags tagsToRemove taskList

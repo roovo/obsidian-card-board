@@ -6,8 +6,13 @@
         "tag": "dateBoardConfig",
         "data": {
           "completedCount": 5,
-          "filters": [],
-          "filterPolarity": "Allow",
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "people/"
+            }
+          ],
+          "filterPolarity": "Deny",
           "showFilteredTags": false,
           "includeUndated": true,
           "title": "Dated"
@@ -129,6 +134,38 @@
           "includeOthers": false,
           "includeUntagged": false,
           "title": "رقت تو لفت"
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "people/fred",
+              "displayTitle": "Fred"
+            },
+            {
+              "tag": "people/wilma",
+              "displayTitle": "Wilma"
+            },
+            {
+              "tag": "people/barney",
+              "displayTitle": "Barney"
+            }
+          ],
+          "showColumnTags": true,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "people/"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "showFilteredTags": true,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "People"
         }
       }
     ],

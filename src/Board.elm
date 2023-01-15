@@ -8,9 +8,9 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
-import DateBoard
-import Filter exposing (Filter, Polarity)
-import TagBoard
+import DateBoardColumns exposing (DateBoardColumns)
+import Filter exposing (Filter, Polarity, Scope)
+import TagBoardColumns exposing (TagBoardColumns)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TimeWithZone exposing (TimeWithZone)
@@ -41,16 +41,28 @@ columns : TimeWithZone -> Int -> Board -> List (Column Card)
 columns timeWithZone boardIndex (Board columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
+            let
+                emptyDateBoardColumns : DateBoardColumns
+                emptyDateBoardColumns =
+                    DateBoardColumns.init timeWithZone columnNames dateBoardConfig
+            in
             taskList
                 |> filterTaskList config
-                |> DateBoard.columns columnNames timeWithZone dateBoardConfig
-                |> placeCardsInColumns boardIndex
+                |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
+                |> DateBoardColumns.columns
+                |> convertToCards boardIndex
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
+            let
+                emptyTagBoardColumns : TagBoardColumns
+                emptyTagBoardColumns =
+                    TagBoardColumns.init columnNames tagBoardConfig
+            in
             taskList
                 |> filterTaskList config
-                |> TagBoard.columns columnNames tagBoardConfig
-                |> placeCardsInColumns boardIndex
+                |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
+                |> TagBoardColumns.columns
+                |> convertToCards boardIndex
 
 
 
@@ -67,26 +79,30 @@ filterTaskList config taskList =
         filterPolarity : Polarity
         filterPolarity =
             BoardConfig.filterPolarity config
+
+        filterScope : Scope
+        filterScope =
+            BoardConfig.filterScope config
     in
     taskList
-        |> filterByFilesystem filterPolarity filters
-        |> filterByTag filterPolarity filters
+        |> filterByFilesystem filterPolarity filterScope filters
+        |> filterByTag filterPolarity filterScope filters
 
 
-filterByFilesystem : Polarity -> List Filter -> TaskList -> TaskList
-filterByFilesystem polarity filters taskList =
+filterByFilesystem : Polarity -> Scope -> List Filter -> TaskList -> TaskList
+filterByFilesystem polarity scope filters taskList =
     List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths") filters
-        |> applyFilters taskList polarity
+        |> applyFilters taskList polarity scope
 
 
-filterByTag : Polarity -> List Filter -> TaskList -> TaskList
-filterByTag polarity filters taskList =
+filterByTag : Polarity -> Scope -> List Filter -> TaskList -> TaskList
+filterByTag polarity scope filters taskList =
     List.filter (\f -> Filter.filterType f == "Tags") filters
-        |> applyFilters taskList polarity
+        |> applyFilters taskList polarity scope
 
 
-applyFilters : TaskList -> Polarity -> List Filter -> TaskList
-applyFilters taskList polarity filters =
+applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
+applyFilters taskList polarity scope filters =
     let
         operator : Bool -> Bool
         operator =
@@ -110,11 +126,11 @@ applyFilters taskList polarity filters =
         taskList
 
     else
-        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed t) filters) taskList
+        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
-placeCardsInColumns : Int -> List (Column TaskItem) -> List (Column Card)
-placeCardsInColumns boardIndex columnList =
+convertToCards : Int -> List (Column TaskItem) -> List (Column Card)
+convertToCards boardIndex columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
@@ -124,7 +140,7 @@ placeCardsInColumns boardIndex columnList =
         placeCardsInColumn columnIndex column =
             Column.items column
                 |> List.map (Card.fromTaskItem <| cardIdPrefix columnIndex)
-                |> Column.init (Column.name column)
+                |> Column.init True (Column.name column)
     in
     columnList
         |> List.indexedMap placeCardsInColumn

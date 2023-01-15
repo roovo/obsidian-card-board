@@ -34,11 +34,10 @@ File.open(todays_tasks, "w") do |file|
   - [ ] go to bed
 
 - [x] already got out of bed this morning @due(#{Date.today.strftime("%Y-%m-%d")}) @completed(#{(Date.today).strftime("%Y-%m-%dT%H:%M:%S")})
-- [ ] ی گت وت اف بد تهیس مورنینگ @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ/زیرتگ
-- [ ] something with #foobar an RTL non-sub tag @due(#{Date.today.strftime("%Y-%m-%d")}) #تگ
-	foo bar baz #تگ/زیرتگ #one two
+- [ ] مادرم را به خرید ببر @due(#{Date.today.strftime("%Y-%m-%d")}) #خانه/آشپزخانه
+- [ ] something with #foobar an RTL non-sub tag @due(#{Date.today.strftime("%Y-%m-%d")}) #خانه
+	foo bar baz #خانه/آشپزخانه #one two
 	and another line #foobar something else
-	#تگ/زیرتگ #foo #زیرتگ #one
 """
 end
 
@@ -81,7 +80,7 @@ File.open(undated_tasks, "w") do |file|
 - [ ] another undated task (but with a block id) ^34d21
 
 - [ ] #important and this is a task tagged as important #projects/project1 #status/backlog
-- [ ] and this is a task NOT tagged as important #projects/project1 #status/wip
+- [ ] and this is a task NOT tagged as important #projects/project1 #status/doing
 
 - [ ] a Dataview task with a due date [due:: #{(Date.today).strftime("%Y-%m-%d")}]
 - [x] a completed Dataview task with a due date [due:: #{(Date.today - 1).strftime("%Y-%m-%d")}] [completion:: #{(Date.today - 1).strftime("%Y-%m-%d")}]
@@ -110,4 +109,20 @@ File.open(undated_tasks, "w") do |file|
           }
   ```
 """
+
+colab_tasks = File.join(target_directory, "colab.md")
+
+File.open(colab_tasks, "w") do |file|
+  file.write """
+# Colaboration examples
+
+- [ ] need to ask #people/fred if he can loan me is dinosaur @due(#{Date.today.strftime("%Y-%m-%d")})
+
+- [ ] decorate my cave @due(#{(Date.today + 7).strftime("%Y-%m-%d")})
+  - [x] ask #people/wilma to do a cave painting @due(#{(Date.today).strftime("%Y-%m-%d")})
+  - [ ] borrow design book from #people/barney
+  - [ ] check everyone can make the painting party @due(#{(Date.today + 4).strftime("%Y-%m-%d")})
+
+"""
+end
 end

@@ -29,22 +29,22 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        -- ,"columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}
-        [ test "decodes valid flags for settings version 0.7.0" <|
+        [ test "decodes valid flags for settings version 0.8.0" <|
             \() ->
-                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.7.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.8.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.TopLevelOnly
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -55,6 +55,59 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.SubTasksOnly
+                                            , showFilteredTags = False
+                                            , includeOthers = False
+                                            , includeUntagged = True
+                                            , title = "tag board title"
+                                            }
+                                        ]
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianTasks
+                                    , columnNames =
+                                        { today = Just "Do Today"
+                                        , tomorrow = Nothing
+                                        , future = Just "The Future"
+                                        , undated = Nothing
+                                        , others = Just "The Others"
+                                        , untagged = Nothing
+                                        , completed = Just "Done"
+                                        }
+                                    }
+                                }
+                            , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
+                            , now = 11
+                            , zone = 22
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.7.0" <|
+            \() ->
+                """{"now":11,"zone":22,"rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.7.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 8 0 [] []
+                                , boardConfigs =
+                                    SafeZipper.fromList
+                                        [ BoardConfig.DateBoardConfig
+                                            { completedCount = 4
+                                            , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                            , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.Both
+                                            , showFilteredTags = True
+                                            , includeUndated = True
+                                            , title = "date board title"
+                                            }
+                                        , BoardConfig.TagBoardConfig
+                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , showColumnTags = False
+                                            , completedCount = 5
+                                            , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                            , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = False
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -88,13 +141,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -105,6 +159,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = False
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -130,13 +185,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -147,6 +203,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = False
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -172,13 +229,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -189,6 +247,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = False
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -211,13 +270,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -228,6 +288,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -250,13 +311,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -267,6 +329,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -289,13 +352,14 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 7 0 [] []
+                                { version = Semver.version 0 8 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
                                             { completedCount = 4
                                             , filters = []
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
@@ -306,6 +370,7 @@ flagsTests =
                                             , completedCount = 5
                                             , filters = []
                                             , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.Both
                                             , showFilteredTags = True
                                             , includeOthers = False
                                             , includeUntagged = True
@@ -464,48 +529,54 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ShowBoard 17)
+        , test "decodes version 0.8.0 settings data" <|
+            \() ->
+                """{"tag":"settingsUpdated","data":{"version":"0.8.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default } })
         , test "decodes version 0.7.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.7.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default } })
         , test "decodes version 0.6.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.6.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default } })
         , test "decodes version 0.5.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskUpdateFormat":"ObsidianCardBoard"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.4.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.4.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.3.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.3.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 7 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 8 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
