@@ -9,6 +9,7 @@ suite : Test
 suite =
     concat
         [ name
+        , isCollapsed
         , isEmpty
         , isEnabled
         , items
@@ -24,6 +25,22 @@ name =
                 Column.init True "a name" []
                     |> Column.name
                     |> Expect.equal "a name"
+        ]
+
+
+isCollapsed : Test
+isCollapsed =
+    describe "isCollapsed"
+        [ test "returns True for an initialised empty Column" <|
+            \() ->
+                Column.init True "a name" []
+                    |> Column.isCollapsed
+                    |> Expect.equal True
+        , test "returns False for an initialised non-empty Column" <|
+            \() ->
+                Column.init True "a name" [ 1 ]
+                    |> Column.isCollapsed
+                    |> Expect.equal False
         ]
 
 

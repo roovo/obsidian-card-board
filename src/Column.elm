@@ -3,6 +3,7 @@ module Column exposing
     , PlacementResult(..)
     , hasName
     , init
+    , isCollapsed
     , isEmpty
     , isEnabled
     , items
@@ -49,6 +50,11 @@ init enabled_ name_ items_ =
 hasName : String -> Column a -> Bool
 hasName n =
     (==) n << name
+
+
+isCollapsed : Column a -> Bool
+isCollapsed =
+    isEmpty
 
 
 isEmpty : Column a -> Bool
