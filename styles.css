@@ -107,19 +107,34 @@ li.is-after-active .card-board-tabs-inner {
 }
 
 .card-board-columns {
-  display: grid;
-  grid-auto-columns: minmax(20em, 1fr);
-  grid-auto-flow: column;
-  grid-gap: 1em;
-  margin-right: 1em;
+  display: flex;
+  overflow-x: auto;
+}
+
+.card-board-columns > * {
+  flex: 1 1 auto;
+  margin-right: 20px;
+}
+
+.card-board-columns::after {
+  content: "";
+  flex: 0 0 1em;
+}
+
+.card-board-column.collapsed {
+  width: 2em;
+  min-width: 2em;
+  flex-grow: 0;
 }
 
 .card-board-column {
   padding: 1em;
+  min-width: 20em;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
 }
+
 .card-board-column-header {
   font-weight: var(--bold-weight);
   margin-bottom: 1em;

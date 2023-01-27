@@ -1,3 +1,13 @@
+- horizontal scrollbar isn't working properly (there can be things offscreen to the right
+  that I can't scroll into view (e.g. the completed column)
+- should I use flexbox instead?
+  - need a min/max width for each column, so width is always filled - always fill width on initial layout
+  - do I want the width of other columns to change when a column is collapsed?
+    - no -> only resize columns when changing the size of the page
+
+- https://www.sitepoint.com/building-trello-layout-css-grid-flexbox/
+- https://css-tricks.com/snippets/css/css-triangle/
+
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing

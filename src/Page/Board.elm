@@ -248,7 +248,15 @@ selectedBoardView timeWithZone index board =
 
 columnView : TimeWithZone -> Column Card -> Html Msg
 columnView timeWithZone column =
-    Html.div [ class "card-board-column" ]
+    let
+        columnCollapsedClass =
+            if Column.isCollapsed column then
+                " collapsed"
+
+            else
+                ""
+    in
+    Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.text <| Column.name column ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
