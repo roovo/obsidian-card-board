@@ -258,7 +258,10 @@ columnView timeWithZone column =
     in
     Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]
-            [ Html.text <| Column.name column ]
+            [ Html.div [ class "arrow-right" ] []
+            , Html.span []
+                [ Html.text <| Column.name column ]
+            ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
             (List.map (cardView timeWithZone) (Column.items column))
         ]

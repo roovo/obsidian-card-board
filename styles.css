@@ -111,33 +111,54 @@ li.is-after-active .card-board-tabs-inner {
   overflow-x: auto;
 }
 
-.card-board-columns > * {
-  flex: 1 1 auto;
-  margin-right: 20px;
-}
-
 .card-board-columns::after {
   content: "";
   flex: 0 0 1em;
 }
 
-.card-board-column.collapsed {
-  width: 2em;
-  min-width: 2em;
-  flex-grow: 0;
-}
-
 .card-board-column {
+  flex: 1 1 auto;
   padding: 1em;
+  margin-right: 20px;
   min-width: 20em;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
 }
 
+.card-board-column.collapsed {
+  width: 2em;
+  min-width: 2em;
+  flex-grow: 0;
+  overflow: visible;
+  margin: 0;
+  margin-right: 20px;
+  padding: 1em 0 0 0.5em;
+}
+
 .card-board-column-header {
   font-weight: var(--bold-weight);
   margin-bottom: 1em;
+  display: flex;
+}
+
+.card-board-column.collapsed .card-board-column-header {
+  margin-bottom: 0;
+  transform: rotate(90deg);
+  transform-origin: bottom left;
+  position: relative;
+  top: -1em;
+  left: -0.2em;
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 0.4em solid transparent;
+  border-bottom: 0.4em solid transparent;
+  border-left: 0.4em solid var(--text-normal);
+  margin-right: 0.4em;
+  margin-top: 0.2em;
 }
 
 ul.card-board-column-list {
