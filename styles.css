@@ -159,6 +159,7 @@ li.is-after-active .card-board-tabs-inner {
   border-left: 0.4em solid var(--text-normal);
   margin-right: 0.4em;
   margin-top: 0.2em;
+  cursor: pointer;
 }
 
 ul.card-board-column-list {
