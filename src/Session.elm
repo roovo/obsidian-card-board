@@ -23,6 +23,7 @@ module Session exposing
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
+    , toggleColumnCollapse
     , updatePath
     , updateSettings
     , updateTextDirection
@@ -282,6 +283,17 @@ replaceTaskItems filePath updatedList ((Session config) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
+
+
+toggleColumnCollapse : Int -> Session -> Session
+toggleColumnCollapse columnIndex (Session config) =
+    Session
+        { config
+            | settings =
+                Settings.updateCurrentBoard
+                    (BoardConfig.toggleColumnCollapse columnIndex)
+                    config.settings
+        }
 
 
 updatePath : String -> String -> Session -> Session

@@ -17,6 +17,7 @@ module BoardConfig exposing
     , isForTagBoard
     , mapFilters
     , title
+    , toggleColumnCollapse
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
@@ -230,6 +231,18 @@ mapFilters fn config =
 
         TagBoardConfig boardConfig ->
             TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
+
+
+toggleColumnCollapse : Int -> BoardConfig -> BoardConfig
+toggleColumnCollapse columnIndex config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <|
+                { boardConfig | collapseStates = CollapseStates.toggleColumn columnIndex boardConfig.collapseStates }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <|
+                { boardConfig | collapseStates = CollapseStates.toggleColumn columnIndex boardConfig.collapseStates }
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

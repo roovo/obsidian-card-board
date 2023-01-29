@@ -1,6 +1,7 @@
 module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import CollapseStates
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
@@ -21,6 +22,7 @@ suite =
         , isForDateBoard
         , isForTagBoard
         , mapFilters
+        , toggleColumnCollapse
         , toggleIncludeOthers
         , toggleIncludeUndated
         , toggleIncludeUntagged
@@ -138,6 +140,42 @@ mapFilters =
                     |> BoardConfig.filters
                     |> List.map Filter.value
                     |> Expect.equal [ "", "", "" ]
+        ]
+
+
+toggleColumnCollapse : Test
+toggleColumnCollapse =
+    describe "toggleColumnCollapse"
+        [ test "sets the collapse state for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> extractDateBoardConfig
+                    |> Maybe.map .collapseStates
+                    |> Expect.equal (Just <| (CollapseStates.init |> CollapseStates.toggleColumn 0))
+        , test "unsets the collapse state for a DateBoard config if toggled twice" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> extractDateBoardConfig
+                    |> Maybe.map .collapseStates
+                    |> Expect.equal (Just <| CollapseStates.init)
+        , test "sets the collapse state for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> extractTagBoardConfig
+                    |> Maybe.map .collapseStates
+                    |> Expect.equal (Just <| (CollapseStates.init |> CollapseStates.toggleColumn 0))
+        , test "unsets the collapse state for a TagBoard config if toggled twice" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> BoardConfig.toggleColumnCollapse 0
+                    |> extractTagBoardConfig
+                    |> Maybe.map .collapseStates
+                    |> Expect.equal (Just <| CollapseStates.init)
         ]
 
 

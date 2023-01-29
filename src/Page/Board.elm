@@ -92,7 +92,7 @@ update msg session =
             )
 
         ToggleColumnCollapse columnIndex ->
-            ( session
+            ( Session.toggleColumnCollapse columnIndex session
             , Cmd.none
             , Session.NoOp
             )
