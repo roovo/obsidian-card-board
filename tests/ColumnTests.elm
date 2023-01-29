@@ -41,6 +41,18 @@ isCollapsed =
                 Column.init True "a name" [ 1 ]
                     |> Column.isCollapsed
                     |> Expect.equal False
+        , test "returns False for an empty Column which has had it's collapse state inverted" <|
+            \() ->
+                Column.init True "a name" []
+                    |> Column.invertCollapseState
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "returns True for a non-empty Column which has had its collapse state inverted" <|
+            \() ->
+                Column.init True "a name" [ 1 ]
+                    |> Column.invertCollapseState
+                    |> Column.isCollapsed
+                    |> Expect.equal True
         ]
 
 

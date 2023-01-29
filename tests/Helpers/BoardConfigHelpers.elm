@@ -7,6 +7,7 @@ module Helpers.BoardConfigHelpers exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import CollapseStates
 import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
@@ -22,6 +23,7 @@ defaultDateBoardConfig =
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
+    , collapseStates = CollapseStates.init
     }
 
 
@@ -39,6 +41,7 @@ exampleDateBoardConfig =
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
+    , collapseStates = CollapseStates.init
     }
 
 
@@ -54,6 +57,7 @@ defaultTagBoardConfig =
     , includeOthers = False
     , includeUntagged = False
     , title = "Tag Board Title"
+    , collapseStates = CollapseStates.init
     }
 
 
@@ -69,4 +73,5 @@ exampleTagBoardConfig =
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"
+    , collapseStates = CollapseStates.init
     }

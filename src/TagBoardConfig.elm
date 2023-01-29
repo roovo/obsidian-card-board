@@ -11,6 +11,7 @@ module TagBoardConfig exposing
     , encoder
     )
 
+import CollapseStates exposing (CollapseStates)
 import Filter exposing (Filter, Polarity, Scope)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
@@ -34,6 +35,7 @@ type alias TagBoardConfig =
     , includeOthers : Bool
     , includeUntagged : Bool
     , title : String
+    , collapseStates : CollapseStates
     }
 
 
@@ -55,6 +57,7 @@ default =
     , includeOthers = False
     , includeUntagged = False
     , title = ""
+    , collapseStates = CollapseStates.init
     }
 
 
@@ -99,6 +102,7 @@ decoder_v_0_5_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
 
 
 decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
@@ -114,6 +118,7 @@ decoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
 
 
 decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
@@ -129,6 +134,7 @@ decoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
 
 
 decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
@@ -144,6 +150,7 @@ decoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
 
 
 decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
@@ -159,6 +166,7 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
 
 
 columnConfigDecoder : TsDecode.Decoder ColumnConfig

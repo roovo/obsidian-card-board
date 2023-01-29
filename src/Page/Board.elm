@@ -34,6 +34,7 @@ type Msg
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
+    | ToggleColumnCollapse Int
 
 
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
@@ -90,6 +91,12 @@ update msg session =
             , Session.NoOp
             )
 
+        ToggleColumnCollapse columnIndex ->
+            ( session
+            , Cmd.none
+            , Session.NoOp
+            )
+
 
 cmdIfHasTask : String -> Session -> (TaskItemFields -> Cmd b) -> Cmd b
 cmdIfHasTask id session cmd =
@@ -120,8 +127,8 @@ view session =
                 Session.globalSettings session
                     |> .columnNames
 
-            currentIndex : Maybe Int
-            currentIndex =
+            currentBoardIndex : Maybe Int
+            currentBoardIndex =
                 Boards.currentIndex boards
 
             timeWithZone : TimeWithZone
@@ -130,7 +137,7 @@ view session =
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.ul [ class "card-board-tab-list" ]
-                (tabHeaders currentIndex boards)
+                (tabHeaders currentBoardIndex boards)
             , Html.div [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
@@ -140,11 +147,11 @@ view session =
 
 
 tabHeaders : Maybe Int -> Boards -> List (Html Msg)
-tabHeaders currentIndex boards =
+tabHeaders currentBoardIndex boards =
     let
         beforeHeaderClass : String
         beforeHeaderClass =
-            tabHeaderClass currentIndex -1
+            tabHeaderClass currentBoardIndex -1
 
         beforeFirst : Html Msg
         beforeFirst =
@@ -162,7 +169,7 @@ tabHeaders currentIndex boards =
 
         afterHeaderClass : String
         afterHeaderClass =
-            tabHeaderClass currentIndex (Boards.length boards)
+            tabHeaderClass currentBoardIndex (Boards.length boards)
 
         afterLast : Html Msg
         afterLast =
@@ -174,7 +181,7 @@ tabHeaders currentIndex boards =
         tabs : List (Html Msg)
         tabs =
             Boards.titles boards
-                |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentIndex)
+                |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
                 |> SafeZipper.toList
     in
     beforeFirst :: List.append tabs [ afterLast ]
@@ -189,11 +196,11 @@ selectedTabHeader _ title =
 
 
 tabHeader : Maybe Int -> Int -> String -> Html Msg
-tabHeader currentIndex index title =
+tabHeader currentBoardIndex index title =
     let
         headerClass : String
         headerClass =
-            tabHeaderClass currentIndex index
+            tabHeaderClass currentBoardIndex index
     in
     Html.li
         [ class ("card-board-tab-title" ++ headerClass)
@@ -205,8 +212,8 @@ tabHeader currentIndex index title =
 
 
 tabHeaderClass : Maybe Int -> Int -> String
-tabHeaderClass currentIndex index =
-    case currentIndex of
+tabHeaderClass currentBoardIndex index =
+    case currentBoardIndex of
         Just i ->
             if index == i - 1 then
                 " is-before-active"
@@ -222,32 +229,32 @@ tabHeaderClass currentIndex index =
 
 
 boardView : TimeWithZone -> Int -> Board -> Html Msg
-boardView timeWithZone index board =
+boardView timeWithZone boardIndex board =
     Html.div
         [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns timeWithZone index
-                |> List.map (\column -> columnView timeWithZone column)
+                |> Board.columns timeWithZone boardIndex
+                |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]
 
 
 selectedBoardView : TimeWithZone -> Int -> Board -> Html Msg
-selectedBoardView timeWithZone index board =
+selectedBoardView timeWithZone boardIndex board =
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns timeWithZone index
-                |> List.map (\column -> columnView timeWithZone column)
+                |> Board.columns timeWithZone boardIndex
+                |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]
 
 
-columnView : TimeWithZone -> Column Card -> Html Msg
-columnView timeWithZone column =
+columnView : Int -> TimeWithZone -> Column Card -> Html Msg
+columnView columnIndex timeWithZone column =
     let
         columnCollapsedClass =
             if Column.isCollapsed column then
@@ -258,7 +265,11 @@ columnView timeWithZone column =
     in
     Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]
-            [ Html.div [ class "arrow-right" ] []
+            [ Html.div
+                [ class "arrow-right"
+                , onClick <| ToggleColumnCollapse columnIndex
+                ]
+                []
             , Html.span []
                 [ Html.text <| Column.name column ]
             ]

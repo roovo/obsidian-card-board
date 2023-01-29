@@ -1,9 +1,17 @@
 module Helpers.BoardHelpers exposing
-    ( thingsInColumn
+    ( columnTitled
+    , thingsInColumn
     , thingsInColumns
     )
 
 import Column exposing (Column)
+
+
+columnTitled : String -> List (Column a) -> Maybe (Column a)
+columnTitled columnName cardsInColumns =
+    cardsInColumns
+        |> List.filter (\c -> Column.hasName columnName c)
+        |> List.head
 
 
 thingsInColumns : List String -> List (Column a) -> List a

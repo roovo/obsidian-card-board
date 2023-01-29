@@ -1,5 +1,6 @@
 module BoardConfig exposing
     ( BoardConfig(..)
+    , collapseStates
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -30,6 +31,7 @@ module BoardConfig exposing
     , updateTitle
     )
 
+import CollapseStates exposing (CollapseStates)
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
 import Filter exposing (Filter, Polarity, Scope)
@@ -79,6 +81,16 @@ fromBoardType boardType title_ =
 
 
 -- UTILITIES
+
+
+collapseStates : BoardConfig -> CollapseStates
+collapseStates config =
+    case config of
+        DateBoardConfig c ->
+            c.collapseStates
+
+        TagBoardConfig c ->
+            c.collapseStates
 
 
 isForDateBoard : BoardConfig -> Bool

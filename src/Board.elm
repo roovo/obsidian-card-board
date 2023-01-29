@@ -6,6 +6,7 @@ module Board exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
+import CollapseStates
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import DateBoardColumns exposing (DateBoardColumns)
@@ -51,6 +52,7 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
                 |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
                 |> DateBoardColumns.columns
                 |> convertToCards boardIndex
+                |> collapseColumns config
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             let
@@ -63,10 +65,27 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
                 |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
                 |> TagBoardColumns.columns
                 |> convertToCards boardIndex
+                |> collapseColumns config
 
 
 
 -- PRIVATE
+
+
+collapseColumns : BoardConfig -> List (Column Card) -> List (Column Card)
+collapseColumns config cols =
+    let
+        collapseStates =
+            BoardConfig.collapseStates config
+
+        collapseIfToggled index col =
+            if CollapseStates.columnIsToggled index collapseStates then
+                Column.invertCollapseState col
+
+            else
+                col
+    in
+    List.indexedMap collapseIfToggled cols
 
 
 filterTaskList : BoardConfig -> TaskList -> TaskList

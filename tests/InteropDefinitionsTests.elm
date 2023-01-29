@@ -1,6 +1,7 @@
 module InteropDefinitionsTests exposing (suite)
 
 import BoardConfig
+import CollapseStates
 import ColumnNames
 import DataviewTaskCompletion
 import Expect
@@ -48,6 +49,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -60,6 +62,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings =
@@ -100,6 +103,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -112,6 +116,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings =
@@ -152,6 +157,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -164,6 +170,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings =
@@ -196,6 +203,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -208,6 +216,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings =
@@ -240,6 +249,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -252,6 +262,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings = GlobalSettings.default
@@ -281,6 +292,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -293,6 +305,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings = GlobalSettings.default
@@ -322,6 +335,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -334,6 +348,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings = GlobalSettings.default
@@ -363,6 +378,7 @@ flagsTests =
                                             , showFilteredTags = True
                                             , includeUndated = True
                                             , title = "date board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -375,6 +391,7 @@ flagsTests =
                                             , includeOthers = False
                                             , includeUntagged = True
                                             , title = "tag board title"
+                                            , collapseStates = CollapseStates.init
                                             }
                                         ]
                                 , globalSettings = GlobalSettings.default

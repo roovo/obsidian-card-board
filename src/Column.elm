@@ -3,6 +3,7 @@ module Column exposing
     , PlacementResult(..)
     , hasName
     , init
+    , invertCollapseState
     , isCollapsed
     , isEmpty
     , isEnabled
@@ -21,6 +22,7 @@ type alias Config a =
     { enabled : Bool
     , name : String
     , items : List a
+    , invertCollapsed : Bool
     }
 
 
@@ -40,6 +42,7 @@ init enabled_ name_ items_ =
         { enabled = enabled_
         , name = name_
         , items = items_
+        , invertCollapsed = False
         }
 
 
@@ -53,8 +56,8 @@ hasName n =
 
 
 isCollapsed : Column a -> Bool
-isCollapsed =
-    isEmpty
+isCollapsed ((Column c) as col) =
+    xor c.invertCollapsed (isEmpty col)
 
 
 isEmpty : Column a -> Bool
@@ -75,6 +78,15 @@ items =
 name : Column a -> String
 name =
     .name << config
+
+
+
+-- MODIFICATION
+
+
+invertCollapseState : Column a -> Column a
+invertCollapseState (Column c) =
+    Column { c | invertCollapsed = True }
 
 
 
