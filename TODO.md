@@ -1,13 +1,8 @@
+- don't resize columns when toggling collapse - only do this when re-sizing the window
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
 - show the number of cards in a column when it is collapsed
-- should I use flexbox instead?
-  - need a min/max width for each column, so width is always filled - always fill width on initial layout
-  - do I want the width of other columns to change when a column is collapsed?
-    - no -> only resize columns when changing the size of the page
 
-- https://www.sitepoint.com/building-trello-layout-css-grid-flexbox/
-- https://css-tricks.com/snippets/css/css-triangle/
 
 # Cleanups
 - simplify parsing as per typing tutor

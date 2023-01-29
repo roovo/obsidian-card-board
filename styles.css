@@ -176,6 +176,10 @@ ul.card-board-column-list > li.card-board-card::before {
   content: "";
 }
 
+.card-board-column.collapsed .card-board-card {
+  display: none;
+}
+
 .card-board-card {
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
