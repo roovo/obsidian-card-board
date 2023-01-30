@@ -92,8 +92,12 @@ update msg session =
             )
 
         ToggleColumnCollapse columnIndex newState ->
-            ( Session.updateColumnCollapse columnIndex newState session
-            , Cmd.none
+            let
+                newSession =
+                    Session.updateColumnCollapse columnIndex newState session
+            in
+            ( newSession
+            , InteropPorts.updateSettings <| Session.settings newSession
             , Session.NoOp
             )
 

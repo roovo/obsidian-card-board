@@ -8,6 +8,7 @@ module GlobalSettings exposing
     , v_0_5_0_decoder
     , v_0_6_0_decoder
     , v_0_7_0_decoder
+    , v_0_9_0_decoder
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -64,6 +65,11 @@ encoder =
         [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
         , TsEncode.required "columnNames" .columnNames ColumnNames.encoder
         ]
+
+
+v_0_9_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_9_0_decoder =
+    v_0_7_0_decoder
 
 
 v_0_7_0_decoder : TsDecode.Decoder GlobalSettings

@@ -5,6 +5,7 @@ module DateBoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_9_0
     , default
     , encoder
     )
@@ -58,7 +59,21 @@ encoder =
         , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
         , TsEncode.required "includeUndated" .includeUndated TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
+        , TsEncode.required "collapsedColumns" .collapseStates CollapseStates.encoder
         ]
+
+
+decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_9_0 =
+    TsDecode.succeed DateBoardConfig
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.field "filterScope" <| Filter.scopeDecoder)
+        |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapseStates.decoder)
 
 
 decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
