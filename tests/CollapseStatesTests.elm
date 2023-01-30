@@ -9,35 +9,35 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ columnIsToggled
+        [ columnIsCollapsed
         ]
 
 
-columnIsToggled : Test
-columnIsToggled =
-    describe "isToggled"
-        [ fuzz (Fuzz.intRange 0 20) "returns False for any column if nothing has been toggled" <|
+columnIsCollapsed : Test
+columnIsCollapsed =
+    describe "columnIsCollapsed"
+        [ fuzz (Fuzz.intRange 0 20) "returns False for any column if it has just been initialized" <|
             \fuzzedInt ->
                 CollapseStates.init
-                    |> CollapseStates.columnIsToggled fuzzedInt
+                    |> CollapseStates.columnIsCollapsed fuzzedInt
                     |> Expect.equal False
-        , fuzz (Fuzz.intRange 0 20) "returns True for any column if it has been toggled" <|
+        , fuzz (Fuzz.intRange 0 20) "returns True for any column if it has been set to collapsed" <|
             \fuzzedInt ->
                 CollapseStates.init
-                    |> CollapseStates.toggleColumn fuzzedInt
-                    |> CollapseStates.columnIsToggled fuzzedInt
+                    |> CollapseStates.collapseColumn fuzzedInt True
+                    |> CollapseStates.columnIsCollapsed fuzzedInt
                     |> Expect.equal True
-        , fuzz (Fuzz.intRange 0 20) "returns False for any column if it has been toggled twice" <|
+        , fuzz (Fuzz.intRange 0 20) "returns False for any column if it has been set to not be collapsed" <|
             \fuzzedInt ->
                 CollapseStates.init
-                    |> CollapseStates.toggleColumn fuzzedInt
-                    |> CollapseStates.toggleColumn fuzzedInt
-                    |> CollapseStates.columnIsToggled fuzzedInt
+                    |> CollapseStates.collapseColumn fuzzedInt True
+                    |> CollapseStates.collapseColumn fuzzedInt False
+                    |> CollapseStates.columnIsCollapsed fuzzedInt
                     |> Expect.equal False
-        , fuzz (Fuzz.intRange 1 20) "toggling a column does not affect other columns" <|
+        , fuzz (Fuzz.intRange 1 20) "collapsing a column does not affect other columns" <|
             \fuzzedInt ->
                 CollapseStates.init
-                    |> CollapseStates.toggleColumn fuzzedInt
-                    |> CollapseStates.columnIsToggled 0
+                    |> CollapseStates.collapseColumn fuzzedInt True
+                    |> CollapseStates.columnIsCollapsed 0
                     |> Expect.equal False
         ]

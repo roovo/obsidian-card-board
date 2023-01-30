@@ -1,5 +1,6 @@
 module BoardConfig exposing
     ( BoardConfig(..)
+    , collapseColumn
     , collapseStates
     , decoder_v_0_1_0
     , decoder_v_0_2_0
@@ -17,7 +18,6 @@ module BoardConfig exposing
     , isForTagBoard
     , mapFilters
     , title
-    , toggleColumnCollapse
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
@@ -233,16 +233,16 @@ mapFilters fn config =
             TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
 
 
-toggleColumnCollapse : Int -> BoardConfig -> BoardConfig
-toggleColumnCollapse columnIndex config =
+collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
+collapseColumn columnIndex isCollapsed config =
     case config of
         DateBoardConfig boardConfig ->
             DateBoardConfig <|
-                { boardConfig | collapseStates = CollapseStates.toggleColumn columnIndex boardConfig.collapseStates }
+                { boardConfig | collapseStates = CollapseStates.collapseColumn columnIndex isCollapsed boardConfig.collapseStates }
 
         TagBoardConfig boardConfig ->
             TagBoardConfig <|
-                { boardConfig | collapseStates = CollapseStates.toggleColumn columnIndex boardConfig.collapseStates }
+                { boardConfig | collapseStates = CollapseStates.collapseColumn columnIndex isCollapsed boardConfig.collapseStates }
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

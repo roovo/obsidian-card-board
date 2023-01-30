@@ -1,5 +1,5 @@
-- what happens with people board and column collapsing when I tick things off on
-  decorate my cave card?
+- do I want to save the collapse state in the settings? (probably)
+- move the heading up a pixel or two next to the right arrow
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
 - update readme

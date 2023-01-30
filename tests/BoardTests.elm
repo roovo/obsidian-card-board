@@ -308,7 +308,7 @@ columnsDateBoard =
                             [ "more undated incomplete with cTag" ]
             ]
         , describe "collapsing columns"
-            [ test "does not collapse an untoggled column containing cards" <|
+            [ test "does not collapse an initialized column containing cards" <|
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
@@ -324,24 +324,7 @@ columnsDateBoard =
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
-            , test "collapses a toggled column containing cards" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            ColumnNames.default
-                            (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.toggleColumn 0
-                                }
-                            )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
-                        |> BoardHelpers.columnTitled "Undated"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            , test "collapses an untoggled column with no cards" <|
+            , test "does not collapse an initialized column with no cards" <|
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
@@ -362,8 +345,25 @@ columnsDateBoard =
                         |> Board.columns DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
+                        |> Expect.equal (Just False)
+            , test "collapses a column containing cards if is has been set to collapsed" <|
+                \() ->
+                    TaskListHelpers.exampleDateBoardTaskList
+                        |> Board.init
+                            ColumnNames.default
+                            (BoardConfig.DateBoardConfig
+                                { defaultDateBoardConfig
+                                    | includeUndated = True
+                                    , filters = []
+                                    , filterPolarity = Filter.Deny
+                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                }
+                            )
+                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> BoardHelpers.columnTitled "Undated"
+                        |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
-            , test "does not collapse a toggled column with no cards" <|
+            , test "collapses a column with no cards if it has been set as collapsed" <|
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
@@ -379,13 +379,13 @@ columnsDateBoard =
                                         , FilterHelpers.tagFilter "cTag"
                                         ]
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.toggleColumn 0
+                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
+                        |> Expect.equal (Just True)
             ]
         ]
 
@@ -580,7 +580,7 @@ columnsTagBoard =
                         |> Expect.equal [ "b.tag3" ]
             ]
         , describe "collapsing columns"
-            [ test "does not collapse an untoggled column containing cards" <|
+            [ test "does not collapse an initialized column containing cards" <|
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
@@ -597,25 +597,7 @@ columnsTagBoard =
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
-            , test "collapses a toggled column containing cards" <|
-                \() ->
-                    TaskListHelpers.exampleTagBoardTaskList
-                        |> Board.init
-                            ColumnNames.default
-                            (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeUntagged = False
-                                    , includeOthers = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.toggleColumn 0
-                                }
-                            )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
-                        |> BoardHelpers.columnTitled "Others"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            , test "collapses an untoggled column with no cards" <|
+            , test "does not collapse an initialized column with no cards" <|
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
@@ -637,8 +619,26 @@ columnsTagBoard =
                         |> Board.columns DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
+                        |> Expect.equal (Just False)
+            , test "collapses a column containing cards if it has been set to collapsed" <|
+                \() ->
+                    TaskListHelpers.exampleTagBoardTaskList
+                        |> Board.init
+                            ColumnNames.default
+                            (BoardConfig.TagBoardConfig
+                                { defaultTagBoardConfig
+                                    | includeUntagged = False
+                                    , includeOthers = True
+                                    , filters = []
+                                    , filterPolarity = Filter.Deny
+                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                }
+                            )
+                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> BoardHelpers.columnTitled "Others"
+                        |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
-            , test "does not collapse a toggled column with no cards" <|
+            , test "collapses a column with no cards if it has been set to collapsed" <|
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
@@ -655,13 +655,13 @@ columnsTagBoard =
                                         , FilterHelpers.tagFilter "tag3"
                                         ]
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.toggleColumn 0
+                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
+                        |> Expect.equal (Just True)
             ]
         ]
 

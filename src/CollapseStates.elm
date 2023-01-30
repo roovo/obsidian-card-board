@@ -1,10 +1,11 @@
 module CollapseStates exposing
     ( CollapseStates
-    , columnIsToggled
+    , collapseColumn
+    , columnIsCollapsed
     , init
-    , toggleColumn
     )
 
+import Dict exposing (Dict)
 import List.Extra as LE
 
 
@@ -13,31 +14,28 @@ import List.Extra as LE
 
 
 type CollapseStates
-    = CollapsedIndicies (List Int)
+    = CollapseStates (Dict Int Bool)
 
 
 init : CollapseStates
 init =
-    CollapsedIndicies []
+    CollapseStates Dict.empty
 
 
 
 -- INFO
 
 
-columnIsToggled : Int -> CollapseStates -> Bool
-columnIsToggled column (CollapsedIndicies indicies) =
-    List.member column indicies
+columnIsCollapsed : Int -> CollapseStates -> Bool
+columnIsCollapsed column (CollapseStates states) =
+    Dict.get column states
+        |> Maybe.withDefault False
 
 
 
 -- MODIFY
 
 
-toggleColumn : Int -> CollapseStates -> CollapseStates
-toggleColumn column (CollapsedIndicies indicies) =
-    if List.member column indicies then
-        CollapsedIndicies <| LE.remove column indicies
-
-    else
-        CollapsedIndicies <| column :: indicies
+collapseColumn : Int -> Bool -> CollapseStates -> CollapseStates
+collapseColumn column state (CollapseStates states) =
+    CollapseStates <| Dict.insert column state states

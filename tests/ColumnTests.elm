@@ -31,28 +31,42 @@ name =
 isCollapsed : Test
 isCollapsed =
     describe "isCollapsed"
-        [ test "returns True for an initialised empty Column" <|
+        [ test "returns False for an initialised empty Column" <|
             \() ->
                 Column.init True "a name" []
                     |> Column.isCollapsed
-                    |> Expect.equal True
+                    |> Expect.equal False
         , test "returns False for an initialised non-empty Column" <|
             \() ->
                 Column.init True "a name" [ 1 ]
                     |> Column.isCollapsed
                     |> Expect.equal False
-        , test "returns False for an empty Column which has had it's collapse state inverted" <|
+        , test "returns True for an empty Column which has been set to collapsed" <|
             \() ->
                 Column.init True "a name" []
-                    |> Column.invertCollapseState
-                    |> Column.isCollapsed
-                    |> Expect.equal False
-        , test "returns True for a non-empty Column which has had its collapse state inverted" <|
-            \() ->
-                Column.init True "a name" [ 1 ]
-                    |> Column.invertCollapseState
+                    |> Column.collapseState True
                     |> Column.isCollapsed
                     |> Expect.equal True
+        , test "returns False for an empty Column which has been set to not collapsed" <|
+            \() ->
+                Column.init True "a name" []
+                    |> Column.collapseState True
+                    |> Column.collapseState False
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "returns True for a non-empty Column which has been set to collapsed" <|
+            \() ->
+                Column.init True "a name" [ 1 ]
+                    |> Column.collapseState True
+                    |> Column.isCollapsed
+                    |> Expect.equal True
+        , test "returns False for a non-empty Column which has been set to not collapsed" <|
+            \() ->
+                Column.init True "a name" [ 1 ]
+                    |> Column.collapseState True
+                    |> Column.collapseState False
+                    |> Column.isCollapsed
+                    |> Expect.equal False
         ]
 
 

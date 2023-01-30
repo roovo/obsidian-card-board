@@ -78,14 +78,14 @@ collapseColumns config cols =
         collapseStates =
             BoardConfig.collapseStates config
 
-        collapseIfToggled index col =
-            if CollapseStates.columnIsToggled index collapseStates then
-                Column.invertCollapseState col
+        foo index col =
+            if CollapseStates.columnIsCollapsed index collapseStates then
+                Column.collapseState True col
 
             else
-                col
+                Column.collapseState False col
     in
-    List.indexedMap collapseIfToggled cols
+    List.indexedMap foo cols
 
 
 filterTaskList : BoardConfig -> TaskList -> TaskList

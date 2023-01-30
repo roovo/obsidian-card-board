@@ -34,7 +34,7 @@ type Msg
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
     | TaskItemToggled String
-    | ToggleColumnCollapse Int
+    | ToggleColumnCollapse Int Bool
 
 
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
@@ -91,8 +91,8 @@ update msg session =
             , Session.NoOp
             )
 
-        ToggleColumnCollapse columnIndex ->
-            ( Session.toggleColumnCollapse columnIndex session
+        ToggleColumnCollapse columnIndex newState ->
+            ( Session.updateColumnCollapse columnIndex newState session
             , Cmd.none
             , Session.NoOp
             )
@@ -281,7 +281,7 @@ columnView columnIndex timeWithZone column =
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
                 [ class columnCollapsedArrow
-                , onClick <| ToggleColumnCollapse columnIndex
+                , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
                 ]
                 []
             , Html.span []
