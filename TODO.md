@@ -1,12 +1,3 @@
-- need to update collapsed columns if columns are added or removed
-
-- set size in elm (resize_spike branch)
-  - don't resize columns when toggling collapse - only do this when re-sizing the window
-    - annoyingly Browser.onResize returns the size of the complete obsidian interface and
-      not just the CardBoard view controlled by elm...
-  - only need emSize once at start as it doesn't change
-  - what does it do with an empty config at start?
-
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
