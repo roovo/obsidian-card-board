@@ -117,10 +117,10 @@ li.is-after-active .card-board-tabs-inner {
 }
 
 .card-board-column {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   padding: 1em;
-  margin-right: 20px;
-  min-width: 20em;
+  margin-right: 15px;
+  width: 20em;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
@@ -132,7 +132,7 @@ li.is-after-active .card-board-tabs-inner {
   flex-grow: 0;
   overflow: visible;
   margin: 0;
-  margin-right: 20px;
+  margin-right: 15px;
   padding: 1em 0 0 0.5em;
 }
 

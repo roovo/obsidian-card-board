@@ -1,8 +1,19 @@
-- don't resize columns when toggling collapse - only do this when re-sizing the window
+- show the number of cards in a column when it is collapsed
+- what happens with people board and column collapsing when I tick things off on
+  decorate my cave card?
+- when I collpase all columns, they are not tall enough to show their titles
+- newed to move right arrow a bit to the left for better looking toggle
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
-- show the number of cards in a column when it is collapsed
+- update readme
+  - new way to set column width with snippet
 
+- set size in elm (resize_spike branch)
+  - don't resize columns when toggling collapse - only do this when re-sizing the window
+    - annoyingly Browser.onResize returns the size of the complete obsidian interface and
+      not just the CardBoard view controlled by elm...
+  - only need emSize once at start as it doesn't change
+  - what does it do with an empty config at start?
 
 # Cleanups
 - simplify parsing as per typing tutor
