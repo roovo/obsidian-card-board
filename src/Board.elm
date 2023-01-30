@@ -6,7 +6,7 @@ module Board exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CollapseStates
+import CollapsedColumns
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import DateBoardColumns exposing (DateBoardColumns)
@@ -75,11 +75,11 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
 collapseColumns : BoardConfig -> List (Column Card) -> List (Column Card)
 collapseColumns config cols =
     let
-        collapseStates =
-            BoardConfig.collapseStates config
+        collapsedColumns =
+            BoardConfig.collapsedColumns config
 
         foo index col =
-            if CollapseStates.columnIsCollapsed index collapseStates then
+            if CollapsedColumns.columnIsCollapsed index collapsedColumns then
                 Column.collapseState True col
 
             else

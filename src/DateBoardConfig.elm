@@ -10,7 +10,7 @@ module DateBoardConfig exposing
     , encoder
     )
 
-import CollapseStates exposing (CollapseStates)
+import CollapsedColumns exposing (CollapsedColumns)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -28,7 +28,7 @@ type alias DateBoardConfig =
     , showFilteredTags : Bool
     , includeUndated : Bool
     , title : String
-    , collapseStates : CollapseStates
+    , collapsedColumns : CollapsedColumns
     }
 
 
@@ -41,7 +41,7 @@ default =
     , showFilteredTags = True
     , includeUndated = True
     , title = ""
-    , collapseStates = CollapseStates.init
+    , collapsedColumns = CollapsedColumns.init
     }
 
 
@@ -59,7 +59,7 @@ encoder =
         , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
         , TsEncode.required "includeUndated" .includeUndated TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
-        , TsEncode.required "collapsedColumns" .collapseStates CollapseStates.encoder
+        , TsEncode.required "collapsedColumns" .collapsedColumns CollapsedColumns.encoder
         ]
 
 
@@ -73,7 +73,7 @@ decoder_v_0_9_0 =
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapseStates.decoder)
+        |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapsedColumns.decoder)
 
 
 decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
@@ -86,7 +86,7 @@ decoder_v_0_5_0 =
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
@@ -99,7 +99,7 @@ decoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
@@ -112,7 +112,7 @@ decoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
@@ -125,7 +125,7 @@ decoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
@@ -138,4 +138,4 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.succeed CollapseStates.init)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)

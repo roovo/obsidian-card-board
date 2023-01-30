@@ -1,7 +1,7 @@
 module BoardConfig exposing
     ( BoardConfig(..)
     , collapseColumn
-    , collapseStates
+    , collapsedColumns
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -33,7 +33,7 @@ module BoardConfig exposing
     , updateTitle
     )
 
-import CollapseStates exposing (CollapseStates)
+import CollapsedColumns exposing (CollapsedColumns)
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
 import Filter exposing (Filter, Polarity, Scope)
@@ -85,14 +85,14 @@ fromBoardType boardType title_ =
 -- UTILITIES
 
 
-collapseStates : BoardConfig -> CollapseStates
-collapseStates config =
+collapsedColumns : BoardConfig -> CollapsedColumns
+collapsedColumns config =
     case config of
         DateBoardConfig c ->
-            c.collapseStates
+            c.collapsedColumns
 
         TagBoardConfig c ->
-            c.collapseStates
+            c.collapsedColumns
 
 
 isForDateBoard : BoardConfig -> Bool
@@ -247,11 +247,11 @@ collapseColumn columnIndex isCollapsed config =
     case config of
         DateBoardConfig boardConfig ->
             DateBoardConfig <|
-                { boardConfig | collapseStates = CollapseStates.collapseColumn columnIndex isCollapsed boardConfig.collapseStates }
+                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
 
         TagBoardConfig boardConfig ->
             TagBoardConfig <|
-                { boardConfig | collapseStates = CollapseStates.collapseColumn columnIndex isCollapsed boardConfig.collapseStates }
+                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

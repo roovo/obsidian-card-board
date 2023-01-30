@@ -3,7 +3,7 @@ module BoardTests exposing (suite)
 import Board
 import BoardConfig
 import Card
-import CollapseStates
+import CollapsedColumns
 import Column
 import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
@@ -356,7 +356,7 @@ columnsDateBoard =
                                     | includeUndated = True
                                     , filters = []
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -379,7 +379,7 @@ columnsDateBoard =
                                         , FilterHelpers.tagFilter "cTag"
                                         ]
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -631,7 +631,7 @@ columnsTagBoard =
                                     , includeOthers = True
                                     , filters = []
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
@@ -655,7 +655,7 @@ columnsTagBoard =
                                         , FilterHelpers.tagFilter "tag3"
                                         ]
                                     , filterPolarity = Filter.Deny
-                                    , collapseStates = CollapseStates.init |> CollapseStates.collapseColumn 0 True
+                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
                         |> Board.columns DateTimeHelpers.nowWithZone 0
