@@ -93,6 +93,7 @@ update msg session =
 
         ToggleColumnCollapse columnIndex newState ->
             let
+                newSession : Session
                 newSession =
                     Session.updateColumnCollapse columnIndex newState session
             in
@@ -260,6 +261,7 @@ selectedBoardView timeWithZone boardIndex board =
 columnView : Int -> TimeWithZone -> Column Card -> Html Msg
 columnView columnIndex timeWithZone column =
     let
+        columnCollapsedArrow : String
         columnCollapsedArrow =
             if Column.isCollapsed column then
                 "arrow-down"
@@ -267,6 +269,7 @@ columnView columnIndex timeWithZone column =
             else
                 "arrow-right"
 
+        columnCollapsedClass : String
         columnCollapsedClass =
             if Column.isCollapsed column then
                 " collapsed"
@@ -274,6 +277,7 @@ columnView columnIndex timeWithZone column =
             else
                 ""
 
+        columnCountString : String
         columnCountString =
             if Column.isCollapsed column then
                 "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"

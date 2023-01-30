@@ -2,7 +2,7 @@ module CollapsedColumnsTests exposing (suite)
 
 import CollapsedColumns
 import Expect
-import Fuzz exposing (Fuzzer)
+import Fuzz
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
 import TsJson.Encode as TsEncode

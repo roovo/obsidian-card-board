@@ -7,7 +7,6 @@ module CollapsedColumns exposing
     , init
     )
 
-import List.Extra as LE
 import Set exposing (Set)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode

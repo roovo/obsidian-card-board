@@ -1,6 +1,3 @@
-- update readme
-  - new way to set column width with snippet
-
 - need to update collapsed columns if columns are added or removed
 
 - set size in elm (resize_spike branch)
