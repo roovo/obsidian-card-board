@@ -1,4 +1,3 @@
-- move the heading up a pixel or two next to the right arrow (or centre the text and arrow vertically)
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
 - update readme

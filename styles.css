@@ -140,6 +140,7 @@ li.is-after-active .card-board-tabs-inner {
   font-weight: var(--bold-weight);
   margin-bottom: 1em;
   display: flex;
+  align-items: center;
 }
 
 .card-board-column.collapsed .card-board-column-header {
@@ -157,7 +158,7 @@ li.is-after-active .card-board-tabs-inner {
   border-left: 0.4em solid transparent;
   border-right: 0.4em solid transparent;
   border-top: 0.4em solid var(--text-normal);
-  margin: 0.4em 0.3em 0.4em 0em;
+  margin: 0.5em 0 0.5em 0;
   cursor: pointer;
 }
 
@@ -167,7 +168,7 @@ li.is-after-active .card-board-tabs-inner {
   border-top: 0.4em solid transparent;
   border-bottom: 0.4em solid transparent;
   border-left: 0.4em solid var(--text-normal);
-  margin: 0.2em 0.4em 0 -0.2em;
+  margin: 0 0.4em 0 -0.2em;
   cursor: pointer;
 }
 
