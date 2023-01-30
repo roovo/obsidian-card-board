@@ -1,3 +1,6 @@
+- need to update collapsed columns if columns are added or removed
+- need to do something different in RTL mode
+  - arrow needs reversing and putting at the top of collapsed columns
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
 - update readme
