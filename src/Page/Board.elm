@@ -256,9 +256,23 @@ selectedBoardView timeWithZone boardIndex board =
 columnView : Int -> TimeWithZone -> Column Card -> Html Msg
 columnView columnIndex timeWithZone column =
     let
+        columnCollapsedArrow =
+            if Column.isCollapsed column then
+                "arrow-down"
+
+            else
+                "arrow-right"
+
         columnCollapsedClass =
             if Column.isCollapsed column then
                 " collapsed"
+
+            else
+                ""
+
+        columnCountString =
+            if Column.isCollapsed column then
+                "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"
 
             else
                 ""
@@ -266,12 +280,14 @@ columnView columnIndex timeWithZone column =
     Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
-                [ class "arrow-right"
+                [ class columnCollapsedArrow
                 , onClick <| ToggleColumnCollapse columnIndex
                 ]
                 []
             , Html.span []
                 [ Html.text <| Column.name column ]
+            , Html.span [ class "sub-text" ]
+                [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
             (List.map (cardView timeWithZone) (Column.items column))

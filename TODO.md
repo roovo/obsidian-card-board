@@ -1,8 +1,5 @@
-- show the number of cards in a column when it is collapsed
 - what happens with people board and column collapsing when I tick things off on
   decorate my cave card?
-- when I collpase all columns, they are not tall enough to show their titles
-- newed to move right arrow a bit to the left for better looking toggle
 - horizontal scrollbar isn't working properly (there can be things offscreen to the right
   that I can't scroll into view (e.g. the completed column)
 - update readme
