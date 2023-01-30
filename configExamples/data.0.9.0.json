@@ -1,0 +1,221 @@
+{
+  "version": "0.9.0",
+  "data": {
+    "boardConfigs": [
+      {
+        "tag": "dateBoardConfig",
+        "data": {
+          "completedCount": 5,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "people/"
+            },
+            {
+              "tag": "tagFilter",
+              "data": "home/"
+            }
+          ],
+          "filterPolarity": "Deny",
+          "filterScope": "TopLevelOnly",
+          "showFilteredTags": false,
+          "includeUndated": true,
+          "title": "Dated",
+          "collapsedColumns": [
+            0,
+            2,
+            3
+          ]
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/",
+              "displayTitle": "Home/"
+            },
+            {
+              "tag": "home",
+              "displayTitle": "Home"
+            },
+            {
+              "tag": "wellbeing",
+              "displayTitle": "Wellbeing"
+            },
+            {
+              "tag": "town",
+              "displayTitle": "Town"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [],
+          "filterPolarity": "Allow",
+          "filterScope": "SubTasksOnly",
+          "showFilteredTags": false,
+          "includeOthers": true,
+          "includeUntagged": true,
+          "title": "Tagged",
+          "collapsedColumns": [
+            0,
+            1,
+            5
+          ]
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "status/backlog",
+              "displayTitle": "Backlog"
+            },
+            {
+              "tag": "status/triaged",
+              "displayTitle": "Triaged"
+            },
+            {
+              "tag": "status/blocked",
+              "displayTitle": "Blocked"
+            },
+            {
+              "tag": "status/doing",
+              "displayTitle": "Doing"
+            }
+          ],
+          "showColumnTags": false,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "projects/project1"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "filterScope": "Both",
+          "showFilteredTags": false,
+          "includeOthers": true,
+          "includeUntagged": false,
+          "title": "Project 1",
+          "collapsedColumns": [
+            0,
+            2,
+            3
+          ]
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "home/kitchen",
+              "displayTitle": "Kitchen"
+            },
+            {
+              "tag": "home/outside",
+              "displayTitle": "Outside"
+            }
+          ],
+          "showColumnTags": true,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "home"
+            },
+            {
+              "tag": "tagFilter",
+              "data": "home/"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "filterScope": "Both",
+          "showFilteredTags": true,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "Home",
+          "collapsedColumns": []
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "خانه",
+              "displayTitle": "خانه"
+            },
+            {
+              "tag": "خانه/",
+              "displayTitle": "خانه/"
+            }
+          ],
+          "showColumnTags": true,
+          "completedCount": 10,
+          "filters": [],
+          "filterPolarity": "Allow",
+          "filterScope": "Both",
+          "showFilteredTags": true,
+          "includeOthers": false,
+          "includeUntagged": false,
+          "title": "خانه",
+          "collapsedColumns": []
+        }
+      },
+      {
+        "tag": "tagBoardConfig",
+        "data": {
+          "columns": [
+            {
+              "tag": "people/fred",
+              "displayTitle": "Fred"
+            },
+            {
+              "tag": "people/wilma",
+              "displayTitle": "Wilma"
+            },
+            {
+              "tag": "people/barney",
+              "displayTitle": "Barney"
+            }
+          ],
+          "showColumnTags": true,
+          "completedCount": 10,
+          "filters": [
+            {
+              "tag": "tagFilter",
+              "data": "people/"
+            }
+          ],
+          "filterPolarity": "Allow",
+          "filterScope": "Both",
+          "showFilteredTags": true,
+          "includeOthers": true,
+          "includeUntagged": false,
+          "title": "People",
+          "collapsedColumns": [
+            0,
+            1,
+            3
+          ]
+        }
+      }
+    ],
+    "globalSettings": {
+      "taskCompletionFormat": "ObsidianCardBoard",
+      "columnNames": {
+        "today": "",
+        "tomorrow": "",
+        "future": "",
+        "undated": "",
+        "others": "",
+        "untagged": "",
+        "completed": ""
+      }
+    }
+  }
+}

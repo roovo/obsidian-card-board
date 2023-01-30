@@ -1,8 +1,10 @@
 module Column exposing
     ( Column
     , PlacementResult(..)
+    , collapseState
     , hasName
     , init
+    , isCollapsed
     , isEmpty
     , isEnabled
     , items
@@ -13,7 +15,15 @@ module Column exposing
 
 
 type Column a
-    = Column Bool String (List a)
+    = Column (Config a)
+
+
+type alias Config a =
+    { enabled : Bool
+    , name : String
+    , items : List a
+    , collapsed : Bool
+    }
 
 
 type PlacementResult
@@ -28,7 +38,12 @@ type PlacementResult
 
 init : Bool -> String -> List a -> Column a
 init enabled_ name_ items_ =
-    Column enabled_ name_ items_
+    Column
+        { enabled = enabled_
+        , name = name_
+        , items = items_
+        , collapsed = False
+        }
 
 
 
@@ -36,8 +51,13 @@ init enabled_ name_ items_ =
 
 
 hasName : String -> Column a -> Bool
-hasName n (Column _ name_ _) =
-    n == name_
+hasName n =
+    (==) n << name
+
+
+isCollapsed : Column a -> Bool
+isCollapsed =
+    .collapsed << config
 
 
 isEmpty : Column a -> Bool
@@ -46,15 +66,33 @@ isEmpty =
 
 
 isEnabled : Column a -> Bool
-isEnabled (Column e _ _) =
-    e
+isEnabled =
+    .enabled << config
 
 
 items : Column a -> List a
-items (Column _ _ items_) =
-    items_
+items =
+    .items << config
 
 
 name : Column a -> String
-name (Column _ name_ _) =
-    name_
+name =
+    .name << config
+
+
+
+-- MODIFICATION
+
+
+collapseState : Bool -> Column a -> Column a
+collapseState collapsed (Column c) =
+    Column { c | collapsed = collapsed }
+
+
+
+-- PRIVATE
+
+
+config : Column a -> Config a
+config (Column c) =
+    c

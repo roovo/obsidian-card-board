@@ -15,6 +15,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
+- Collapseable columns.  To make this work nicely, columns are now set to a fixed width.
+  See the [Scaling Board Text and Column Sizes section](#scaling-board-text-and-column-sizes)
+  to customize this if you don't like the width I have chosen.
 - Supports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
 - Option to choose whether to apply tag filters to top level tasks, sub-tasks, or
   both.
@@ -22,7 +25,6 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   from boards when marked as complete, or the information on a card changing depending
   which column it was displayed in.  If you are used to the way things used to work
   you may well notice a change (hopefully for the best).
-- Sub-task tags now shown inline rather than at the top of the card.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -319,23 +321,21 @@ To get the correct behavior for recurring tasks, click the edit icon on the card
 to go to the file where the task is written, and then use the
 *"Tasks: Toggle Done"* command or click the checkbox from there.
 
-## Scaling Board Size
-You can scale the size of the board relative to the size of stuff in Obsidian using
-a css snippet:
+## Scaling Board Text and Column Sizes
+Use the following css snippet to customize these:
 
 ```css
 .card-board-view {
   font-size: 1em;
 }
 
-.card-board-view .card-board-columns {
-  grid-auto-columns: minmax(20em, 1fr);
+.card-board-view .card-board-column {
+  width: 20em;
 }
 ```
 
-You can change the font-size to alter the general size of the contents of the cards.
-If you change the value of the first parameter of the minmax function you can change
-the minimum width of the cards.
+You can alter the general size of the contents of the cards by changng the font-size,
+and/or set the width of the columns by changing the width setting.
 
 
 ## Limitations

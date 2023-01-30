@@ -1,11 +1,14 @@
 module BoardConfig exposing
     ( BoardConfig(..)
+    , collapseColumn
+    , collapsedColumns
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
     , decoder_v_0_6_0
+    , decoder_v_0_9_0
     , default
     , encoder
     , filterPolarity
@@ -30,6 +33,7 @@ module BoardConfig exposing
     , updateTitle
     )
 
+import CollapsedColumns exposing (CollapsedColumns)
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
 import Filter exposing (Filter, Polarity, Scope)
@@ -79,6 +83,16 @@ fromBoardType boardType title_ =
 
 
 -- UTILITIES
+
+
+collapsedColumns : BoardConfig -> CollapsedColumns
+collapsedColumns config =
+    case config of
+        DateBoardConfig c ->
+            c.collapsedColumns
+
+        TagBoardConfig c ->
+            c.collapsedColumns
 
 
 isForDateBoard : BoardConfig -> Bool
@@ -161,6 +175,14 @@ encoder =
         |> TsEncode.buildUnion
 
 
+decoder_v_0_9_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_9_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_9_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_9_0
+        ]
+
+
 decoder_v_0_6_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_6_0 =
     TsDecode.oneOf
@@ -218,6 +240,18 @@ mapFilters fn config =
 
         TagBoardConfig boardConfig ->
             TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
+
+
+collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
+collapseColumn columnIndex isCollapsed config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <|
+                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <|
+                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

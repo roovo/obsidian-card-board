@@ -7,10 +7,12 @@ module TagBoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_9_0
     , default
     , encoder
     )
 
+import CollapsedColumns exposing (CollapsedColumns)
 import Filter exposing (Filter, Polarity, Scope)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
@@ -34,6 +36,7 @@ type alias TagBoardConfig =
     , includeOthers : Bool
     , includeUntagged : Bool
     , title : String
+    , collapsedColumns : CollapsedColumns
     }
 
 
@@ -55,6 +58,7 @@ default =
     , includeOthers = False
     , includeUntagged = False
     , title = ""
+    , collapsedColumns = CollapsedColumns.init
     }
 
 
@@ -75,6 +79,7 @@ encoder =
         , TsEncode.required "includeOthers" .includeOthers TsEncode.bool
         , TsEncode.required "includeUntagged" .includeUntagged TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
+        , TsEncode.required "collapsedColumns" .collapsedColumns CollapsedColumns.encoder
         ]
 
 
@@ -84,6 +89,22 @@ columnConfigEncoder =
         [ TsEncode.required "tag" .tag TsEncode.string
         , TsEncode.required "displayTitle" .displayTitle TsEncode.string
         ]
+
+
+decoder_v_0_9_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_9_0 =
+    TsDecode.succeed TagBoardConfig
+        |> TsDecode.andMap (TsDecode.field "columns" (TsDecode.list columnConfigDecoder))
+        |> TsDecode.andMap (TsDecode.field "showColumnTags" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
+        |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
+        |> TsDecode.andMap (TsDecode.field "filterScope" <| Filter.scopeDecoder)
+        |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapsedColumns.decoder)
 
 
 decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
@@ -99,6 +120,7 @@ decoder_v_0_5_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
@@ -114,6 +136,7 @@ decoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
@@ -129,6 +152,7 @@ decoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
@@ -144,6 +168,7 @@ decoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
@@ -159,6 +184,7 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "includeOthers" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "includeUntagged" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
 
 
 columnConfigDecoder : TsDecode.Decoder ColumnConfig

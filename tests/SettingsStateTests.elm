@@ -1,6 +1,7 @@
 module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import CollapsedColumns
 import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
@@ -506,6 +507,7 @@ exampleDateBoardConfig =
     , showFilteredTags = True
     , includeUndated = False
     , title = "Date Board Title"
+    , collapsedColumns = CollapsedColumns.init
     }
 
 
@@ -521,4 +523,5 @@ exampleTagBoardConfig =
     , includeOthers = False
     , includeUntagged = True
     , title = "Tag Board Title"
+    , collapsedColumns = CollapsedColumns.init
     }

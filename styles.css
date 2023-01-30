@@ -107,22 +107,99 @@ li.is-after-active .card-board-tabs-inner {
 }
 
 .card-board-columns {
-  display: grid;
-  grid-auto-columns: minmax(20em, 1fr);
-  grid-auto-flow: column;
-  grid-gap: 1em;
-  margin-right: 1em;
+  display: flex;
+}
+
+.card-board-columns::after {
+  content: "";
+  flex: 0 0 1em;
 }
 
 .card-board-column {
-  padding: 1em;
+  flex: 0 0 auto;
+  padding: 0.6em 1em 1em 1em;
+  margin-right: 15px;
+  width: 20em;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
 }
+
+div[dir=rtl] .card-board-column {
+  margin-left: 15px;
+  margin-right: 0;
+}
+
+.card-board-column.collapsed {
+  width: 2em;
+  min-width: 2em;
+  flex-grow: 0;
+  overflow: visible;
+  margin: 0;
+  margin-right: 15px;
+  padding: 0.6em 0 0 0.3em;
+}
+
+div[dir=rtl] .card-board-column.collapsed {
+  margin-left: 15px;
+  margin-right: 0;
+  padding: 0.6em 0.3em 0 0;
+}
+
 .card-board-column-header {
   font-weight: var(--bold-weight);
-  margin-bottom: 1em;
+  margin-bottom: 0.6em;
+  display: flex;
+  align-items: center;
+}
+
+
+div[dir=ltr] .card-board-column.collapsed .card-board-column-header {
+  writing-mode: vertical-lr;
+}
+
+div[dir=rtl] .card-board-column.collapsed .card-board-column-header {
+  writing-mode: vertical-rl;
+}
+
+.card-board-column.collapsed .card-board-column-header .sub-text {
+  font-weight: var(--normal-weight);
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+.arrow-down {
+  width: 0;
+  height: 0;
+  border-left: 0.4em solid transparent;
+  border-right: 0.4em solid transparent;
+  border-top: 0.4em solid var(--text-normal);
+  margin: 0.5em 0 0.5em 0;
+  cursor: pointer;
+}
+
+div[dir=rtl] .arrow-down {
+  order: 3;
+}
+
+div[dir=ltr] .arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 0.4em solid transparent;
+  border-bottom: 0.4em solid transparent;
+  border-left: 0.4em solid var(--text-normal);
+  margin: 0 0.4em 0 -0.2em;
+  cursor: pointer;
+}
+
+div[dir=rtl] .arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 0.4em solid transparent;
+  border-bottom: 0.4em solid transparent;
+  border-right: 0.4em solid var(--text-normal);
+  margin: 0 -0.2em 0 0.4em;
+  cursor: pointer;
 }
 
 ul.card-board-column-list {
@@ -137,6 +214,10 @@ ul.card-board-column-list {
 
 ul.card-board-column-list > li.card-board-card::before {
   content: "";
+}
+
+.card-board-column.collapsed .card-board-card {
+  display: none;
 }
 
 .card-board-card {

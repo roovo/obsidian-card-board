@@ -1,6 +1,7 @@
 module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import CollapsedColumns
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
@@ -21,6 +22,7 @@ suite =
         , isForDateBoard
         , isForTagBoard
         , mapFilters
+        , collapseColumn
         , toggleIncludeOthers
         , toggleIncludeUndated
         , toggleIncludeUntagged
@@ -138,6 +140,42 @@ mapFilters =
                     |> BoardConfig.filters
                     |> List.map Filter.value
                     |> Expect.equal [ "", "", "" ]
+        ]
+
+
+collapseColumn : Test
+collapseColumn =
+    describe "collapseColumn"
+        [ test "collapses a column for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.collapseColumn 0 True
+                    |> extractDateBoardConfig
+                    |> Maybe.map .collapsedColumns
+                    |> Expect.equal (Just <| (CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True))
+        , test "un-collapses a column for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.collapseColumn 0 True
+                    |> BoardConfig.collapseColumn 0 False
+                    |> extractDateBoardConfig
+                    |> Maybe.map .collapsedColumns
+                    |> Expect.equal (Just <| (CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 False))
+        , test "sets the collapse state for a TagBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.collapseColumn 0 True
+                    |> extractTagBoardConfig
+                    |> Maybe.map .collapsedColumns
+                    |> Expect.equal (Just <| (CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True))
+        , test "unsets the collapse state for a TagBoard config if toggled twice" <|
+            \() ->
+                BoardConfig.fromBoardType "tagBoard" ""
+                    |> BoardConfig.collapseColumn 0 True
+                    |> BoardConfig.collapseColumn 0 False
+                    |> extractTagBoardConfig
+                    |> Maybe.map .collapsedColumns
+                    |> Expect.equal (Just <| (CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 False))
         ]
 
 

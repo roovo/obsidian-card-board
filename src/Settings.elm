@@ -55,7 +55,7 @@ boardConfigs =
 
 currentVersion : Semver.Version
 currentVersion =
-    Semver.version 0 8 0 [] []
+    Semver.version 0 9 0 [] []
 
 
 globalSettings : Settings -> GlobalSettings
@@ -151,8 +151,11 @@ semverEncoder =
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
-        (\v_0_8_0 v_0_7_0 v_0_6_0 v_0_5_0 v_0_4_0 v_0_3_0 v_0_2_0 v_0_1_0 unsupportedVersion version_ ->
+        (\v_0_9_0 v_0_8_0 v_0_7_0 v_0_6_0 v_0_5_0 v_0_4_0 v_0_3_0 v_0_2_0 v_0_1_0 unsupportedVersion version_ ->
             case version_ of
+                "0.9.0" ->
+                    v_0_9_0
+
                 "0.8.0" ->
                     v_0_8_0
 
@@ -180,6 +183,7 @@ versionedSettingsDecoder =
                 _ ->
                     unsupportedVersion
         )
+        |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_9_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_8_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_7_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_6_0_Decoder)
@@ -189,6 +193,14 @@ versionedSettingsDecoder =
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_2_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_1_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
+
+
+v_0_9_0_Decoder : TsDecode.Decoder Settings
+v_0_9_0_Decoder =
+    TsDecode.succeed Settings
+        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_9_0)))
+        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_9_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed currentVersion)
 
 
 v_0_8_0_Decoder : TsDecode.Decoder Settings
