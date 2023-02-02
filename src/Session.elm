@@ -61,6 +61,7 @@ type alias Config =
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
+    , uniqueId : String
     }
 
 
@@ -86,6 +87,7 @@ default =
             { time = Time.millisToPosix 0
             , zone = Time.customZone 0 []
             }
+        , uniqueId = "xXxXx"
         }
 
 
@@ -101,6 +103,7 @@ fromFlags flags =
             { time = Time.millisToPosix flags.now
             , zone = Time.customZone flags.zone []
             }
+        , uniqueId = flags.uniqueId
         }
 
 
