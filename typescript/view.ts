@@ -49,6 +49,7 @@ export class CardBoardView extends ItemView {
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
 
     const mySettings:Flags = {
+      uniqueId:           this.randomId(5),
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
       settings:           this.plugin.settings,
@@ -484,6 +485,18 @@ export class CardBoardView extends ItemView {
     file: TFile
   ): string | null {
     return getDateFromFile(file, "day")?.format('YYYY-MM-DD') || null;
+  }
+
+  randomId(length: number): string {
+      let result = '';
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      let counter = 0;
+      while (counter < length) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+      }
+      return result;
   }
 
   async openOrSwitchWithHighlight(
