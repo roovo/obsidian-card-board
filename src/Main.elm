@@ -301,7 +301,7 @@ cmdForTaskRedraws newPath session =
         cards =
             Session.taskList session
                 |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
-                |> Boards.init (Session.columnNames session) (Session.boardConfigs session)
+                |> Boards.init (Session.uniqueId session) (Session.columnNames session) (Session.boardConfigs session)
                 |> Boards.cards (Session.timeWithZone session)
     in
     if List.isEmpty cards then

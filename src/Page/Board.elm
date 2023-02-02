@@ -125,7 +125,7 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init columnNames (Session.boardConfigs session) (Session.taskList session)
+                Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
 
             columnNames : ColumnNames
             columnNames =

@@ -23,6 +23,7 @@ module Session exposing
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
+    , uniqueId
     , updateColumnCollapse
     , updatePath
     , updateSettings
@@ -120,7 +121,7 @@ cards : Session -> List Card
 cards ((Session config) as session) =
     session
         |> taskList
-        |> Boards.init (columnNames session) (Settings.boardConfigs config.settings)
+        |> Boards.init config.uniqueId (columnNames session) (Settings.boardConfigs config.settings)
         |> Boards.cards config.timeWithZone
 
 
@@ -196,6 +197,11 @@ textDirection (Session config) =
 timeWithZone : Session -> TimeWithZone
 timeWithZone (Session config) =
     config.timeWithZone
+
+
+uniqueId : Session -> String
+uniqueId (Session config) =
+    config.uniqueId
 
 
 
