@@ -1,3 +1,16 @@
+- add flag to GlobalSettings
+- in TaskList.fromMarkdown
+  - pass in flag to ignore (or not) file dates
+  - then either pass in the date or Nothing to the parser
+  - and the rest should just work
+
+- @due(none)
+  - TaskPaperTag.dueTagParser needs to handle the None case:
+    - Date | None | NotSpecified
+  - this needs to be stored on the TaskItem
+  - taskItem.due and .dueRataDie need to respect this
+  - and the rest should just work
+
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
