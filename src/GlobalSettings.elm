@@ -3,6 +3,7 @@ module GlobalSettings exposing
     , TaskCompletionFormat(..)
     , default
     , encoder
+    , toggleIgnoreFileNameDate
     , updateColumnName
     , updateTaskCompletionFormat
     , v_0_10_0_decoder
@@ -46,6 +47,11 @@ default =
 
 
 -- UTILITIES
+
+
+toggleIgnoreFileNameDate : GlobalSettings -> GlobalSettings
+toggleIgnoreFileNameDate gs =
+    { gs | ignoreFileNameDates = not gs.ignoreFileNameDates }
 
 
 updateColumnName : String -> String -> GlobalSettings -> GlobalSettings

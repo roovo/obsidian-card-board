@@ -13,6 +13,7 @@ suite =
     concat
         [ default
         , encodeDecode
+        , toggleIgnoreFileNameDate
         , updateColumnName
         , updateTaskCompletionFormat
         ]
@@ -68,6 +69,18 @@ encodeDecode =
                             , ignoreFileNameDates = True
                             }
                         )
+        ]
+
+
+toggleIgnoreFileNameDate : Test
+toggleIgnoreFileNameDate =
+    describe "toggleIgnoreFileNameDate"
+        [ test "can update a valid column name" <|
+            \() ->
+                GlobalSettings.default
+                    |> GlobalSettings.toggleIgnoreFileNameDate
+                    |> .ignoreFileNameDates
+                    |> Expect.equal True
         ]
 
 

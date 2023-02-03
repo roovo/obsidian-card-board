@@ -359,6 +359,7 @@ export class CardBoardView extends ItemView {
             untagged : string
             completed : string;
           }
+          ignoreFileNameDates : boolean;
         }
       };
       version : string
