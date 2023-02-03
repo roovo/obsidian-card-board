@@ -24,11 +24,11 @@ suite =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.9.0" <|
+        [ test "is 0.10.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.9.0"
+                    |> Expect.equal "0.10.0"
         ]
 
 
@@ -75,4 +75,5 @@ exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
     , columnNames = ColumnNames.default
+    , ignoreFileNameDates = False
     }
