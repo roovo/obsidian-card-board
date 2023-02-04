@@ -28,8 +28,10 @@ completedTagParser =
 
 dueTagParser : (DueDate -> a) -> Parser a
 dueTagParser =
-    ParserHelper.dateParser
-        |> P.map DueDate.SetToDate
+    P.oneOf
+        [ P.map DueDate.SetToDate ParserHelper.dateParser
+        , P.map (always DueDate.SetToNone) (P.token "none")
+        ]
         |> parser "due"
 
 

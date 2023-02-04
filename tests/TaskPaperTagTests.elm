@@ -79,6 +79,11 @@ dueTagParser =
                 "@due(2023-01-01)"
                     |> Parser.run (TaskPaperTag.dueTagParser identity)
                     |> Expect.equal (Ok <| DueDate.SetToDate <| Date.fromCalendarDate 2023 Time.Jan 1)
+        , test "parsers @due(none) as DueDate.SetToNone" <|
+            \() ->
+                "@due(none)"
+                    |> Parser.run (TaskPaperTag.dueTagParser identity)
+                    |> Expect.equal (Ok DueDate.SetToNone)
         , test "fails to parse an invalid date" <|
             \() ->
                 "@due(2023-02-30)"
