@@ -1,10 +1,3 @@
-- @due(none)
-  - TaskPaperTag.dueTagParser needs to handle the None case:
-    - SetToDate | SetToNone | NotSet
-  - this needs to be stored on the TaskItem
-  - taskItem.due and .dueRataDie need to respect this
-  - and the rest should just work
-
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing

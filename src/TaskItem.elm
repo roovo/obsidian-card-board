@@ -219,7 +219,10 @@ due (TaskItem fields_ _) =
         DueDate.SetToDate date ->
             Just date
 
-        _ ->
+        DueDate.SetToNone ->
+            Nothing
+
+        DueDate.NotSet ->
             fields_.dueFile
 
 
