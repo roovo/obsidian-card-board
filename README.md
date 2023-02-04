@@ -15,16 +15,12 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Collapseable columns.  To make this work nicely, columns are now set to a fixed width.
-  See the [Scaling Board Text and Column Sizes section](#scaling-board-text-and-column-sizes)
-  to customize this if you don't like the width I have chosen.
-- Supports all valid CommonMark unordered list markers (`-`, `+`, `*`) -> @MattiasMartens.
-- Option to choose whether to apply tag filters to top level tasks, sub-tasks, or
-  both.
-- Clean-up of many edge cases that led to odd behavior such as cards vanishing
-  from boards when marked as complete, or the information on a card changing depending
-  which column it was displayed in.  If you are used to the way things used to work
-  you may well notice a change (hopefully for the best).
+- Added a Global Setting to disable using daily note dates as the due date
+  for tasks.
+- You can now add @due(none) to a task line if you want to turn off using the
+  daily note date as the due date for a specific task on a daily note page.
+- Fixed issue where cards would display with no text on them if you split the
+  CardBoard window to the right or down.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -121,7 +117,7 @@ Click on the edit icon to open the file containing the task.  Cmd (or Ctrl on wi
 hover over the icon for the normal Obsidian hover preview.
 
 
-### Column ordering
+### Card ordering in columns
 The current behaviour for the different columns is:
 
 - **Completed**: has the most recently completed at the top (assuming they were
@@ -153,9 +149,13 @@ color for foo/bars, which just has to be HotPink :)
 ## Date boards
 You will get the best out of these if you are using the (core) Daily Notes
 or the (community) Periodic Notes plugins, as any tasks you place on a daily
-note will be assigned to the day of the note.
+note will be assigned to the day of the note.  If you do not want this behaviour
+you can turn it off in the Global Settings pane, then tasks on daily notes
+pages will not have a due date unless specifically specified.
 
-You can also assign a date to any task using the format:
+![filters](/images/ignoreFileNameDatesSetting.png?raw=true)
+
+You can assign a date to any task using the format:
 
 ```
 - [ ] My task @due(2021-10-31)
@@ -168,6 +168,14 @@ Cardboard also understands the format used by Dataview and Tasks:
 - [ ] My task 📅 2021-10-31
 ```
 
+A due date specified on a task line will overide any date derived from a task
+being on a daily note page.
+
+You can turn off the due date for a specific task on a daily note page:
+
+```
+- [ ] My task @due(none)
+```
 
 ### Overdue tasks
 These will appear in the `Today` column above any  any tasks that are actually
@@ -262,6 +270,7 @@ above the board to the left of the tabs.  You can:
 - Customize the names of the built-in columns.
 - Delete any boards you no longer need.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
+- Choose to not use the date of daily notes files as the due date for tasks.
 
 The settings for your boards are saved in the
 
