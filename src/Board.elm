@@ -38,8 +38,8 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : TimeWithZone -> Int -> Board -> List (Column Card)
-columns timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
+columns : Bool -> TimeWithZone -> Int -> Board -> List (Column Card)
+columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let
@@ -49,6 +49,7 @@ columns timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
             in
             taskList
                 |> filterTaskList config
+                |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
                 |> DateBoardColumns.columns
                 |> convertToCards uniqueId boardIndex
@@ -62,6 +63,7 @@ columns timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
             in
             taskList
                 |> filterTaskList config
+                |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
                 |> TagBoardColumns.columns
                 |> convertToCards uniqueId boardIndex
@@ -88,6 +90,15 @@ collapseColumns config cols =
                 Column.collapseState False col
     in
     List.indexedMap performCollapse cols
+
+
+configureDueDates : Bool -> TaskList -> TaskList
+configureDueDates ignoreFileNameDates taskList =
+    if ignoreFileNameDates then
+        TaskList.map TaskItem.removeFileNameDate taskList
+
+    else
+        taskList
 
 
 filterTaskList : BoardConfig -> TaskList -> TaskList

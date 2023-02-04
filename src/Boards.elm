@@ -52,12 +52,12 @@ titles (Boards _ _ configs _) =
     SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
 
 
-cards : TimeWithZone -> Boards -> List Card
-cards timeWithZone boards_ =
+cards : Bool -> TimeWithZone -> Boards -> List Card
+cards ignoreFileNameDates timeWithZone boards_ =
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.indexedMap (Board.columns timeWithZone)
+        |> List.indexedMap (Board.columns ignoreFileNameDates timeWithZone)
         |> List.concat
         |> List.map Column.items
         |> List.concat

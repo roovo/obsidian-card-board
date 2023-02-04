@@ -32,6 +32,7 @@ module TaskItem exposing
     , notes
     , originalText
     , parser
+    , removeFileNameDate
     , removeTags
     , tags
     , tasksToToggle
@@ -461,6 +462,11 @@ topLevelTaskHasThisTag tagToMatch =
 
 
 -- MODIFICATION
+
+
+removeFileNameDate : TaskItem -> TaskItem
+removeFileNameDate (TaskItem fields_ subtasks_) =
+    TaskItem { fields_ | dueFile = Nothing } subtasks_
 
 
 removeTags : List String -> TaskItem -> TaskItem

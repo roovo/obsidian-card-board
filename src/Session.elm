@@ -11,6 +11,7 @@ module Session exposing
     , finishAdding
     , fromFlags
     , globalSettings
+    , ignoreFileNameDates
     , isActiveView
     , makeActiveView
     , replaceTaskItems
@@ -122,7 +123,7 @@ cards ((Session config) as session) =
     session
         |> taskList
         |> Boards.init config.uniqueId (columnNames session) (Settings.boardConfigs config.settings)
-        |> Boards.cards config.timeWithZone
+        |> Boards.cards (ignoreFileNameDates session) config.timeWithZone
 
 
 columnNames : Session -> ColumnNames
@@ -138,6 +139,11 @@ dataviewTaskCompletion (Session config) =
 globalSettings : Session -> GlobalSettings
 globalSettings (Session config) =
     Settings.globalSettings config.settings
+
+
+ignoreFileNameDates : Session -> Bool
+ignoreFileNameDates =
+    .ignoreFileNameDates << globalSettings
 
 
 isActiveView : Session -> Bool

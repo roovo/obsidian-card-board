@@ -1,8 +1,7 @@
 - add flag to GlobalSettings
-- in TaskList.fromMarkdown
-  - pass in flag to ignore (or not) file dates
-  - then either pass in the date or Nothing to the parser
-  - and the rest should just work
+- store the flag in BoardConfig (for both date and tag board), e.g. DateBoardConfig DateBoardConfig Bool
+- in Board.columns use this to set the fileDate to Nothing if needed
+- then everything else should just work
 
 - @due(none)
   - TaskPaperTag.dueTagParser needs to handle the None case:
