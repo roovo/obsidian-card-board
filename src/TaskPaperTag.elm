@@ -5,7 +5,6 @@ module TaskPaperTag exposing
     , parser
     )
 
-import Date exposing (Date)
 import DueDate exposing (DueDate)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
