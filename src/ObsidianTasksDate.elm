@@ -4,6 +4,7 @@ module ObsidianTasksDate exposing
     )
 
 import Date exposing (Date)
+import DueDate exposing (DueDate)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
 import Time
@@ -13,9 +14,11 @@ import Time
 -- PARSE
 
 
-dueDateParser : (Date -> a) -> Parser a
+dueDateParser : (DueDate -> a) -> Parser a
 dueDateParser tagger =
-    formatParser "📅 " tagger
+    formatParser "📅 " identity
+        |> P.map DueDate.SetToDate
+        |> P.map tagger
 
 
 completionTimeParser : (Time.Posix -> a) -> Parser a

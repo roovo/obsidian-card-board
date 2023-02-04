@@ -6,6 +6,7 @@ module TaskPaperTag exposing
     )
 
 import Date exposing (Date)
+import DueDate exposing (DueDate)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
 import Time
@@ -25,9 +26,11 @@ completedTagParser =
     parser "completed" ParserHelper.timeParser
 
 
-dueTagParser : (Date -> a) -> Parser a
+dueTagParser : (DueDate -> a) -> Parser a
 dueTagParser =
-    parser "due" ParserHelper.dateParser
+    ParserHelper.dateParser
+        |> P.map DueDate.SetToDate
+        |> parser "due"
 
 
 parser : String -> Parser a -> (a -> b) -> Parser b

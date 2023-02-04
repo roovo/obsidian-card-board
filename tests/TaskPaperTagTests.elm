@@ -1,6 +1,7 @@
 module TaskPaperTagTests exposing (suite)
 
 import Date
+import DueDate
 import Expect
 import Parser
 import TaskPaperTag
@@ -77,7 +78,7 @@ dueTagParser =
             \() ->
                 "@due(2023-01-01)"
                     |> Parser.run (TaskPaperTag.dueTagParser identity)
-                    |> Expect.equal (Ok <| Date.fromCalendarDate 2023 Time.Jan 1)
+                    |> Expect.equal (Ok <| DueDate.SetToDate <| Date.fromCalendarDate 2023 Time.Jan 1)
         , test "fails to parse an invalid date" <|
             \() ->
                 "@due(2023-02-30)"

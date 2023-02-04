@@ -47,6 +47,7 @@ module TaskItem exposing
 import DataviewDate
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
+import DueDate exposing (DueDate)
 import FNV1a
 import GlobalSettings exposing (TaskCompletionFormat)
 import Iso8601
@@ -70,7 +71,7 @@ type alias TaskItemFields =
     { autoComplete : AutoCompletion
     , completion : Completion
     , dueFile : Maybe Date
-    , dueTag : Maybe Date
+    , dueTag : DueDate
     , filePath : String
     , lineNumber : Int
     , notes : String
@@ -100,7 +101,7 @@ type Completion
 type Content
     = AutoCompleteTag AutoCompletion
     | CompletedTag Time.Posix
-    | DueTag Date
+    | DueTag DueDate
     | ObsidianTag Tag
     | Word String
 
@@ -120,7 +121,7 @@ defaultFields =
     { autoComplete = NotSpecifed
     , completion = Incomplete
     , dueFile = Nothing
-    , dueTag = Nothing
+    , dueTag = DueDate.NotSet
     , filePath = ""
     , lineNumber = 0
     , notes = ""
@@ -215,10 +216,10 @@ descendantTaskHasThisTag tagToMatch =
 due : TaskItem -> Maybe Date
 due (TaskItem fields_ _) =
     case fields_.dueTag of
-        Just _ ->
-            fields_.dueTag
+        DueDate.SetToDate date ->
+            Just date
 
-        Nothing ->
+        _ ->
             fields_.dueFile
 
 
@@ -835,8 +836,8 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
                 Word word ->
                     { fields_ | title = word :: fields_.title }
 
-                DueTag date ->
-                    { fields_ | dueTag = Just date }
+                DueTag dueDate ->
+                    { fields_ | dueTag = dueDate }
 
                 CompletedTag _ ->
                     fields_

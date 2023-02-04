@@ -5,6 +5,7 @@ module DataviewDate exposing
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
+import DueDate exposing (DueDate)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
 import Time
@@ -22,9 +23,11 @@ completionTimeParser dataviewTaskCompletion tagger =
                 |> P.map tagger
 
 
-dueDateParser : (Date -> a) -> Parser a
-dueDateParser =
-    parser "due"
+dueDateParser : (DueDate -> a) -> Parser a
+dueDateParser tagger =
+    parser "due" identity
+        |> P.map DueDate.SetToDate
+        |> P.map tagger
 
 
 

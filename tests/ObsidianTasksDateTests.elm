@@ -1,6 +1,7 @@
 module ObsidianTasksDateTests exposing (suite)
 
 import Date
+import DueDate
 import Expect
 import ObsidianTasksDate
 import Parser
@@ -58,7 +59,7 @@ dueDateParser =
             \() ->
                 "📅 2022-10-08"
                     |> Parser.run (ObsidianTasksDate.dueDateParser identity)
-                    |> Expect.equal (Ok <| Date.fromRataDie 738436)
+                    |> Expect.equal (Ok <| DueDate.SetToDate <| Date.fromRataDie 738436)
         , test "fails if the due date is not valid" <|
             \() ->
                 "📅 2022-10-32"

@@ -1,6 +1,6 @@
 - @due(none)
   - TaskPaperTag.dueTagParser needs to handle the None case:
-    - Dated | DateNone | NotPresent
+    - SetToDate | SetToNone | NotSet
   - this needs to be stored on the TaskItem
   - taskItem.due and .dueRataDie need to respect this
   - and the rest should just work
