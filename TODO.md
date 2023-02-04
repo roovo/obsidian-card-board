@@ -1,11 +1,6 @@
-- add flag to GlobalSettings
-- store the flag in BoardConfig (for both date and tag board), e.g. DateBoardConfig DateBoardConfig Bool
-- in Board.columns use this to set the fileDate to Nothing if needed
-- then everything else should just work
-
 - @due(none)
   - TaskPaperTag.dueTagParser needs to handle the None case:
-    - Date | None | NotSpecified
+    - Dated | DateNone | NotPresent
   - this needs to be stored on the TaskItem
   - taskItem.due and .dueRataDie need to respect this
   - and the rest should just work

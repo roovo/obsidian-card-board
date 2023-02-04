@@ -1,4 +1,9 @@
-module TaskPaperTag exposing (autocompleteTagParser, completedTagParser, dueTagParser, parser)
+module TaskPaperTag exposing
+    ( autocompleteTagParser
+    , completedTagParser
+    , dueTagParser
+    , parser
+    )
 
 import Date exposing (Date)
 import Parser as P exposing ((|.), (|=), Parser)
