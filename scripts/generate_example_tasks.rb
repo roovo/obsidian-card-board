@@ -52,6 +52,26 @@ File.open(tomorrows_tasks, "w") do |file|
 """
 end
 
+tomorrows_daily_note_tasks = File.join(target_directory, "#{(Date.today + 1).strftime("%Y-%m-%d")}.md")
+
+File.open(tomorrows_daily_note_tasks, "w") do |file|
+  file.write """
+# Daily note For Tomorrow
+
+- [ ] daily note task for tomorrow with no inline date
+- [ ] daily note task for tomorrow with inline date set to none @due(none)
+- [ ] daily note task for tomorrow with an over-ride for the day after @due(#{(Date.today + 2).strftime("%Y-%m-%d")})
+"""
+end
+
+daily_note_template = File.join(target_directory, "daily_note_template.md")
+
+File.open(daily_note_template, "w") do |file|
+  file.write """
+# Daily note template
+"""
+end
+
 future_tasks = File.join(target_directory, "future_tasks.md")
 
 File.open(future_tasks, "w") do |file|
