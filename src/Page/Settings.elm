@@ -106,6 +106,7 @@ type Msg
     | PathsRequested Int String
     | PolaritySelected String
     | TaskCompletionFormatSelected String
+    | ToggleIgnoreFileNameDate
     | ToggleIncludeOthers
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
@@ -243,6 +244,15 @@ update msg model =
                     | settingsState =
                         SettingsState.mapGlobalSettings
                             (GlobalSettings.updateTaskCompletionFormat taskCompletionFormat)
+                            model.settingsState
+                }
+
+        ToggleIgnoreFileNameDate ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            GlobalSettings.toggleIgnoreFileNameDate
                             model.settingsState
                 }
 
@@ -583,55 +593,86 @@ globalSettingsForm dataviewTaskCompletion gs =
 
                 DataviewTaskCompletion.Text t ->
                     "[" ++ t ++ ":: 1999-12-31]"
+
+        ignoreFileNameDatesStyle : String
+        ignoreFileNameDatesStyle =
+            if gs.ignoreFileNameDates then
+                " is-enabled"
+
+            else
+                ""
     in
     [ Html.div [ class "setting-items-inner" ]
-        (columNamesForm gs.columnNames
-            ++ [ Html.div [ class "setting-item setting-item-heading" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Task completion format" ]
-                        , Html.div [ class "setting-item-description" ] []
-                        ]
-                    , Html.div [ class "setting-item-control" ] []
+        ([ Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Daily/Periodic notes compatibility" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Ignore file name dates" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "If turned on tasks placed in daily note files will not use the date of the note as their due date." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ ignoreFileNameDatesStyle
+                    , onClick ToggleIgnoreFileNameDate
                     ]
-               , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-description" ]
-                            [ Html.text "Format to use when marking tasks as completed:"
-                            , Html.br [] []
-                            , Html.br [] []
-                            , Html.strong [] [ Html.text "None" ]
-                            , Html.text ": "
-                            , Html.code [] [ Html.text "no completion date/time will be added" ]
-                            , Html.br [] []
-                            , Html.strong [] [ Html.text "CardBoard" ]
-                            , Html.text ": "
-                            , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
-                            , Html.br [] []
-                            , Html.strong [] [ Html.text "Dataview" ]
-                            , Html.text ": "
-                            , Html.code [] [ Html.text dataViewExample ]
-                            , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
-                            , Html.br [] []
-                            , Html.strong [] [ Html.text "Tasks" ]
-                            , Html.text ": "
-                            , Html.code [] [ Html.text "✅ 1999-12-31" ]
-                            , Html.br [] []
-                            , Html.br [] []
-                            , Html.strong [] [ Html.text "For Dataview: " ]
-                            , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
-                            , Html.text " and should be reflected above."
-                            , Html.i [] [ Html.text " If you change the settings in" ]
-                            , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
-                            , Html.br [] []
-                            , Html.br [] []
-                            , Html.text "When reading tasks, CardBoard understands all these formats."
-                            ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+                    []
+                ]
+            ]
+         , Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Task completion format" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-description" ]
+                    [ Html.text "Format to use when marking tasks as completed:"
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "None" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "no completion date/time will be added" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "CardBoard" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "Dataview" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text dataViewExample ]
+                    , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "Tasks" ]
+                    , Html.text ": "
+                    , Html.code [] [ Html.text "✅ 1999-12-31" ]
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.strong [] [ Html.text "For Dataview: " ]
+                    , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
+                    , Html.text " and should be reflected above."
+                    , Html.i [] [ Html.text " If you change the settings in" ]
+                    , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
+                    , Html.br [] []
+                    , Html.br [] []
+                    , Html.text "When reading tasks, CardBoard understands all these formats."
                     ]
-               ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+            ]
+         ]
+            ++ columNamesForm gs.columnNames
         )
     ]
 

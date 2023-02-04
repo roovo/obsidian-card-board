@@ -50,6 +50,7 @@ type alias Flags =
     , rightToLeft : Bool
     , now : Int
     , zone : Int
+    , uniqueId : String
     }
 
 
@@ -123,6 +124,7 @@ flags =
         |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "uniqueId" TsDecode.string)
 
 
 toElm : TsDecode.Decoder ToElm

@@ -11,6 +11,7 @@ module Session exposing
     , finishAdding
     , fromFlags
     , globalSettings
+    , ignoreFileNameDates
     , isActiveView
     , makeActiveView
     , replaceTaskItems
@@ -23,6 +24,7 @@ module Session exposing
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
+    , uniqueId
     , updateColumnCollapse
     , updatePath
     , updateSettings
@@ -61,6 +63,7 @@ type alias Config =
     , isActiveView : Bool
     , taskList : State TaskList
     , timeWithZone : TimeWithZone
+    , uniqueId : String
     }
 
 
@@ -86,6 +89,7 @@ default =
             { time = Time.millisToPosix 0
             , zone = Time.customZone 0 []
             }
+        , uniqueId = "xXxXx"
         }
 
 
@@ -101,6 +105,7 @@ fromFlags flags =
             { time = Time.millisToPosix flags.now
             , zone = Time.customZone flags.zone []
             }
+        , uniqueId = flags.uniqueId
         }
 
 
@@ -117,8 +122,8 @@ cards : Session -> List Card
 cards ((Session config) as session) =
     session
         |> taskList
-        |> Boards.init (columnNames session) (Settings.boardConfigs config.settings)
-        |> Boards.cards config.timeWithZone
+        |> Boards.init config.uniqueId (columnNames session) (Settings.boardConfigs config.settings)
+        |> Boards.cards (ignoreFileNameDates session) config.timeWithZone
 
 
 columnNames : Session -> ColumnNames
@@ -134,6 +139,11 @@ dataviewTaskCompletion (Session config) =
 globalSettings : Session -> GlobalSettings
 globalSettings (Session config) =
     Settings.globalSettings config.settings
+
+
+ignoreFileNameDates : Session -> Bool
+ignoreFileNameDates =
+    .ignoreFileNameDates << globalSettings
 
 
 isActiveView : Session -> Bool
@@ -193,6 +203,11 @@ textDirection (Session config) =
 timeWithZone : Session -> TimeWithZone
 timeWithZone (Session config) =
     config.timeWithZone
+
+
+uniqueId : Session -> String
+uniqueId (Session config) =
+    config.uniqueId
 
 
 

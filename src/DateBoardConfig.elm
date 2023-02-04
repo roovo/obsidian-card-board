@@ -1,5 +1,6 @@
 module DateBoardConfig exposing
     ( DateBoardConfig
+    , decoder_v_0_10_0
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -61,6 +62,11 @@ encoder =
         , TsEncode.required "title" .title TsEncode.string
         , TsEncode.required "collapsedColumns" .collapsedColumns CollapsedColumns.encoder
         ]
+
+
+decoder_v_0_10_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_10_0 =
+    decoder_v_0_9_0
 
 
 decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig

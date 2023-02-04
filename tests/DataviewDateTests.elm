@@ -3,6 +3,7 @@ module DataviewDateTests exposing (suite)
 import DataviewDate
 import DataviewTaskCompletion
 import Date
+import DueDate
 import Expect
 import Parser
 import Test exposing (..)
@@ -45,7 +46,7 @@ dueDateParser =
             \() ->
                 "[due:: 2022-10-08]"
                     |> Parser.run (DataviewDate.dueDateParser identity)
-                    |> Expect.equal (Ok <| Date.fromRataDie 738436)
+                    |> Expect.equal (Ok <| DueDate.SetToDate <| Date.fromRataDie 738436)
         , test "fails if the due date is not valid" <|
             \() ->
                 "[due:: 2022-10-32]"

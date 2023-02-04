@@ -22,24 +22,24 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Board
-    = Board ColumnNames BoardConfig TaskList
+    = Board String ColumnNames BoardConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : ColumnNames -> BoardConfig -> TaskList -> Board
-init columnNames config taskList =
-    Board columnNames config taskList
+init : String -> ColumnNames -> BoardConfig -> TaskList -> Board
+init uniqueId columnNames config taskList =
+    Board uniqueId columnNames config taskList
 
 
 
 -- INFO
 
 
-columns : TimeWithZone -> Int -> Board -> List (Column Card)
-columns timeWithZone boardIndex (Board columnNames config taskList) =
+columns : Bool -> TimeWithZone -> Int -> Board -> List (Column Card)
+columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let
@@ -49,9 +49,10 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
             in
             taskList
                 |> filterTaskList config
+                |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
                 |> DateBoardColumns.columns
-                |> convertToCards boardIndex
+                |> convertToCards uniqueId boardIndex
                 |> collapseColumns config
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
@@ -62,9 +63,10 @@ columns timeWithZone boardIndex (Board columnNames config taskList) =
             in
             taskList
                 |> filterTaskList config
+                |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
                 |> TagBoardColumns.columns
-                |> convertToCards boardIndex
+                |> convertToCards uniqueId boardIndex
                 |> collapseColumns config
 
 
@@ -88,6 +90,15 @@ collapseColumns config cols =
                 Column.collapseState False col
     in
     List.indexedMap performCollapse cols
+
+
+configureDueDates : Bool -> TaskList -> TaskList
+configureDueDates ignoreFileNameDates taskList =
+    if ignoreFileNameDates then
+        TaskList.map TaskItem.removeFileNameDate taskList
+
+    else
+        taskList
 
 
 filterTaskList : BoardConfig -> TaskList -> TaskList
@@ -150,12 +161,12 @@ applyFilters taskList polarity scope filters =
         TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
-convertToCards : Int -> List (Column TaskItem) -> List (Column Card)
-convertToCards boardIndex columnList =
+convertToCards : String -> Int -> List (Column TaskItem) -> List (Column Card)
+convertToCards uniqueId boardIndex columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
-            String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex
+            uniqueId ++ ":" ++ String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex
 
         placeCardsInColumn : Int -> Column TaskItem -> Column Card
         placeCardsInColumn columnIndex column =

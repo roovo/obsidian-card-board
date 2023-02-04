@@ -40,6 +40,7 @@ export default class CardBoardPlugin extends Plugin {
             untagged : string
             completed : string;
           }
+          ignoreFileNameDates : boolean;
         }
       };
       version : string
@@ -159,6 +160,7 @@ export default class CardBoardPlugin extends Plugin {
             untagged : string
             completed : string;
           }
+          ignoreFileNameDates : boolean;
         }
       };
       version : string

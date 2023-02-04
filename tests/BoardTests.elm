@@ -35,6 +35,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -45,7 +46,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -60,6 +61,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -75,7 +77,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Completed"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -88,6 +90,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -96,7 +99,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -105,6 +108,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -113,7 +117,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -122,6 +126,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -131,7 +136,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -140,6 +145,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -149,7 +155,7 @@ columnsDateBoard =
                                     , filterScope = Filter.TopLevelOnly
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -158,6 +164,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -167,7 +174,7 @@ columnsDateBoard =
                                     , filterScope = Filter.SubTasksOnly
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -176,6 +183,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -188,7 +196,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -202,6 +210,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -214,7 +223,7 @@ columnsDateBoard =
                                     , filterScope = Filter.TopLevelOnly
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -230,6 +239,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -242,7 +252,7 @@ columnsDateBoard =
                                     , filterScope = Filter.SubTasksOnly
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -259,6 +269,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -273,7 +284,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -287,6 +298,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -300,7 +312,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -312,6 +324,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -320,7 +333,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -328,6 +341,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -342,7 +356,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -350,6 +364,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -359,7 +374,7 @@ columnsDateBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -367,6 +382,7 @@ columnsDateBoard =
                 \() ->
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.DateBoardConfig
                                 { defaultDateBoardConfig
@@ -382,7 +398,7 @@ columnsDateBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -398,6 +414,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -406,7 +423,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -419,6 +436,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -427,7 +445,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -443,6 +461,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -451,7 +470,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -464,6 +483,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -472,7 +492,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -488,6 +508,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -496,7 +517,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -509,6 +530,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -517,7 +539,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -533,6 +555,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -546,7 +569,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -560,6 +583,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -573,7 +597,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -584,6 +608,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -593,7 +618,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -601,6 +626,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -616,7 +642,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -624,6 +650,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -634,7 +661,7 @@ columnsTagBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -642,6 +669,7 @@ columnsTagBoard =
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
+                            "d1"
                             ColumnNames.default
                             (BoardConfig.TagBoardConfig
                                 { defaultTagBoardConfig
@@ -658,7 +686,7 @@ columnsTagBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.nowWithZone 0
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)

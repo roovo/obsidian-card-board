@@ -1,6 +1,11 @@
-module TaskPaperTag exposing (autocompleteTagParser, completedTagParser, dueTagParser, parser)
+module TaskPaperTag exposing
+    ( autocompleteTagParser
+    , completedTagParser
+    , dueTagParser
+    , parser
+    )
 
-import Date exposing (Date)
+import DueDate exposing (DueDate)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (checkWhitespaceFollows)
 import Time
@@ -20,9 +25,13 @@ completedTagParser =
     parser "completed" ParserHelper.timeParser
 
 
-dueTagParser : (Date -> a) -> Parser a
+dueTagParser : (DueDate -> a) -> Parser a
 dueTagParser =
-    parser "due" ParserHelper.dateParser
+    P.oneOf
+        [ P.map DueDate.SetToDate ParserHelper.dateParser
+        , P.map (always DueDate.SetToNone) (P.token "none")
+        ]
+        |> parser "due"
 
 
 parser : String -> Parser a -> (a -> b) -> Parser b

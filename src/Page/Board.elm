@@ -125,7 +125,7 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init columnNames (Session.boardConfigs session) (Session.taskList session)
+                Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
 
             columnNames : ColumnNames
             columnNames =
@@ -136,6 +136,10 @@ view session =
             currentBoardIndex =
                 Boards.currentIndex boards
 
+            ignoreFileNameDates : Bool
+            ignoreFileNameDates =
+                Session.ignoreFileNameDates session
+
             timeWithZone : TimeWithZone
             timeWithZone =
                 Session.timeWithZone session
@@ -145,7 +149,9 @@ view session =
                 (tabHeaders currentBoardIndex boards)
             , Html.div [ class "card-board-boards" ]
                 (Boards.boardZipper boards
-                    |> SafeZipper.indexedMapSelectedAndRest (selectedBoardView timeWithZone) (boardView timeWithZone)
+                    |> SafeZipper.indexedMapSelectedAndRest
+                        (selectedBoardView ignoreFileNameDates timeWithZone)
+                        (boardView ignoreFileNameDates timeWithZone)
                     |> SafeZipper.toList
                 )
             ]
@@ -233,26 +239,26 @@ tabHeaderClass currentBoardIndex index =
             ""
 
 
-boardView : TimeWithZone -> Int -> Board -> Html Msg
-boardView timeWithZone boardIndex board =
+boardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
+boardView ignoreFileNameDates timeWithZone boardIndex board =
     Html.div
         [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns timeWithZone boardIndex
+                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
                 |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]
 
 
-selectedBoardView : TimeWithZone -> Int -> Board -> Html Msg
-selectedBoardView timeWithZone boardIndex board =
+selectedBoardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
+selectedBoardView ignoreFileNameDates timeWithZone boardIndex board =
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns timeWithZone boardIndex
+                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
                 |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]

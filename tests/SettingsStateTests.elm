@@ -495,6 +495,7 @@ exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
     , columnNames = ColumnNames.default
+    , ignoreFileNameDates = False
     }
 
 

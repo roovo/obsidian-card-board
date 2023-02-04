@@ -432,12 +432,25 @@ due =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737431)
-        , test "@due() date over-rides the file date" <|
+        , test "returns Nothing if the file date is valid but the fileNameDate has been removed" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map TaskItem.removeFileNameDate
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "@due(YYYY-MM-DD) over-rides the file date" <|
             \() ->
                 "- [ ] foo @due(2021-03-03)"
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "@due(none) cancels the file date" <|
+            \() ->
+                "- [ ] foo @due(none)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
         , test "📅 date over-rides the file date" <|
             \() ->
                 "- [ ] foo 📅 2021-03-03"

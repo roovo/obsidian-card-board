@@ -13,6 +13,7 @@ suite =
     concat
         [ default
         , encodeDecode
+        , toggleIgnoreFileNameDate
         , updateColumnName
         , updateTaskCompletionFormat
         ]
@@ -27,6 +28,7 @@ default =
                     |> Expect.equal
                         { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                         , columnNames = ColumnNames.default
+                        , ignoreFileNameDates = False
                         }
         ]
 
@@ -46,10 +48,11 @@ encodeDecode =
                     , untagged = Nothing
                     , completed = Just "Done"
                     }
+                , ignoreFileNameDates = True
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_7_0_decoder
+                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_10_0_decoder
                     |> .decoded
                     |> Expect.equal
                         (Ok
@@ -63,8 +66,21 @@ encodeDecode =
                                 , untagged = Nothing
                                 , completed = Just "Done"
                                 }
+                            , ignoreFileNameDates = True
                             }
                         )
+        ]
+
+
+toggleIgnoreFileNameDate : Test
+toggleIgnoreFileNameDate =
+    describe "toggleIgnoreFileNameDate"
+        [ test "can update a valid column name" <|
+            \() ->
+                GlobalSettings.default
+                    |> GlobalSettings.toggleIgnoreFileNameDate
+                    |> .ignoreFileNameDates
+                    |> Expect.equal True
         ]
 
 
@@ -136,4 +152,5 @@ exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
     , columnNames = ColumnNames.default
+    , ignoreFileNameDates = False
     }
