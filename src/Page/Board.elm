@@ -13,7 +13,7 @@ import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onMouseDown)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
@@ -30,6 +30,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Msg
     = SettingsClicked
+    | TabHeaderMouseDown Int
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -44,6 +45,16 @@ update msg session =
             ( session
             , Cmd.none
             , Session.SettingsClicked
+            )
+
+        TabHeaderMouseDown tabIndex ->
+            let
+                foo =
+                    Debug.log "mouseDown" (String.fromInt tabIndex)
+            in
+            ( session
+            , Cmd.none
+            , Session.NoOp
             )
 
         TabSelected tabIndex ->
@@ -193,6 +204,7 @@ selectedTabHeader tabIndex title =
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
+        , onMouseDown <| TabHeaderMouseDown tabIndex
         ]
         [ Html.div
             [ class "workspace-tab-header-inner" ]
@@ -215,6 +227,7 @@ tabHeader currentBoardIndex tabIndex title =
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
         , onClick <| TabSelected tabIndex
+        , onMouseDown <| TabHeaderMouseDown tabIndex
         ]
         [ Html.div
             [ class "workspace-tab-header-inner" ]
