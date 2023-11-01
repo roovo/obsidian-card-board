@@ -330,20 +330,44 @@ export class CardBoardView extends ItemView {
       clientPos : [number, number]
     }
   ) {
-    console.log("foo: " + data.clientPos);
-    console.log("bar: " + data.dragType);
+    const MINIMUM_DRAG_PIXELS = 10;
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
+
+    function maybeDragMove(moveEvent: MouseEvent) {
+      const dragDistance = distance({ x: data.clientPos[0], y: data.clientPos[1]}, coords(moveEvent));
+
+      if (dragDistance >= MINIMUM_DRAG_PIXELS) {
+        stopAwaitingDrag();
+
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("mouseup", dragEnd);
+      }
+    }
+
+    function dragMove(event: MouseEvent) {
+      console.log("moving");
+    }
+
+    function dragEnd(event: MouseEvent) {
+      document.removeEventListener("mousemove", dragMove);
+      document.removeEventListener("mouseup", dragEnd);
+    }
 
     function stopAwaitingDrag() {
       document.removeEventListener("mousemove", maybeDragMove);
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
-    function maybeDragMove(event: MouseEvent) {
-      console.log("moving: " + event.clientX);
-      console.log("moving: " + event.clientY);
+    function coords(event: MouseEvent) {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    function distance(pos1: { x : number, y : number }, pos2: { x : number, y : number }) {
+      const dx = pos1.x - pos2.x;
+      const dy = pos1.y - pos2.y;
+      return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
     }
   }
 
