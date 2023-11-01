@@ -145,8 +145,30 @@ view session =
                 Session.timeWithZone session
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
-            [ Html.ul [ class "card-board-tab-list" ]
-                (tabHeaders currentBoardIndex boards)
+           [ Html.div [ class "workspace-tab-header-container" ]
+               [ Html.div
+                   [ class "sidebar-toggle-button"
+                   , class "mod-left"
+                   , attribute "aria-label" "Settings"
+                   , attribute "aria-label-position" "right"
+                   ]
+                   [ Html.div
+                       [ class "clickable-icon"
+                       , onClick SettingsClicked
+                       ]
+                       [ FeatherIcons.settings
+                           |> FeatherIcons.withSize 1
+                           |> FeatherIcons.withSizeUnit "em"
+                           |> FeatherIcons.toHtml []
+                       ]
+                   ]
+               , Html.div
+                   [ class "workspace-tab-header-container-inner" ]
+                   (tabHeaders currentBoardIndex boards)
+               , Html.div
+                   [ class "card-board-tab-header-spacer" ]
+                   []
+               ]
             , Html.div [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.indexedMapSelectedAndRest
@@ -159,66 +181,46 @@ view session =
 
 tabHeaders : Maybe Int -> Boards -> List (Html Msg)
 tabHeaders currentBoardIndex boards =
-    let
-        beforeHeaderClass : String
-        beforeHeaderClass =
-            tabHeaderClass currentBoardIndex -1
-
-        beforeFirst : Html Msg
-        beforeFirst =
-            Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
-                [ Html.div
-                    [ class "card-board-tabs-inner card-board-tab-icon"
-                    , onClick SettingsClicked
-                    ]
-                    [ FeatherIcons.settings
-                        |> FeatherIcons.withSize 1
-                        |> FeatherIcons.withSizeUnit "em"
-                        |> FeatherIcons.toHtml []
-                    ]
-                ]
-
-        afterHeaderClass : String
-        afterHeaderClass =
-            tabHeaderClass currentBoardIndex (Boards.length boards)
-
-        afterLast : Html Msg
-        afterLast =
-            Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
-                [ Html.div [ class "card-board-tabs-inner" ]
-                    [ Html.text "" ]
-                ]
-
-        tabs : List (Html Msg)
-        tabs =
-            Boards.titles boards
-                |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
-                |> SafeZipper.toList
-    in
-    beforeFirst :: List.append tabs [ afterLast ]
+      Boards.titles boards
+          |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
+          |> SafeZipper.toList
 
 
 selectedTabHeader : Int -> String -> Html Msg
-selectedTabHeader _ title =
-    Html.li [ class "card-board-tab-title is-active" ]
-        [ Html.div [ class "card-board-tabs-inner" ]
-            [ Html.text <| title ]
+selectedTabHeader tabIndex title =
+    Html.div
+        [ class "workspace-tab-header is-active"
+        , id <| "card-board-tab:" ++ String.fromInt tabIndex
+        , attribute "aria-label" title
+        , attribute "aria-label-delay" "50"
+        ]
+        [ Html.div
+            [ class "workspace-tab-header-inner" ]
+            [ Html.div [ class "workspace-tab-header-inner-title" ]
+                [ Html.text <| title ]
+            ]
         ]
 
 
 tabHeader : Maybe Int -> Int -> String -> Html Msg
-tabHeader currentBoardIndex index title =
+tabHeader currentBoardIndex tabIndex title =
     let
         headerClass : String
         headerClass =
-            tabHeaderClass currentBoardIndex index
+            tabHeaderClass currentBoardIndex tabIndex
     in
-    Html.li
-        [ class ("card-board-tab-title" ++ headerClass)
-        , onClick <| TabSelected index
+    Html.div
+        [ id <| "card-board-tab:" ++ String.fromInt tabIndex
+        , class ("workspace-tab-header" ++ headerClass)
+        , attribute "aria-label" title
+        , attribute "aria-label-delay" "50"
+        , onClick <| TabSelected tabIndex
         ]
-        [ Html.div [ class "card-board-tabs-inner" ]
-            [ Html.text <| title ]
+        [ Html.div
+            [ class "workspace-tab-header-inner" ]
+            [ Html.div [ class "workspace-tab-header-inner-title" ]
+                [ Html.text <| title ]
+            ]
         ]
 
 
@@ -267,6 +269,14 @@ selectedBoardView ignoreFileNameDates timeWithZone boardIndex board =
 columnView : Int -> TimeWithZone -> Column Card -> Html Msg
 columnView columnIndex timeWithZone column =
     let
+        columnCollapsedAria : String
+        columnCollapsedAria =
+            if Column.isCollapsed column then
+                "Un-collapse"
+
+            else
+                "Collapse"
+
         columnCollapsedArrow : String
         columnCollapsedArrow =
             if Column.isCollapsed column then
@@ -295,6 +305,7 @@ columnView columnIndex timeWithZone column =
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
                 [ class columnCollapsedArrow
+                , attribute "aria-label" columnCollapsedAria
                 , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
                 ]
                 []
