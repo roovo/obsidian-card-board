@@ -21,13 +21,15 @@
             "elm-community/maybe-extra": "5.2.0",
             "elm-community/string-extra": "4.0.1",
             "justinmimbs/date": "3.2.1",
+            "mpizenberg/elm-pointer-events": "5.0.0",
             "pzp1997/assoc-list": "1.0.0",
             "robinheghan/fnv1a": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "tripokey/elm-fuzzy": "5.2.1"
         },
         "indirect": {
-            "elm/random": "1.0.0",
+            "elm/bytes": "1.0.8",
+            "elm/file": "1.0.5",
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
@@ -39,7 +41,7 @@
             "elm-explorations/test": "2.0.1"
         },
         "indirect": {
-            "elm/bytes": "1.0.8"
+            "elm/random": "1.0.0"
         }
     }
 }

@@ -29,7 +29,7 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
-    | TrackDraggable String
+    | TrackDraggable { dragType : String, clientPos : ( Float, Float ) }
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -106,9 +106,12 @@ openTaskSourceFileEncoder =
         ]
 
 
-trackDraggableEncoder : TsEncode.Encoder String
+trackDraggableEncoder : TsEncode.Encoder { dragType : String, clientPos : ( Float, Float ) }
 trackDraggableEncoder =
-    TsEncode.string
+    TsEncode.object
+        [ required "dragType" .dragType TsEncode.string
+        , required "clientPos" .clientPos (TsEncode.tuple TsEncode.float TsEncode.float)
+        ]
 
 
 updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }

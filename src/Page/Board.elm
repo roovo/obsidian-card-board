@@ -13,7 +13,8 @@ import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
-import Html.Events exposing (onClick, onMouseDown)
+import Html.Events exposing (onClick)
+import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
@@ -30,7 +31,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Msg
     = SettingsClicked
-    | TabHeaderMouseDown Int
+    | TabHeaderMouseDown Int ( Float, Float )
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -47,9 +48,9 @@ update msg session =
             , Session.SettingsClicked
             )
 
-        TabHeaderMouseDown tabIndex ->
+        TabHeaderMouseDown tabIndex clientPos ->
             ( session
-            , InteropPorts.trackDraggable "card-board-tag-header"
+            , InteropPorts.trackDraggable "card-board-tag-header" clientPos
             , Session.NoOp
             )
 
@@ -200,7 +201,7 @@ selectedTabHeader tabIndex title =
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
-        , onMouseDown <| TabHeaderMouseDown tabIndex
+        , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
         [ Html.div
             [ class "workspace-tab-header-inner" ]
@@ -223,7 +224,7 @@ tabHeader currentBoardIndex tabIndex title =
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
         , onClick <| TabSelected tabIndex
-        , onMouseDown <| TabHeaderMouseDown tabIndex
+        , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
         [ Html.div
             [ class "workspace-tab-header-inner" ]

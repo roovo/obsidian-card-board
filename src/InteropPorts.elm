@@ -100,9 +100,9 @@ rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath t
         |> interopFromElm
 
 
-trackDraggable : String -> Cmd msg
-trackDraggable dragType =
-    dragType
+trackDraggable : String -> ( Float, Float ) -> Cmd msg
+trackDraggable dragType clientPos =
+    { dragType = dragType, clientPos = clientPos }
         |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder
         |> interopFromElm
 

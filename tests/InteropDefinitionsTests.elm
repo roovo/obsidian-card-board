@@ -587,11 +587,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes TrackDraggable data" <|
             \() ->
-                "someDraggableType"
+                { dragType = "someDraggableType", clientPos = ( 1.1, 2.2 ) }
                     |> InteropDefinitions.TrackDraggable
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"trackDraggable","data":"someDraggableType"}"""
+                    |> Expect.equal """{"tag":"trackDraggable","data":{"dragType":"someDraggableType","clientPos":[1.1,2.2]}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }

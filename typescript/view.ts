@@ -324,7 +324,15 @@ export class CardBoardView extends ItemView {
     });
   }
 
-  async handleTrackDraggable(dragType: string) {
+  async handleTrackDraggable(
+    data : {
+      dragType: string,
+      clientPos : [number, number]
+    }
+  ) {
+    console.log("foo: " + data.clientPos);
+    console.log("bar: " + data.dragType);
+
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
 
@@ -334,7 +342,8 @@ export class CardBoardView extends ItemView {
     }
 
     function maybeDragMove(event: MouseEvent) {
-      console.log("moving");
+      console.log("moving: " + event.clientX);
+      console.log("moving: " + event.clientY);
     }
   }
 
