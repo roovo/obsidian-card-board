@@ -325,7 +325,17 @@ export class CardBoardView extends ItemView {
   }
 
   async handleTrackDraggable(dragType: string) {
-    console.log("handlingDragable: " + dragType);
+    document.addEventListener("mousemove", maybeDragMove);
+    document.addEventListener("mouseup", stopAwaitingDrag);
+
+    function stopAwaitingDrag() {
+      document.removeEventListener("mousemove", maybeDragMove);
+      document.removeEventListener("mouseup", stopAwaitingDrag);
+    }
+
+    function maybeDragMove(event: MouseEvent) {
+      console.log("moving");
+    }
   }
 
   async handleUpdateSettings(
