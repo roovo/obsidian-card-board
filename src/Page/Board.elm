@@ -156,30 +156,30 @@ view session =
                 Session.timeWithZone session
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
-           [ Html.div [ class "workspace-tab-header-container" ]
-               [ Html.div
-                   [ class "sidebar-toggle-button"
-                   , class "mod-left"
-                   , attribute "aria-label" "Settings"
-                   , attribute "aria-label-position" "right"
-                   ]
-                   [ Html.div
-                       [ class "clickable-icon"
-                       , onClick SettingsClicked
-                       ]
-                       [ FeatherIcons.settings
-                           |> FeatherIcons.withSize 1
-                           |> FeatherIcons.withSizeUnit "em"
-                           |> FeatherIcons.toHtml []
-                       ]
-                   ]
-               , Html.div
-                   [ class "workspace-tab-header-container-inner" ]
-                   (tabHeaders currentBoardIndex boards)
-               , Html.div
-                   [ class "card-board-tab-header-spacer" ]
-                   []
-               ]
+            [ Html.div [ class "workspace-tab-header-container" ]
+                [ Html.div
+                    [ class "sidebar-toggle-button"
+                    , class "mod-left"
+                    , attribute "aria-label" "Settings"
+                    , attribute "aria-label-position" "right"
+                    ]
+                    [ Html.div
+                        [ class "clickable-icon"
+                        , onClick SettingsClicked
+                        ]
+                        [ FeatherIcons.settings
+                            |> FeatherIcons.withSize 1
+                            |> FeatherIcons.withSizeUnit "em"
+                            |> FeatherIcons.toHtml []
+                        ]
+                    ]
+                , Html.div
+                    [ class "workspace-tab-header-container-inner" ]
+                    (tabHeaders currentBoardIndex boards)
+                , Html.div
+                    [ class "card-board-tab-header-spacer" ]
+                    []
+                ]
             , Html.div [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.indexedMapSelectedAndRest
@@ -192,9 +192,9 @@ view session =
 
 tabHeaders : Maybe Int -> Boards -> List (Html Msg)
 tabHeaders currentBoardIndex boards =
-      Boards.titles boards
-          |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
-          |> SafeZipper.toList
+    Boards.titles boards
+        |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
+        |> SafeZipper.toList
 
 
 selectedTabHeader : Int -> String -> Html Msg
