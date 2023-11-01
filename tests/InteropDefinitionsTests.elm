@@ -585,6 +585,13 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
+        , test "encodes TrackDraggable data" <|
+            \() ->
+                "someDraggableType"
+                    |> InteropDefinitions.TrackDraggable
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"trackDraggable","data":"someDraggableType"}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }

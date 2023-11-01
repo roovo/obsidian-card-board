@@ -48,12 +48,8 @@ update msg session =
             )
 
         TabHeaderMouseDown tabIndex ->
-            let
-                foo =
-                    Debug.log "mouseDown" (String.fromInt tabIndex)
-            in
             ( session
-            , Cmd.none
+            , InteropPorts.trackDraggable "card-board-tag-header"
             , Session.NoOp
             )
 

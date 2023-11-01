@@ -7,6 +7,7 @@ module InteropDefinitions exposing
     , displayTaskMarkdownEncoder
     , interop
     , openTaskSourceFileEncoder
+    , trackDraggableEncoder
     , updateTasksEncoder
     )
 
@@ -28,6 +29,7 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
+    | TrackDraggable String
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -104,6 +106,11 @@ openTaskSourceFileEncoder =
         ]
 
 
+trackDraggableEncoder : TsEncode.Encoder String
+trackDraggableEncoder =
+    TsEncode.string
+
+
 updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 updateTasksEncoder =
     TsEncode.object
@@ -146,7 +153,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths _ vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vTrackDraggable _ vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -169,6 +176,9 @@ fromElm =
                 RequestFilterCandidates ->
                     vRequestPaths
 
+                TrackDraggable info ->
+                    vTrackDraggable info
+
                 UpdateTasks info ->
                     vUpdateTasks info
         )
@@ -179,6 +189,7 @@ fromElm =
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
+        |> TsEncode.variantTagged "trackDraggable" trackDraggableEncoder
         |> TsEncode.variantTagged "updateSettings" Settings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion

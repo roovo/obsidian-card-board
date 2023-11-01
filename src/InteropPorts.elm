@@ -9,6 +9,7 @@ port module InteropPorts exposing
     , requestFilterCandidates
     , rewriteTasks
     , toElm
+    , trackDraggable
     , updateSettings
     )
 
@@ -50,12 +51,6 @@ closeView =
         |> interopFromElm
 
 
-elmInitialized : Cmd msg
-elmInitialized =
-    encodeVariant "elmInitialized" (TsEncode.object []) ()
-        |> interopFromElm
-
-
 deleteTask : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 deleteTask info =
     info
@@ -68,6 +63,12 @@ displayTaskMarkdown cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, taskMarkdown = Card.markdownWithIds c })
         |> encodeVariant "displayTaskMarkdown" InteropDefinitions.displayTaskMarkdownEncoder
+        |> interopFromElm
+
+
+elmInitialized : Cmd msg
+elmInitialized =
+    encodeVariant "elmInitialized" (TsEncode.object []) ()
         |> interopFromElm
 
 
@@ -96,6 +97,13 @@ rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath t
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
+        |> interopFromElm
+
+
+trackDraggable : String -> Cmd msg
+trackDraggable dragType =
+    dragType
+        |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder
         |> interopFromElm
 
 

@@ -100,6 +100,9 @@ export class CardBoardView extends ItemView {
         case "requestFilterCandidates":
           that.handleRequestFilterCandidates();
           break;
+        case "trackDraggable":
+          that.handleTrackDraggable(fromElm.data);
+          break;
         case "updateSettings":
           that.handleUpdateSettings(fromElm.data);
           break;
@@ -319,6 +322,10 @@ export class CardBoardView extends ItemView {
       tag: "filterCandidates",
       data: filterCandidates
     });
+  }
+
+  async handleTrackDraggable(dragType: string) {
+    console.log("handlingDragable: " + dragType);
   }
 
   async handleUpdateSettings(
