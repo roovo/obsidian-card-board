@@ -1,3 +1,9 @@
+- check for mouse down on draggale element in elm
+- send command to js to track mouse - giving dragable beacon prefix
+- in js send drag updates back to elm passing the matching beacon positions
+    - see https://blog.noredink.com/post/186724971283/drag-drop-without-draggables-dropzones
+- or let elm know drag has finihsed with a mouse up
+
 # Cleanups
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
