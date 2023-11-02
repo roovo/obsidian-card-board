@@ -3,15 +3,16 @@ module DragData exposing
     , decoder
     )
 
--- import DecodeHelpers
--- import TextDirection exposing (TextDirection)
--- import TsJson.Encode as TsEncode exposing (required)
-
 import TsJson.Decode as TsDecode
 
 
 
--- MODEL
+-- TYPES
+
+
+type CandidatePosition
+    = Before Int
+    | After Int
 
 
 type alias DragData =

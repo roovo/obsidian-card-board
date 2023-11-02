@@ -26,6 +26,11 @@ import TextDirection
 import TimeWithZone exposing (TimeWithZone)
 
 
+type CandidatePosition
+    = Before Int
+    | After Int
+
+
 
 -- UPDATE
 
@@ -57,7 +62,7 @@ update msg session =
         TabHeaderMouseDown tabIndex clientPos ->
             ( session
             , InteropPorts.trackDraggable beaconIdentifier clientPos
-            , Session.NoOp
+            , Session.TrackDraggable <| Session.TabHeader tabIndex
             )
 
         TabSelected tabIndex ->
@@ -217,11 +222,6 @@ selectedTabHeader tabIndex title =
             ]
         , beacon (After tabIndex)
         ]
-
-
-type CandidatePosition
-    = Before Int
-    | After Int
 
 
 tabHeader : Maybe Int -> Int -> String -> Html Msg

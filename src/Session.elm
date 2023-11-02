@@ -1,5 +1,7 @@
 module Session exposing
-    ( Msg(..)
+    ( DragInfo(..)
+    , DragStatus(..)
+    , Msg(..)
     , Session
     , addTaskList
     , boardConfigs
@@ -8,6 +10,7 @@ module Session exposing
     , dataviewTaskCompletion
     , default
     , deleteItemsFromFile
+    , dragStatus
     , finishAdding
     , fromFlags
     , globalSettings
@@ -24,6 +27,7 @@ module Session exposing
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
+    , trackDraggable
     , uniqueId
     , updateColumnCollapse
     , updatePath
@@ -57,20 +61,31 @@ type Session
 
 
 type alias Config =
-    { settings : Settings
-    , dataviewTaskCompletion : DataviewTaskCompletion
-    , textDirection : TextDirection
+    { dataviewTaskCompletion : DataviewTaskCompletion
+    , dragStatus : DragStatus
     , isActiveView : Bool
+    , settings : Settings
     , taskList : State TaskList
+    , textDirection : TextDirection
     , timeWithZone : TimeWithZone
     , uniqueId : String
     }
+
+
+type DragStatus
+    = NotDragging
+    | Dragging DragInfo
+
+
+type DragInfo
+    = TabHeader Int
 
 
 type Msg
     = NoOp
     | SettingsClicked
     | SettingsClosed Settings
+    | TrackDraggable DragInfo
 
 
 
@@ -80,11 +95,12 @@ type Msg
 default : Session
 default =
     Session
-        { settings = Settings.default
-        , dataviewTaskCompletion = DataviewTaskCompletion.default
-        , textDirection = TextDirection.default
+        { dataviewTaskCompletion = DataviewTaskCompletion.default
+        , dragStatus = NotDragging
         , isActiveView = False
+        , settings = Settings.default
         , taskList = State.Waiting
+        , textDirection = TextDirection.default
         , timeWithZone =
             { time = Time.millisToPosix 0
             , zone = Time.customZone 0 []
@@ -96,11 +112,12 @@ default =
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
-        { settings = flags.settings
-        , dataviewTaskCompletion = flags.dataviewTaskCompletion
-        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
+        { dataviewTaskCompletion = flags.dataviewTaskCompletion
+        , dragStatus = NotDragging
         , isActiveView = False
+        , settings = flags.settings
         , taskList = State.Waiting
+        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
         , timeWithZone =
             { time = Time.millisToPosix flags.now
             , zone = Time.customZone flags.zone []
@@ -134,6 +151,11 @@ columnNames =
 dataviewTaskCompletion : Session -> DataviewTaskCompletion
 dataviewTaskCompletion (Session config) =
     config.dataviewTaskCompletion
+
+
+dragStatus : Session -> DragStatus
+dragStatus (Session config) =
+    config.dragStatus
 
 
 globalSettings : Session -> GlobalSettings
@@ -232,6 +254,11 @@ timeIs time (Session config) =
 timeWIthZoneIs : Time.Zone -> Time.Posix -> Session -> Session
 timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
+
+
+trackDraggable : DragInfo -> Session -> Session
+trackDraggable dragInfo (Session config) =
+    Session { config | dragStatus = Dragging dragInfo }
 
 
 updateSettings : Settings -> Session -> Session

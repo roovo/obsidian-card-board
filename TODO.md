@@ -5,6 +5,7 @@
 - or let elm know drag has finihsed with a mouse up
 
 - make beaconIdentifier = "card-board-tag-header", not "data-card-board-tag-header-beacon" (apart from in the html)
+- touch events - iPad ??
 
 # Cleanups
 - simplify parsing as per typing tutor

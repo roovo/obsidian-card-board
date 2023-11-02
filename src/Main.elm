@@ -160,6 +160,8 @@ update msg model =
             let
                 foo =
                     Debug.log "dragData" dragData
+
+                -- Debug.log "dragData" (Session.dragStatus (toSession model))
             in
             ( model, Cmd.none )
 
@@ -340,6 +342,10 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
                 |> toSession
                 |> Session.updateSettings newSettings
                 |> Boards
+
+        Session.TrackDraggable dragInfo ->
+            toModel subModel
+                |> mapSession (Session.trackDraggable dragInfo)
     , Cmd.map toMsg subCmd
     )
 
