@@ -1,6 +1,5 @@
 module InteropDefinitions exposing
-    ( DragData
-    , Flags
+    ( Flags
     , FromElm(..)
     , ToElm(..)
     , addFilePreviewHoversEncoder
@@ -14,6 +13,7 @@ module InteropDefinitions exposing
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
+import DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
@@ -55,35 +55,6 @@ type alias Flags =
     , now : Int
     , zone : Int
     , uniqueId : String
-    }
-
-
-type alias Cursor =
-    { x : Float
-    , y : Float
-    }
-
-
-type alias DragData =
-    { beaconIdentifier : String
-    , dragType : String
-    , cursor : { x : Float, y : Float }
-    , beacons : List BeaconData
-    }
-
-
-type alias BeaconData =
-    { id : { identifier : String, position : String }
-    , x : Float
-    , y : Float
-    , width : Float
-    , height : Float
-    }
-
-
-type alias BeaconId =
-    { identifier : String
-    , position : String
     }
 
 
@@ -173,7 +144,7 @@ toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
-        , DecodeHelpers.toElmVariant "elementDragged" ElementDragged elementDraggedDecoder
+        , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
@@ -238,39 +209,6 @@ configChangedDecoder : TsDecode.Decoder TextDirection
 configChangedDecoder =
     TsDecode.succeed TextDirection.fromRtlFlag
         |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
-
-
-elementDraggedDecoder : TsDecode.Decoder DragData
-elementDraggedDecoder =
-    TsDecode.succeed DragData
-        |> TsDecode.andMap (TsDecode.field "beaconIdentifier" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "dragType" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "cursor" cursorDecoder)
-        |> TsDecode.andMap (TsDecode.field "beacons" (TsDecode.list beaconDataDecoder))
-
-
-cursorDecoder : TsDecode.Decoder Cursor
-cursorDecoder =
-    TsDecode.succeed Cursor
-        |> TsDecode.andMap (TsDecode.field "x" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "y" TsDecode.float)
-
-
-beaconDataDecoder : TsDecode.Decoder BeaconData
-beaconDataDecoder =
-    TsDecode.succeed BeaconData
-        |> TsDecode.andMap (TsDecode.field "id" beaconIdDecoder)
-        |> TsDecode.andMap (TsDecode.field "x" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "y" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "width" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "height" TsDecode.float)
-
-
-beaconIdDecoder : TsDecode.Decoder BeaconId
-beaconIdDecoder =
-    TsDecode.succeed BeaconId
-        |> TsDecode.andMap (TsDecode.field "identifier" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "position" TsDecode.string)
 
 
 markdownListEncoder : TsEncode.Encoder { id : String, markdown : String }

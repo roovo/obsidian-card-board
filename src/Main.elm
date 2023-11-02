@@ -5,6 +5,7 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
+import DragData exposing (DragData)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -118,7 +119,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
-    | ElementDragged InteropDefinitions.DragData
+    | ElementDragged DragData
     | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
