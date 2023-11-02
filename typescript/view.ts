@@ -326,11 +326,13 @@ export class CardBoardView extends ItemView {
 
   async handleTrackDraggable(
     data : {
-      dragType: string,
+      beaconIdentifier: string,
       clientPos : [number, number]
     }
   ) {
     const MINIMUM_DRAG_PIXELS = 10;
+
+    const that = this;
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -339,6 +341,8 @@ export class CardBoardView extends ItemView {
       const dragDistance = distance({ x: data.clientPos[0], y: data.clientPos[1]}, coords(moveEvent));
 
       if (dragDistance >= MINIMUM_DRAG_PIXELS) {
+        dragEvent("move", moveEvent);
+
         stopAwaitingDrag();
 
         document.addEventListener("mousemove", dragMove);
@@ -347,10 +351,11 @@ export class CardBoardView extends ItemView {
     }
 
     function dragMove(event: MouseEvent) {
-      console.log("moving");
+      dragEvent("move", event);
     }
 
     function dragEnd(event: MouseEvent) {
+      dragEvent("stop", event);
       document.removeEventListener("mousemove", dragMove);
       document.removeEventListener("mouseup", dragEnd);
     }
@@ -358,6 +363,42 @@ export class CardBoardView extends ItemView {
     function stopAwaitingDrag() {
       document.removeEventListener("mousemove", maybeDragMove);
       document.removeEventListener("mouseup", stopAwaitingDrag);
+    }
+
+    function dragEvent(type: string, event: MouseEvent) {
+      that.elm.ports.interopToElm.send({
+        tag: "elementDragged",
+        data: {
+          dragType: type,
+          cursor: coords(event),
+          beacons: beaconPositions(data.beaconIdentifier)
+        }
+      });
+    }
+
+    function beaconPositions(beaconIdentifier: String) {
+      const beaconElements = document.querySelectorAll(`[${beaconIdentifier}]`);
+      return Array.from(beaconElements).map(beaconData);
+    }
+
+    function beaconData(elem: Element) {
+      const boundingRect = elem.getBoundingClientRect();
+      const beaconId = elem.getAttribute(data.beaconIdentifier);
+      return {
+        id: tryParse(beaconId),
+        x: boundingRect.x,
+        y: boundingRect.y,
+        width: boundingRect.width,
+        height: boundingRect.height
+      };
+    }
+
+    function tryParse(str: string) {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return str;
+      }
     }
 
     function coords(event: MouseEvent) {

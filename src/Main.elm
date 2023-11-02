@@ -118,6 +118,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
+    | ElementDragged InteropDefinitions.DragData
     | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
@@ -153,6 +154,13 @@ update msg model =
 
         ( ConfigChanged textDirection, _ ) ->
             ( mapSession (Session.updateTextDirection textDirection) model, Cmd.none )
+
+        ( ElementDragged dragData, _ ) ->
+            let
+                foo =
+                    Debug.log "dragData" dragData
+            in
+            ( model, Cmd.none )
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
@@ -355,6 +363,9 @@ subscriptions _ =
 
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
+
+                                InteropDefinitions.ElementDragged dragData ->
+                                    ElementDragged dragData
 
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile

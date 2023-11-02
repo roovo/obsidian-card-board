@@ -587,11 +587,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes TrackDraggable data" <|
             \() ->
-                { dragType = "someDraggableType", clientPos = ( 1.1, 2.2 ) }
+                { beaconIdentifier = "someBeaconId", clientPos = ( 1.1, 2.2 ) }
                     |> InteropDefinitions.TrackDraggable
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"trackDraggable","data":{"dragType":"someDraggableType","clientPos":[1.1,2.2]}}"""
+                    |> Expect.equal """{"tag":"trackDraggable","data":{"beaconIdentifier":"someBeaconId","clientPos":[1.1,2.2]}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -617,6 +617,35 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
+        , test "decodes configChanged data" <|
+            \() ->
+                """{"tag":"configChanged","data":{"rightToLeft":true}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
+        , test "decodes elementDragged data" <|
+            \() ->
+                """{"tag":"elementDragged","data":{"dragType":"move","cursor":{"x":1.23,"y":4.56},"beacons":[{"id":{"identifier":"someId","position":"before"},"x":1.1,"y":2.2,"width":3.3,"height":4.4}]}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.ElementDragged
+                                { dragType = "move"
+                                , cursor = { x = 1.23, y = 4.56 }
+                                , beacons =
+                                    [ { id =
+                                            { identifier = "someId"
+                                            , position = "before"
+                                            }
+                                      , x = 1.1
+                                      , y = 2.2
+                                      , width = 3.3
+                                      , height = 4.4
+                                      }
+                                    ]
+                                }
+                        )
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
@@ -665,12 +694,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
-        , test "decodes configChanged data" <|
-            \() ->
-                """{"tag":"configChanged","data":{"rightToLeft":true}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""
