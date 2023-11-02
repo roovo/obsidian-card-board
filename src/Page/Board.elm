@@ -12,12 +12,13 @@ import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import FeatherIcons
 import Html exposing (Html)
-import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
+import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
 import InteropPorts
 import Json.Decode as JD
+import Json.Encode as JE
 import SafeZipper
 import Session exposing (Session)
 import TaskItem exposing (TaskItem, TaskItemFields)
@@ -39,6 +40,11 @@ type Msg
     | ToggleColumnCollapse Int Bool
 
 
+beaconIdentifier : String
+beaconIdentifier =
+    "data-card-board-tag-header-beacon"
+
+
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
@@ -50,7 +56,7 @@ update msg session =
 
         TabHeaderMouseDown tabIndex clientPos ->
             ( session
-            , InteropPorts.trackDraggable "card-board-tag-header" clientPos
+            , InteropPorts.trackDraggable beaconIdentifier clientPos
             , Session.NoOp
             )
 
@@ -203,12 +209,19 @@ selectedTabHeader tabIndex title =
         , attribute "aria-label-delay" "50"
         , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
-        [ Html.div
+        [ beacon (Before tabIndex)
+        , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
+        , beacon (After tabIndex)
         ]
+
+
+type CandidatePosition
+    = Before Int
+    | After Int
 
 
 tabHeader : Maybe Int -> Int -> String -> Html Msg
@@ -226,11 +239,44 @@ tabHeader currentBoardIndex tabIndex title =
         , onClick <| TabSelected tabIndex
         , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
-        [ Html.div
+        [ beacon (Before tabIndex)
+        , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
+        , beacon (After tabIndex)
+        ]
+
+
+beacon : CandidatePosition -> Html Msg
+beacon candidatePosition =
+    let
+        positionValue : JE.Value
+        positionValue =
+            encodePostion candidatePosition
+    in
+    Html.span
+        [ attribute beaconIdentifier (JE.encode 0 positionValue)
+        , style "font-size" "0"
+        ]
+        []
+
+
+encodePostion : CandidatePosition -> JE.Value
+encodePostion candidatePosition =
+    let
+        ( positionStr, identifierString ) =
+            case candidatePosition of
+                After tabIndex ->
+                    ( "after", String.fromInt tabIndex )
+
+                Before tabIndex ->
+                    ( "before", String.fromInt tabIndex )
+    in
+    JE.object
+        [ ( "position", JE.string positionStr )
+        , ( "identifier", JE.string identifierString )
         ]
 
 
