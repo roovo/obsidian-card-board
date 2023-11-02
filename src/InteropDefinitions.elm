@@ -65,7 +65,8 @@ type alias Cursor =
 
 
 type alias DragData =
-    { dragType : String
+    { beaconIdentifier : String
+    , dragType : String
     , cursor : { x : Float, y : Float }
     , beacons : List BeaconData
     }
@@ -242,6 +243,7 @@ configChangedDecoder =
 elementDraggedDecoder : TsDecode.Decoder DragData
 elementDraggedDecoder =
     TsDecode.succeed DragData
+        |> TsDecode.andMap (TsDecode.field "beaconIdentifier" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "dragType" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "cursor" cursorDecoder)
         |> TsDecode.andMap (TsDecode.field "beacons" (TsDecode.list beaconDataDecoder))

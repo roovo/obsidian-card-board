@@ -369,6 +369,7 @@ export class CardBoardView extends ItemView {
       that.elm.ports.interopToElm.send({
         tag: "elementDragged",
         data: {
+          beaconIdentifier: data.beaconIdentifier,
           dragType: type,
           cursor: coords(event),
           beacons: beaconPositions(data.beaconIdentifier)
