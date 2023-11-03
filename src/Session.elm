@@ -1,6 +1,5 @@
 module Session exposing
-    ( DragInfo(..)
-    , DragStatus(..)
+    ( DragStatus(..)
     , Msg(..)
     , Session
     , addTaskList
@@ -40,6 +39,7 @@ import Boards
 import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.DragData exposing (DragItem)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -74,18 +74,14 @@ type alias Config =
 
 type DragStatus
     = NotDragging
-    | Dragging DragInfo
-
-
-type DragInfo
-    = TabHeader Int
+    | Dragging DragItem
 
 
 type Msg
     = NoOp
     | SettingsClicked
     | SettingsClosed Settings
-    | TrackDraggable DragInfo
+    | TrackDraggable DragItem
 
 
 
@@ -256,9 +252,9 @@ timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 
-trackDraggable : DragInfo -> Session -> Session
-trackDraggable dragInfo (Session config) =
-    Session { config | dragStatus = Dragging dragInfo }
+trackDraggable : DragItem -> Session -> Session
+trackDraggable dragItem (Session config) =
+    Session { config | dragStatus = Dragging dragItem }
 
 
 updateSettings : Settings -> Session -> Session

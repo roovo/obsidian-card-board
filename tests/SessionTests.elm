@@ -2,6 +2,7 @@ module SessionTests exposing (suite)
 
 import BoardConfig
 import DataviewTaskCompletion
+import DragAndDrop.DragData as DragData
 import Expect
 import Filter
 import GlobalSettings
@@ -169,9 +170,9 @@ trackDragable =
         [ test "tracks a TabHeader" <|
             \() ->
                 Session.default
-                    |> Session.trackDraggable (Session.TabHeader 3)
+                    |> Session.trackDraggable (DragData.TabHeader "3")
                     |> Session.dragStatus
-                    |> Expect.equal (Session.Dragging <| Session.TabHeader 3)
+                    |> Expect.equal (Session.Dragging <| DragData.TabHeader "3")
         ]
 
 

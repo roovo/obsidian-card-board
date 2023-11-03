@@ -6,6 +6,9 @@
 
 - make beaconIdentifier = "card-board-tag-header", not "data-card-board-tag-header-beacon" (apart from in the html)
 - touch events - iPad ??
+- beaconIdentifier -> beaconType
+- enable reorder boards on settings page too
+- tidy typescript
 
 # Cleanups
 - simplify parsing as per typing tutor

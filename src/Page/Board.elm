@@ -10,6 +10,9 @@ import Card exposing (Card)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.DragAction as DragAction
+import DragAndDrop.DragData as DragData exposing (DragData)
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
@@ -26,17 +29,13 @@ import TextDirection
 import TimeWithZone exposing (TimeWithZone)
 
 
-type CandidatePosition
-    = Before Int
-    | After Int
-
-
 
 -- UPDATE
 
 
 type Msg
-    = SettingsClicked
+    = ElementDragged DragData
+    | SettingsClicked
     | TabHeaderMouseDown Int ( Float, Float )
     | TabSelected Int
     | TaskItemEditClicked String
@@ -53,6 +52,24 @@ beaconIdentifier =
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
+        ElementDragged dragData ->
+            case Session.dragStatus session of
+                Session.Dragging dragItem ->
+                    let
+                        foo =
+                            Debug.log "dragAction" (DragAction.fromDragData dragItem dragData)
+                    in
+                    ( session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
+
+                Session.NotDragging ->
+                    ( session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
+
         SettingsClicked ->
             ( session
             , Cmd.none
@@ -62,7 +79,7 @@ update msg session =
         TabHeaderMouseDown tabIndex clientPos ->
             ( session
             , InteropPorts.trackDraggable beaconIdentifier clientPos
-            , Session.TrackDraggable <| Session.TabHeader tabIndex
+            , Session.TrackDraggable <| DragData.TabHeader (String.fromInt tabIndex)
             )
 
         TabSelected tabIndex ->
@@ -214,13 +231,13 @@ selectedTabHeader tabIndex title =
         , attribute "aria-label-delay" "50"
         , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
-        [ beacon (Before tabIndex)
+        [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
-        , beacon (After tabIndex)
+        , beacon (BeaconPosition.After <| String.fromInt tabIndex)
         ]
 
 
@@ -239,45 +256,23 @@ tabHeader currentBoardIndex tabIndex title =
         , onClick <| TabSelected tabIndex
         , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
         ]
-        [ beacon (Before tabIndex)
+        [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
-        , beacon (After tabIndex)
+        , beacon (BeaconPosition.After <| String.fromInt tabIndex)
         ]
 
 
-beacon : CandidatePosition -> Html Msg
-beacon candidatePosition =
-    let
-        positionValue : JE.Value
-        positionValue =
-            encodePostion candidatePosition
-    in
+beacon : BeaconPosition -> Html Msg
+beacon beaconPosition =
     Html.span
-        [ attribute beaconIdentifier (JE.encode 0 positionValue)
+        [ attribute beaconIdentifier (JE.encode 0 <| BeaconPosition.encode beaconPosition)
         , style "font-size" "0"
         ]
         []
-
-
-encodePostion : CandidatePosition -> JE.Value
-encodePostion candidatePosition =
-    let
-        ( positionStr, identifierString ) =
-            case candidatePosition of
-                After tabIndex ->
-                    ( "after", String.fromInt tabIndex )
-
-                Before tabIndex ->
-                    ( "before", String.fromInt tabIndex )
-    in
-    JE.object
-        [ ( "position", JE.string positionStr )
-        , ( "identifier", JE.string identifierString )
-        ]
 
 
 tabHeaderClass : Maybe Int -> Int -> String

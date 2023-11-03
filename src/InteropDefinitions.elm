@@ -13,7 +13,7 @@ module InteropDefinitions exposing
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
-import DragData exposing (DragData)
+import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)

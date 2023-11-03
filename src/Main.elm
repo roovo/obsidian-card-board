@@ -5,7 +5,7 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
-import DragData exposing (DragData)
+import DragAndDrop.DragData exposing (DragData)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -155,6 +155,10 @@ update msg model =
 
         ( ConfigChanged textDirection, _ ) ->
             ( mapSession (Session.updateTextDirection textDirection) model, Cmd.none )
+
+        ( ElementDragged dragData, Boards subModel ) ->
+            BoardPage.update (BoardPage.ElementDragged dragData) subModel
+                |> updateWith Boards GotBoardPageMsg
 
         ( ElementDragged dragData, _ ) ->
             let
