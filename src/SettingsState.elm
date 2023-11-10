@@ -134,7 +134,11 @@ confirmAddBoard : SettingsState -> SettingsState
 confirmAddBoard settingsState =
     case settingsState of
         AddingBoard c settings_ ->
-            EditingBoard <| Settings.addBoard c settings_
+            if String.isEmpty <| BoardConfig.title c then
+                EditingBoard <| Settings.addBoard (BoardConfig.updateTitle "Untitled" c) settings_
+
+            else
+                EditingBoard <| Settings.addBoard c settings_
 
         _ ->
             settingsState
