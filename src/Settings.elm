@@ -192,19 +192,15 @@ enforceUniqueBoardTitles settings =
 replaceMissingBoardTitles : Settings -> Settings
 replaceMissingBoardTitles settings =
     let
-        foo : BoardConfig -> BoardConfig
-        foo config =
-            if String.isEmpty (BoardConfig.title config) then
+        withNoMissingTitles : BoardConfig -> BoardConfig
+        withNoMissingTitles config =
+            if String.isEmpty (String.trim <| BoardConfig.title config) then
                 BoardConfig.updateTitle "Untitled" config
 
             else
                 config
-
-        withNoMissingTitles : SafeZipper BoardConfig
-        withNoMissingTitles =
-            SafeZipper.map foo settings.boardConfigs
     in
-    { settings | boardConfigs = withNoMissingTitles }
+    { settings | boardConfigs = SafeZipper.map withNoMissingTitles settings.boardConfigs }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

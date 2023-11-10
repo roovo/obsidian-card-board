@@ -179,8 +179,8 @@ exampleSettingsWithMissingBoardNames =
         SafeZipper.fromList
             [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
             , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = " " }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "   " }
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
