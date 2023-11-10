@@ -17,6 +17,7 @@ suite : Test
 suite =
     concat
         [ blankBoardTitles
+        , cleanupTitles
         , currentVersion
         , encodeDecode
         , uniqueBoardTitles
@@ -35,6 +36,36 @@ blankBoardTitles =
                     |> .decoded
                     |> Result.map .boardConfigs
                     |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "Untitled", "B title", "Untitled.2", "Untitled.3" ]
+        ]
+
+
+cleanupTitles : Test
+cleanupTitles =
+    describe "cleanupTitles"
+        [ test "appends the index number of the board onto the end of a non-unique name" <|
+            \() ->
+                exampleSettingsWithDuplicatgeBoardNames
+                    |> Settings.cleanupTitles
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "A title", "B title", "A title.2", "A title.3" ]
+        , test "maintians the current index when unique-ing" <|
+            \() ->
+                exampleSettingsWithDuplicatgeBoardNames
+                    |> Settings.switchToBoard 2
+                    |> Settings.cleanupTitles
+                    |> .boardConfigs
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 2)
+        , test "gives boards with no titles the title Untitled" <|
+            \() ->
+                exampleSettingsWithMissingBoardNames
+                    |> Settings.cleanupTitles
+                    |> .boardConfigs
                     |> SafeZipper.toList
                     |> List.map BoardConfig.title
                     |> Expect.equal [ "Untitled", "B title", "Untitled.2", "Untitled.3" ]

@@ -2,6 +2,7 @@ module Settings exposing
     ( Settings
     , addBoard
     , boardConfigs
+    , cleanupTitles
     , currentVersion
     , decoder
     , default
@@ -51,6 +52,21 @@ default =
 boardConfigs : Settings -> SafeZipper BoardConfig
 boardConfigs =
     .boardConfigs
+
+
+cleanupTitles : Settings -> Settings
+cleanupTitles settings =
+    case SafeZipper.currentIndex settings.boardConfigs of
+        Just index ->
+            settings
+                |> replaceMissingBoardTitles
+                |> enforceUniqueBoardTitles
+                |> boardConfigs
+                |> SafeZipper.atIndex index
+                |> (\cs -> { settings | boardConfigs = cs })
+
+        Nothing ->
+            settings
 
 
 currentVersion : Semver.Version
@@ -128,8 +144,7 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
-        |> TsDecode.map replaceMissingBoardTitles
-        |> TsDecode.map enforceUniqueBoardTitles
+        |> TsDecode.map cleanupTitles
 
 
 
