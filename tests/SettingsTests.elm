@@ -18,6 +18,7 @@ suite =
     concat
         [ currentVersion
         , encodeDecode
+        , uniqueBoardTitles
         ]
 
 
@@ -55,8 +56,45 @@ encodeDecode =
         ]
 
 
+uniqueBoardTitles =
+    describe "ensuring that board titles are unique after decoding"
+        [ test "appends the index number of the board onto the end of a non-unique name" <|
+            \() ->
+                exampleSettingsWithDuplicatgeBoardNames
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "A title", "B title", "A title.2", "A title.3" ]
+        , test "treats underscores and spaces as the same" <|
+            \() ->
+                exampleWithUnderscores
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "A title", "B title", "A_title.2", "A title.3" ]
+        ]
+
+
 
 -- HELPERS
+
+
+exampleGlobalSettings : GlobalSettings
+exampleGlobalSettings =
+    { taskCompletionFormat = GlobalSettings.ObsidianTasks
+    , columnNames = ColumnNames.default
+    , ignoreFileNameDates = False
+    }
 
 
 exampleSettings : Settings.Settings
@@ -71,9 +109,33 @@ exampleSettings =
     }
 
 
-exampleGlobalSettings : GlobalSettings
-exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , columnNames = ColumnNames.default
-    , ignoreFileNameDates = False
+exampleSettingsWithDuplicatgeBoardNames : Settings.Settings
+exampleSettingsWithDuplicatgeBoardNames =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
     }
+
+
+exampleWithUnderscores : Settings.Settings
+exampleWithUnderscores =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A_title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleTagBoardConfig =
+    BoardConfigHelpers.exampleTagBoardConfig

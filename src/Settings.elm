@@ -128,6 +128,7 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
+        |> TsDecode.map enforceUniqueBoardTitles
 
 
 
@@ -140,6 +141,36 @@ dataEncoder =
         [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.map SafeZipper.toList <| TsEncode.list BoardConfig.encoder)
         , TsEncode.required "globalSettings" .globalSettings GlobalSettings.encoder
         ]
+
+
+enforceUniqueBoardTitles : Settings -> Settings
+enforceUniqueBoardTitles settings =
+    let
+        helper : Int -> BoardConfig -> ( List String, SafeZipper BoardConfig ) -> ( List String, SafeZipper BoardConfig )
+        helper index config ( titles, cs ) =
+            let
+                uniqueTitle : String
+                uniqueTitle =
+                    if List.member (String.replace " " "_" <| BoardConfig.title config) titles then
+                        BoardConfig.title config ++ "." ++ String.fromInt index
+
+                    else
+                        BoardConfig.title config
+
+                safeConfig =
+                    BoardConfig.updateTitle uniqueTitle config
+
+                ts =
+                    String.replace " " "_" uniqueTitle :: titles
+            in
+            ( ts, SafeZipper.add safeConfig cs )
+
+        withUniqueBoardTitles : SafeZipper BoardConfig
+        withUniqueBoardTitles =
+            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) settings.boardConfigs
+                |> Tuple.second
+    in
+    { settings | boardConfigs = withUniqueBoardTitles }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

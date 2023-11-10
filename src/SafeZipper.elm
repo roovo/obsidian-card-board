@@ -8,6 +8,7 @@ module SafeZipper exposing
     , empty
     , first
     , fromList
+    , indexedFoldl
     , indexedMapSelectedAndRest
     , last
     , length
@@ -229,6 +230,13 @@ deleteCurrent zipper =
         |> LE.removeAt index
         |> fromList
         |> atIndex index
+
+
+indexedFoldl : (Int -> a -> b -> b) -> b -> SafeZipper a -> b
+indexedFoldl fn acc zipper =
+    zipper
+        |> toList
+        |> LE.indexedFoldl fn acc
 
 
 length : SafeZipper a -> Int
