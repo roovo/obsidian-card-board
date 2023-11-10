@@ -11,8 +11,9 @@ import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.Coords as Coords
 import DragAndDrop.DragAction as DragAction
-import DragAndDrop.DragData as DragData exposing (DragData)
+import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
@@ -36,7 +37,7 @@ import TimeWithZone exposing (TimeWithZone)
 type Msg
     = ElementDragged DragData
     | SettingsClicked
-    | TabHeaderMouseDown Int ( Float, Float )
+    | TabHeaderMouseDown DragTracker
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -54,10 +55,10 @@ update msg session =
     case msg of
         ElementDragged dragData ->
             case Session.dragStatus session of
-                Session.Dragging dragItem ->
+                Session.Dragging dragTracker ->
                     let
                         foo =
-                            Debug.log "dragAction" (DragAction.fromDragData dragItem dragData)
+                            Debug.log "dragTracker" dragTracker
                     in
                     ( session
                     , Cmd.none
@@ -76,10 +77,10 @@ update msg session =
             , Session.SettingsClicked
             )
 
-        TabHeaderMouseDown tabIndex clientPos ->
+        TabHeaderMouseDown dragTracker ->
             ( session
-            , InteropPorts.trackDraggable beaconIdentifier clientPos
-            , Session.TrackDraggable <| DragData.TabHeader (String.fromInt tabIndex)
+            , InteropPorts.trackDraggable beaconIdentifier dragTracker.clientPos
+            , Session.TrackDraggable dragTracker
             )
 
         TabSelected tabIndex ->
@@ -229,7 +230,7 @@ selectedTabHeader tabIndex title =
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
-        , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
+        , onDown (\e -> TabHeaderMouseDown <| DragTracker title (Coords.fromFloatTuple e.clientPos) (Coords.fromFloatTuple e.offsetPos))
         ]
         [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div
@@ -254,7 +255,7 @@ tabHeader currentBoardIndex tabIndex title =
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
         , onClick <| TabSelected tabIndex
-        , onDown <| .clientPos >> TabHeaderMouseDown tabIndex
+        , onDown (\e -> TabHeaderMouseDown <| DragTracker title (Coords.fromFloatTuple e.clientPos) (Coords.fromFloatTuple e.offsetPos))
         ]
         [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div

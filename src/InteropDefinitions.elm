@@ -13,6 +13,7 @@ module InteropDefinitions exposing
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
+import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
@@ -30,7 +31,7 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
-    | TrackDraggable { beaconIdentifier : String, clientPos : ( Float, Float ) }
+    | TrackDraggable { beaconIdentifier : String, clientPos : Coords }
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -108,11 +109,11 @@ openTaskSourceFileEncoder =
         ]
 
 
-trackDraggableEncoder : TsEncode.Encoder { beaconIdentifier : String, clientPos : ( Float, Float ) }
+trackDraggableEncoder : TsEncode.Encoder { beaconIdentifier : String, clientPos : Coords }
 trackDraggableEncoder =
     TsEncode.object
         [ required "beaconIdentifier" .beaconIdentifier TsEncode.string
-        , required "clientPos" .clientPos (TsEncode.tuple TsEncode.float TsEncode.float)
+        , required "clientPos" .clientPos Coords.encoder
         ]
 
 

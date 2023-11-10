@@ -5,7 +5,7 @@ module DragAndDrop.DragAction exposing
 
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords exposing (Coords)
-import DragAndDrop.DragData exposing (BeaconData, DragData, DragItem)
+import DragAndDrop.DragData exposing (BeaconData, DragData)
 import Maybe.Extra as ME
 import TsJson.Decode as TsDecode
 
@@ -44,8 +44,8 @@ type alias Rect =
 -- CONVERTERS
 
 
-fromDragData : DragItem -> DragData -> DragAction
-fromDragData draggedItem dragData =
+fromDragData : DragData -> DragAction
+fromDragData dragData =
     case dragData.dragType of
         "stop" ->
             Stop

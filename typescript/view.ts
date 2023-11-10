@@ -327,7 +327,7 @@ export class CardBoardView extends ItemView {
   async handleTrackDraggable(
     data : {
       beaconIdentifier: string,
-      clientPos : [number, number]
+      clientPos : { x: number, y: number }
     }
   ) {
     const MINIMUM_DRAG_PIXELS = 10;
@@ -338,7 +338,7 @@ export class CardBoardView extends ItemView {
     document.addEventListener("mouseup", stopAwaitingDrag);
 
     function maybeDragMove(moveEvent: MouseEvent) {
-      const dragDistance = distance({ x: data.clientPos[0], y: data.clientPos[1]}, coords(moveEvent));
+      const dragDistance = distance({ x: data.clientPos.x, y: data.clientPos.y}, coords(moveEvent));
 
       if (dragDistance >= MINIMUM_DRAG_PIXELS) {
         dragEvent("move", moveEvent);

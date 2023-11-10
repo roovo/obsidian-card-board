@@ -15,6 +15,7 @@ port module InteropPorts exposing
 
 import Card exposing (Card)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.Coords exposing (Coords)
 import GlobalSettings exposing (TaskCompletionFormat)
 import InteropDefinitions
 import Json.Decode
@@ -100,7 +101,7 @@ rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath t
         |> interopFromElm
 
 
-trackDraggable : String -> ( Float, Float ) -> Cmd msg
+trackDraggable : String -> Coords -> Cmd msg
 trackDraggable beaconIdentifier clientPos =
     { beaconIdentifier = beaconIdentifier, clientPos = clientPos }
         |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder

@@ -39,7 +39,7 @@ import Boards
 import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
-import DragAndDrop.DragData exposing (DragItem)
+import DragAndDrop.DragData exposing (DragTracker)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -74,14 +74,14 @@ type alias Config =
 
 type DragStatus
     = NotDragging
-    | Dragging DragItem
+    | Dragging DragTracker
 
 
 type Msg
     = NoOp
     | SettingsClicked
     | SettingsClosed Settings
-    | TrackDraggable DragItem
+    | TrackDraggable DragTracker
 
 
 
@@ -252,9 +252,9 @@ timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 
-trackDraggable : DragItem -> Session -> Session
-trackDraggable dragItem (Session config) =
-    Session { config | dragStatus = Dragging dragItem }
+trackDraggable : DragTracker -> Session -> Session
+trackDraggable dragTracker (Session config) =
+    Session { config | dragStatus = Dragging dragTracker }
 
 
 updateSettings : Settings -> Session -> Session

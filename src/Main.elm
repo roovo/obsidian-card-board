@@ -347,9 +347,9 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
                 |> Session.updateSettings newSettings
                 |> Boards
 
-        Session.TrackDraggable dragInfo ->
+        Session.TrackDraggable dragTracker ->
             toModel subModel
-                |> mapSession (Session.trackDraggable dragInfo)
+                |> mapSession (Session.trackDraggable dragTracker)
     , Cmd.map toMsg subCmd
     )
 

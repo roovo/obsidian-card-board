@@ -25,7 +25,7 @@ fromDragData =
                 , cursor = { x = 0, y = 0 }
                 , dragType = "unknown"
                 }
-                    |> DragAction.fromDragData (DragData.TabHeader "1")
+                    |> DragAction.fromDragData
                     |> Expect.equal DragAction.NoOp
         , test "converts a 'stop' dragType to Stop" <|
             \() ->
@@ -34,7 +34,7 @@ fromDragData =
                 , cursor = { x = 0, y = 0 }
                 , dragType = "stop"
                 }
-                    |> DragAction.fromDragData (DragData.TabHeader "1")
+                    |> DragAction.fromDragData
                     |> Expect.equal DragAction.Stop
         , fuzz (Fuzz.pair Fuzz.niceFloat Fuzz.niceFloat) "converts a 'move' dragType to Move (with cursor and beacon details)" <|
             \( fuzzedX, fuzzedY ) ->
@@ -56,7 +56,7 @@ fromDragData =
                 , cursor = { x = fuzzedX, y = fuzzedY }
                 , dragType = "move"
                 }
-                    |> DragAction.fromDragData (DragData.TabHeader "1")
+                    |> DragAction.fromDragData
                     |> Expect.equal
                         (DragAction.Move
                             { cursor = { x = fuzzedX, y = fuzzedY }
@@ -100,7 +100,7 @@ fromDragData =
                 , cursor = { x = 0.0, y = 0.0 }
                 , dragType = "move"
                 }
-                    |> DragAction.fromDragData (DragData.TabHeader "1")
+                    |> DragAction.fromDragData
                     |> Expect.equal
                         (DragAction.Move
                             { cursor = { x = 0.0, y = 0.0 }

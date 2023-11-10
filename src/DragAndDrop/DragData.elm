@@ -1,7 +1,7 @@
 module DragAndDrop.DragData exposing
     ( BeaconData
     , DragData
-    , DragItem(..)
+    , DragTracker
     , decoder
     )
 
@@ -31,13 +31,16 @@ type alias BeaconData =
     }
 
 
-type DragItem
-    = TabHeader String
-
-
 type alias BeaconId =
     { identifier : String
     , position : String
+    }
+
+
+type alias DragTracker =
+    { nodeId : String
+    , clientPos : Coords
+    , offsetPos : Coords
     }
 
 
