@@ -128,6 +128,7 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
+        |> TsDecode.map replaceMissingBoardTitles
         |> TsDecode.map enforceUniqueBoardTitles
 
 
@@ -171,6 +172,24 @@ enforceUniqueBoardTitles settings =
                 |> Tuple.second
     in
     { settings | boardConfigs = withUniqueBoardTitles }
+
+
+replaceMissingBoardTitles : Settings -> Settings
+replaceMissingBoardTitles settings =
+    let
+        foo : BoardConfig -> BoardConfig
+        foo config =
+            if String.isEmpty (BoardConfig.title config) then
+                BoardConfig.updateTitle "Untitled" config
+
+            else
+                config
+
+        withNoMissingTitles : SafeZipper BoardConfig
+        withNoMissingTitles =
+            SafeZipper.map foo settings.boardConfigs
+    in
+    { settings | boardConfigs = withNoMissingTitles }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

@@ -16,9 +16,28 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ currentVersion
+        [ blankBoardTitles
+        , currentVersion
         , encodeDecode
         , uniqueBoardTitles
+        ]
+
+
+blankBoardTitles : Test
+blankBoardTitles =
+    describe "handling boards with no titles"
+        [ test "gives boards with no titles the title Untitled" <|
+            \() ->
+                exampleSettingsWithMissingBoardNames
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "Untitled", "B title", "Untitled.2", "Untitled.3" ]
         ]
 
 
@@ -117,6 +136,20 @@ exampleSettingsWithDuplicatgeBoardNames =
             , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
             , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
             , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithMissingBoardNames : Settings.Settings
+exampleSettingsWithMissingBoardNames =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
