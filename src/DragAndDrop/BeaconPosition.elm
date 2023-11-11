@@ -1,9 +1,11 @@
 module DragAndDrop.BeaconPosition exposing
     ( BeaconPosition(..)
+    , decoder
     , encoder
     , identifier
     )
 
+import Json.Decode as JD
 import Json.Encode as JE
 
 
@@ -17,7 +19,16 @@ type BeaconPosition
 
 
 
--- ENCODING
+-- ENCODE / DECODE
+
+
+decoder : JD.Decoder BeaconPosition
+decoder =
+    JD.map2
+        Tuple.pair
+        (JD.field "position" JD.string)
+        (JD.field "identifier" JD.string)
+        |> JD.andThen toPosition
 
 
 encoder : BeaconPosition -> JE.Value
@@ -49,3 +60,20 @@ identifier beaconPosition =
 
         After id ->
             id
+
+
+
+-- PRIVATE
+
+
+toPosition : ( String, String ) -> JD.Decoder BeaconPosition
+toPosition ( position, identifier_ ) =
+    case position of
+        "before" ->
+            JD.succeed (Before identifier_)
+
+        "after" ->
+            JD.succeed (After identifier_)
+
+        _ ->
+            JD.fail ("Unknown position: " ++ position)

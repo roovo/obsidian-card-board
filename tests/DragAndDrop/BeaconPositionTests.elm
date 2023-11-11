@@ -2,6 +2,7 @@ module DragAndDrop.BeaconPositionTests exposing (suite)
 
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition(..))
 import Expect
+import Json.Decode as JD
 import Json.Encode as JE
 import Test exposing (..)
 
@@ -9,8 +10,25 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ encoder
+        [ decoder
+        , encoder
         , identifier
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes an After" <|
+            \() ->
+                """{"position":"after","identifier":"some identifier"}"""
+                    |> JD.decodeString BeaconPosition.decoder
+                    |> Expect.equal (Ok <| After "some identifier")
+        , test "decodes a Before" <|
+            \() ->
+                """{"position":"before","identifier":"some identifier"}"""
+                    |> JD.decodeString BeaconPosition.decoder
+                    |> Expect.equal (Ok <| Before "some identifier")
         ]
 
 
