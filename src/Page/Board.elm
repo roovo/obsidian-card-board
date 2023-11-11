@@ -14,6 +14,7 @@ import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
 import DragAndDrop.DragAction as DragAction
 import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
+import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
@@ -230,7 +231,13 @@ selectedTabHeader tabIndex title =
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
-        , onDown (\e -> TabHeaderMouseDown <| DragTracker title (Coords.fromFloatTuple e.clientPos) (Coords.fromFloatTuple e.offsetPos))
+        , onDown
+            (\e ->
+                TabHeaderMouseDown <|
+                    DragTracker title
+                        (Coords.fromFloatTuple e.clientPos)
+                        (Coords.fromFloatTuple e.offsetPos)
+            )
         ]
         [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div
@@ -255,7 +262,13 @@ tabHeader currentBoardIndex tabIndex title =
         , attribute "aria-label" title
         , attribute "aria-label-delay" "50"
         , onClick <| TabSelected tabIndex
-        , onDown (\e -> TabHeaderMouseDown <| DragTracker title (Coords.fromFloatTuple e.clientPos) (Coords.fromFloatTuple e.offsetPos))
+        , onDown
+            (\e ->
+                TabHeaderMouseDown <|
+                    DragTracker title
+                        (Coords.fromFloatTuple e.clientPos)
+                        (Coords.fromFloatTuple e.offsetPos)
+            )
         ]
         [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
         , Html.div

@@ -40,7 +40,7 @@ fromDragData =
             \( fuzzedX, fuzzedY ) ->
                 { beaconIdentifier = "any identifier"
                 , beacons =
-                    [ { id = { identifier = "0", position = "before" }
+                    [ { beaconPosition = BeaconPosition.Before "0"
                       , rect =
                             { x = 1.1
                             , y = 2.2
@@ -48,7 +48,7 @@ fromDragData =
                             , height = 4.4
                             }
                       }
-                    , { id = { identifier = "1", position = "after" }
+                    , { beaconPosition = BeaconPosition.After "1"
                       , rect =
                             { x = 5.5
                             , y = 6.6
@@ -66,60 +66,10 @@ fromDragData =
                             { cursor = { x = fuzzedX, y = fuzzedY }
                             , beacons =
                                 [ { beaconPosition = BeaconPosition.Before "0"
-                                  , rect =
-                                        { x = 1.1
-                                        , y = 2.2
-                                        , width = 3.3
-                                        , height = 4.4
-                                        }
+                                  , rect = { x = 1.1, y = 2.2, width = 3.3, height = 4.4 }
                                   }
                                 , { beaconPosition = BeaconPosition.After "1"
-                                  , rect =
-                                        { x = 5.5
-                                        , y = 6.6
-                                        , width = 7.7
-                                        , height = 8.8
-                                        }
-                                  }
-                                ]
-                            }
-                        )
-        , test "ignores invalid 'positions'" <|
-            \() ->
-                { beaconIdentifier = "any identifier"
-                , beacons =
-                    [ { id = { identifier = "0", position = "xxx" }
-                      , rect =
-                            { x = 1.1
-                            , y = 2.2
-                            , width = 3.3
-                            , height = 4.4
-                            }
-                      }
-                    , { id = { identifier = "1", position = "after" }
-                      , rect =
-                            { x = 5.5
-                            , y = 6.6
-                            , width = 7.7
-                            , height = 8.8
-                            }
-                      }
-                    ]
-                , cursor = { x = 0.0, y = 0.0 }
-                , dragType = "move"
-                }
-                    |> DragAction.fromDragData
-                    |> Expect.equal
-                        (DragAction.Move
-                            { cursor = { x = 0.0, y = 0.0 }
-                            , beacons =
-                                [ { beaconPosition = BeaconPosition.After "1"
-                                  , rect =
-                                        { x = 5.5
-                                        , y = 6.6
-                                        , width = 7.7
-                                        , height = 8.8
-                                        }
+                                  , rect = { x = 5.5, y = 6.6, width = 7.7, height = 8.8 }
                                   }
                                 ]
                             }

@@ -5,9 +5,10 @@ module DragAndDrop.DragData exposing
     , decoder
     )
 
-import DragAndDrop.BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.Rect as Rect exposing (Rect)
+import Json.Encode as JE
 import TsJson.Decode as TsDecode
 
 
@@ -24,14 +25,8 @@ type alias DragData =
 
 
 type alias BeaconData =
-    { id : { identifier : String, position : String }
+    { beaconPosition : BeaconPosition
     , rect : Rect
-    }
-
-
-type alias BeaconId =
-    { identifier : String
-    , position : String
     }
 
 
@@ -62,12 +57,19 @@ decoder =
 beaconDataDecoder : TsDecode.Decoder BeaconData
 beaconDataDecoder =
     TsDecode.succeed BeaconData
-        |> TsDecode.andMap (TsDecode.field "id" beaconIdDecoder)
+        |> TsDecode.andMap (TsDecode.field "beaconPosition" beaconPositionDecoder)
         |> TsDecode.andMap (TsDecode.field "rect" Rect.decoder)
 
 
-beaconIdDecoder : TsDecode.Decoder BeaconId
-beaconIdDecoder =
-    TsDecode.succeed BeaconId
-        |> TsDecode.andMap (TsDecode.field "identifier" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "position" TsDecode.string)
+beaconPositionDecoder : TsDecode.Decoder BeaconPosition
+beaconPositionDecoder =
+    TsDecode.oneOf
+        [ toElmBeacon "after" BeaconPosition.After TsDecode.string
+        , toElmBeacon "before" BeaconPosition.Before TsDecode.string
+        ]
+
+
+toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
+toElmBeacon tagName constructor decoder_ =
+    TsDecode.field "position" (TsDecode.literal constructor (JE.string tagName))
+        |> TsDecode.andMap (TsDecode.field "identifier" decoder_)

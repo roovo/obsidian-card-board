@@ -23,13 +23,7 @@ type DragAction
 
 type alias Positions =
     { cursor : Coords
-    , beacons : List Beacon
-    }
-
-
-type alias Beacon =
-    { beaconPosition : BeaconPosition
-    , rect : Rect
+    , beacons : List BeaconData
     }
 
 
@@ -46,47 +40,8 @@ fromDragData dragData =
         "move" ->
             Move
                 { cursor = dragData.cursor
-                , beacons =
-                    dragData.beacons
-                        |> List.map beaconConverter
-                        |> ME.values
+                , beacons = dragData.beacons
                 }
 
         _ ->
             NoOp
-
-
-
--- HELPERS
-
-
-beaconConverter : BeaconData -> Maybe Beacon
-beaconConverter beaconData =
-    let
-        buildBeacon : BeaconPosition -> Beacon
-        buildBeacon beaconPosition =
-            { beaconPosition = beaconPosition
-            , rect =
-                { x = beaconData.rect.x
-                , y = beaconData.rect.y
-                , width = beaconData.rect.width
-                , height = beaconData.rect.height
-                }
-            }
-    in
-    beaconData
-        |> beaconPositionConverter
-        |> Maybe.map buildBeacon
-
-
-beaconPositionConverter : BeaconData -> Maybe BeaconPosition
-beaconPositionConverter beaconData =
-    case beaconData.id.position of
-        "after" ->
-            Just <| BeaconPosition.After beaconData.id.identifier
-
-        "before" ->
-            Just <| BeaconPosition.Before beaconData.id.identifier
-
-        _ ->
-            Nothing

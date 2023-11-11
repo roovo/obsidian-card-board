@@ -45,10 +45,10 @@ centre { x, y, width, height } =
     }
 
 
-closestTo : Coords -> List { id : a, rect : Rect } -> Maybe a
+closestTo : Coords -> List { beaconPosition : a, rect : Rect } -> Maybe a
 closestTo target rects =
     rects
-        |> List.map (\r -> ( r.id, r.rect ))
+        |> List.map (\r -> ( r.beaconPosition, r.rect ))
         |> List.map (Tuple.mapSecond (Coords.distance target << centre))
         |> List.sortBy Tuple.second
         |> List.head

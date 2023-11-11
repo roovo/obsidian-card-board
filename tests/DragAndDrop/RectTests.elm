@@ -43,24 +43,24 @@ closestTo =
                     |> Expect.equal Nothing
         , test "returns the rect if there is only one" <|
             \() ->
-                [ { id = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                [ { beaconPosition = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
                 ]
                     |> Rect.closestTo { x = 0, y = 0 }
                     |> Expect.equal (Just "1")
         , test "returns the first of the two if there are more than one at the same distance" <|
             \() ->
-                [ { id = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
-                , { id = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
-                , { id = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                , { beaconPosition = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                , { beaconPosition = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
                 ]
                     |> Rect.closestTo { x = 0, y = 0 }
                     |> Expect.equal (Just "2")
         , test "returns the closest of the bunch" <|
             \() ->
-                [ { id = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
-                , { id = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
-                , { id = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
-                , { id = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
+                [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                , { beaconPosition = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
+                , { beaconPosition = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
+                , { beaconPosition = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
                 ]
                     |> Rect.closestTo { x = 12, y = 20 }
                     |> Expect.equal (Just "3")
