@@ -1,8 +1,10 @@
 module DragAndDrop.Coords exposing
     ( Coords
     , decoder
+    , distance
     , encoder
     , fromFloatTuple
+    , subtract
     )
 
 import TsJson.Decode as TsDecode
@@ -45,3 +47,26 @@ encoder =
 fromFloatTuple : ( Float, Float ) -> Coords
 fromFloatTuple ( x, y ) =
     { x = x, y = y }
+
+
+
+-- UTILS
+
+
+distance : Coords -> Coords -> Float
+distance coords1 coords2 =
+    let
+        dx =
+            coords1.x - coords2.x
+
+        dy =
+            coords1.y - coords2.y
+    in
+    sqrt ((dx ^ 2) + (dy ^ 2))
+
+
+subtract : Coords -> Coords -> Coords
+subtract coords1 coords2 =
+    { x = coords1.x - coords2.x
+    , y = coords1.y - coords2.y
+    }
