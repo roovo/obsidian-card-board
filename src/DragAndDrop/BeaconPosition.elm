@@ -1,6 +1,7 @@
 module DragAndDrop.BeaconPosition exposing
     ( BeaconPosition(..)
-    , encode
+    , encoder
+    , identifier
     )
 
 import Json.Encode as JE
@@ -19,8 +20,8 @@ type BeaconPosition
 -- ENCODING
 
 
-encode : BeaconPosition -> JE.Value
-encode beaconPosition =
+encoder : BeaconPosition -> JE.Value
+encoder beaconPosition =
     let
         ( positionStr, identifierString ) =
             case beaconPosition of
@@ -34,3 +35,17 @@ encode beaconPosition =
         [ ( "position", JE.string positionStr )
         , ( "identifier", JE.string identifierString )
         ]
+
+
+
+-- UTILS
+
+
+identifier : BeaconPosition -> String
+identifier beaconPosition =
+    case beaconPosition of
+        Before id ->
+            id
+
+        After id ->
+            id

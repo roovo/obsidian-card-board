@@ -270,7 +270,7 @@ tabHeader currentBoardIndex tabIndex title =
 beacon : BeaconPosition -> Html Msg
 beacon beaconPosition =
     Html.span
-        [ attribute beaconIdentifier (JE.encode 0 <| BeaconPosition.encode beaconPosition)
+        [ attribute beaconIdentifier (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
         , style "font-size" "0"
         ]
         []
