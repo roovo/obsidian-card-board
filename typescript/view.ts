@@ -387,10 +387,12 @@ export class CardBoardView extends ItemView {
       const beaconId = elem.getAttribute(data.beaconIdentifier);
       return {
         id: tryParse(beaconId),
-        x: boundingRect.x,
-        y: boundingRect.y,
-        width: boundingRect.width,
-        height: boundingRect.height
+        rect: {
+          x: boundingRect.x,
+          y: boundingRect.y,
+          width: boundingRect.width,
+          height: boundingRect.height
+        }
       };
     }
 

@@ -41,16 +41,20 @@ fromDragData =
                 { beaconIdentifier = "any identifier"
                 , beacons =
                     [ { id = { identifier = "0", position = "before" }
-                      , x = 1.1
-                      , y = 2.2
-                      , width = 3.3
-                      , height = 4.4
+                      , rect =
+                            { x = 1.1
+                            , y = 2.2
+                            , width = 3.3
+                            , height = 4.4
+                            }
                       }
                     , { id = { identifier = "1", position = "after" }
-                      , x = 5.5
-                      , y = 6.6
-                      , width = 7.7
-                      , height = 8.8
+                      , rect =
+                            { x = 5.5
+                            , y = 6.6
+                            , width = 7.7
+                            , height = 8.8
+                            }
                       }
                     ]
                 , cursor = { x = fuzzedX, y = fuzzedY }
@@ -85,16 +89,20 @@ fromDragData =
                 { beaconIdentifier = "any identifier"
                 , beacons =
                     [ { id = { identifier = "0", position = "xxx" }
-                      , x = 1.1
-                      , y = 2.2
-                      , width = 3.3
-                      , height = 4.4
+                      , rect =
+                            { x = 1.1
+                            , y = 2.2
+                            , width = 3.3
+                            , height = 4.4
+                            }
                       }
                     , { id = { identifier = "1", position = "after" }
-                      , x = 5.5
-                      , y = 6.6
-                      , width = 7.7
-                      , height = 8.8
+                      , rect =
+                            { x = 5.5
+                            , y = 6.6
+                            , width = 7.7
+                            , height = 8.8
+                            }
                       }
                     ]
                 , cursor = { x = 0.0, y = 0.0 }

@@ -7,6 +7,7 @@ module DragAndDrop.DragData exposing
 
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords exposing (Coords)
+import DragAndDrop.Rect as Rect exposing (Rect)
 import TsJson.Decode as TsDecode
 
 
@@ -24,10 +25,7 @@ type alias DragData =
 
 type alias BeaconData =
     { id : { identifier : String, position : String }
-    , x : Float
-    , y : Float
-    , width : Float
-    , height : Float
+    , rect : Rect
     }
 
 
@@ -65,10 +63,7 @@ beaconDataDecoder : TsDecode.Decoder BeaconData
 beaconDataDecoder =
     TsDecode.succeed BeaconData
         |> TsDecode.andMap (TsDecode.field "id" beaconIdDecoder)
-        |> TsDecode.andMap (TsDecode.field "x" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "y" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "width" TsDecode.float)
-        |> TsDecode.andMap (TsDecode.field "height" TsDecode.float)
+        |> TsDecode.andMap (TsDecode.field "rect" Rect.decoder)
 
 
 beaconIdDecoder : TsDecode.Decoder BeaconId

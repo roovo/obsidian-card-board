@@ -6,6 +6,7 @@ module DragAndDrop.DragAction exposing
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.DragData exposing (BeaconData, DragData)
+import DragAndDrop.Rect as Rect exposing (Rect)
 import Maybe.Extra as ME
 import TsJson.Decode as TsDecode
 
@@ -29,14 +30,6 @@ type alias Positions =
 type alias Beacon =
     { beaconPosition : BeaconPosition
     , rect : Rect
-    }
-
-
-type alias Rect =
-    { x : Float
-    , y : Float
-    , width : Float
-    , height : Float
     }
 
 
@@ -74,10 +67,10 @@ beaconConverter beaconData =
         buildBeacon beaconPosition =
             { beaconPosition = beaconPosition
             , rect =
-                { x = beaconData.x
-                , y = beaconData.y
-                , width = beaconData.width
-                , height = beaconData.height
+                { x = beaconData.rect.x
+                , y = beaconData.rect.y
+                , width = beaconData.rect.width
+                , height = beaconData.rect.height
                 }
             }
     in

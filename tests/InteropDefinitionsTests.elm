@@ -625,7 +625,7 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes elementDragged data" <|
             \() ->
-                """{"tag":"elementDragged","data":{"beaconIdentifier":"some-beacon-id","dragType":"move","cursor":{"x":1.23,"y":4.56},"beacons":[{"id":{"identifier":"someId","position":"before"},"x":1.1,"y":2.2,"width":3.3,"height":4.4}]}}"""
+                """{"tag":"elementDragged","data":{"beaconIdentifier":"some-beacon-id","dragType":"move","cursor":{"x":1.23,"y":4.56},"beacons":[{"id":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal
@@ -639,10 +639,12 @@ toElmTests =
                                             { identifier = "someId"
                                             , position = "before"
                                             }
-                                      , x = 1.1
-                                      , y = 2.2
-                                      , width = 3.3
-                                      , height = 4.4
+                                      , rect =
+                                            { x = 1.1
+                                            , y = 2.2
+                                            , width = 3.3
+                                            , height = 4.4
+                                            }
                                       }
                                     ]
                                 }
