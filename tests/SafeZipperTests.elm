@@ -21,10 +21,10 @@ suite =
         , last
         , length
         , map
-        , mapCurrent
         , next
         , selectedIndex
         , toList
+        , updateCurrent
         ]
 
 
@@ -306,25 +306,6 @@ map =
         ]
 
 
-mapCurrent : Test
-mapCurrent =
-    describe "mapCurrent"
-        [ test "returns an empty list if given one" <|
-            \() ->
-                SafeZipper.fromList []
-                    |> SafeZipper.atIndex 1
-                    |> SafeZipper.mapCurrent ((+) 10)
-                    |> Expect.equal SafeZipper.empty
-        , test "applies the map function to the current item only" <|
-            \() ->
-                SafeZipper.fromList [ 1, 2, 3 ]
-                    |> SafeZipper.atIndex 1
-                    |> SafeZipper.mapCurrent ((+) 10)
-                    |> SafeZipper.toList
-                    |> Expect.equal [ 1, 12, 3 ]
-        ]
-
-
 next : Test
 next =
     describe "next"
@@ -397,4 +378,23 @@ toList =
                     |> SafeZipper.atIndex 3
                     |> SafeZipper.toList
                     |> Expect.equal [ 1, 2, 3, 4, 5, 6 ]
+        ]
+
+
+updateCurrent : Test
+updateCurrent =
+    describe "updateCurrent"
+        [ test "returns an empty list if given one" <|
+            \() ->
+                SafeZipper.fromList []
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.updateCurrent ((+) 10)
+                    |> Expect.equal SafeZipper.empty
+        , test "applies the map function to the current item only" <|
+            \() ->
+                SafeZipper.fromList [ 1, 2, 3 ]
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.updateCurrent ((+) 10)
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 12, 3 ]
         ]

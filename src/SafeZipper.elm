@@ -13,10 +13,10 @@ module SafeZipper exposing
     , last
     , length
     , map
-    , mapCurrent
     , next
     , selectedIndex
     , toList
+    , updateCurrent
     )
 
 import List.Extra as LE
@@ -192,18 +192,18 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
             SafeZipper mappedBefore mappedCurrent mappedAfter
 
 
-map : (a -> a) -> SafeZipper a -> SafeZipper a
+map : (a -> b) -> SafeZipper a -> SafeZipper b
 map fn zipper =
     case zipper of
         EmptyZipper ->
-            zipper
+            empty
 
-        SafeZipper b c a ->
-            SafeZipper (List.map fn b) (fn c) (List.map fn a)
+        SafeZipper before current_ after ->
+            SafeZipper (List.map fn before) (fn current_) (List.map fn after)
 
 
-mapCurrent : (a -> a) -> SafeZipper a -> SafeZipper a
-mapCurrent fn zipper =
+updateCurrent : (a -> a) -> SafeZipper a -> SafeZipper a
+updateCurrent fn zipper =
     case zipper of
         EmptyZipper ->
             zipper

@@ -178,7 +178,7 @@ updateBoardConfigs newConfigs settings =
 
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings
 updateCurrentBoard fn settings =
-    { settings | boardConfigs = SafeZipper.mapCurrent fn settings.boardConfigs }
+    { settings | boardConfigs = SafeZipper.updateCurrent fn settings.boardConfigs }
 
 
 updatePath : String -> String -> Settings -> Settings
