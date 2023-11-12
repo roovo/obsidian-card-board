@@ -215,7 +215,7 @@ view session =
                 ]
             , Html.div [ class "card-board-boards" ]
                 (Boards.boardZipper boards
-                    |> SafeZipper.indexedMapSelectedAndRest
+                    |> SafeZipper.mapSelectedAndRest
                         (selectedBoardView ignoreFileNameDates timeWithZone)
                         (boardView ignoreFileNameDates timeWithZone)
                     |> SafeZipper.toList
@@ -312,26 +312,26 @@ tabHeaderClass currentBoardIndex index =
             ""
 
 
-boardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
-boardView ignoreFileNameDates timeWithZone boardIndex board =
+boardView : Bool -> TimeWithZone -> Board -> Html Msg
+boardView ignoreFileNameDates timeWithZone board =
     Html.div
         [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
+                |> Board.columns ignoreFileNameDates timeWithZone
                 |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]
 
 
-selectedBoardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
-selectedBoardView ignoreFileNameDates timeWithZone boardIndex board =
+selectedBoardView : Bool -> TimeWithZone -> Board -> Html Msg
+selectedBoardView ignoreFileNameDates timeWithZone board =
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
+                |> Board.columns ignoreFileNameDates timeWithZone
                 |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]

@@ -54,7 +54,7 @@ cards ignoreFileNameDates timeWithZone boards_ =
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.indexedMap (Board.columns ignoreFileNameDates timeWithZone)
+        |> List.map (Board.columns ignoreFileNameDates timeWithZone)
         |> List.concat
         |> List.map Column.items
         |> List.concat

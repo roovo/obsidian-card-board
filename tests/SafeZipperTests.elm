@@ -21,6 +21,7 @@ suite =
         , last
         , length
         , map
+        , mapSelectedAndRest
         , next
         , selectedIndex
         , toList
@@ -303,6 +304,27 @@ map =
                     |> SafeZipper.map ((+) 10)
                     |> SafeZipper.toList
                     |> Expect.equal [ 11, 12, 13 ]
+        ]
+
+
+mapSelectedAndRest : Test
+mapSelectedAndRest =
+    describe "mapSelectedAndRest"
+        [ test "returns an empty zipper if given one" <|
+            \() ->
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.mapSelectedAndRest (\_ x -> ( 9, x )) Tuple.pair
+                    |> Expect.equal SafeZipper.empty
+        , test "returns a zipper focussed on a mid-list item" <|
+            \() ->
+                [ 5, 4, 3, 2, 1 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.mapSelectedAndRest (always 9) (\x -> x)
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 5, 4, 9, 2, 1 ]
         ]
 
 

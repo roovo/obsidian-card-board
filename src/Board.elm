@@ -38,8 +38,8 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : Bool -> TimeWithZone -> Int -> Board -> List (Column Card)
-columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
+columns : Bool -> TimeWithZone -> Board -> List (Column Card)
+columns ignoreFileNameDates timeWithZone (Board uniqueId columnNames config taskList) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let
@@ -52,7 +52,7 @@ columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames 
                 |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
                 |> DateBoardColumns.columns
-                |> convertToCards uniqueId boardIndex
+                |> convertToCards uniqueId (BoardConfig.title config)
                 |> collapseColumns config
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
@@ -66,7 +66,7 @@ columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames 
                 |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
                 |> TagBoardColumns.columns
-                |> convertToCards uniqueId boardIndex
+                |> convertToCards uniqueId (BoardConfig.title config)
                 |> collapseColumns config
 
 
@@ -161,12 +161,12 @@ applyFilters taskList polarity scope filters =
         TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
-convertToCards : String -> Int -> List (Column TaskItem) -> List (Column Card)
-convertToCards uniqueId boardIndex columnList =
+convertToCards : String -> String -> List (Column TaskItem) -> List (Column Card)
+convertToCards uniqueId boardTitle columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
-            uniqueId ++ ":" ++ String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex
+            uniqueId ++ ":" ++ boardTitle ++ ":" ++ String.fromInt columnIndex
 
         placeCardsInColumn : Int -> Column TaskItem -> Column Card
         placeCardsInColumn columnIndex column =

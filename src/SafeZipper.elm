@@ -13,6 +13,7 @@ module SafeZipper exposing
     , last
     , length
     , map
+    , mapSelectedAndRest
     , next
     , selectedIndex
     , toList
@@ -160,6 +161,32 @@ next zipper =
 
 
 -- MAPPING
+
+
+mapSelectedAndRest : (a -> b) -> (a -> b) -> SafeZipper a -> SafeZipper b
+mapSelectedAndRest selectedFn restFn zipper =
+    case zipper of
+        EmptyZipper ->
+            EmptyZipper
+
+        SafeZipper ls c rs ->
+            let
+                mappedBefore : List b
+                mappedBefore =
+                    ls
+                        |> List.reverse
+                        |> List.map restFn
+                        |> List.reverse
+
+                mappedCurrent : b
+                mappedCurrent =
+                    selectedFn c
+
+                mappedAfter : List b
+                mappedAfter =
+                    List.map restFn rs
+            in
+            SafeZipper mappedBefore mappedCurrent mappedAfter
 
 
 indexedMapSelectedAndRest : (Int -> a -> b) -> (Int -> a -> b) -> SafeZipper a -> SafeZipper b
