@@ -26,6 +26,7 @@ suite =
         , globalSettings
         , replaceTaskItems
         , trackDragable
+        , stopTrackingDragable
         , updatePath
         ]
 
@@ -173,6 +174,19 @@ trackDragable =
                     |> Session.trackDraggable (DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
                     |> Session.dragStatus
                     |> Expect.equal (Session.Dragging <| DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
+        ]
+
+
+stopTrackingDragable : Test
+stopTrackingDragable =
+    describe "stopTrackingDragable"
+        [ test "stops tracks a TabHeader" <|
+            \() ->
+                Session.default
+                    |> Session.trackDraggable (DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
+                    |> Session.stopTrackingDragable
+                    |> Session.dragStatus
+                    |> Expect.equal Session.NotDragging
         ]
 
 

@@ -12,7 +12,7 @@ import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
-import DragAndDrop.DragData exposing (DragData, DragTracker)
+import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
@@ -65,15 +65,23 @@ update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
         ElementDragged dragData ->
-            case Session.dragStatus session of
-                Session.Dragging dragTracker ->
-                    ( updateBoardOrder dragTracker dragData session
-                    , Cmd.none
-                    , Session.NoOp
-                    )
+            case dragData.dragAction of
+                DragData.Move ->
+                    case Session.dragStatus session of
+                        Session.Dragging dragTracker ->
+                            ( updateBoardOrder dragTracker dragData session
+                            , Cmd.none
+                            , Session.NoOp
+                            )
 
-                Session.NotDragging ->
-                    ( session
+                        Session.NotDragging ->
+                            ( session
+                            , Cmd.none
+                            , Session.NoOp
+                            )
+
+                DragData.Stop ->
+                    ( Session.stopTrackingDragable session
                     , Cmd.none
                     , Session.NoOp
                     )

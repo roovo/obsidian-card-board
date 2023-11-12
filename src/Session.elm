@@ -19,6 +19,7 @@ module Session exposing
     , moveBoard
     , replaceTaskItems
     , settings
+    , stopTrackingDragable
     , switchToBoardAt
     , taskContainingId
     , taskFromId
@@ -242,6 +243,11 @@ makeActiveView isActiveView_ (Session config) =
 moveBoard : String -> BeaconPosition -> Session -> Session
 moveBoard draggedId beaconPosition (Session config) =
     Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
+
+
+stopTrackingDragable : Session -> Session
+stopTrackingDragable (Session config) =
+    Session { config | dragStatus = NotDragging }
 
 
 switchToBoardAt : Int -> Session -> Session
