@@ -228,7 +228,9 @@ view session =
                     ]
                 , Html.div
                     [ class "workspace-tab-header-container-inner" ]
-                    (tabHeaders isDragging currentBoardIndex boards)
+                    (viewDraggedHeader session
+                        :: tabHeaders isDragging currentBoardIndex boards
+                    )
                 , Html.div
                     [ class "card-board-tab-header-spacer" ]
                     []
@@ -274,6 +276,28 @@ selectedTabHeader isDragging tabIndex title =
             ]
         , beacon (BeaconPosition.After title)
         ]
+
+
+viewDraggedHeader : Session -> Html Msg
+viewDraggedHeader session =
+    case Session.dragStatus session of
+        Session.Dragging dragTracker ->
+            Html.div
+                [ class "workspace-tab-header is-active"
+                , id <| "card-board-tab:being-dragged"
+                , style "position" "fixed"
+                , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offsetPos.y) ++ "px")
+                , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offsetPos.x) ++ "px")
+                ]
+                [ Html.div
+                    [ class "workspace-tab-header-inner" ]
+                    [ Html.div [ class "workspace-tab-header-inner-title" ]
+                        [ Html.text <| dragTracker.nodeId ]
+                    ]
+                ]
+
+        Session.NotDragging ->
+            empty
 
 
 tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
