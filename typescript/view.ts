@@ -365,12 +365,12 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
-    function dragEvent(type: string, event: MouseEvent) {
+    function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
       that.elm.ports.interopToElm.send({
         tag: "elementDragged",
         data: {
           beaconIdentifier: data.beaconIdentifier,
-          dragType: type,
+          dragAction: dragAction,
           cursor: coords(event),
           beacons: beaconPositions(data.beaconIdentifier)
         }

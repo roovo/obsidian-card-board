@@ -1,5 +1,6 @@
 module DragAndDrop.DragData exposing
     ( BeaconData
+    , DragAction(..)
     , DragData
     , DragTracker
     , decoder
@@ -18,10 +19,15 @@ import TsJson.Decode as TsDecode
 
 type alias DragData =
     { beaconIdentifier : String
-    , dragType : String
+    , dragAction : DragAction
     , cursor : Coords
     , beacons : List BeaconData
     }
+
+
+type DragAction
+    = Move
+    | Stop
 
 
 type alias BeaconData =
@@ -45,7 +51,7 @@ decoder : TsDecode.Decoder DragData
 decoder =
     TsDecode.succeed DragData
         |> TsDecode.andMap (TsDecode.field "beaconIdentifier" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "dragType" TsDecode.string)
+        |> TsDecode.andMap dragActionDecoder
         |> TsDecode.andMap (TsDecode.field "cursor" Coords.decoder)
         |> TsDecode.andMap (TsDecode.field "beacons" (TsDecode.list beaconDataDecoder))
 
@@ -66,6 +72,14 @@ beaconPositionDecoder =
     TsDecode.oneOf
         [ toElmBeacon "after" BeaconPosition.After TsDecode.string
         , toElmBeacon "before" BeaconPosition.Before TsDecode.string
+        ]
+
+
+dragActionDecoder : TsDecode.Decoder DragAction
+dragActionDecoder =
+    TsDecode.discriminatedUnion "dragAction"
+        [ ( "move", TsDecode.succeed Move )
+        , ( "stop", TsDecode.succeed Stop )
         ]
 
 
