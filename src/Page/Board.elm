@@ -15,7 +15,7 @@ import DragAndDrop.Coords as Coords
 import DragAndDrop.DragData exposing (DragData, DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse exposing (onDown)
@@ -188,6 +188,15 @@ view session =
             today =
                 Session.timeWithZone session
                     |> TimeWithZone.toDate
+
+            isDragging : Bool
+            isDragging =
+                case Session.dragStatus session of
+                    Session.Dragging _ ->
+                        True
+
+                    Session.NotDragging ->
+                        False
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.div [ class "workspace-tab-header-container" ]
@@ -209,7 +218,7 @@ view session =
                     ]
                 , Html.div
                     [ class "workspace-tab-header-container-inner" ]
-                    (tabHeaders currentBoardIndex boards)
+                    (tabHeaders isDragging currentBoardIndex boards)
                 , Html.div
                     [ class "card-board-tab-header-spacer" ]
                     []
@@ -225,20 +234,20 @@ view session =
             ]
 
 
-tabHeaders : Maybe Int -> Boards -> List (Html Msg)
-tabHeaders currentBoardIndex boards =
+tabHeaders : Bool -> Maybe Int -> Boards -> List (Html Msg)
+tabHeaders isDragging currentBoardIndex boards =
     Boards.titles boards
-        |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
+        |> SafeZipper.indexedMapSelectedAndRest (selectedTabHeader isDragging) (tabHeader isDragging currentBoardIndex)
         |> SafeZipper.toList
 
 
-selectedTabHeader : Int -> String -> Html Msg
-selectedTabHeader tabIndex title =
+selectedTabHeader : Bool -> Int -> String -> Html Msg
+selectedTabHeader isDragging tabIndex title =
     Html.div
         [ class "workspace-tab-header is-active"
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
-        , attribute "aria-label" title
-        , attribute "aria-label-delay" "50"
+        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
@@ -257,8 +266,8 @@ selectedTabHeader tabIndex title =
         ]
 
 
-tabHeader : Maybe Int -> Int -> String -> Html Msg
-tabHeader currentBoardIndex tabIndex title =
+tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
+tabHeader isDragging currentBoardIndex tabIndex title =
     let
         headerClass : String
         headerClass =
@@ -267,8 +276,8 @@ tabHeader currentBoardIndex tabIndex title =
     Html.div
         [ id <| "card-board-tab:" ++ String.fromInt tabIndex
         , class ("workspace-tab-header" ++ headerClass)
-        , attribute "aria-label" title
-        , attribute "aria-label-delay" "50"
+        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , onClick <| TabSelected tabIndex
         , onDown
             (\e ->
@@ -542,19 +551,28 @@ cardActionButtons taskItemId editButtonId =
 -- HELPERS
 
 
-onClickWithPreventDefault : msg -> Html.Attribute msg
-onClickWithPreventDefault msg =
-    Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
-
-
 alwaysPreventDefault : msg -> ( msg, Bool )
 alwaysPreventDefault msg =
     ( msg, True )
 
 
+attributeIf : Bool -> Attribute msg -> Attribute msg
+attributeIf condition attribute =
+    if condition then
+        attribute
+
+    else
+        Html.Attributes.class ""
+
+
 empty : Html Msg
 empty =
     Html.text ""
+
+
+onClickWithPreventDefault : msg -> Html.Attribute msg
+onClickWithPreventDefault msg =
+    Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
 
 
 when : Bool -> Html Msg -> Html Msg
