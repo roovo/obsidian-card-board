@@ -12,8 +12,7 @@ import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
-import DragAndDrop.DragAction as DragAction
-import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
+import DragAndDrop.DragData exposing (DragData, DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Html)
@@ -53,7 +52,7 @@ beaconIdentifier =
 
 
 updateBoardOrder : DragTracker -> DragData -> Session -> Session
-updateBoardOrder { nodeId, offsetPos } { cursor, beacons } session =
+updateBoardOrder { nodeId } { cursor, beacons } session =
     case Rect.closestTo cursor beacons of
         Nothing ->
             session

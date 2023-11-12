@@ -2,7 +2,6 @@ module DragAndDrop.CoordsTests exposing (suite)
 
 import DragAndDrop.Coords as Coords
 import Expect exposing (FloatingPointTolerance(..))
-import Fuzz exposing (Fuzzer)
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
 import TsJson.Encode as TsEncode

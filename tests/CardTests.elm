@@ -11,7 +11,7 @@ import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import Time
-import TimeWithZone exposing (TimeWithZone)
+import TimeWithZone
 
 
 suite : Test

@@ -40,7 +40,7 @@ init uniqueId columnNames config taskList =
 
 
 columns : Bool -> Date -> Board -> List (Column Card)
-columns ignoreFileNameDates today ((Board uniqueId columnNames config taskList) as board) =
+columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let

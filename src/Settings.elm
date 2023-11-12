@@ -236,9 +236,11 @@ enforceUniqueBoardTitles settings =
                     else
                         BoardConfig.title config
 
+                safeConfig : BoardConfig
                 safeConfig =
                     BoardConfig.updateTitle uniqueTitle config
 
+                ts : List String
                 ts =
                     String.replace " " "_" uniqueTitle :: titles
             in

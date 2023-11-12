@@ -10,6 +10,7 @@ import Helpers.DecodeHelpers as DecodeHelpers
 import SafeZipper
 import Semver
 import Settings
+import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -192,6 +193,7 @@ moveBoard =
         ]
 
 
+uniqueBoardTitles : Test
 uniqueBoardTitles =
     describe "ensuring that board titles are unique after decoding"
         [ test "appends the index number of the board onto the end of a non-unique name" <|
@@ -302,5 +304,6 @@ exampleWithUnderscores =
     }
 
 
+exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     BoardConfigHelpers.exampleTagBoardConfig

@@ -12,7 +12,6 @@ import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
-import TimeWithZone exposing (TimeWithZone)
 
 
 suite : Test

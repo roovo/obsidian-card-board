@@ -56,9 +56,11 @@ fromFloatTuple ( x, y ) =
 distance : Coords -> Coords -> Float
 distance coords1 coords2 =
     let
+        dx : Float
         dx =
             coords1.x - coords2.x
 
+        dy : Float
         dy =
             coords1.y - coords2.y
     in

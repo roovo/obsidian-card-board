@@ -12,7 +12,6 @@ import Parser
 import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
-import TimeWithZone exposing (TimeWithZone)
 
 
 suite : Test

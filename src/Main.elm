@@ -24,7 +24,7 @@ import TaskItem
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import Time
-import TimeWithZone exposing (TimeWithZone)
+import TimeWithZone
 
 
 main : Program JD.Value Model Msg
@@ -162,7 +162,7 @@ update msg model =
             BoardPage.update (BoardPage.ElementDragged dragData) subModel
                 |> updateWith Boards GotBoardPageMsg
 
-        ( ElementDragged dragData, _ ) ->
+        ( ElementDragged _, _ ) ->
             ( model, Cmd.none )
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
