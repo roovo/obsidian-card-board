@@ -23,6 +23,7 @@ export class CardBoardView extends ItemView {
   private vault:  Vault;
   private plugin: CardBoardPlugin;
   private elm: ElmApp;
+  private elmDiv: any;
 
   constructor(
     plugin: CardBoardPlugin,
@@ -61,12 +62,12 @@ export class CardBoardView extends ItemView {
       }
     };
 
-    const elmDiv = document.createElement('div');
-    elmDiv.id = "elm-node";
-    this.containerEl.children[1].appendChild(elmDiv);
+    this.elmDiv = document.createElement('div');
+    this.elmDiv.id = "elm-node";
+    this.containerEl.children[1].appendChild(this.elmDiv);
 
     this.elm = Elm.Main.init({
-      node: elmDiv,
+      node: this.elmDiv,
       flags: mySettings
     })
 
@@ -368,15 +369,24 @@ export class CardBoardView extends ItemView {
     }
 
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
-      that.elm.ports.interopToElm.send({
-        tag: "elementDragged",
-        data: {
-          beaconIdentifier: data.beaconIdentifier,
-          dragAction: dragAction,
-          cursor: coords(event),
-          beacons: beaconPositions(data.beaconIdentifier)
-        }
-      });
+      const appContainer  = document.getElementsByClassName("workspace")[0];
+      const tabContainer  = document.getElementsByClassName("workspace-tab-container")[1];
+
+      if ((appContainer instanceof HTMLElement) && (tabContainer instanceof HTMLElement)) {
+          const offsetLeft = appContainer.clientWidth - tabContainer.clientWidth;
+          const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
+
+          that.elm.ports.interopToElm.send({
+            tag: "elementDragged",
+            data: {
+              beaconIdentifier: data.beaconIdentifier,
+              dragAction: dragAction,
+              cursor: coords(event),
+              offset: { x: offsetLeft, y: offsetTop },
+              beacons: beaconPositions(data.beaconIdentifier)
+            }
+          });
+      }
     }
 
     function beaconPositions(beaconIdentifier: String) {

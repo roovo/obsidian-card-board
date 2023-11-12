@@ -83,7 +83,7 @@ update msg session =
                         Session.Dragging dragTracker ->
                             ( session
                                 |> updateBoardOrder dragTracker dragData
-                                |> Session.updateDragPosition dragData.cursor
+                                |> Session.updateDragPositions dragData.cursor dragData.offset
                             , Cmd.none
                             , Session.NoOp
                             )
@@ -275,6 +275,7 @@ selectedTabHeader isDragging tabIndex title =
                     DragTracker title
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
+                        (Coords.fromFloatTuple ( 0, 0 ))
             )
         ]
         [ beacon (BeaconPosition.Before title)
@@ -295,8 +296,8 @@ viewDraggedHeader session =
                 [ class "workspace-tab-header is-active"
                 , id <| "card-board-tab:being-dragged"
                 , style "position" "fixed"
-                , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offsetPos.y) ++ "px")
-                , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offsetPos.x) ++ "px")
+                , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offset.y - dragTracker.offsetPos.y) ++ "px")
+                , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
@@ -331,6 +332,7 @@ tabHeader isDragging currentBoardIndex tabIndex title =
                     DragTracker title
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
+                        (Coords.fromFloatTuple ( 0, 0 ))
             )
         ]
         [ beacon (BeaconPosition.Before title)

@@ -31,7 +31,7 @@ module Session exposing
     , trackDraggable
     , uniqueId
     , updateColumnCollapse
-    , updateDragPosition
+    , updateDragPositions
     , updatePath
     , updateSettings
     , updateTextDirection
@@ -278,8 +278,8 @@ waitForDrag dragTracker (Session config) =
     Session { config | dragStatus = Waiting dragTracker }
 
 
-updateDragPosition : Coords -> Session -> Session
-updateDragPosition newPosition ((Session config) as session) =
+updateDragPositions : Coords -> Coords -> Session -> Session
+updateDragPositions newPosition newOffset ((Session config) as session) =
     case config.dragStatus of
         NotDragging ->
             session
@@ -287,14 +287,20 @@ updateDragPosition newPosition ((Session config) as session) =
         Waiting dragTracker ->
             let
                 newTracker =
-                    { dragTracker | clientPos = newPosition }
+                    { dragTracker
+                        | clientPos = newPosition
+                        , offset = newOffset
+                    }
             in
             Session { config | dragStatus = Dragging newTracker }
 
         Dragging dragTracker ->
             let
                 newTracker =
-                    { dragTracker | clientPos = newPosition }
+                    { dragTracker
+                        | clientPos = newPosition
+                        , offset = newOffset
+                    }
             in
             Session { config | dragStatus = Dragging newTracker }
 

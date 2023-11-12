@@ -21,6 +21,7 @@ type alias DragData =
     { beaconIdentifier : String
     , dragAction : DragAction
     , cursor : Coords
+    , offset : Coords
     , beacons : List BeaconData
     }
 
@@ -40,6 +41,7 @@ type alias DragTracker =
     { nodeId : String
     , clientPos : Coords
     , offsetPos : Coords
+    , offset : Coords
     }
 
 
@@ -53,6 +55,7 @@ decoder =
         |> TsDecode.andMap (TsDecode.field "beaconIdentifier" TsDecode.string)
         |> TsDecode.andMap dragActionDecoder
         |> TsDecode.andMap (TsDecode.field "cursor" Coords.decoder)
+        |> TsDecode.andMap (TsDecode.field "offset" Coords.decoder)
         |> TsDecode.andMap (TsDecode.field "beacons" (TsDecode.list beaconDataDecoder))
 
 
