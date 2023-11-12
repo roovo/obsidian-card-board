@@ -41,15 +41,12 @@ init uniqueId columnNames configs taskList =
 
 boardZipper : Boards -> SafeZipper Board
 boardZipper (Boards uniqueId columnNames configs taskList) =
-    SafeZipper.indexedMapSelectedAndRest
-        (board uniqueId columnNames taskList)
-        (board uniqueId columnNames taskList)
-        configs
+    SafeZipper.map (board uniqueId columnNames taskList) configs
 
 
 titles : Boards -> SafeZipper String
 titles (Boards _ _ configs _) =
-    SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
+    SafeZipper.map tabTitle configs
 
 
 cards : Bool -> TimeWithZone -> Boards -> List Card
@@ -77,8 +74,8 @@ length (Boards _ _ config _) =
 -- PRIVATE
 
 
-tabTitle : Int -> BoardConfig -> String
-tabTitle _ config =
+tabTitle : BoardConfig -> String
+tabTitle config =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             dateBoardConfig.title
@@ -87,6 +84,6 @@ tabTitle _ config =
             tagBoardConfig.title
 
 
-board : String -> ColumnNames -> TaskList -> Int -> BoardConfig -> Board
-board uniqueId columnNames taskList _ config =
+board : String -> ColumnNames -> TaskList -> BoardConfig -> Board
+board uniqueId columnNames taskList config =
     Board.init uniqueId columnNames config taskList
