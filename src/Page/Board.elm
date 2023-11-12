@@ -269,6 +269,7 @@ selectedTabHeader isDragging tabIndex title =
         , id <| "card-board-tab:" ++ String.fromInt tabIndex
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
+        , attributeIf isDragging (style "opacity" "0.0")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
