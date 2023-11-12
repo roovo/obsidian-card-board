@@ -67,11 +67,7 @@ update msg session =
         ElementDragged dragData ->
             case Session.dragStatus session of
                 Session.Dragging dragTracker ->
-                    let
-                        foo =
-                            Debug.log "dragTracker" dragTracker
-                    in
-                    ( session
+                    ( updateBoardOrder dragTracker dragData session
                     , Cmd.none
                     , Session.NoOp
                     )
@@ -175,6 +171,11 @@ view session =
             boards =
                 Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
 
+            -- foo =
+            --     boards
+            --         |> Boards.titles
+            --         |> SafeZipper.toList
+            --         |> Debug.log "titles"
             columnNames : ColumnNames
             columnNames =
                 Session.globalSettings session
@@ -249,13 +250,13 @@ selectedTabHeader tabIndex title =
                         (Coords.fromFloatTuple e.offsetPos)
             )
         ]
-        [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
+        [ beacon (BeaconPosition.Before title)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
-        , beacon (BeaconPosition.After <| String.fromInt tabIndex)
+        , beacon (BeaconPosition.After title)
         ]
 
 
@@ -280,13 +281,13 @@ tabHeader currentBoardIndex tabIndex title =
                         (Coords.fromFloatTuple e.offsetPos)
             )
         ]
-        [ beacon (BeaconPosition.Before <| String.fromInt tabIndex)
+        [ beacon (BeaconPosition.Before title)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| title ]
             ]
-        , beacon (BeaconPosition.After <| String.fromInt tabIndex)
+        , beacon (BeaconPosition.After title)
         ]
 
 
