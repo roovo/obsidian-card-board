@@ -161,12 +161,6 @@ update msg model =
                 |> updateWith Boards GotBoardPageMsg
 
         ( ElementDragged dragData, _ ) ->
-            let
-                foo =
-                    Debug.log "dragData" dragData
-
-                -- Debug.log "dragData" (Session.dragStatus (toSession model))
-            in
             ( model, Cmd.none )
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->

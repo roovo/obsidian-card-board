@@ -53,7 +53,7 @@ beaconIdentifier =
 
 updateBoardOrder : DragTracker -> DragData -> Session -> Session
 updateBoardOrder { nodeId, offsetPos } { cursor, beacons } session =
-    case Rect.closestTo (Coords.subtract cursor offsetPos) beacons of
+    case Rect.closestTo cursor beacons of
         Nothing ->
             session
 
@@ -171,11 +171,6 @@ view session =
             boards =
                 Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
 
-            -- foo =
-            --     boards
-            --         |> Boards.titles
-            --         |> SafeZipper.toList
-            --         |> Debug.log "titles"
             columnNames : ColumnNames
             columnNames =
                 Session.globalSettings session
