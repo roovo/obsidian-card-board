@@ -31,7 +31,7 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
-    | TrackDraggable { beaconIdentifier : String, clientPos : Coords }
+    | TrackDraggable { beaconIdentifier : String, clientPos : Coords, draggableId : String }
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
@@ -109,11 +109,12 @@ openTaskSourceFileEncoder =
         ]
 
 
-trackDraggableEncoder : TsEncode.Encoder { beaconIdentifier : String, clientPos : Coords }
+trackDraggableEncoder : TsEncode.Encoder { beaconIdentifier : String, clientPos : Coords, draggableId : String }
 trackDraggableEncoder =
     TsEncode.object
         [ required "beaconIdentifier" .beaconIdentifier TsEncode.string
         , required "clientPos" .clientPos Coords.encoder
+        , required "draggableId" .draggableId TsEncode.string
         ]
 
 

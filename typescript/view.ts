@@ -328,12 +328,15 @@ export class CardBoardView extends ItemView {
   async handleTrackDraggable(
     data : {
       beaconIdentifier: string,
-      clientPos : { x: number, y: number }
+      clientPos : { x: number, y: number },
+      draggableId: string
     }
   ) {
     const MINIMUM_DRAG_PIXELS = 10;
 
     const that = this;
+
+    const draggedElement = document.getElementById(data.draggableId);
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -372,7 +375,9 @@ export class CardBoardView extends ItemView {
       const appContainer  = document.getElementsByClassName("workspace")[0];
       const tabContainer  = document.getElementsByClassName("workspace-tab-container")[1];
 
-      if ((appContainer instanceof HTMLElement) && (tabContainer instanceof HTMLElement)) {
+      if ((appContainer instanceof HTMLElement) &&
+          (tabContainer instanceof HTMLElement) &&
+          (draggedElement instanceof HTMLElement)) {
           const offsetLeft = appContainer.clientWidth - tabContainer.clientWidth;
           const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
 
@@ -383,6 +388,7 @@ export class CardBoardView extends ItemView {
               dragAction: dragAction,
               cursor: coords(event),
               offset: { x: offsetLeft, y: offsetTop },
+              draggedNodeSize: { height: draggedElement.clientHeight, width: draggedElement.clientWidth },
               beacons: beaconPositions(data.beaconIdentifier)
             }
           });

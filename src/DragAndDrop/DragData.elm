@@ -3,6 +3,7 @@ module DragAndDrop.DragData exposing
     , DragAction(..)
     , DragData
     , DragTracker
+    , Size
     , decoder
     )
 
@@ -22,7 +23,14 @@ type alias DragData =
     , dragAction : DragAction
     , cursor : Coords
     , offset : Coords
+    , draggedNodeSize : Size
     , beacons : List BeaconData
+    }
+
+
+type alias Size =
+    { width : Float
+    , height : Float
     }
 
 
@@ -42,6 +50,7 @@ type alias DragTracker =
     , clientPos : Coords
     , offsetPos : Coords
     , offset : Coords
+    , draggedNodeSize : Size
     }
 
 
@@ -56,6 +65,7 @@ decoder =
         |> TsDecode.andMap dragActionDecoder
         |> TsDecode.andMap (TsDecode.field "cursor" Coords.decoder)
         |> TsDecode.andMap (TsDecode.field "offset" Coords.decoder)
+        |> TsDecode.andMap (TsDecode.field "draggedNodeSize" sizeDecoder)
         |> TsDecode.andMap (TsDecode.field "beacons" (TsDecode.list beaconDataDecoder))
 
 
@@ -84,6 +94,13 @@ dragActionDecoder =
         [ ( "move", TsDecode.succeed Move )
         , ( "stop", TsDecode.succeed Stop )
         ]
+
+
+sizeDecoder : TsDecode.Decoder Size
+sizeDecoder =
+    TsDecode.succeed Size
+        |> TsDecode.andMap (TsDecode.field "width" TsDecode.float)
+        |> TsDecode.andMap (TsDecode.field "height" TsDecode.float)
 
 
 toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a

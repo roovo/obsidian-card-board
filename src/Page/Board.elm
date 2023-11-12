@@ -38,7 +38,7 @@ import TimeWithZone exposing (TimeWithZone)
 type Msg
     = ElementDragged DragData
     | SettingsClicked
-    | TabHeaderMouseDown DragTracker
+    | TabHeaderMouseDown ( String, DragTracker )
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -75,7 +75,7 @@ update msg session =
                             )
 
                         Session.Waiting dragTracker ->
-                            ( Session.trackDraggable dragTracker session
+                            ( Session.trackDraggable dragTracker dragData.draggedNodeSize session
                             , Cmd.none
                             , Session.NoOp
                             )
@@ -100,9 +100,9 @@ update msg session =
             , Session.SettingsClicked
             )
 
-        TabHeaderMouseDown dragTracker ->
+        TabHeaderMouseDown ( tabId, dragTracker ) ->
             ( Session.waitForDrag dragTracker session
-            , InteropPorts.trackDraggable beaconIdentifier dragTracker.clientPos
+            , InteropPorts.trackDraggable beaconIdentifier dragTracker.clientPos tabId
             , Session.NoOp
             )
 
@@ -264,19 +264,26 @@ tabHeaders isDragging currentBoardIndex boards =
 
 selectedTabHeader : Bool -> Int -> String -> Html Msg
 selectedTabHeader isDragging tabIndex title =
+    let
+        tabId =
+            "card-board-tab:" ++ String.fromInt tabIndex
+    in
     Html.div
         [ class "workspace-tab-header is-active"
-        , id <| "card-board-tab:" ++ String.fromInt tabIndex
+        , id tabId
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
-                    DragTracker title
+                    ( tabId
+                    , DragTracker title
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
                         (Coords.fromFloatTuple ( 0, 0 ))
+                        { width = 0, height = 0 }
+                    )
             )
         ]
         [ beacon (BeaconPosition.Before title)
@@ -299,6 +306,8 @@ viewDraggedHeader session =
                 , style "position" "fixed"
                 , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offset.y - dragTracker.offsetPos.y) ++ "px")
                 , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
+                , style "width" (String.fromFloat dragTracker.draggedNodeSize.width ++ "px")
+                , style "height" (String.fromFloat dragTracker.draggedNodeSize.height ++ "px")
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
@@ -320,9 +329,12 @@ tabHeader isDragging currentBoardIndex tabIndex title =
         headerClass : String
         headerClass =
             tabHeaderClass currentBoardIndex tabIndex
+
+        tabId =
+            "card-board-tab:" ++ String.fromInt tabIndex
     in
     Html.div
-        [ id <| "card-board-tab:" ++ String.fromInt tabIndex
+        [ id tabId
         , class ("workspace-tab-header" ++ headerClass)
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
@@ -330,10 +342,13 @@ tabHeader isDragging currentBoardIndex tabIndex title =
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
-                    DragTracker title
+                    ( tabId
+                    , DragTracker title
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
                         (Coords.fromFloatTuple ( 0, 0 ))
+                        { width = 0, height = 0 }
+                    )
             )
         ]
         [ beacon (BeaconPosition.Before title)

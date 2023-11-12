@@ -19,7 +19,7 @@ decoder =
     describe "decoder"
         [ test "decodes valid input" <|
             \() ->
-                """{"beaconIdentifier":"an identifier","dragAction":"move","cursor":{"x":1.1,"y":2.2},"offset":{"x":3.3,"y":4.4},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}"""
+                """{"beaconIdentifier":"an identifier","dragAction":"move","cursor":{"x":1.1,"y":2.2},"offset":{"x":3.3,"y":4.4},"draggedNodeSize":{"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}"""
                     |> DecodeHelpers.runDecoder DragData.decoder
                     |> .decoded
                     |> Expect.equal
@@ -32,6 +32,7 @@ decoder =
                                 ]
                             , cursor = { x = 1.1, y = 2.2 }
                             , offset = { x = 3.3, y = 4.4 }
+                            , draggedNodeSize = { width = 3.33, height = 4.44 }
                             , dragAction = DragData.Move
                             }
                         )

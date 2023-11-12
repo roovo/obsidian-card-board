@@ -4,11 +4,8 @@
     - see https://blog.noredink.com/post/186724971283/drag-drop-without-draggables-dropzones
 - or let elm know drag has finihsed with a mouse up
 
-- show ghost item when dragging
-    - ghost image is displayed when mouse-downing on header (with no dragging)
-    - ghost image is in the wrong place
 - set cursor to dragging when dragging
-- can I animate tab momving so it isn't instantaneous?
+- can I animate tab moving so it isn't instantaneous?
 - make beaconIdentifier = "card-board-tag-header", not "data-card-board-tag-header-beacon" (apart from in the html)
 - touch events - iPad ??
 - beaconIdentifier -> beaconType

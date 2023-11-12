@@ -45,7 +45,7 @@ import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords exposing (Coords)
-import DragAndDrop.DragData exposing (DragTracker)
+import DragAndDrop.DragData exposing (DragTracker, Size)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -268,9 +268,13 @@ timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 
-trackDraggable : DragTracker -> Session -> Session
-trackDraggable dragTracker (Session config) =
-    Session { config | dragStatus = Dragging dragTracker }
+trackDraggable : DragTracker -> Size -> Session -> Session
+trackDraggable dragTracker draggedNodeSize (Session config) =
+    let
+        newTracker =
+            { dragTracker | draggedNodeSize = draggedNodeSize }
+    in
+    Session { config | dragStatus = Dragging newTracker }
 
 
 waitForDrag : DragTracker -> Session -> Session
