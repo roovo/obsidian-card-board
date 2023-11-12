@@ -4,7 +4,6 @@
     - see https://blog.noredink.com/post/186724971283/drag-drop-without-draggables-dropzones
 - or let elm know drag has finihsed with a mouse up
 
-- select tab after dragging minimum distance
 - show ghost item when dragging
     - ghost image is displayed when mouse-downing on header (with no dragging)
     - ghost image is in the wrong place

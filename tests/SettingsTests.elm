@@ -174,10 +174,18 @@ moveBoard =
                     |> SafeZipper.toList
                     |> List.map BoardConfig.title
                     |> Expect.equal [ "0", "1", "3", "4", "2" ]
-        , test "maintains the index on the moved board after moving" <|
+        , test "sets the index to the moved board after moving" <|
             \() ->
                 exampleSettingsWithConsecutiveNames
                     |> Settings.moveBoard "2" (BeaconPosition.After "3")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.title
+                    |> Expect.equal (Just "2")
+        , test "sets the index to the moved board after moving even if position is the same" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "2")
                     |> Settings.boardConfigs
                     |> SafeZipper.current
                     |> Maybe.map BoardConfig.title
