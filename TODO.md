@@ -7,6 +7,7 @@
 - set cursor to dragging when dragging
 - select tab on mousedown ??
 - show ghost item when dragging
+- can I animate tab momving so it isn't instantaneous?
 - make beaconIdentifier = "card-board-tag-header", not "data-card-board-tag-header-beacon" (apart from in the html)
 - touch events - iPad ??
 - beaconIdentifier -> beaconType

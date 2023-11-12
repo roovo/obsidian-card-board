@@ -31,6 +31,7 @@ module Session exposing
     , trackDraggable
     , uniqueId
     , updateColumnCollapse
+    , updateDragPosition
     , updatePath
     , updateSettings
     , updateTextDirection
@@ -42,6 +43,7 @@ import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.Coords exposing (Coords)
 import DragAndDrop.DragData exposing (DragTracker)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
@@ -268,6 +270,20 @@ timeWIthZoneIs zone time (Session config) =
 trackDraggable : DragTracker -> Session -> Session
 trackDraggable dragTracker (Session config) =
     Session { config | dragStatus = Dragging dragTracker }
+
+
+updateDragPosition : Coords -> Session -> Session
+updateDragPosition newPosition ((Session config) as session) =
+    case config.dragStatus of
+        NotDragging ->
+            session
+
+        Dragging dragTracker ->
+            let
+                newTracker =
+                    { dragTracker | clientPos = newPosition }
+            in
+            Session { config | dragStatus = Dragging newTracker }
 
 
 updateSettings : Settings -> Session -> Session

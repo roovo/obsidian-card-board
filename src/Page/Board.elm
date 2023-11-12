@@ -69,7 +69,9 @@ update msg session =
                 DragData.Move ->
                     case Session.dragStatus session of
                         Session.Dragging dragTracker ->
-                            ( updateBoardOrder dragTracker dragData session
+                            ( session
+                                |> updateBoardOrder dragTracker dragData
+                                |> Session.updateDragPosition dragData.cursor
                             , Cmd.none
                             , Session.NoOp
                             )

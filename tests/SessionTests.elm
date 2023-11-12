@@ -28,6 +28,7 @@ suite =
         , trackDragable
         , stopTrackingDragable
         , updatePath
+        , updateDragPosition
         ]
 
 
@@ -174,6 +175,25 @@ trackDragable =
                     |> Session.trackDraggable (DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
                     |> Session.dragStatus
                     |> Expect.equal (Session.Dragging <| DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
+        ]
+
+
+updateDragPosition : Test
+updateDragPosition =
+    describe "updateDragPosition"
+        [ test "does nothing if not dragging" <|
+            \() ->
+                Session.default
+                    |> Session.updateDragPosition { x = 10, y = 20 }
+                    |> Session.dragStatus
+                    |> Expect.equal Session.NotDragging
+        , test "updates the tracked client position if dragging" <|
+            \() ->
+                Session.default
+                    |> Session.trackDraggable (DragData.DragTracker "3" { x = 0, y = 0 } { x = 0, y = 0 })
+                    |> Session.updateDragPosition { x = 10, y = 20 }
+                    |> Session.dragStatus
+                    |> Expect.equal (Session.Dragging <| DragData.DragTracker "3" { x = 10, y = 20 } { x = 0, y = 0 })
         ]
 
 
