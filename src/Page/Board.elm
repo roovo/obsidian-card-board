@@ -68,16 +68,22 @@ update msg session =
             case dragData.dragAction of
                 DragData.Move ->
                     case Session.dragStatus session of
-                        Session.Dragging dragTracker ->
+                        Session.NotDragging ->
                             ( session
-                                |> updateBoardOrder dragTracker dragData
-                                |> Session.updateDragPosition dragData.cursor
                             , Cmd.none
                             , Session.NoOp
                             )
 
-                        Session.NotDragging ->
+                        Session.Waiting dragTracker ->
+                            ( Session.trackDraggable dragTracker session
+                            , Cmd.none
+                            , Session.NoOp
+                            )
+
+                        Session.Dragging dragTracker ->
                             ( session
+                                |> updateBoardOrder dragTracker dragData
+                                |> Session.updateDragPosition dragData.cursor
                             , Cmd.none
                             , Session.NoOp
                             )
@@ -95,9 +101,9 @@ update msg session =
             )
 
         TabHeaderMouseDown dragTracker ->
-            ( session
+            ( Session.waitForDrag dragTracker session
             , InteropPorts.trackDraggable beaconIdentifier dragTracker.clientPos
-            , Session.TrackDraggable dragTracker
+            , Session.NoOp
             )
 
         TabSelected tabIndex ->
@@ -207,6 +213,9 @@ view session =
 
                     Session.NotDragging ->
                         False
+
+                    Session.Waiting _ ->
+                        False
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.div [ class "workspace-tab-header-container" ]
@@ -295,6 +304,9 @@ viewDraggedHeader session =
                         [ Html.text <| dragTracker.nodeId ]
                     ]
                 ]
+
+        Session.Waiting _ ->
+            empty
 
         Session.NotDragging ->
             empty

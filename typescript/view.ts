@@ -343,7 +343,8 @@ export class CardBoardView extends ItemView {
       if (dragDistance >= MINIMUM_DRAG_PIXELS) {
         dragEvent("move", moveEvent);
 
-        stopAwaitingDrag();
+        document.removeEventListener("mousemove", maybeDragMove);
+        document.removeEventListener("mouseup", stopAwaitingDrag);
 
         document.addEventListener("mousemove", dragMove);
         document.addEventListener("mouseup", dragEnd);
@@ -360,7 +361,8 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", dragEnd);
     }
 
-    function stopAwaitingDrag() {
+    function stopAwaitingDrag(event: MouseEvent) {
+      dragEvent("stop", event);
       document.removeEventListener("mousemove", maybeDragMove);
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }

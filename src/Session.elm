@@ -35,6 +35,7 @@ module Session exposing
     , updatePath
     , updateSettings
     , updateTextDirection
+    , waitForDrag
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -79,6 +80,7 @@ type alias Config =
 
 type DragStatus
     = NotDragging
+    | Waiting DragTracker
     | Dragging DragTracker
 
 
@@ -86,7 +88,6 @@ type Msg
     = NoOp
     | SettingsClicked
     | SettingsClosed Settings
-    | TrackDraggable DragTracker
 
 
 
@@ -272,11 +273,23 @@ trackDraggable dragTracker (Session config) =
     Session { config | dragStatus = Dragging dragTracker }
 
 
+waitForDrag : DragTracker -> Session -> Session
+waitForDrag dragTracker (Session config) =
+    Session { config | dragStatus = Waiting dragTracker }
+
+
 updateDragPosition : Coords -> Session -> Session
 updateDragPosition newPosition ((Session config) as session) =
     case config.dragStatus of
         NotDragging ->
             session
+
+        Waiting dragTracker ->
+            let
+                newTracker =
+                    { dragTracker | clientPos = newPosition }
+            in
+            Session { config | dragStatus = Dragging newTracker }
 
         Dragging dragTracker ->
             let
