@@ -127,7 +127,7 @@ moveBoard draggedId beaconPosition settings =
             afterRemoving =
                 List.filter (\c -> BoardConfig.title c /= draggedId) boardList
 
-            insertConfig : BoardConfig -> Result String (List BoardConfig)
+            insertConfig : BoardConfig -> Result String ( List BoardConfig, Int )
             insertConfig foundConfig =
                 case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) afterRemoving of
                     Nothing ->
@@ -137,20 +137,22 @@ moveBoard draggedId beaconPosition settings =
                         case beaconPosition of
                             BeaconPosition.After _ ->
                                 Ok
-                                    (List.concat
+                                    ( List.concat
                                         [ List.take (beaconIndex + 1) afterRemoving
                                         , [ foundConfig ]
                                         , List.drop (beaconIndex + 1) afterRemoving
                                         ]
+                                    , beaconIndex + 1
                                     )
 
                             BeaconPosition.Before _ ->
                                 Ok
-                                    (List.concat
+                                    ( List.concat
                                         [ List.take beaconIndex afterRemoving
                                         , [ foundConfig ]
                                         , List.drop beaconIndex afterRemoving
                                         ]
+                                    , beaconIndex
                                     )
         in
         case found of
@@ -162,8 +164,12 @@ moveBoard draggedId beaconPosition settings =
                     Err _ ->
                         settings
 
-                    Ok newList ->
-                        { settings | boardConfigs = SafeZipper.fromList newList }
+                    Ok ( newList, movedBoardIndex ) ->
+                        { settings
+                            | boardConfigs =
+                                SafeZipper.fromList newList
+                                    |> SafeZipper.atIndex movedBoardIndex
+                        }
 
 
 switchToBoard : Int -> Settings -> Settings
