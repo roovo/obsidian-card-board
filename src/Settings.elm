@@ -11,6 +11,7 @@ module Settings exposing
     , globalSettings
     , hasAnyBordsConfigured
     , mapGlobalSettings
+    , moveBoard
     , switchToBoard
     , updateBoardConfigs
     , updateCurrentBoard
@@ -18,8 +19,10 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
+import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -101,6 +104,66 @@ deleteCurrentBoard settings =
 mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
 mapGlobalSettings fn settings =
     { settings | globalSettings = fn settings.globalSettings }
+
+
+moveBoard : String -> BeaconPosition -> Settings -> Settings
+moveBoard draggedId beaconPosition settings =
+    if BeaconPosition.identifier beaconPosition == draggedId then
+        settings
+
+    else
+        let
+            boardList : List BoardConfig
+            boardList =
+                boardConfigs settings
+                    |> SafeZipper.toList
+
+            found : Maybe BoardConfig
+            found =
+                List.filter (\c -> BoardConfig.title c == draggedId) boardList
+                    |> List.head
+
+            afterRemoving : List BoardConfig
+            afterRemoving =
+                List.filter (\c -> BoardConfig.title c /= draggedId) boardList
+
+            insertConfig : BoardConfig -> Result String (List BoardConfig)
+            insertConfig foundConfig =
+                case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) afterRemoving of
+                    Nothing ->
+                        Err ""
+
+                    Just beaconIndex ->
+                        case beaconPosition of
+                            BeaconPosition.After _ ->
+                                Ok
+                                    (List.concat
+                                        [ List.take (beaconIndex + 1) afterRemoving
+                                        , [ foundConfig ]
+                                        , List.drop (beaconIndex + 1) afterRemoving
+                                        ]
+                                    )
+
+                            BeaconPosition.Before _ ->
+                                Ok
+                                    (List.concat
+                                        [ List.take beaconIndex afterRemoving
+                                        , [ foundConfig ]
+                                        , List.drop beaconIndex afterRemoving
+                                        ]
+                                    )
+        in
+        case found of
+            Nothing ->
+                settings
+
+            Just foundConfig ->
+                case insertConfig foundConfig of
+                    Err _ ->
+                        settings
+
+                    Ok newList ->
+                        { settings | boardConfigs = SafeZipper.fromList newList }
 
 
 switchToBoard : Int -> Settings -> Settings

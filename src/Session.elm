@@ -16,6 +16,7 @@ module Session exposing
     , ignoreFileNameDates
     , isActiveView
     , makeActiveView
+    , moveBoard
     , replaceTaskItems
     , settings
     , switchToBoardAt
@@ -39,6 +40,7 @@ import Boards
 import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragTracker)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
@@ -235,6 +237,11 @@ uniqueId (Session config) =
 makeActiveView : Bool -> Session -> Session
 makeActiveView isActiveView_ (Session config) =
     Session { config | isActiveView = isActiveView_ }
+
+
+moveBoard : String -> BeaconPosition -> Session -> Session
+moveBoard draggedId beaconPosition (Session config) =
+    Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
 
 
 switchToBoardAt : Int -> Session -> Session

@@ -2,6 +2,7 @@ module SettingsTests exposing (suite)
 
 import BoardConfig
 import ColumnNames
+import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -20,6 +21,7 @@ suite =
         , cleanupTitles
         , currentVersion
         , encodeDecode
+        , moveBoard
         , uniqueBoardTitles
         ]
 
@@ -106,6 +108,90 @@ encodeDecode =
         ]
 
 
+moveBoard : Test
+moveBoard =
+    describe "moveBoard"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettings | boardConfigs = SafeZipper.empty }
+                    |> Settings.moveBoard "0" (BeaconPosition.After "0")
+                    |> Settings.boardConfigs
+                    |> Expect.equal SafeZipper.empty
+        , test "returns the same list if moving to the same index" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "2")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "2", "3", "4" ]
+        , test "moves a board to the previous position using Before" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.Before "1")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "2", "1", "3", "4" ]
+        , test "moves a board to the previous position using After" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "0")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "2", "1", "3", "4" ]
+        , test "moves a board to the next position using Before" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.Before "4")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "3", "2", "4" ]
+        , test "moves a board to the next position using After" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "3")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "3", "2", "4" ]
+        , test "moves a board to the first position using Before" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.Before "0")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "2", "0", "1", "3", "4" ]
+        , test "moves a board to the last position using After" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "4")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "3", "4", "2" ]
+        , test "returns the same list if the board to be moved does not exist" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "x" (BeaconPosition.After "2")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "2", "3", "4" ]
+        , test "returns the same list if the position to be moved to does not exist" <|
+            \() ->
+                exampleSettingsWithConsecutiveNames
+                    |> Settings.moveBoard "2" (BeaconPosition.After "x")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.title
+                    |> Expect.equal [ "0", "1", "2", "3", "4" ]
+        ]
+
+
 uniqueBoardTitles =
     describe "ensuring that board titles are unique after decoding"
         [ test "appends the index number of the board onto the end of a non-unique name" <|
@@ -153,6 +239,21 @@ exampleSettings =
         SafeZipper.fromList
             [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
             , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithConsecutiveNames : Settings.Settings
+exampleSettingsWithConsecutiveNames =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "0" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "1" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "2" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "3" }
+            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "4" }
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion

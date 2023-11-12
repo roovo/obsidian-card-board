@@ -51,6 +51,16 @@ beaconIdentifier =
     "data-card-board-tag-header-beacon"
 
 
+updateBoardOrder : DragTracker -> DragData -> Session -> Session
+updateBoardOrder { nodeId, offsetPos } { cursor, beacons } session =
+    case Rect.closestTo (Coords.subtract cursor offsetPos) beacons of
+        Nothing ->
+            session
+
+        Just position ->
+            Session.moveBoard nodeId position session
+
+
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
