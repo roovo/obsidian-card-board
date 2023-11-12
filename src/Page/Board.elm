@@ -21,6 +21,7 @@ import Html.Attributes exposing (attribute, checked, class, hidden, id, style, t
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
+import Html.Lazy
 import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
@@ -213,11 +214,12 @@ view session =
                     [ class "card-board-tab-header-spacer" ]
                     []
                 ]
-            , Html.div [ class "card-board-boards" ]
+            , Html.Keyed.node "div"
+                [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.mapSelectedAndRest
-                        (selectedBoardView ignoreFileNameDates timeWithZone)
-                        (boardView ignoreFileNameDates timeWithZone)
+                        (keyedSelectedBoardView ignoreFileNameDates timeWithZone)
+                        (keyedBoardView ignoreFileNameDates timeWithZone)
                     |> SafeZipper.toList
                 )
             ]
@@ -312,6 +314,11 @@ tabHeaderClass currentBoardIndex index =
             ""
 
 
+keyedBoardView : Bool -> TimeWithZone -> Board -> ( String, Html Msg )
+keyedBoardView ignoreFileNameDates timeWithZone board =
+    ( Board.id board, Html.Lazy.lazy3 boardView ignoreFileNameDates timeWithZone board )
+
+
 boardView : Bool -> TimeWithZone -> Board -> Html Msg
 boardView ignoreFileNameDates timeWithZone board =
     Html.div
@@ -324,6 +331,11 @@ boardView ignoreFileNameDates timeWithZone board =
                 |> List.indexedMap (\index column -> columnView index timeWithZone column)
             )
         ]
+
+
+keyedSelectedBoardView : Bool -> TimeWithZone -> Board -> ( String, Html Msg )
+keyedSelectedBoardView ignoreFileNameDates timeWithZone board =
+    ( Board.id board, Html.Lazy.lazy3 selectedBoardView ignoreFileNameDates timeWithZone board )
 
 
 selectedBoardView : Bool -> TimeWithZone -> Board -> Html Msg
