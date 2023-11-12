@@ -185,9 +185,10 @@ view session =
             ignoreFileNameDates =
                 Session.ignoreFileNameDates session
 
-            timeWithZone : TimeWithZone
-            timeWithZone =
+            today : Date
+            today =
                 Session.timeWithZone session
+                    |> TimeWithZone.toDate
         in
         Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
             [ Html.div [ class "workspace-tab-header-container" ]
@@ -218,8 +219,8 @@ view session =
                 [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.mapSelectedAndRest
-                        (keyedSelectedBoardView ignoreFileNameDates timeWithZone)
-                        (keyedBoardView ignoreFileNameDates timeWithZone)
+                        (keyedSelectedBoardView ignoreFileNameDates today)
+                        (keyedBoardView ignoreFileNameDates today)
                     |> SafeZipper.toList
                 )
             ]
@@ -314,43 +315,43 @@ tabHeaderClass currentBoardIndex index =
             ""
 
 
-keyedBoardView : Bool -> TimeWithZone -> Board -> ( String, Html Msg )
-keyedBoardView ignoreFileNameDates timeWithZone board =
-    ( Board.id board, Html.Lazy.lazy3 boardView ignoreFileNameDates timeWithZone board )
+keyedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
+keyedBoardView ignoreFileNameDates today board =
+    ( Board.id board, Html.Lazy.lazy3 boardView ignoreFileNameDates today board )
 
 
-boardView : Bool -> TimeWithZone -> Board -> Html Msg
-boardView ignoreFileNameDates timeWithZone board =
+boardView : Bool -> Date -> Board -> Html Msg
+boardView ignoreFileNameDates today board =
     Html.div
         [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone
-                |> List.indexedMap (\index column -> columnView index timeWithZone column)
+                |> Board.columns ignoreFileNameDates today
+                |> List.indexedMap (\index column -> columnView index today column)
             )
         ]
 
 
-keyedSelectedBoardView : Bool -> TimeWithZone -> Board -> ( String, Html Msg )
-keyedSelectedBoardView ignoreFileNameDates timeWithZone board =
-    ( Board.id board, Html.Lazy.lazy3 selectedBoardView ignoreFileNameDates timeWithZone board )
+keyedSelectedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
+keyedSelectedBoardView ignoreFileNameDates today board =
+    ( Board.id board, Html.Lazy.lazy3 selectedBoardView ignoreFileNameDates today board )
 
 
-selectedBoardView : Bool -> TimeWithZone -> Board -> Html Msg
-selectedBoardView ignoreFileNameDates timeWithZone board =
+selectedBoardView : Bool -> Date -> Board -> Html Msg
+selectedBoardView ignoreFileNameDates today board =
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone
-                |> List.indexedMap (\index column -> columnView index timeWithZone column)
+                |> Board.columns ignoreFileNameDates today
+                |> List.indexedMap (\index column -> columnView index today column)
             )
         ]
 
 
-columnView : Int -> TimeWithZone -> Column Card -> Html Msg
-columnView columnIndex timeWithZone column =
+columnView : Int -> Date -> Column Card -> Html Msg
+columnView columnIndex today column =
     let
         columnCollapsedAria : String
         columnCollapsedAria =
@@ -398,12 +399,12 @@ columnView columnIndex timeWithZone column =
                 [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView timeWithZone) (Column.items column))
+            (List.map (cardView today) (Column.items column))
         ]
 
 
-cardView : TimeWithZone -> Card -> ( String, Html Msg )
-cardView timeWithZone card =
+cardView : Date -> Card -> ( String, Html Msg )
+cardView today card =
     let
         cardId : String
         cardId =
@@ -419,7 +420,7 @@ cardView timeWithZone card =
 
         highlightAreaClass : String
         highlightAreaClass =
-            case Card.highlight timeWithZone card of
+            case Card.highlight today card of
                 Card.HighlightCritical ->
                     "critical"
 

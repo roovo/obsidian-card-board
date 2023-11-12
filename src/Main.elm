@@ -5,6 +5,7 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
+import Date exposing (Date)
 import DragAndDrop.DragData exposing (DragData)
 import Filter exposing (Filter)
 import Html exposing (Html)
@@ -23,6 +24,7 @@ import TaskItem
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 main : Program JD.Value Model Msg
@@ -306,12 +308,17 @@ cmdForFilterPathRename newPath session =
 cmdForTaskRedraws : String -> Session -> Cmd Msg
 cmdForTaskRedraws newPath session =
     let
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
         cards : List Card
         cards =
             Session.taskList session
                 |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
                 |> Boards.init (Session.uniqueId session) (Session.columnNames session) (Session.boardConfigs session)
-                |> Boards.cards (Session.ignoreFileNameDates session) (Session.timeWithZone session)
+                |> Boards.cards (Session.ignoreFileNameDates session) today
     in
     if List.isEmpty cards then
         Cmd.none

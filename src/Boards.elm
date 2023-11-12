@@ -13,9 +13,9 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -49,12 +49,12 @@ titles (Boards _ _ configs _) =
     SafeZipper.map tabTitle configs
 
 
-cards : Bool -> TimeWithZone -> Boards -> List Card
-cards ignoreFileNameDates timeWithZone boards_ =
+cards : Bool -> Date -> Boards -> List Card
+cards ignoreFileNameDates today boards_ =
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.map (Board.columns ignoreFileNameDates timeWithZone)
+        |> List.map (Board.columns ignoreFileNameDates today)
         |> List.concat
         |> List.map Column.items
         |> List.concat

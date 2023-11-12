@@ -10,12 +10,12 @@ import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import DateBoardColumns exposing (DateBoardColumns)
 import Filter exposing (Filter, Polarity, Scope)
 import TagBoardColumns exposing (TagBoardColumns)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -39,14 +39,14 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : Bool -> TimeWithZone -> Board -> List (Column Card)
-columns ignoreFileNameDates timeWithZone ((Board uniqueId columnNames config taskList) as board) =
+columns : Bool -> Date -> Board -> List (Column Card)
+columns ignoreFileNameDates today ((Board uniqueId columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let
                 emptyDateBoardColumns : DateBoardColumns
                 emptyDateBoardColumns =
-                    DateBoardColumns.init timeWithZone columnNames dateBoardConfig
+                    DateBoardColumns.init today columnNames dateBoardConfig
             in
             taskList
                 |> filterTaskList config

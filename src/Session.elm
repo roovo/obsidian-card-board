@@ -138,7 +138,7 @@ cards ((Session config) as session) =
     session
         |> taskList
         |> Boards.init config.uniqueId (columnNames session) (Settings.boardConfigs config.settings)
-        |> Boards.cards (ignoreFileNameDates session) config.timeWithZone
+        |> Boards.cards (ignoreFileNameDates session) (TimeWithZone.toDate config.timeWithZone)
 
 
 columnNames : Session -> ColumnNames

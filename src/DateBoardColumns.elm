@@ -10,9 +10,9 @@ import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.Date as DateColumn exposing (DateColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import DateBoardConfig exposing (DateBoardConfig)
 import TaskItem exposing (TaskItem)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -24,7 +24,7 @@ type DateBoardColumns
 
 
 type alias Config =
-    { now : TimeWithZone
+    { today : Date
     , undatedColumn : UndatedColumn
     , dateColumns : List DateColumn
     , completedColumn : CompletedColumn
@@ -35,8 +35,8 @@ type alias Config =
 -- BUILDING
 
 
-init : TimeWithZone -> ColumnNames -> DateBoardConfig -> DateBoardColumns
-init now columnNames dateBoardConfig =
+init : Date -> ColumnNames -> DateBoardConfig -> DateBoardColumns
+init today columnNames dateBoardConfig =
     let
         todayName : String
         todayName =
@@ -51,7 +51,7 @@ init now columnNames dateBoardConfig =
             ColumnNames.nameFor "future" columnNames
     in
     DateBoardColumns
-        { now = now
+        { today = today
         , undatedColumn = UndatedColumn.init dateBoardConfig columnNames
         , dateColumns =
             [ DateColumn.init dateBoardConfig { name = todayName, from = Nothing, to = Just 0 }
@@ -75,7 +75,7 @@ addTaskItem taskItem (DateBoardColumns config) =
 
         addToDateColumn : DateColumn -> ( DateColumn, PlacementResult )
         addToDateColumn dateColumn =
-            DateColumn.addTaskItem config.now taskItem dateColumn
+            DateColumn.addTaskItem config.today taskItem dateColumn
 
         addToDateColumns : ( Config, List PlacementResult ) -> ( Config, List PlacementResult )
         addToDateColumns ( c, prs ) =

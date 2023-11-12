@@ -4,6 +4,7 @@
     - see https://blog.noredink.com/post/186724971283/drag-drop-without-draggables-dropzones
 - or let elm know drag has finihsed with a mouse up
 
+- switch to the moved board when finished dragging
 - handle drag stop
 - show ghost item when dragging
 - make beaconIdentifier = "card-board-tag-header", not "data-card-board-tag-header-beacon" (apart from in the html)
