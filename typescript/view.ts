@@ -381,6 +381,8 @@ export class CardBoardView extends ItemView {
           const offsetLeft = appContainer.clientWidth - tabContainer.clientWidth;
           const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
 
+          const draggedElementRect = draggedElement.getBoundingClientRect();
+
           that.elm.ports.interopToElm.send({
             tag: "elementDragged",
             data: {
@@ -388,7 +390,12 @@ export class CardBoardView extends ItemView {
               dragAction: dragAction,
               cursor: coords(event),
               offset: { x: offsetLeft, y: offsetTop },
-              draggedNodeSize: { height: draggedElement.clientHeight, width: draggedElement.clientWidth },
+              draggedNodeRect: {
+                x: draggedElementRect.x,
+                y: draggedElementRect.y,
+                width: draggedElementRect.width,
+                height: draggedElementRect.height
+              },
               beacons: beaconPositions(data.beaconIdentifier)
             }
           });

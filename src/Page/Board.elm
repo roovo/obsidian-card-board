@@ -75,7 +75,7 @@ update msg session =
                             )
 
                         Session.Waiting dragTracker ->
-                            ( Session.trackDraggable dragTracker dragData.draggedNodeSize session
+                            ( Session.trackDraggable dragTracker dragData.draggedNodeRect session
                             , Cmd.none
                             , Session.NoOp
                             )
@@ -282,7 +282,7 @@ selectedTabHeader isDragging tabIndex title =
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
                         (Coords.fromFloatTuple ( 0, 0 ))
-                        { width = 0, height = 0 }
+                        { x = 0, y = 0, width = 0, height = 0 }
                     )
             )
         ]
@@ -306,8 +306,8 @@ viewDraggedHeader session =
                 , style "position" "fixed"
                 , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offset.y - dragTracker.offsetPos.y) ++ "px")
                 , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
-                , style "width" (String.fromFloat dragTracker.draggedNodeSize.width ++ "px")
-                , style "height" (String.fromFloat dragTracker.draggedNodeSize.height ++ "px")
+                , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
+                , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
@@ -347,7 +347,7 @@ tabHeader isDragging currentBoardIndex tabIndex title =
                         (Coords.fromFloatTuple e.clientPos)
                         (Coords.fromFloatTuple e.offsetPos)
                         (Coords.fromFloatTuple ( 0, 0 ))
-                        { width = 0, height = 0 }
+                        { x = 0, y = 0, width = 0, height = 0 }
                     )
             )
         ]

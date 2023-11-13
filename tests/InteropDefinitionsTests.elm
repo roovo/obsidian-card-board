@@ -627,7 +627,7 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes elementDragged data" <|
             \() ->
-                """{"tag":"elementDragged","data":{"beaconIdentifier":"some-beacon-id","dragAction":"stop","cursor":{"x":1.23,"y":4.56},"offset":{"x":1.11,"y":2.22},"draggedNodeSize":{"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
+                """{"tag":"elementDragged","data":{"beaconIdentifier":"some-beacon-id","dragAction":"stop","cursor":{"x":1.23,"y":4.56},"offset":{"x":1.11,"y":2.22},"draggedNodeRect":{"x":1.1,"y":2.2,"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal
@@ -637,7 +637,7 @@ toElmTests =
                                 , dragAction = DragData.Stop
                                 , cursor = { x = 1.23, y = 4.56 }
                                 , offset = { x = 1.11, y = 2.22 }
-                                , draggedNodeSize = { width = 3.33, height = 4.44 }
+                                , draggedNodeRect = { x = 1.1, y = 2.2, width = 3.33, height = 4.44 }
                                 , beacons =
                                     [ { beaconPosition = BeaconPosition.Before "someId"
                                       , rect = { x = 1.1, y = 2.2, width = 3.3, height = 4.4 }

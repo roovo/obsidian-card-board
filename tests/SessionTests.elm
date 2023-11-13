@@ -177,7 +177,9 @@ trackDragable =
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
                         )
+                        { x = 0, y = 0, width = 0, height = 0 }
                     |> Session.dragStatus
                     |> Expect.equal
                         (Session.Dragging <|
@@ -185,6 +187,7 @@ trackDragable =
                                 { x = 0, y = 0 }
                                 { x = 0, y = 0 }
                                 { x = 0, y = 0 }
+                                { x = 0, y = 0, width = 0, height = 0 }
                         )
         ]
 
@@ -207,7 +210,9 @@ updateDragPositions =
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
                         )
+                        { x = 0, y = 0, width = 0, height = 0 }
                     |> Session.updateDragPositions { x = 10, y = 20 }
                         { x = 100, y = 200 }
                     |> Session.dragStatus
@@ -217,6 +222,7 @@ updateDragPositions =
                                 { x = 10, y = 20 }
                                 { x = 0, y = 0 }
                                 { x = 100, y = 200 }
+                                { x = 0, y = 0, width = 0, height = 0 }
                         )
         ]
 
@@ -232,7 +238,9 @@ stopTrackingDragable =
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
                             { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
                         )
+                        { x = 0, y = 0, width = 0, height = 0 }
                     |> Session.stopTrackingDragable
                     |> Session.dragStatus
                     |> Expect.equal Session.NotDragging
