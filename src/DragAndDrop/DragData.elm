@@ -18,7 +18,7 @@ import TsJson.Decode as TsDecode
 
 
 type alias DragData =
-    { beaconIdentifier : String
+    { beaconType : String
     , dragAction : DragAction
     , cursor : Coords
     , offset : Coords
@@ -54,7 +54,7 @@ type alias DragTracker =
 decoder : TsDecode.Decoder DragData
 decoder =
     TsDecode.succeed DragData
-        |> TsDecode.andMap (TsDecode.field "beaconIdentifier" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "beaconType" TsDecode.string)
         |> TsDecode.andMap dragActionDecoder
         |> TsDecode.andMap (TsDecode.field "cursor" Coords.decoder)
         |> TsDecode.andMap (TsDecode.field "offset" Coords.decoder)

@@ -46,8 +46,8 @@ type Msg
     | ToggleColumnCollapse Int Bool
 
 
-beaconIdentifier : String
-beaconIdentifier =
+beaconType : String
+beaconType =
     "data-card-board-tag-header-beacon"
 
 
@@ -102,7 +102,7 @@ update msg session =
 
         TabHeaderMouseDown ( tabId, dragTracker ) ->
             ( Session.waitForDrag dragTracker session
-            , InteropPorts.trackDraggable beaconIdentifier dragTracker.clientPos tabId
+            , InteropPorts.trackDraggable beaconType dragTracker.clientPos tabId
             , Session.NoOp
             )
 
@@ -364,7 +364,7 @@ tabHeader isDragging currentBoardIndex tabIndex title =
 beacon : BeaconPosition -> Html Msg
 beacon beaconPosition =
     Html.span
-        [ attribute beaconIdentifier (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
         , style "font-size" "0"
         ]
         []

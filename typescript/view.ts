@@ -327,7 +327,7 @@ export class CardBoardView extends ItemView {
 
   async handleTrackDraggable(
     data : {
-      beaconIdentifier: string,
+      beaconType: string,
       clientPos : { x: number, y: number },
       draggableId: string
     }
@@ -386,7 +386,7 @@ export class CardBoardView extends ItemView {
           that.elm.ports.interopToElm.send({
             tag: "elementDragged",
             data: {
-              beaconIdentifier: data.beaconIdentifier,
+              beaconType: data.beaconType,
               dragAction: dragAction,
               cursor: coords(event),
               offset: { x: offsetLeft, y: offsetTop },
@@ -396,20 +396,20 @@ export class CardBoardView extends ItemView {
                 width: draggedElementRect.width,
                 height: draggedElementRect.height
               },
-              beacons: beaconPositions(data.beaconIdentifier)
+              beacons: beaconPositions(data.beaconType)
             }
           });
       }
     }
 
-    function beaconPositions(beaconIdentifier: String) {
-      const beaconElements = document.querySelectorAll(`[${beaconIdentifier}]`);
+    function beaconPositions(beaconType: String) {
+      const beaconElements = document.querySelectorAll(`[${beaconType}]`);
       return Array.from(beaconElements).map(beaconData);
     }
 
     function beaconData(elem: Element) {
       const boundingRect = elem.getBoundingClientRect();
-      const beaconId = elem.getAttribute(data.beaconIdentifier);
+      const beaconId = elem.getAttribute(data.beaconType);
       return {
         beaconPosition: tryParse(beaconId),
         rect: {
