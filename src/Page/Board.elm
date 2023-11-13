@@ -268,6 +268,7 @@ tabHeaders isDragging currentBoardIndex boards =
 selectedTabHeader : Bool -> Int -> String -> Html Msg
 selectedTabHeader isDragging tabIndex title =
     let
+        tabId : String
         tabId =
             "card-board-tab:" ++ String.fromInt tabIndex
     in
@@ -335,6 +336,7 @@ tabHeader isDragging currentBoardIndex tabIndex title =
         headerClass =
             tabHeaderClass currentBoardIndex tabIndex
 
+        tabId : String
         tabId =
             "card-board-tab:" ++ String.fromInt tabIndex
     in
@@ -632,7 +634,7 @@ attributeIf condition attribute =
         attribute
 
     else
-        Html.Attributes.class ""
+        class ""
 
 
 empty : Html Msg
@@ -640,7 +642,7 @@ empty =
     Html.text ""
 
 
-onClickWithPreventDefault : msg -> Html.Attribute msg
+onClickWithPreventDefault : msg -> Attribute msg
 onClickWithPreventDefault msg =
     Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
 

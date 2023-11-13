@@ -272,6 +272,7 @@ timeWIthZoneIs zone time (Session config) =
 trackDraggable : DragTracker -> Rect -> Session -> Session
 trackDraggable dragTracker draggedNodeRect (Session config) =
     let
+        newTracker : DragTracker
         newTracker =
             { dragTracker | draggedNodeRect = draggedNodeRect }
     in
@@ -291,6 +292,7 @@ updateDragPositions newPosition newOffset ((Session config) as session) =
 
         Waiting dragTracker ->
             let
+                newTracker : DragTracker
                 newTracker =
                     { dragTracker
                         | clientPos = newPosition
@@ -301,6 +303,7 @@ updateDragPositions newPosition newOffset ((Session config) as session) =
 
         Dragging dragTracker ->
             let
+                newTracker : DragTracker
                 newTracker =
                     { dragTracker
                         | clientPos = newPosition
