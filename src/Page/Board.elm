@@ -304,7 +304,7 @@ viewDraggedHeader session =
                 [ class "workspace-tab-header is-active"
                 , id <| "card-board-tab:being-dragged"
                 , style "position" "fixed"
-                , style "top" (String.fromFloat (dragTracker.clientPos.y - dragTracker.offset.y - dragTracker.offsetPos.y) ++ "px")
+                , style "top" (String.fromFloat (dragTracker.draggedNodeRect.y - dragTracker.offset.y) ++ "px")
                 , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
                 , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
                 , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
