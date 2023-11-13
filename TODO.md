@@ -1,15 +1,8 @@
-- check for mouse down on draggale element in elm
-- send command to js to track mouse - giving dragable beacon prefix
-- in js send drag updates back to elm passing the matching beacon positions
-    - see https://blog.noredink.com/post/186724971283/drag-drop-without-draggables-dropzones
-- or let elm know drag has finihsed with a mouse up
-
-- set cursor to dragging when dragging
-- can I animate tab moving so it isn't instantaneous?
-- touch events - iPad ??
 - enable reorder boards on settings page too
 - tidy typescript
 
+- can I animate tab moving so it isn't instantaneous?
+- touch events - iPad ??
 
 # Cleanups
 - simplify parsing as per typing tutor

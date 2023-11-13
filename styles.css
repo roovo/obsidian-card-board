@@ -45,6 +45,10 @@
   margin-top: var(--header-height);
 }
 
+.card-board-view .workspace-tab-header {
+  cursor: grab;
+}
+
 .card-board-view .workspace-tab-header.is-active {
   background-color: var(--background-primary);
 }

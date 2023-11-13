@@ -217,7 +217,10 @@ view session =
                     Session.Waiting _ ->
                         False
         in
-        Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
+        Html.div
+            [ attribute "dir" (TextDirection.toString <| Session.textDirection session)
+            , attributeIf isDragging (style "cursor" "grabbing")
+            ]
             [ Html.div [ class "workspace-tab-header-container" ]
                 [ Html.div
                     [ class "sidebar-toggle-button"
@@ -274,6 +277,7 @@ selectedTabHeader isDragging tabIndex title =
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
+        , attributeIf isDragging (style "cursor" "grabbing")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
@@ -308,6 +312,7 @@ viewDraggedHeader session =
                 , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
                 , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
                 , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
+                , style "cursor" "grabbing"
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
@@ -336,6 +341,7 @@ tabHeader isDragging currentBoardIndex tabIndex title =
     Html.div
         [ id tabId
         , class ("workspace-tab-header" ++ headerClass)
+        , attributeIf isDragging (style "cursor" "grabbing")
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , onClick <| TabSelected tabIndex
