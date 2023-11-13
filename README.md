@@ -15,12 +15,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Added a Global Setting to disable using daily note dates as the due date
-  for tasks.
-- You can now add @due(none) to a task line if you want to turn off using the
-  daily note date as the due date for a specific task on a daily note page.
-- Fixed issue where cards would display with no text on them if you split the
-  CardBoard window to the right or down.
+- Board reordering - drag and drop the tab headers
+- Improved styling of tab headers (consistent with obsidian)
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -82,7 +78,7 @@ It will look something like this on a card on your board:
 
 ![example card](/images/card.png?raw=true)
 
-#### Marking a task as complete
+### Marking a task as complete
 If you mark an task as complete on the board it will be marked as completed in the markdown
 (and vice-versa).  If you mark as complete on the board, a completion timestamp is appended
 to the task:
@@ -146,7 +142,15 @@ along the lines of:
 This will style the tag `#foo/bar` wherever it appears in the CardBoard view with your favorite
 color for foo/bars, which just has to be HotPink :)
 
-## Date boards
+## Boards
+Two board types supported:
+  - Date based (with daily/periodic notes support).
+  - Tag based (uses `#tags` to define your boards).
+
+### Reordering boards
+Boards can be reordered by dragging their tabs on the main view.
+
+### Date boards
 You will get the best out of these if you are using the (core) Daily Notes
 or the (community) Periodic Notes plugins, as any tasks you place on a daily
 note will be assigned to the day of the note.  If you do not want this behaviour
@@ -177,7 +181,7 @@ You can turn off the due date for a specific task on a daily note page:
 - [ ] My task @due(none)
 ```
 
-### Overdue tasks
+#### Overdue tasks
 These will appear in the `Today` column above any  any tasks that are actually
 due today.
 
@@ -187,12 +191,12 @@ encouraging you to do something about them; like do them or move them to a futur
 date if you want to schedule them later.
 
 
-### Completed tasks
+#### Completed tasks
 If you choose to show completed tasks on your date board, you will only see
 completed tasks which have a due date unless the Undated column is enabled.
 
 
-## Tag boards
+### Tag boards
 If you give your tasks tags, you can use these to set up a tag-board.  So if you
 have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
 you can define a board that shows tasks tagged with these in separate columns:
@@ -200,13 +204,13 @@ you can define a board that shows tasks tagged with these in separate columns:
 ![tag board settingx](/images/tagBoardSettings.png?raw=true)
 
 
-### Sub-tasks
+#### Sub-tasks
 Tasks which have sub-tasks with matching tags will also appear on the board.
 
-### Subtags
+#### Subtags
 If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
 
-### Front Matter Tags
+#### Front Matter Tags
 If you want to give all the tasks on a page the same tag, you can put it in the
 page front matter:
 
@@ -220,13 +224,13 @@ tags: [ project1 ]
 - [ ] this task will automatically have a project1 tag
 ```
 
-### Hiding Tags
+#### Hiding Tags
 If you don't want to see the tags used to configure the board's columns on the cards,
 you can show/hide them in the settings.  If you choose not to show the column tags,
 this will hide all the tags used in the settings wherever cards are on the board.
 Only tags that exactly match those used in the settings will be hidden.
 
-### Completed tasks
+#### Completed tasks
 When a task is shown in a column due to tags on sub-tasks it will only show in that
 column if those subtasks are incomplete.  So the following
 task is shown only in the Barney column as the Wilma sub-task is complete:
@@ -244,7 +248,7 @@ the completed column too; only tasks which would appear on the board if all task
 subtasks were marked as incomplete can ever be in the Completed column.
 
 
-## Board Filters
+### Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
 types of filter you can use: file, path, and #tags (which includes front matter tags).  You can
 use any combination of these on a per-board basis.
@@ -258,7 +262,6 @@ You can also:
 Filters are applied before tasks are placed onto a board:
 
 ![filters](/images/filters.png?raw=true)
-
 
 
 ## Settings
@@ -369,9 +372,9 @@ There are others too, see the wonderful
 
 ## Contributing
 I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
-project.  However, if you want to mess around with the code then see
-[contributing doc](CONTRIBUTING.md) for more info on getting a dev environment set
-up and running.
+project so I am not accepting pull requests.  However, if you want to mess around
+with the code then see [contributing doc](CONTRIBUTING.md) for more info on getting
+a dev environment set up and running.
 
 If you have any thoughts, ideas, bugs n stuff:
 

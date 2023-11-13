@@ -1,7 +1,6 @@
 # Contributing
-I am working on this myself for now; it's my do-some-coding-when-I-have-some-time
-project.
-
+I am working on this myself for now so I am not accepting pull requests; it's my
+do-some-coding-when-I-have-some-time project.
 
 ## Set up a dev environmant
 To get up and running:
