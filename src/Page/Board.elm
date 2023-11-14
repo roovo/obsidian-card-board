@@ -240,8 +240,8 @@ view session =
                     ]
                 , Html.div
                     [ class "workspace-tab-header-container-inner" ]
-                    (viewDraggedHeader session
-                        :: tabHeaders isDragging currentBoardIndex boards
+                    (tabHeaders isDragging currentBoardIndex boards
+                        ++ [ viewDraggedHeader session ]
                     )
                 , Html.div
                     [ class "card-board-tab-header-spacer" ]
@@ -265,6 +265,45 @@ tabHeaders isDragging currentBoardIndex boards =
         |> SafeZipper.toList
 
 
+tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
+tabHeader isDragging currentBoardIndex tabIndex title =
+    let
+        headerClass : String
+        headerClass =
+            tabHeaderClass currentBoardIndex tabIndex
+
+        tabId : String
+        tabId =
+            "card-board-tab:" ++ String.fromInt tabIndex
+    in
+    Html.div
+        [ id tabId
+        , class ("workspace-tab-header" ++ headerClass)
+        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
+        , onClick <| TabSelected tabIndex
+        , onDown
+            (\e ->
+                TabHeaderMouseDown <|
+                    ( tabId
+                    , DragTracker title
+                        (Coords.fromFloatTuple e.clientPos)
+                        (Coords.fromFloatTuple e.offsetPos)
+                        (Coords.fromFloatTuple ( 0, 0 ))
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    )
+            )
+        ]
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ class "workspace-tab-header-inner" ]
+            [ Html.div [ class "workspace-tab-header-inner-title" ]
+                [ Html.text <| title ]
+            ]
+        , beacon (BeaconPosition.After title)
+        ]
+
+
 selectedTabHeader : Bool -> Int -> String -> Html Msg
 selectedTabHeader isDragging tabIndex title =
     let
@@ -278,7 +317,6 @@ selectedTabHeader isDragging tabIndex title =
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
-        , attributeIf isDragging (style "cursor" "grabbing")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
@@ -314,6 +352,7 @@ viewDraggedHeader session =
                 , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
                 , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
                 , style "cursor" "grabbing"
+                , style "opacity" "0.85"
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
@@ -327,46 +366,6 @@ viewDraggedHeader session =
 
         Session.NotDragging ->
             empty
-
-
-tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
-tabHeader isDragging currentBoardIndex tabIndex title =
-    let
-        headerClass : String
-        headerClass =
-            tabHeaderClass currentBoardIndex tabIndex
-
-        tabId : String
-        tabId =
-            "card-board-tab:" ++ String.fromInt tabIndex
-    in
-    Html.div
-        [ id tabId
-        , class ("workspace-tab-header" ++ headerClass)
-        , attributeIf isDragging (style "cursor" "grabbing")
-        , attributeIf (not isDragging) (attribute "aria-label" title)
-        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
-        , onClick <| TabSelected tabIndex
-        , onDown
-            (\e ->
-                TabHeaderMouseDown <|
-                    ( tabId
-                    , DragTracker title
-                        (Coords.fromFloatTuple e.clientPos)
-                        (Coords.fromFloatTuple e.offsetPos)
-                        (Coords.fromFloatTuple ( 0, 0 ))
-                        { x = 0, y = 0, width = 0, height = 0 }
-                    )
-            )
-        ]
-        [ beacon (BeaconPosition.Before title)
-        , Html.div
-            [ class "workspace-tab-header-inner" ]
-            [ Html.div [ class "workspace-tab-header-inner-title" ]
-                [ Html.text <| title ]
-            ]
-        , beacon (BeaconPosition.After title)
-        ]
 
 
 beacon : BeaconPosition -> Html Msg
