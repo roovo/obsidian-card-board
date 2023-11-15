@@ -2,6 +2,7 @@ module Column.DateTests exposing (suite)
 
 import Column
 import Column.Date as DateColumn exposing (DateColumn)
+import Date exposing (Date)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
@@ -11,7 +12,6 @@ import Parser
 import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
-import TimeWithZone exposing (TimeWithZone)
 
 
 suite : Test
@@ -31,7 +31,7 @@ addTaskItem =
         [ test "Places an incomplete task item with a matching due date" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 0))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 0))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -39,7 +39,7 @@ addTaskItem =
         , test "DoesNotBelong an incomplete task item with no due date" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem "- [ ] foo")
+                    |> DateColumn.addTaskItem today (taskItem "- [ ] foo")
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -47,7 +47,7 @@ addTaskItem =
         , test "DoesNotBelong an incomplete task item outside the top of the date range" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 1))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 1))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -55,7 +55,7 @@ addTaskItem =
         , test "DoesNotBelong an incomplete task item outside the bottom of the date range" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString -1))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString -1))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -63,7 +63,7 @@ addTaskItem =
         , test "Places an incomplete task item at the top of the range when there is no range bottom" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Nothing, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 0))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 0))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -71,7 +71,7 @@ addTaskItem =
         , test "Places an earlier incomplete task item when there is no range bottom" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Nothing, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString -22))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString -22))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -79,7 +79,7 @@ addTaskItem =
         , test "DoesNotBelong an incomplete task item beyond the end when there is no range bottom" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Nothing, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 1))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 1))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -87,7 +87,7 @@ addTaskItem =
         , test "Places an incomplete task item at the bottom of the range when there is no range top" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Nothing }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 0))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 0))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -95,7 +95,7 @@ addTaskItem =
         , test "Places a later incomplete task item when there is no range top" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Nothing }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 15))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 15))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -103,7 +103,7 @@ addTaskItem =
         , test "DoesNotBelong an incomplete task item beyond the bottom of the range when there is no range top" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Nothing }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString -1))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString -1))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -111,7 +111,7 @@ addTaskItem =
         , test "Places a dated task item when there is no range bottom or top" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Nothing, to = Nothing }
-                    |> DateColumn.addTaskItem now (taskItem ("- [ ] foo " ++ dueString 0))
+                    |> DateColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 0))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -119,7 +119,7 @@ addTaskItem =
         , test "DoesNotBelong an un-dated task item when there is no range bottom or top" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Nothing, to = Nothing }
-                    |> DateColumn.addTaskItem now (taskItem "- [ ] foo")
+                    |> DateColumn.addTaskItem today (taskItem "- [ ] foo")
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -127,7 +127,7 @@ addTaskItem =
         , test "CompletedInThisColumn a completed task item with a matching due date" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [x] foo " ++ dueString 0))
+                    |> DateColumn.addTaskItem today (taskItem ("- [x] foo " ++ dueString 0))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -135,7 +135,7 @@ addTaskItem =
         , test "DoesNotBelong a completed task item with no due date" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem "- [x] foo")
+                    |> DateColumn.addTaskItem today (taskItem "- [x] foo")
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -143,7 +143,7 @@ addTaskItem =
         , test "DoesNotBelong a completed task item outside the top of the date range" <|
             \() ->
                 DateColumn.init defaultDateBoardConfig { name = "foo", from = Just 0, to = Just 0 }
-                    |> DateColumn.addTaskItem now (taskItem ("- [x] foo " ++ dueString 1))
+                    |> DateColumn.addTaskItem today (taskItem ("- [x] foo " ++ dueString 1))
                     |> Tuple.mapFirst DateColumn.asColumn
                     |> Tuple.mapFirst Column.items
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -244,9 +244,9 @@ dueString offset =
     "@due(" ++ DateTimeHelpers.offsetDateString offset ++ ")"
 
 
-now : TimeWithZone
-now =
-    DateTimeHelpers.offsetNowWithZone 0
+today : Date
+today =
+    DateTimeHelpers.todayDate
 
 
 defaultDateBoardConfig : DateBoardConfig
@@ -257,7 +257,7 @@ defaultDateBoardConfig =
 justAdd : TaskItem -> DateColumn -> DateColumn
 justAdd item column =
     column
-        |> DateColumn.addTaskItem now item
+        |> DateColumn.addTaskItem today item
         |> Tuple.first
 
 

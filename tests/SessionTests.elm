@@ -2,6 +2,7 @@ module SessionTests exposing (suite)
 
 import BoardConfig
 import DataviewTaskCompletion
+import DragAndDrop.DragData as DragData
 import Expect
 import Filter
 import GlobalSettings
@@ -24,7 +25,10 @@ suite =
         , finishAdding
         , globalSettings
         , replaceTaskItems
+        , trackDragable
+        , stopTrackingDragable
         , updatePath
+        , updateDragPositions
         ]
 
 
@@ -72,6 +76,11 @@ default =
                 Session.default
                     |> Session.isActiveView
                     |> Expect.equal False
+        , test "has dragStatus of NotDragging" <|
+            \() ->
+                Session.default
+                    |> Session.dragStatus
+                    |> Expect.equal Session.NotDragging
         , test "has default Settings" <|
             \() ->
                 Session.default
@@ -157,28 +166,84 @@ globalSettings =
         ]
 
 
-updatePath : Test
-updatePath =
-    describe "updatePath"
-        [ test "updates taskList paths" <|
+trackDragable : Test
+trackDragable =
+    describe "trackDragable"
+        [ test "tracks a TabHeader" <|
             \() ->
                 Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.updatePath "a" "b"
-                    |> Session.taskList
-                    |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
-                    |> Expect.equal [ "b", "b" ]
-        , test "updates filter paths" <|
+                    |> Session.trackDraggable
+                        (DragData.DragTracker "3"
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
+                        )
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    |> Session.dragStatus
+                    |> Expect.equal
+                        (Session.Dragging <|
+                            DragData.DragTracker "3"
+                                { x = 0, y = 0 }
+                                { x = 0, y = 0 }
+                                { x = 0, y = 0 }
+                                { x = 0, y = 0, width = 0, height = 0 }
+                        )
+        ]
+
+
+updateDragPositions : Test
+updateDragPositions =
+    describe "updateDragPositions"
+        [ test "does nothing if not dragging" <|
             \() ->
                 Session.default
-                    |> Session.updateSettings exampleSettings
-                    |> Session.updatePath "a/path" "a"
-                    |> Session.updatePath "b/path" "b"
-                    |> Session.boardConfigs
-                    |> SafeZipper.toList
-                    |> List.concatMap BoardConfig.filters
-                    |> List.map Filter.value
-                    |> Expect.equal [ "a", "b", "tag1", "tag2" ]
+                    |> Session.updateDragPositions { x = 10, y = 20 }
+                        { x = 100, y = 200 }
+                    |> Session.dragStatus
+                    |> Expect.equal Session.NotDragging
+        , test "updates the tracked client position if dragging" <|
+            \() ->
+                Session.default
+                    |> Session.trackDraggable
+                        (DragData.DragTracker "3"
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
+                        )
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    |> Session.updateDragPositions { x = 10, y = 20 }
+                        { x = 100, y = 200 }
+                    |> Session.dragStatus
+                    |> Expect.equal
+                        (Session.Dragging <|
+                            DragData.DragTracker "3"
+                                { x = 10, y = 20 }
+                                { x = 0, y = 0 }
+                                { x = 100, y = 200 }
+                                { x = 0, y = 0, width = 0, height = 0 }
+                        )
+        ]
+
+
+stopTrackingDragable : Test
+stopTrackingDragable =
+    describe "stopTrackingDragable"
+        [ test "stops tracking a TabHeader" <|
+            \() ->
+                Session.default
+                    |> Session.trackDraggable
+                        (DragData.DragTracker "3"
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0 }
+                            { x = 0, y = 0, width = 0, height = 0 }
+                        )
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    |> Session.stopTrackingDragable
+                    |> Session.dragStatus
+                    |> Expect.equal Session.NotDragging
         ]
 
 
@@ -211,6 +276,31 @@ replaceTaskItems =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "n1", "n2", "a1", "a2" ]
+        ]
+
+
+updatePath : Test
+updatePath =
+    describe "updatePath"
+        [ test "updates taskList paths" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.updatePath "a" "b"
+                    |> Session.taskList
+                    |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
+                    |> Expect.equal [ "b", "b" ]
+        , test "updates filter paths" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings exampleSettings
+                    |> Session.updatePath "a/path" "a"
+                    |> Session.updatePath "b/path" "b"
+                    |> Session.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.concatMap BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "a", "b", "tag1", "tag2" ]
         ]
 
 

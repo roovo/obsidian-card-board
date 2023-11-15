@@ -46,7 +46,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -77,7 +77,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Completed"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -99,7 +99,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -117,7 +117,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -136,7 +136,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -155,7 +155,7 @@ columnsDateBoard =
                                     , filterScope = Filter.TopLevelOnly
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -174,7 +174,7 @@ columnsDateBoard =
                                     , filterScope = Filter.SubTasksOnly
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -196,7 +196,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -223,7 +223,7 @@ columnsDateBoard =
                                     , filterScope = Filter.TopLevelOnly
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -252,7 +252,7 @@ columnsDateBoard =
                                     , filterScope = Filter.SubTasksOnly
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -284,7 +284,7 @@ columnsDateBoard =
                                     , filterScope = Filter.Both
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -312,7 +312,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Undated"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -333,7 +333,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -356,7 +356,7 @@ columnsDateBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -374,7 +374,7 @@ columnsDateBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -398,7 +398,7 @@ columnsDateBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Undated"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -423,7 +423,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -445,7 +445,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -470,7 +470,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -492,7 +492,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -517,7 +517,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -539,7 +539,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -569,7 +569,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Allow
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -597,7 +597,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
                         |> List.map Card.taskItem
                         |> List.map TaskItem.title
@@ -618,7 +618,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -642,7 +642,7 @@ columnsTagBoard =
                                     , filterPolarity = Filter.Deny
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just False)
@@ -661,7 +661,7 @@ columnsTagBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)
@@ -686,7 +686,7 @@ columnsTagBoard =
                                     , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
                                 }
                             )
-                        |> Board.columns False DateTimeHelpers.nowWithZone 0
+                        |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.columnTitled "Others"
                         |> Maybe.map Column.isCollapsed
                         |> Expect.equal (Just True)

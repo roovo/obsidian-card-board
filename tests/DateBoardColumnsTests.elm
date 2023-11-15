@@ -2,6 +2,7 @@ module DateBoardColumnsTests exposing (suite)
 
 import Column
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import DateBoardColumns exposing (DateBoardColumns)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
@@ -11,7 +12,6 @@ import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
-import TimeWithZone exposing (TimeWithZone)
 
 
 suite : Test
@@ -92,7 +92,7 @@ addTaskItem =
         , test "does not add a completed task item with no due date to the completed column if includeUndated is False" <|
             \() ->
                 DateBoardColumns.init
-                    now
+                    today
                     ColumnNames.default
                     { defaultConfig | includeUndated = False }
                     |> DateBoardColumns.addTaskItem (taskItem "- [x] foo")
@@ -108,20 +108,20 @@ columns =
     describe "columns"
         [ test "default columns are just for undated today tomorrow future and completed" <|
             \() ->
-                DateBoardColumns.init now defaultColumnNames defaultConfig
+                DateBoardColumns.init today defaultColumnNames defaultConfig
                     |> DateBoardColumns.columns
                     |> List.map Column.name
                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
         , test "returns columns as defined in the config" <|
             \() ->
-                DateBoardColumns.init now defaultColumnNames { defaultConfig | completedCount = 0, includeUndated = False }
+                DateBoardColumns.init today defaultColumnNames { defaultConfig | completedCount = 0, includeUndated = False }
                     |> DateBoardColumns.columns
                     |> List.map Column.name
                     |> Expect.equal [ "Today", "Tomorrow", "Future" ]
         , test "allows the default date column names to be changed" <|
             \() ->
                 DateBoardColumns.init
-                    now
+                    today
                     { defaultColumnNames | today = Just "Foo", tomorrow = Just "Bar", future = Just "Baz" }
                     { defaultConfig | completedCount = 0, includeUndated = False }
                     |> DateBoardColumns.columns
@@ -152,14 +152,14 @@ dueString offset =
 emptyDateBoardColumns : DateBoardColumns
 emptyDateBoardColumns =
     DateBoardColumns.init
-        now
+        today
         ColumnNames.default
         { defaultConfig | includeUndated = True }
 
 
-now : TimeWithZone
-now =
-    DateTimeHelpers.offsetNowWithZone 0
+today : Date
+today =
+    DateTimeHelpers.todayDate
 
 
 taskItem : String -> TaskItem

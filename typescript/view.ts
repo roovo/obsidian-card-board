@@ -23,6 +23,7 @@ export class CardBoardView extends ItemView {
   private vault:  Vault;
   private plugin: CardBoardPlugin;
   private elm: ElmApp;
+  private elmDiv: any;
 
   constructor(
     plugin: CardBoardPlugin,
@@ -61,12 +62,12 @@ export class CardBoardView extends ItemView {
       }
     };
 
-    const elmDiv = document.createElement('div');
-    elmDiv.id = "elm-node";
-    this.containerEl.children[1].appendChild(elmDiv);
+    this.elmDiv = document.createElement('div');
+    this.elmDiv.id = "elm-node";
+    this.containerEl.children[1].appendChild(this.elmDiv);
 
     this.elm = Elm.Main.init({
-      node: elmDiv,
+      node: this.elmDiv,
       flags: mySettings
     })
 
@@ -99,6 +100,9 @@ export class CardBoardView extends ItemView {
           break;
         case "requestFilterCandidates":
           that.handleRequestFilterCandidates();
+          break;
+        case "trackDraggable":
+          that.handleTrackDraggable(fromElm.data);
           break;
         case "updateSettings":
           that.handleUpdateSettings(fromElm.data);
@@ -319,6 +323,124 @@ export class CardBoardView extends ItemView {
       tag: "filterCandidates",
       data: filterCandidates
     });
+  }
+
+  async handleTrackDraggable(
+    data : {
+      beaconType: string,
+      clientPos : { x: number, y: number },
+      draggableId: string
+    }
+  ) {
+    const MINIMUM_DRAG_PIXELS = 10;
+
+    const that = this;
+
+    const draggedElement = document.getElementById(data.draggableId);
+
+    document.addEventListener("mousemove", maybeDragMove);
+    document.addEventListener("mouseup", stopAwaitingDrag);
+
+    function maybeDragMove(moveEvent: MouseEvent) {
+      const dragDistance = distance({ x: data.clientPos.x, y: data.clientPos.y}, coords(moveEvent));
+
+      if (dragDistance >= MINIMUM_DRAG_PIXELS) {
+        dragEvent("move", moveEvent);
+
+        document.removeEventListener("mousemove", maybeDragMove);
+        document.removeEventListener("mouseup", stopAwaitingDrag);
+
+        document.addEventListener("mousemove", dragMove);
+        document.addEventListener("mouseup", dragEnd);
+      }
+    }
+
+    function dragMove(event: MouseEvent) {
+      dragEvent("move", event);
+    }
+
+    function dragEnd(event: MouseEvent) {
+      dragEvent("stop", event);
+      document.removeEventListener("mousemove", dragMove);
+      document.removeEventListener("mouseup", dragEnd);
+    }
+
+    function stopAwaitingDrag(event: MouseEvent) {
+      dragEvent("stop", event);
+      document.removeEventListener("mousemove", maybeDragMove);
+      document.removeEventListener("mouseup", stopAwaitingDrag);
+    }
+
+    function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
+      const appContainer  = document.getElementsByClassName("workspace")[0];
+      const tabContainer  = document.getElementsByClassName("workspace-tab-container")[1];
+      const rightSidebarContainer  = document.getElementsByClassName("workspace-tabs")[2];
+
+      console.log
+
+      if ((appContainer instanceof HTMLElement) &&
+          (tabContainer instanceof HTMLElement) &&
+          (draggedElement instanceof HTMLElement)) {
+          const offsetLeft = appContainer.clientWidth - (tabContainer.clientWidth + rightSidebarContainer.clientWidth);
+          const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
+
+          const draggedElementRect = draggedElement.getBoundingClientRect();
+
+          that.elm.ports.interopToElm.send({
+            tag: "elementDragged",
+            data: {
+              beaconType: data.beaconType,
+              dragAction: dragAction,
+              cursor: coords(event),
+              offset: { x: offsetLeft, y: offsetTop },
+              draggedNodeRect: {
+                x: draggedElementRect.x,
+                y: draggedElementRect.y,
+                width: draggedElementRect.width,
+                height: draggedElementRect.height
+              },
+              beacons: beaconPositions(data.beaconType)
+            }
+          });
+      }
+    }
+
+    function beaconPositions(beaconType: String) {
+      const beaconElements = document.querySelectorAll(`[${beaconType}]`);
+      return Array.from(beaconElements).map(beaconData);
+    }
+
+    function beaconData(elem: Element) {
+      const boundingRect = elem.getBoundingClientRect();
+      const beaconId = elem.getAttribute(data.beaconType);
+      return {
+        beaconPosition: tryParse(beaconId),
+        rect: {
+          x: boundingRect.x,
+          y: boundingRect.y,
+          width: boundingRect.width,
+          height: boundingRect.height
+        }
+      };
+    }
+
+    function tryParse(str: string) {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return str;
+      }
+    }
+
+    function coords(event: MouseEvent) {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    function distance(pos1: { x : number, y : number }, pos2: { x : number, y : number }) {
+      const dx = pos1.x - pos2.x;
+      const dy = pos1.y - pos2.y;
+      return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+    }
   }
 
   async handleUpdateSettings(

@@ -5,6 +5,8 @@ import Boards
 import Browser
 import Browser.Events as Browser
 import Card exposing (Card)
+import Date exposing (Date)
+import DragAndDrop.DragData exposing (DragData)
 import Filter exposing (Filter)
 import Html exposing (Html)
 import InteropDefinitions
@@ -22,6 +24,7 @@ import TaskItem
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import Time
+import TimeWithZone
 
 
 main : Program JD.Value Model Msg
@@ -118,6 +121,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
+    | ElementDragged DragData
     | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
@@ -153,6 +157,13 @@ update msg model =
 
         ( ConfigChanged textDirection, _ ) ->
             ( mapSession (Session.updateTextDirection textDirection) model, Cmd.none )
+
+        ( ElementDragged dragData, Boards subModel ) ->
+            BoardPage.update (BoardPage.ElementDragged dragData) subModel
+                |> updateWith Boards GotBoardPageMsg
+
+        ( ElementDragged _, _ ) ->
+            ( model, Cmd.none )
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel
@@ -297,12 +308,17 @@ cmdForFilterPathRename newPath session =
 cmdForTaskRedraws : String -> Session -> Cmd Msg
 cmdForTaskRedraws newPath session =
     let
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
         cards : List Card
         cards =
             Session.taskList session
                 |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
                 |> Boards.init (Session.uniqueId session) (Session.columnNames session) (Session.boardConfigs session)
-                |> Boards.cards (Session.ignoreFileNameDates session) (Session.timeWithZone session)
+                |> Boards.cards (Session.ignoreFileNameDates session) today
     in
     if List.isEmpty cards then
         Cmd.none
@@ -355,6 +371,9 @@ subscriptions _ =
 
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
+
+                                InteropDefinitions.ElementDragged dragData ->
+                                    ElementDragged dragData
 
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile

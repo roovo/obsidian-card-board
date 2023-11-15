@@ -13,9 +13,9 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import Column
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -41,23 +41,20 @@ init uniqueId columnNames configs taskList =
 
 boardZipper : Boards -> SafeZipper Board
 boardZipper (Boards uniqueId columnNames configs taskList) =
-    SafeZipper.indexedMapSelectedAndRest
-        (board uniqueId columnNames taskList)
-        (board uniqueId columnNames taskList)
-        configs
+    SafeZipper.map (board uniqueId columnNames taskList) configs
 
 
 titles : Boards -> SafeZipper String
 titles (Boards _ _ configs _) =
-    SafeZipper.indexedMapSelectedAndRest tabTitle tabTitle configs
+    SafeZipper.map tabTitle configs
 
 
-cards : Bool -> TimeWithZone -> Boards -> List Card
-cards ignoreFileNameDates timeWithZone boards_ =
+cards : Bool -> Date -> Boards -> List Card
+cards ignoreFileNameDates today boards_ =
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.indexedMap (Board.columns ignoreFileNameDates timeWithZone)
+        |> List.map (Board.columns ignoreFileNameDates today)
         |> List.concat
         |> List.map Column.items
         |> List.concat
@@ -77,8 +74,8 @@ length (Boards _ _ config _) =
 -- PRIVATE
 
 
-tabTitle : Int -> BoardConfig -> String
-tabTitle _ config =
+tabTitle : BoardConfig -> String
+tabTitle config =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             dateBoardConfig.title
@@ -87,6 +84,6 @@ tabTitle _ config =
             tagBoardConfig.title
 
 
-board : String -> ColumnNames -> TaskList -> Int -> BoardConfig -> Board
-board uniqueId columnNames taskList _ config =
+board : String -> ColumnNames -> TaskList -> BoardConfig -> Board
+board uniqueId columnNames taskList config =
     Board.init uniqueId columnNames config taskList

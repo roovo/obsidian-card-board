@@ -1,6 +1,7 @@
 module Board exposing
     ( Board
     , columns
+    , id
     , init
     )
 
@@ -9,12 +10,12 @@ import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
+import Date exposing (Date)
 import DateBoardColumns exposing (DateBoardColumns)
 import Filter exposing (Filter, Polarity, Scope)
 import TagBoardColumns exposing (TagBoardColumns)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -38,21 +39,21 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : Bool -> TimeWithZone -> Int -> Board -> List (Column Card)
-columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames config taskList) =
+columns : Bool -> Date -> Board -> List (Column Card)
+columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             let
                 emptyDateBoardColumns : DateBoardColumns
                 emptyDateBoardColumns =
-                    DateBoardColumns.init timeWithZone columnNames dateBoardConfig
+                    DateBoardColumns.init today columnNames dateBoardConfig
             in
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
                 |> DateBoardColumns.columns
-                |> convertToCards uniqueId boardIndex
+                |> convertToCards (id board)
                 |> collapseColumns config
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
@@ -66,8 +67,13 @@ columns ignoreFileNameDates timeWithZone boardIndex (Board uniqueId columnNames 
                 |> configureDueDates ignoreFileNameDates
                 |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
                 |> TagBoardColumns.columns
-                |> convertToCards uniqueId boardIndex
+                |> convertToCards (id board)
                 |> collapseColumns config
+
+
+id : Board -> String
+id (Board uniqueId _ config _) =
+    uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.title config)
 
 
 
@@ -161,12 +167,12 @@ applyFilters taskList polarity scope filters =
         TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
-convertToCards : String -> Int -> List (Column TaskItem) -> List (Column Card)
-convertToCards uniqueId boardIndex columnList =
+convertToCards : String -> List (Column TaskItem) -> List (Column Card)
+convertToCards boardId columnList =
     let
         cardIdPrefix : Int -> String
         cardIdPrefix columnIndex =
-            uniqueId ++ ":" ++ String.fromInt boardIndex ++ ":" ++ String.fromInt columnIndex
+            boardId ++ ":" ++ String.fromInt columnIndex
 
         placeCardsInColumn : Int -> Column TaskItem -> Column Card
         placeCardsInColumn columnIndex column =

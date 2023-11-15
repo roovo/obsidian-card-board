@@ -8,14 +8,16 @@ module SafeZipper exposing
     , empty
     , first
     , fromList
+    , indexedFoldl
     , indexedMapSelectedAndRest
     , last
     , length
     , map
-    , mapCurrent
+    , mapSelectedAndRest
     , next
     , selectedIndex
     , toList
+    , updateCurrent
     )
 
 import List.Extra as LE
@@ -161,6 +163,32 @@ next zipper =
 -- MAPPING
 
 
+mapSelectedAndRest : (a -> b) -> (a -> b) -> SafeZipper a -> SafeZipper b
+mapSelectedAndRest selectedFn restFn zipper =
+    case zipper of
+        EmptyZipper ->
+            EmptyZipper
+
+        SafeZipper ls c rs ->
+            let
+                mappedBefore : List b
+                mappedBefore =
+                    ls
+                        |> List.reverse
+                        |> List.map restFn
+                        |> List.reverse
+
+                mappedCurrent : b
+                mappedCurrent =
+                    selectedFn c
+
+                mappedAfter : List b
+                mappedAfter =
+                    List.map restFn rs
+            in
+            SafeZipper mappedBefore mappedCurrent mappedAfter
+
+
 indexedMapSelectedAndRest : (Int -> a -> b) -> (Int -> a -> b) -> SafeZipper a -> SafeZipper b
 indexedMapSelectedAndRest selectedFn restFn zipper =
     case zipper of
@@ -191,18 +219,18 @@ indexedMapSelectedAndRest selectedFn restFn zipper =
             SafeZipper mappedBefore mappedCurrent mappedAfter
 
 
-map : (a -> a) -> SafeZipper a -> SafeZipper a
+map : (a -> b) -> SafeZipper a -> SafeZipper b
 map fn zipper =
     case zipper of
         EmptyZipper ->
-            zipper
+            empty
 
-        SafeZipper b c a ->
-            SafeZipper (List.map fn b) (fn c) (List.map fn a)
+        SafeZipper before current_ after ->
+            SafeZipper (List.map fn before) (fn current_) (List.map fn after)
 
 
-mapCurrent : (a -> a) -> SafeZipper a -> SafeZipper a
-mapCurrent fn zipper =
+updateCurrent : (a -> a) -> SafeZipper a -> SafeZipper a
+updateCurrent fn zipper =
     case zipper of
         EmptyZipper ->
             zipper
@@ -229,6 +257,13 @@ deleteCurrent zipper =
         |> LE.removeAt index
         |> fromList
         |> atIndex index
+
+
+indexedFoldl : (Int -> a -> b -> b) -> b -> SafeZipper a -> b
+indexedFoldl fn acc zipper =
+    zipper
+        |> toList
+        |> LE.indexedFoldl fn acc
 
 
 length : SafeZipper a -> Int

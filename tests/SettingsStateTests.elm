@@ -154,6 +154,11 @@ confirmAddBoard =
                 SettingsState.AddingBoard exampleBoardConfigDateBoard (settingsFromBoardConfigs [ exampleBoardConfigTagBoard ])
                     |> SettingsState.confirmAddBoard
                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigTagBoard, exampleBoardConfigDateBoard ]))
+        , test "AddingBoard -> EditingBoard changes blank title to Untitled" <|
+            \() ->
+                SettingsState.AddingBoard noTitleBoardConfigDateBoard (settingsFromBoardConfigs [ exampleBoardConfigTagBoard ])
+                    |> SettingsState.confirmAddBoard
+                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigTagBoard, untitledTitleBoardConfigDateBoard ]))
         , test "does nothing if ClosingPlugin" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
@@ -469,18 +474,6 @@ mapGlobalSettings =
 -- HELPERS
 
 
-settingsFromBoardConfigs : List BoardConfig -> Settings
-settingsFromBoardConfigs boardConfigs_ =
-    Settings.default
-        |> Settings.updateBoardConfigs (SafeZipper.fromList boardConfigs_)
-
-
-settingsFromBoardConfigsWithIndex : Int -> List BoardConfig -> Settings
-settingsFromBoardConfigsWithIndex index boardConfigs_ =
-    Settings.default
-        |> Settings.updateBoardConfigs (SafeZipper.atIndex index <| SafeZipper.fromList boardConfigs_)
-
-
 exampleBoardConfigDateBoard : BoardConfig
 exampleBoardConfigDateBoard =
     BoardConfig.DateBoardConfig exampleDateBoardConfig
@@ -526,3 +519,25 @@ exampleTagBoardConfig =
     , title = "Tag Board Title"
     , collapsedColumns = CollapsedColumns.init
     }
+
+
+noTitleBoardConfigDateBoard : BoardConfig
+noTitleBoardConfigDateBoard =
+    BoardConfig.DateBoardConfig { exampleDateBoardConfig | title = "" }
+
+
+settingsFromBoardConfigs : List BoardConfig -> Settings
+settingsFromBoardConfigs boardConfigs_ =
+    Settings.default
+        |> Settings.updateBoardConfigs (SafeZipper.fromList boardConfigs_)
+
+
+settingsFromBoardConfigsWithIndex : Int -> List BoardConfig -> Settings
+settingsFromBoardConfigsWithIndex index boardConfigs_ =
+    Settings.default
+        |> Settings.updateBoardConfigs (SafeZipper.atIndex index <| SafeZipper.fromList boardConfigs_)
+
+
+untitledTitleBoardConfigDateBoard : BoardConfig
+untitledTitleBoardConfigDateBoard =
+    BoardConfig.DateBoardConfig { exampleDateBoardConfig | title = "Untitled" }

@@ -2,6 +2,7 @@ module CardTests exposing (suite)
 
 import Card exposing (Highlight(..))
 import DataviewTaskCompletion
+import Date exposing (Date)
 import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
@@ -10,6 +11,7 @@ import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import Time
+import TimeWithZone
 
 
 suite : Test
@@ -72,49 +74,49 @@ highlight =
                 "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightImportant for a task that is due today" <|
             \() ->
                 "- [ ] foo @due(2020-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightImportant)
         , test "returns HighlightNone for a completed task that is due today" <|
             \() ->
                 "- [x] foo @due(2020-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightCritical for a task that is overdue" <|
             \() ->
                 "- [ ] foo @due(2019-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightCritical)
         , test "returns HighlightNone for a completed task that is overdue" <|
             \() ->
                 "- [x] foo @due(2019-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightNone)
         , test "returns HighlightGood for a task that is due in the future" <|
             \() ->
                 "- [ ] foo @due(2020-01-02)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightGood)
         , test "returns HighlightNone for a completed task that is due in the future" <|
             \() ->
                 "- [x] foo @due(2020-01-02)"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (Card.fromTaskItem "")
-                    |> Result.map (Card.highlight { time = janFirstTwentyTwenty, zone = Time.utc })
+                    |> Result.map (Card.highlight janFirstTwentyTwenty)
                     |> Expect.equal (Ok HighlightNone)
         ]
 
@@ -236,10 +238,10 @@ taskItemId =
 -- HELPERS
 
 
-janFirstTwentyTwenty : Time.Posix
+janFirstTwentyTwenty : Date
 janFirstTwentyTwenty =
-    -- 2020-01-01
-    Time.millisToPosix 1577836800000
+    { time = Time.millisToPosix 1577836800000, zone = Time.utc }
+        |> TimeWithZone.toDate
 
 
 taskItem : Maybe TaskItem

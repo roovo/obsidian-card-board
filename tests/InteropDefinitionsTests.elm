@@ -4,6 +4,8 @@ import BoardConfig
 import CollapsedColumns
 import ColumnNames
 import DataviewTaskCompletion
+import DragAndDrop.BeaconPosition as BeaconPosition
+import DragAndDrop.DragData as DragData
 import Expect
 import Filter
 import GlobalSettings
@@ -585,6 +587,13 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
+        , test "encodes TrackDraggable data" <|
+            \() ->
+                { beaconType = "someBeaconId", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
+                    |> InteropDefinitions.TrackDraggable
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"trackDraggable","data":{"beaconType":"someBeaconId","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -610,6 +619,32 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
+        , test "decodes configChanged data" <|
+            \() ->
+                """{"tag":"configChanged","data":{"rightToLeft":true}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
+        , test "decodes elementDragged data" <|
+            \() ->
+                """{"tag":"elementDragged","data":{"beaconType":"some-beacon-id","dragAction":"stop","cursor":{"x":1.23,"y":4.56},"offset":{"x":1.11,"y":2.22},"draggedNodeRect":{"x":1.1,"y":2.2,"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok <|
+                            InteropDefinitions.ElementDragged
+                                { beaconType = "some-beacon-id"
+                                , dragAction = DragData.Stop
+                                , cursor = { x = 1.23, y = 4.56 }
+                                , offset = { x = 1.11, y = 2.22 }
+                                , draggedNodeRect = { x = 1.1, y = 2.2, width = 3.33, height = 4.44 }
+                                , beacons =
+                                    [ { beaconPosition = BeaconPosition.Before "someId"
+                                      , rect = { x = 1.1, y = 2.2, width = 3.3, height = 4.4 }
+                                      }
+                                    ]
+                                }
+                        )
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
@@ -658,12 +693,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
-        , test "decodes configChanged data" <|
-            \() ->
-                """{"tag":"configChanged","data":{"rightToLeft":true}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

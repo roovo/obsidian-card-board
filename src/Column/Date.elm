@@ -11,7 +11,6 @@ import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -58,13 +57,9 @@ init dateBoardConfig c =
         }
 
 
-addTaskItem : TimeWithZone -> TaskItem -> DateColumn -> ( DateColumn, Column.PlacementResult )
-addTaskItem now taskItem ((DateColumn c) as dateColumn) =
+addTaskItem : Date -> TaskItem -> DateColumn -> ( DateColumn, Column.PlacementResult )
+addTaskItem today taskItem ((DateColumn c) as dateColumn) =
     let
-        today : Date
-        today =
-            TimeWithZone.toDate now
-
         from : Maybe Date
         from =
             Maybe.map (\offset -> Date.add Date.Days offset today) c.from

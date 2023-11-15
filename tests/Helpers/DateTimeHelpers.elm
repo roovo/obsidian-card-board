@@ -2,16 +2,17 @@ module Helpers.DateTimeHelpers exposing
     ( farFuture
     , future
     , now
-    , nowWithZone
     , offsetDateString
     , offsetNowWithZone
     , today
+    , todayDate
     , tomorrow
     , yearStart
     , yesterday
     , zone
     )
 
+import Date exposing (Date)
 import Iso8601
 import Time exposing (Posix)
 import TimeWithZone exposing (TimeWithZone)
@@ -44,6 +45,15 @@ future =
 farFuture : String
 farFuture =
     "2020-06-23"
+
+
+
+-- DATES
+
+
+todayDate : Date
+todayDate =
+    TimeWithZone.toDate nowWithZone
 
 
 

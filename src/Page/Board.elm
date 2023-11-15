@@ -10,13 +10,20 @@ import Card exposing (Card)
 import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.Coords as Coords
+import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
+import DragAndDrop.Rect as Rect
 import FeatherIcons
-import Html exposing (Html)
-import Html.Attributes exposing (attribute, checked, class, hidden, id, type_)
+import Html exposing (Attribute, Html)
+import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
 import Html.Events exposing (onClick)
+import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
+import Html.Lazy
 import InteropPorts
 import Json.Decode as JD
+import Json.Encode as JE
 import SafeZipper
 import Session exposing (Session)
 import TaskItem exposing (TaskItem, TaskItemFields)
@@ -29,7 +36,9 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Msg
-    = SettingsClicked
+    = ElementDragged DragData
+    | SettingsClicked
+    | TabHeaderMouseDown ( String, DragTracker )
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -37,13 +46,64 @@ type Msg
     | ToggleColumnCollapse Int Bool
 
 
+beaconType : String
+beaconType =
+    "data-card-board-tag-header-beacon"
+
+
+updateBoardOrder : DragTracker -> DragData -> Session -> Session
+updateBoardOrder { nodeId } { cursor, beacons } session =
+    case Rect.closestTo cursor beacons of
+        Nothing ->
+            session
+
+        Just position ->
+            Session.moveBoard nodeId position session
+
+
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
+        ElementDragged dragData ->
+            case dragData.dragAction of
+                DragData.Move ->
+                    case Session.dragStatus session of
+                        Session.NotDragging ->
+                            ( session
+                            , Cmd.none
+                            , Session.NoOp
+                            )
+
+                        Session.Waiting dragTracker ->
+                            ( Session.trackDraggable dragTracker dragData.draggedNodeRect session
+                            , Cmd.none
+                            , Session.NoOp
+                            )
+
+                        Session.Dragging dragTracker ->
+                            ( session
+                                |> updateBoardOrder dragTracker dragData
+                                |> Session.updateDragPositions dragData.cursor dragData.offset
+                            , Cmd.none
+                            , Session.NoOp
+                            )
+
+                DragData.Stop ->
+                    ( Session.stopTrackingDragable session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
+
         SettingsClicked ->
             ( session
             , Cmd.none
             , Session.SettingsClicked
+            )
+
+        TabHeaderMouseDown ( tabId, dragTracker ) ->
+            ( Session.waitForDrag dragTracker session
+            , InteropPorts.trackDraggable beaconType dragTracker.clientPos tabId
+            , Session.NoOp
             )
 
         TabSelected tabIndex ->
@@ -140,86 +200,181 @@ view session =
             ignoreFileNameDates =
                 Session.ignoreFileNameDates session
 
-            timeWithZone : TimeWithZone
-            timeWithZone =
+            today : Date
+            today =
                 Session.timeWithZone session
+                    |> TimeWithZone.toDate
+
+            isDragging : Bool
+            isDragging =
+                case Session.dragStatus session of
+                    Session.Dragging _ ->
+                        True
+
+                    Session.NotDragging ->
+                        False
+
+                    Session.Waiting _ ->
+                        False
         in
-        Html.div [ attribute "dir" (TextDirection.toString <| Session.textDirection session) ]
-            [ Html.ul [ class "card-board-tab-list" ]
-                (tabHeaders currentBoardIndex boards)
-            , Html.div [ class "card-board-boards" ]
+        Html.div
+            [ attribute "dir" (TextDirection.toString <| Session.textDirection session)
+            , attributeIf isDragging (style "cursor" "grabbing")
+            ]
+            [ Html.div [ class "workspace-tab-header-container" ]
+                [ Html.div
+                    [ class "sidebar-toggle-button"
+                    , class "mod-left"
+                    , attribute "aria-label" "Settings"
+                    , attribute "aria-label-position" "right"
+                    ]
+                    [ Html.div
+                        [ class "clickable-icon"
+                        , onClick SettingsClicked
+                        ]
+                        [ FeatherIcons.settings
+                            |> FeatherIcons.withSize 1
+                            |> FeatherIcons.withSizeUnit "em"
+                            |> FeatherIcons.toHtml []
+                        ]
+                    ]
+                , Html.div
+                    [ class "workspace-tab-header-container-inner" ]
+                    (tabHeaders isDragging currentBoardIndex boards
+                        ++ [ viewDraggedHeader session ]
+                    )
+                , Html.div
+                    [ class "card-board-tab-header-spacer" ]
+                    []
+                ]
+            , Html.Keyed.node "div"
+                [ class "card-board-boards" ]
                 (Boards.boardZipper boards
-                    |> SafeZipper.indexedMapSelectedAndRest
-                        (selectedBoardView ignoreFileNameDates timeWithZone)
-                        (boardView ignoreFileNameDates timeWithZone)
+                    |> SafeZipper.mapSelectedAndRest
+                        (keyedSelectedBoardView ignoreFileNameDates today)
+                        (keyedBoardView ignoreFileNameDates today)
                     |> SafeZipper.toList
                 )
             ]
 
 
-tabHeaders : Maybe Int -> Boards -> List (Html Msg)
-tabHeaders currentBoardIndex boards =
-    let
-        beforeHeaderClass : String
-        beforeHeaderClass =
-            tabHeaderClass currentBoardIndex -1
-
-        beforeFirst : Html Msg
-        beforeFirst =
-            Html.li [ class <| "card-board-pre-tabs" ++ beforeHeaderClass ]
-                [ Html.div
-                    [ class "card-board-tabs-inner card-board-tab-icon"
-                    , onClick SettingsClicked
-                    ]
-                    [ FeatherIcons.settings
-                        |> FeatherIcons.withSize 1
-                        |> FeatherIcons.withSizeUnit "em"
-                        |> FeatherIcons.toHtml []
-                    ]
-                ]
-
-        afterHeaderClass : String
-        afterHeaderClass =
-            tabHeaderClass currentBoardIndex (Boards.length boards)
-
-        afterLast : Html Msg
-        afterLast =
-            Html.li [ class <| "card-board-post-tabs" ++ afterHeaderClass ]
-                [ Html.div [ class "card-board-tabs-inner" ]
-                    [ Html.text "" ]
-                ]
-
-        tabs : List (Html Msg)
-        tabs =
-            Boards.titles boards
-                |> SafeZipper.indexedMapSelectedAndRest selectedTabHeader (tabHeader currentBoardIndex)
-                |> SafeZipper.toList
-    in
-    beforeFirst :: List.append tabs [ afterLast ]
+tabHeaders : Bool -> Maybe Int -> Boards -> List (Html Msg)
+tabHeaders isDragging currentBoardIndex boards =
+    Boards.titles boards
+        |> SafeZipper.indexedMapSelectedAndRest (selectedTabHeader isDragging) (tabHeader isDragging currentBoardIndex)
+        |> SafeZipper.toList
 
 
-selectedTabHeader : Int -> String -> Html Msg
-selectedTabHeader _ title =
-    Html.li [ class "card-board-tab-title is-active" ]
-        [ Html.div [ class "card-board-tabs-inner" ]
-            [ Html.text <| title ]
-        ]
-
-
-tabHeader : Maybe Int -> Int -> String -> Html Msg
-tabHeader currentBoardIndex index title =
+tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
+tabHeader isDragging currentBoardIndex tabIndex title =
     let
         headerClass : String
         headerClass =
-            tabHeaderClass currentBoardIndex index
+            tabHeaderClass currentBoardIndex tabIndex
+
+        tabId : String
+        tabId =
+            "card-board-tab:" ++ String.fromInt tabIndex
     in
-    Html.li
-        [ class ("card-board-tab-title" ++ headerClass)
-        , onClick <| TabSelected index
+    Html.div
+        [ id tabId
+        , class ("workspace-tab-header" ++ headerClass)
+        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
+        , onClick <| TabSelected tabIndex
+        , onDown
+            (\e ->
+                TabHeaderMouseDown <|
+                    ( tabId
+                    , DragTracker title
+                        (Coords.fromFloatTuple e.clientPos)
+                        (Coords.fromFloatTuple e.offsetPos)
+                        (Coords.fromFloatTuple ( 0, 0 ))
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    )
+            )
         ]
-        [ Html.div [ class "card-board-tabs-inner" ]
-            [ Html.text <| title ]
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ class "workspace-tab-header-inner" ]
+            [ Html.div [ class "workspace-tab-header-inner-title" ]
+                [ Html.text <| title ]
+            ]
+        , beacon (BeaconPosition.After title)
         ]
+
+
+selectedTabHeader : Bool -> Int -> String -> Html Msg
+selectedTabHeader isDragging tabIndex title =
+    let
+        tabId : String
+        tabId =
+            "card-board-tab:" ++ String.fromInt tabIndex
+    in
+    Html.div
+        [ class "workspace-tab-header is-active"
+        , id tabId
+        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
+        , attributeIf isDragging (style "opacity" "0.0")
+        , onDown
+            (\e ->
+                TabHeaderMouseDown <|
+                    ( tabId
+                    , DragTracker title
+                        (Coords.fromFloatTuple e.clientPos)
+                        (Coords.fromFloatTuple e.offsetPos)
+                        (Coords.fromFloatTuple ( 0, 0 ))
+                        { x = 0, y = 0, width = 0, height = 0 }
+                    )
+            )
+        ]
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ class "workspace-tab-header-inner" ]
+            [ Html.div [ class "workspace-tab-header-inner-title" ]
+                [ Html.text <| title ]
+            ]
+        , beacon (BeaconPosition.After title)
+        ]
+
+
+viewDraggedHeader : Session -> Html Msg
+viewDraggedHeader session =
+    case Session.dragStatus session of
+        Session.Dragging dragTracker ->
+            Html.div
+                [ class "workspace-tab-header is-active"
+                , id <| "card-board-tab:being-dragged"
+                , style "position" "fixed"
+                , style "top" (String.fromFloat (dragTracker.draggedNodeRect.y - dragTracker.offset.y) ++ "px")
+                , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
+                , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
+                , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
+                , style "cursor" "grabbing"
+                , style "opacity" "0.85"
+                ]
+                [ Html.div
+                    [ class "workspace-tab-header-inner" ]
+                    [ Html.div [ class "workspace-tab-header-inner-title" ]
+                        [ Html.text <| dragTracker.nodeId ]
+                    ]
+                ]
+
+        Session.Waiting _ ->
+            empty
+
+        Session.NotDragging ->
+            empty
+
+
+beacon : BeaconPosition -> Html Msg
+beacon beaconPosition =
+    Html.span
+        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
 
 
 tabHeaderClass : Maybe Int -> Int -> String
@@ -239,34 +394,52 @@ tabHeaderClass currentBoardIndex index =
             ""
 
 
-boardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
-boardView ignoreFileNameDates timeWithZone boardIndex board =
+keyedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
+keyedBoardView ignoreFileNameDates today board =
+    ( Board.id board, Html.Lazy.lazy3 boardView ignoreFileNameDates today board )
+
+
+boardView : Bool -> Date -> Board -> Html Msg
+boardView ignoreFileNameDates today board =
     Html.div
         [ class "card-board-board"
         , hidden True
         ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
-                |> List.indexedMap (\index column -> columnView index timeWithZone column)
+                |> Board.columns ignoreFileNameDates today
+                |> List.indexedMap (\index column -> columnView index today column)
             )
         ]
 
 
-selectedBoardView : Bool -> TimeWithZone -> Int -> Board -> Html Msg
-selectedBoardView ignoreFileNameDates timeWithZone boardIndex board =
+keyedSelectedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
+keyedSelectedBoardView ignoreFileNameDates today board =
+    ( Board.id board, Html.Lazy.lazy3 selectedBoardView ignoreFileNameDates today board )
+
+
+selectedBoardView : Bool -> Date -> Board -> Html Msg
+selectedBoardView ignoreFileNameDates today board =
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
             (board
-                |> Board.columns ignoreFileNameDates timeWithZone boardIndex
-                |> List.indexedMap (\index column -> columnView index timeWithZone column)
+                |> Board.columns ignoreFileNameDates today
+                |> List.indexedMap (\index column -> columnView index today column)
             )
         ]
 
 
-columnView : Int -> TimeWithZone -> Column Card -> Html Msg
-columnView columnIndex timeWithZone column =
+columnView : Int -> Date -> Column Card -> Html Msg
+columnView columnIndex today column =
     let
+        columnCollapsedAria : String
+        columnCollapsedAria =
+            if Column.isCollapsed column then
+                "Un-collapse"
+
+            else
+                "Collapse"
+
         columnCollapsedArrow : String
         columnCollapsedArrow =
             if Column.isCollapsed column then
@@ -295,6 +468,7 @@ columnView columnIndex timeWithZone column =
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
                 [ class columnCollapsedArrow
+                , attribute "aria-label" columnCollapsedAria
                 , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
                 ]
                 []
@@ -304,12 +478,12 @@ columnView columnIndex timeWithZone column =
                 [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView timeWithZone) (Column.items column))
+            (List.map (cardView today) (Column.items column))
         ]
 
 
-cardView : TimeWithZone -> Card -> ( String, Html Msg )
-cardView timeWithZone card =
+cardView : Date -> Card -> ( String, Html Msg )
+cardView today card =
     let
         cardId : String
         cardId =
@@ -325,7 +499,7 @@ cardView timeWithZone card =
 
         highlightAreaClass : String
         highlightAreaClass =
-            case Card.highlight timeWithZone card of
+            case Card.highlight today card of
                 Card.HighlightCritical ->
                     "critical"
 
@@ -448,19 +622,28 @@ cardActionButtons taskItemId editButtonId =
 -- HELPERS
 
 
-onClickWithPreventDefault : msg -> Html.Attribute msg
-onClickWithPreventDefault msg =
-    Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
-
-
 alwaysPreventDefault : msg -> ( msg, Bool )
 alwaysPreventDefault msg =
     ( msg, True )
 
 
+attributeIf : Bool -> Attribute msg -> Attribute msg
+attributeIf condition attribute =
+    if condition then
+        attribute
+
+    else
+        class ""
+
+
 empty : Html Msg
 empty =
     Html.text ""
+
+
+onClickWithPreventDefault : msg -> Attribute msg
+onClickWithPreventDefault msg =
+    Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
 
 
 when : Bool -> Html Msg -> Html Msg

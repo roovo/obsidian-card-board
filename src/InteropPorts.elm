@@ -9,11 +9,13 @@ port module InteropPorts exposing
     , requestFilterCandidates
     , rewriteTasks
     , toElm
+    , trackDraggable
     , updateSettings
     )
 
 import Card exposing (Card)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.Coords exposing (Coords)
 import GlobalSettings exposing (TaskCompletionFormat)
 import InteropDefinitions
 import Json.Decode
@@ -50,12 +52,6 @@ closeView =
         |> interopFromElm
 
 
-elmInitialized : Cmd msg
-elmInitialized =
-    encodeVariant "elmInitialized" (TsEncode.object []) ()
-        |> interopFromElm
-
-
 deleteTask : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
 deleteTask info =
     info
@@ -68,6 +64,12 @@ displayTaskMarkdown cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, taskMarkdown = Card.markdownWithIds c })
         |> encodeVariant "displayTaskMarkdown" InteropDefinitions.displayTaskMarkdownEncoder
+        |> interopFromElm
+
+
+elmInitialized : Cmd msg
+elmInitialized =
+    encodeVariant "elmInitialized" (TsEncode.object []) ()
         |> interopFromElm
 
 
@@ -96,6 +98,13 @@ rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath t
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
+        |> interopFromElm
+
+
+trackDraggable : String -> Coords -> String -> Cmd msg
+trackDraggable beaconType clientPos draggableId =
+    { beaconType = beaconType, clientPos = clientPos, draggableId = draggableId }
+        |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder
         |> interopFromElm
 
 

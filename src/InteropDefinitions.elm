@@ -7,11 +7,14 @@ module InteropDefinitions exposing
     , displayTaskMarkdownEncoder
     , interop
     , openTaskSourceFileEncoder
+    , trackDraggableEncoder
     , updateTasksEncoder
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
+import DragAndDrop.Coords as Coords exposing (Coords)
+import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
@@ -28,12 +31,14 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
+    | TrackDraggable { beaconType : String, clientPos : Coords, draggableId : String }
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
 
 type ToElm
     = ActiveStateUpdated Bool
     | ConfigChanged TextDirection
+    | ElementDragged DragData
     | FileAdded MarkdownFile
     | FileDeleted String
     | FileRenamed ( String, String )
@@ -104,6 +109,15 @@ openTaskSourceFileEncoder =
         ]
 
 
+trackDraggableEncoder : TsEncode.Encoder { beaconType : String, clientPos : Coords, draggableId : String }
+trackDraggableEncoder =
+    TsEncode.object
+        [ required "beaconType" .beaconType TsEncode.string
+        , required "clientPos" .clientPos Coords.encoder
+        , required "draggableId" .draggableId TsEncode.string
+        ]
+
+
 updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 updateTasksEncoder =
     TsEncode.object
@@ -132,6 +146,7 @@ toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
+        , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
@@ -146,7 +161,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths _ vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vTrackDraggable _ vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -169,6 +184,9 @@ fromElm =
                 RequestFilterCandidates ->
                     vRequestPaths
 
+                TrackDraggable info ->
+                    vTrackDraggable info
+
                 UpdateTasks info ->
                     vUpdateTasks info
         )
@@ -179,6 +197,7 @@ fromElm =
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
+        |> TsEncode.variantTagged "trackDraggable" trackDraggableEncoder
         |> TsEncode.variantTagged "updateSettings" Settings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder
         |> TsEncode.buildUnion

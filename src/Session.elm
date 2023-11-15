@@ -1,5 +1,6 @@
 module Session exposing
-    ( Msg(..)
+    ( DragStatus(..)
+    , Msg(..)
     , Session
     , addTaskList
     , boardConfigs
@@ -8,14 +9,17 @@ module Session exposing
     , dataviewTaskCompletion
     , default
     , deleteItemsFromFile
+    , dragStatus
     , finishAdding
     , fromFlags
     , globalSettings
     , ignoreFileNameDates
     , isActiveView
     , makeActiveView
+    , moveBoard
     , replaceTaskItems
     , settings
+    , stopTrackingDragable
     , switchToBoardAt
     , taskContainingId
     , taskFromId
@@ -24,11 +28,14 @@ module Session exposing
     , timeIs
     , timeWIthZoneIs
     , timeWithZone
+    , trackDraggable
     , uniqueId
     , updateColumnCollapse
+    , updateDragPositions
     , updatePath
     , updateSettings
     , updateTextDirection
+    , waitForDrag
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -36,6 +43,10 @@ import Boards
 import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.Coords exposing (Coords)
+import DragAndDrop.DragData exposing (DragTracker)
+import DragAndDrop.Rect exposing (Rect)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -57,14 +68,21 @@ type Session
 
 
 type alias Config =
-    { settings : Settings
-    , dataviewTaskCompletion : DataviewTaskCompletion
-    , textDirection : TextDirection
+    { dataviewTaskCompletion : DataviewTaskCompletion
+    , dragStatus : DragStatus
     , isActiveView : Bool
+    , settings : Settings
     , taskList : State TaskList
+    , textDirection : TextDirection
     , timeWithZone : TimeWithZone
     , uniqueId : String
     }
+
+
+type DragStatus
+    = NotDragging
+    | Waiting DragTracker
+    | Dragging DragTracker
 
 
 type Msg
@@ -80,11 +98,12 @@ type Msg
 default : Session
 default =
     Session
-        { settings = Settings.default
-        , dataviewTaskCompletion = DataviewTaskCompletion.default
-        , textDirection = TextDirection.default
+        { dataviewTaskCompletion = DataviewTaskCompletion.default
+        , dragStatus = NotDragging
         , isActiveView = False
+        , settings = Settings.default
         , taskList = State.Waiting
+        , textDirection = TextDirection.default
         , timeWithZone =
             { time = Time.millisToPosix 0
             , zone = Time.customZone 0 []
@@ -96,11 +115,12 @@ default =
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
-        { settings = flags.settings
-        , dataviewTaskCompletion = flags.dataviewTaskCompletion
-        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
+        { dataviewTaskCompletion = flags.dataviewTaskCompletion
+        , dragStatus = NotDragging
         , isActiveView = False
+        , settings = flags.settings
         , taskList = State.Waiting
+        , textDirection = TextDirection.fromRtlFlag flags.rightToLeft
         , timeWithZone =
             { time = Time.millisToPosix flags.now
             , zone = Time.customZone flags.zone []
@@ -123,7 +143,7 @@ cards ((Session config) as session) =
     session
         |> taskList
         |> Boards.init config.uniqueId (columnNames session) (Settings.boardConfigs config.settings)
-        |> Boards.cards (ignoreFileNameDates session) config.timeWithZone
+        |> Boards.cards (ignoreFileNameDates session) (TimeWithZone.toDate config.timeWithZone)
 
 
 columnNames : Session -> ColumnNames
@@ -134,6 +154,11 @@ columnNames =
 dataviewTaskCompletion : Session -> DataviewTaskCompletion
 dataviewTaskCompletion (Session config) =
     config.dataviewTaskCompletion
+
+
+dragStatus : Session -> DragStatus
+dragStatus (Session config) =
+    config.dragStatus
 
 
 globalSettings : Session -> GlobalSettings
@@ -219,6 +244,16 @@ makeActiveView isActiveView_ (Session config) =
     Session { config | isActiveView = isActiveView_ }
 
 
+moveBoard : String -> BeaconPosition -> Session -> Session
+moveBoard draggedId beaconPosition (Session config) =
+    Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
+
+
+stopTrackingDragable : Session -> Session
+stopTrackingDragable (Session config) =
+    Session { config | dragStatus = NotDragging }
+
+
 switchToBoardAt : Int -> Session -> Session
 switchToBoardAt index (Session config) =
     Session { config | settings = Settings.switchToBoard index config.settings }
@@ -232,6 +267,50 @@ timeIs time (Session config) =
 timeWIthZoneIs : Time.Zone -> Time.Posix -> Session -> Session
 timeWIthZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
+
+
+trackDraggable : DragTracker -> Rect -> Session -> Session
+trackDraggable dragTracker draggedNodeRect (Session config) =
+    let
+        newTracker : DragTracker
+        newTracker =
+            { dragTracker | draggedNodeRect = draggedNodeRect }
+    in
+    Session { config | dragStatus = Dragging newTracker }
+
+
+waitForDrag : DragTracker -> Session -> Session
+waitForDrag dragTracker (Session config) =
+    Session { config | dragStatus = Waiting dragTracker }
+
+
+updateDragPositions : Coords -> Coords -> Session -> Session
+updateDragPositions newPosition newOffset ((Session config) as session) =
+    case config.dragStatus of
+        NotDragging ->
+            session
+
+        Waiting dragTracker ->
+            let
+                newTracker : DragTracker
+                newTracker =
+                    { dragTracker
+                        | clientPos = newPosition
+                        , offset = newOffset
+                    }
+            in
+            Session { config | dragStatus = Dragging newTracker }
+
+        Dragging dragTracker ->
+            let
+                newTracker : DragTracker
+                newTracker =
+                    { dragTracker
+                        | clientPos = newPosition
+                        , offset = newOffset
+                    }
+            in
+            Session { config | dragStatus = Dragging newTracker }
 
 
 updateSettings : Settings -> Session -> Session

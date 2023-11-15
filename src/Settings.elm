@@ -2,6 +2,7 @@ module Settings exposing
     ( Settings
     , addBoard
     , boardConfigs
+    , cleanupTitles
     , currentVersion
     , decoder
     , default
@@ -10,6 +11,7 @@ module Settings exposing
     , globalSettings
     , hasAnyBordsConfigured
     , mapGlobalSettings
+    , moveBoard
     , switchToBoard
     , updateBoardConfigs
     , updateCurrentBoard
@@ -17,8 +19,10 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
+import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -51,6 +55,21 @@ default =
 boardConfigs : Settings -> SafeZipper BoardConfig
 boardConfigs =
     .boardConfigs
+
+
+cleanupTitles : Settings -> Settings
+cleanupTitles settings =
+    case SafeZipper.currentIndex settings.boardConfigs of
+        Just index ->
+            settings
+                |> replaceMissingBoardTitles
+                |> enforceUniqueBoardTitles
+                |> boardConfigs
+                |> SafeZipper.atIndex index
+                |> (\cs -> { settings | boardConfigs = cs })
+
+        Nothing ->
+            settings
 
 
 currentVersion : Semver.Version
@@ -87,6 +106,87 @@ mapGlobalSettings fn settings =
     { settings | globalSettings = fn settings.globalSettings }
 
 
+moveBoard : String -> BeaconPosition -> Settings -> Settings
+moveBoard draggedId beaconPosition settings =
+    if BeaconPosition.identifier beaconPosition == draggedId then
+        let
+            boardList : List BoardConfig
+            boardList =
+                boardConfigs settings
+                    |> SafeZipper.toList
+        in
+        case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) boardList of
+            Nothing ->
+                settings
+
+            Just boardIndex ->
+                { settings
+                    | boardConfigs =
+                        SafeZipper.fromList boardList
+                            |> SafeZipper.atIndex boardIndex
+                }
+
+    else
+        let
+            boardList : List BoardConfig
+            boardList =
+                boardConfigs settings
+                    |> SafeZipper.toList
+
+            found : Maybe BoardConfig
+            found =
+                List.filter (\c -> BoardConfig.title c == draggedId) boardList
+                    |> List.head
+
+            afterRemoving : List BoardConfig
+            afterRemoving =
+                List.filter (\c -> BoardConfig.title c /= draggedId) boardList
+
+            insertConfig : BoardConfig -> Result String ( List BoardConfig, Int )
+            insertConfig foundConfig =
+                case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) afterRemoving of
+                    Nothing ->
+                        Err ""
+
+                    Just beaconIndex ->
+                        case beaconPosition of
+                            BeaconPosition.After _ ->
+                                Ok
+                                    ( List.concat
+                                        [ List.take (beaconIndex + 1) afterRemoving
+                                        , [ foundConfig ]
+                                        , List.drop (beaconIndex + 1) afterRemoving
+                                        ]
+                                    , beaconIndex + 1
+                                    )
+
+                            BeaconPosition.Before _ ->
+                                Ok
+                                    ( List.concat
+                                        [ List.take beaconIndex afterRemoving
+                                        , [ foundConfig ]
+                                        , List.drop beaconIndex afterRemoving
+                                        ]
+                                    , beaconIndex
+                                    )
+        in
+        case found of
+            Nothing ->
+                settings
+
+            Just foundConfig ->
+                case insertConfig foundConfig of
+                    Err _ ->
+                        settings
+
+                    Ok ( newList, movedBoardIndex ) ->
+                        { settings
+                            | boardConfigs =
+                                SafeZipper.fromList newList
+                                    |> SafeZipper.atIndex movedBoardIndex
+                        }
+
+
 switchToBoard : Int -> Settings -> Settings
 switchToBoard index settings =
     { settings | boardConfigs = SafeZipper.atIndex index settings.boardConfigs }
@@ -99,7 +199,7 @@ updateBoardConfigs newConfigs settings =
 
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings
 updateCurrentBoard fn settings =
-    { settings | boardConfigs = SafeZipper.mapCurrent fn settings.boardConfigs }
+    { settings | boardConfigs = SafeZipper.updateCurrent fn settings.boardConfigs }
 
 
 updatePath : String -> String -> Settings -> Settings
@@ -128,6 +228,7 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
+        |> TsDecode.map cleanupTitles
 
 
 
@@ -140,6 +241,52 @@ dataEncoder =
         [ TsEncode.required "boardConfigs" .boardConfigs (TsEncode.map SafeZipper.toList <| TsEncode.list BoardConfig.encoder)
         , TsEncode.required "globalSettings" .globalSettings GlobalSettings.encoder
         ]
+
+
+enforceUniqueBoardTitles : Settings -> Settings
+enforceUniqueBoardTitles settings =
+    let
+        helper : Int -> BoardConfig -> ( List String, SafeZipper BoardConfig ) -> ( List String, SafeZipper BoardConfig )
+        helper index config ( titles, cs ) =
+            let
+                uniqueTitle : String
+                uniqueTitle =
+                    if List.member (String.replace " " "_" <| BoardConfig.title config) titles then
+                        BoardConfig.title config ++ "." ++ String.fromInt index
+
+                    else
+                        BoardConfig.title config
+
+                safeConfig : BoardConfig
+                safeConfig =
+                    BoardConfig.updateTitle uniqueTitle config
+
+                ts : List String
+                ts =
+                    String.replace " " "_" uniqueTitle :: titles
+            in
+            ( ts, SafeZipper.add safeConfig cs )
+
+        withUniqueBoardTitles : SafeZipper BoardConfig
+        withUniqueBoardTitles =
+            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) settings.boardConfigs
+                |> Tuple.second
+    in
+    { settings | boardConfigs = withUniqueBoardTitles }
+
+
+replaceMissingBoardTitles : Settings -> Settings
+replaceMissingBoardTitles settings =
+    let
+        withNoMissingTitles : BoardConfig -> BoardConfig
+        withNoMissingTitles config =
+            if String.isEmpty (String.trim <| BoardConfig.title config) then
+                BoardConfig.updateTitle "Untitled" config
+
+            else
+                config
+    in
+    { settings | boardConfigs = SafeZipper.map withNoMissingTitles settings.boardConfigs }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

@@ -17,7 +17,6 @@ module Card exposing
 import Date exposing (Date)
 import TagList
 import TaskItem exposing (TaskItem)
-import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -48,13 +47,8 @@ fromTaskItem =
 -- INFO
 
 
-highlight : TimeWithZone -> Card -> Highlight
-highlight timeWithZone (Card _ item) =
-    let
-        datestamp : Date
-        datestamp =
-            TimeWithZone.toDate timeWithZone
-    in
+highlight : Date -> Card -> Highlight
+highlight datestamp (Card _ item) =
     case ( TaskItem.isCompleted item, TaskItem.due item ) of
         ( False, Just dueDate ) ->
             if datestamp == dueDate then

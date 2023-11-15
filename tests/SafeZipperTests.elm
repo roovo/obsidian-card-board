@@ -21,10 +21,11 @@ suite =
         , last
         , length
         , map
-        , mapCurrent
+        , mapSelectedAndRest
         , next
         , selectedIndex
         , toList
+        , updateCurrent
         ]
 
 
@@ -306,22 +307,24 @@ map =
         ]
 
 
-mapCurrent : Test
-mapCurrent =
-    describe "mapCurrent"
-        [ test "returns an empty list if given one" <|
+mapSelectedAndRest : Test
+mapSelectedAndRest =
+    describe "mapSelectedAndRest"
+        [ test "returns an empty zipper if given one" <|
             \() ->
-                SafeZipper.fromList []
-                    |> SafeZipper.atIndex 1
-                    |> SafeZipper.mapCurrent ((+) 10)
+                []
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.mapSelectedAndRest (\_ x -> ( 9, x )) Tuple.pair
                     |> Expect.equal SafeZipper.empty
-        , test "applies the map function to the current item only" <|
+        , test "returns a zipper focussed on a mid-list item" <|
             \() ->
-                SafeZipper.fromList [ 1, 2, 3 ]
-                    |> SafeZipper.atIndex 1
-                    |> SafeZipper.mapCurrent ((+) 10)
+                [ 5, 4, 3, 2, 1 ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.atIndex 2
+                    |> SafeZipper.mapSelectedAndRest (always 9) (\x -> x)
                     |> SafeZipper.toList
-                    |> Expect.equal [ 1, 12, 3 ]
+                    |> Expect.equal [ 5, 4, 9, 2, 1 ]
         ]
 
 
@@ -397,4 +400,23 @@ toList =
                     |> SafeZipper.atIndex 3
                     |> SafeZipper.toList
                     |> Expect.equal [ 1, 2, 3, 4, 5, 6 ]
+        ]
+
+
+updateCurrent : Test
+updateCurrent =
+    describe "updateCurrent"
+        [ test "returns an empty list if given one" <|
+            \() ->
+                SafeZipper.fromList []
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.updateCurrent ((+) 10)
+                    |> Expect.equal SafeZipper.empty
+        , test "applies the map function to the current item only" <|
+            \() ->
+                SafeZipper.fromList [ 1, 2, 3 ]
+                    |> SafeZipper.atIndex 1
+                    |> SafeZipper.updateCurrent ((+) 10)
+                    |> SafeZipper.toList
+                    |> Expect.equal [ 1, 12, 3 ]
         ]
