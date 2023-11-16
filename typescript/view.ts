@@ -372,17 +372,15 @@ export class CardBoardView extends ItemView {
     }
 
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
-      const appContainer  = document.getElementsByClassName("workspace")[0];
-      const tabContainer  = document.getElementsByClassName("workspace-tab-container")[1];
-      const rightSidebarContainer  = document.getElementsByClassName("workspace-tabs")[2];
+      const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
+      const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
+      const leftSplit   = document.getElementsByClassName("workspace-split")[0];
 
-      console.log
-
-      if ((appContainer instanceof HTMLElement) &&
-          (tabContainer instanceof HTMLElement) &&
+      if ((ribbon instanceof HTMLElement) &&
+          (leftSplit instanceof HTMLElement) &&
           (draggedElement instanceof HTMLElement)) {
-          const offsetLeft = appContainer.clientWidth - (tabContainer.clientWidth + rightSidebarContainer.clientWidth);
-          const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
+          const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
+          const offsetTop  = tabHeader.clientHeight;
 
           const draggedElementRect = draggedElement.getBoundingClientRect();
 
