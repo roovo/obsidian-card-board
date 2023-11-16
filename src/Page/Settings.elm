@@ -12,12 +12,15 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.Coords as Coords
+import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Html)
 import Html.Attributes exposing (class, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
 import InteropPorts
 import List.Extra as LE
@@ -90,6 +93,7 @@ type Msg
     | AddBoardConfirmed
     | BackspacePressed
     | BoardNameClicked Int
+    | BoardNameMouseDown ( String, DragTracker.ClientData )
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
@@ -113,6 +117,11 @@ type Msg
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
     | ToggleTagFilterScope
+
+
+dragType : String
+dragType =
+    "card-board-settings-board-name"
 
 
 switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
@@ -152,6 +161,12 @@ update msg model =
 
         BoardNameClicked index ->
             wrap <| switchSettingsState (SettingsState.editBoardAt index) model
+
+        BoardNameMouseDown ( domId, clientData ) ->
+            ( { model | session = Session.waitForDrag clientData model.session }
+            , InteropPorts.trackDraggable dragType clientData.clientPos domId
+            , Session.NoOp
+            )
 
         BoardTypeSelected boardType ->
             mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
@@ -1341,17 +1356,55 @@ polaritySelect polarity =
 
 settingTitleSelectedView : Int -> BoardConfig -> Html Msg
 settingTitleSelectedView index boardConfig =
+    let
+        domId : String
+        domId =
+            "card-board-setting-board-name:" ++ String.fromInt index
+
+        title : String
+        title =
+            BoardConfig.title boardConfig
+    in
     Html.div
         [ class "vertical-tab-nav-item is-active"
         , onClick <| BoardNameClicked index
+        , onDown
+            (\e ->
+                BoardNameMouseDown <|
+                    ( domId
+                    , { uniqueId = title
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
+                    )
+            )
         ]
-        [ Html.text <| BoardConfig.title boardConfig ]
+        [ Html.text title ]
 
 
 settingTitleView : Int -> BoardConfig -> Html Msg
 settingTitleView index boardConfig =
+    let
+        domId : String
+        domId =
+            "card-board-setting-board-name:" ++ String.fromInt index
+
+        title : String
+        title =
+            BoardConfig.title boardConfig
+    in
     Html.div
         [ class "vertical-tab-nav-item"
         , onClick <| BoardNameClicked index
+        , onDown
+            (\e ->
+                BoardNameMouseDown <|
+                    ( domId
+                    , { uniqueId = title
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
+                    )
+            )
         ]
-        [ Html.text <| BoardConfig.title boardConfig ]
+        [ Html.text title ]

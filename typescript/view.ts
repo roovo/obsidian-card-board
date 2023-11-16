@@ -342,6 +342,8 @@ export class CardBoardView extends ItemView {
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
 
+    console.log("tracking " + beaconType);
+
     function maybeDragMove(moveEvent: MouseEvent) {
       const dragDistance = distance({ x: data.clientPos.x, y: data.clientPos.y}, coords(moveEvent));
 
