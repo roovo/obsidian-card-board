@@ -379,6 +379,8 @@ export class CardBoardView extends ItemView {
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
       const leftSplit   = document.getElementsByClassName("workspace-split")[0];
 
+      console.log("dragEvent " + dragAction);
+
       if ((ribbon instanceof HTMLElement) &&
           (leftSplit instanceof HTMLElement) &&
           (draggedElement instanceof HTMLElement)) {

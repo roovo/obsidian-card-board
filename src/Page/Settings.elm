@@ -12,17 +12,19 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Html)
-import Html.Attributes exposing (class, placeholder, selected, type_, value)
+import Html.Attributes exposing (attribute, class, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
 import InteropPorts
+import Json.Encode as JE
 import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
@@ -1365,21 +1367,25 @@ settingTitleSelectedView index boardConfig =
         title =
             BoardConfig.title boardConfig
     in
-    Html.div
-        [ class "vertical-tab-nav-item is-active"
-        , onClick <| BoardNameClicked index
-        , onDown
-            (\e ->
-                BoardNameMouseDown <|
-                    ( domId
-                    , { uniqueId = title
-                      , clientPos = Coords.fromFloatTuple e.clientPos
-                      , offsetPos = Coords.fromFloatTuple e.offsetPos
-                      }
-                    )
-            )
+    Html.div []
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ class "vertical-tab-nav-item is-active"
+            , onClick <| BoardNameClicked index
+            , onDown
+                (\e ->
+                    BoardNameMouseDown <|
+                        ( domId
+                        , { uniqueId = title
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
+            ]
+            [ Html.text title ]
+        , beacon (BeaconPosition.After title)
         ]
-        [ Html.text title ]
 
 
 settingTitleView : Int -> BoardConfig -> Html Msg
@@ -1393,18 +1399,36 @@ settingTitleView index boardConfig =
         title =
             BoardConfig.title boardConfig
     in
-    Html.div
-        [ class "vertical-tab-nav-item"
-        , onClick <| BoardNameClicked index
-        , onDown
-            (\e ->
-                BoardNameMouseDown <|
-                    ( domId
-                    , { uniqueId = title
-                      , clientPos = Coords.fromFloatTuple e.clientPos
-                      , offsetPos = Coords.fromFloatTuple e.offsetPos
-                      }
-                    )
-            )
+    Html.div []
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ class "vertical-tab-nav-item"
+            , onClick <| BoardNameClicked index
+            , onDown
+                (\e ->
+                    BoardNameMouseDown <|
+                        ( domId
+                        , { uniqueId = title
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
+            ]
+            [ Html.text title ]
+        , beacon (BeaconPosition.After title)
         ]
-        [ Html.text title ]
+
+
+beaconType : String
+beaconType =
+    "data-" ++ dragType ++ "-beacon"
+
+
+beacon : BeaconPosition -> Html Msg
+beacon beaconPosition =
+    Html.span
+        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
