@@ -69,16 +69,8 @@ decoder =
 beaconDataDecoder : TsDecode.Decoder BeaconData
 beaconDataDecoder =
     TsDecode.succeed BeaconData
-        |> TsDecode.andMap (TsDecode.field "beaconPosition" beaconPositionDecoder)
+        |> TsDecode.andMap (TsDecode.field "beaconPosition" BeaconPosition.decoder)
         |> TsDecode.andMap (TsDecode.field "rect" Rect.decoder)
-
-
-beaconPositionDecoder : TsDecode.Decoder BeaconPosition
-beaconPositionDecoder =
-    TsDecode.oneOf
-        [ toElmBeacon "after" BeaconPosition.After TsDecode.string
-        , toElmBeacon "before" BeaconPosition.Before TsDecode.string
-        ]
 
 
 dragActionDecoder : TsDecode.Decoder DragAction
@@ -87,9 +79,3 @@ dragActionDecoder =
         [ ( "move", TsDecode.succeed Move )
         , ( "stop", TsDecode.succeed Stop )
         ]
-
-
-toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
-toElmBeacon tagName constructor decoder_ =
-    TsDecode.field "position" (TsDecode.literal constructor (JE.string tagName))
-        |> TsDecode.andMap (TsDecode.field "identifier" decoder_)
