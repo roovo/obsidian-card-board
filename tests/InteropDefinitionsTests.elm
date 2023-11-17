@@ -633,8 +633,7 @@ toElmTests =
                     |> Expect.equal
                         (Ok <|
                             InteropDefinitions.ElementDragged
-                                { beaconType = "some-beacon-id"
-                                , dragAction = DragData.Stop
+                                { dragAction = DragData.Stop
                                 , cursor = { x = 1.23, y = 4.56 }
                                 , offset = { x = 1.11, y = 2.22 }
                                 , draggedNodeRect = { x = 1.1, y = 2.2, width = 3.33, height = 4.44 }

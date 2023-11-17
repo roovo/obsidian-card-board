@@ -24,8 +24,7 @@ decoder =
                     |> .decoded
                     |> Expect.equal
                         (Ok <|
-                            { beaconType = "an identifier"
-                            , beacons =
+                            { beacons =
                                 [ { beaconPosition = BeaconPosition.Before "someId"
                                   , rect = { x = 1.1, y = 2.2, width = 3.3, height = 4.4 }
                                   }

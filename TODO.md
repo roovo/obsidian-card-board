@@ -1,5 +1,3 @@
-- am I using DragData.beaconType ??
-
 - enable reorder boards on settings page too
 - tidy typescript
 - tidy elm

@@ -193,8 +193,7 @@ moveDragable =
             \() ->
                 let
                     dragData =
-                        { beaconType = ""
-                        , dragAction = DragData.Move
+                        { dragAction = DragData.Move
                         , cursor = { x = 1.1, y = 2.2 }
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
@@ -284,8 +283,7 @@ stopTrackingDragable =
             \() ->
                 let
                     dragData =
-                        { beaconType = ""
-                        , dragAction = DragData.Move
+                        { dragAction = DragData.Move
                         , cursor = { x = 1.1, y = 2.2 }
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
