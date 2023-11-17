@@ -3,6 +3,7 @@ module SessionTests exposing (suite)
 import BoardConfig
 import DataviewTaskCompletion
 import DragAndDrop.DragData as DragData
+import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import Expect
 import Filter
 import GlobalSettings
@@ -24,11 +25,11 @@ suite =
         , deleteItemsFromFile
         , finishAdding
         , globalSettings
+        , moveDragable
         , replaceTaskItems
-        , trackDragable
         , stopTrackingDragable
         , updatePath
-        , updateDragPositions
+        , waitForDrag
         ]
 
 
@@ -76,11 +77,11 @@ default =
                 Session.default
                     |> Session.isActiveView
                     |> Expect.equal False
-        , test "has dragStatus of NotDragging" <|
+        , test "isnt dragging" <|
             \() ->
                 Session.default
-                    |> Session.dragStatus
-                    |> Expect.equal Session.NotDragging
+                    |> Session.isDragging
+                    |> Expect.equal False
         , test "has default Settings" <|
             \() ->
                 Session.default
@@ -166,85 +167,82 @@ globalSettings =
         ]
 
 
-trackDragable : Test
-trackDragable =
-    describe "trackDragable"
-        [ test "tracks a TabHeader" <|
+waitForDrag : Test
+waitForDrag =
+    describe "waitForDrag"
+        [ test "puts the dragTracker in Waiting state" <|
             \() ->
+                let
+                    clientData =
+                        { uniqueId = "an id"
+                        , clientPos = { x = 0, y = 1 }
+                        , offsetPos = { x = 1, y = 2 }
+                        }
+                in
                 Session.default
-                    |> Session.trackDraggable
-                        (DragData.DragTracker "3"
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0, width = 0, height = 0 }
-                        )
-                        { x = 0, y = 0, width = 0, height = 0 }
-                    |> Session.dragStatus
+                    |> Session.waitForDrag clientData
+                    |> Session.dragTracker
+                    |> Expect.equal (DragTracker.Waiting clientData)
+        ]
+
+
+moveDragable : Test
+moveDragable =
+    describe "moveDragable"
+        [ test "puts the dragTracker in Dragging state" <|
+            \() ->
+                let
+                    dragData =
+                        { beaconType = ""
+                        , dragAction = DragData.Move
+                        , cursor = { x = 1.1, y = 2.2 }
+                        , offset = { x = 1, y = 2 }
+                        , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
+                        , beacons = []
+                        }
+
+                    clientData =
+                        { uniqueId = "an id"
+                        , clientPos = { x = 0, y = 1 }
+                        , offsetPos = { x = 1, y = 2 }
+                        }
+                in
+                Session.default
+                    |> Session.waitForDrag clientData
+                    |> Session.moveDragable dragData
+                    |> Session.dragTracker
                     |> Expect.equal
-                        (Session.Dragging <|
-                            DragData.DragTracker "3"
-                                { x = 0, y = 0 }
-                                { x = 0, y = 0 }
-                                { x = 0, y = 0 }
-                                { x = 0, y = 0, width = 0, height = 0 }
+                        (DragTracker.Dragging
+                            { uniqueId = "an id"
+                            , clientPos = { x = 1.1, y = 2.2 }
+                            , offsetPos = { x = 1, y = 2 }
+                            }
+                            { offset = { x = 1, y = 2 }
+                            , draggedNodeStartRect = { x = 2, y = 3, width = 4, height = 5 }
+                            }
                         )
         ]
 
 
-updateDragPositions : Test
-updateDragPositions =
-    describe "updateDragPositions"
-        [ test "does nothing if not dragging" <|
-            \() ->
-                Session.default
-                    |> Session.updateDragPositions { x = 10, y = 20 }
-                        { x = 100, y = 200 }
-                    |> Session.dragStatus
-                    |> Expect.equal Session.NotDragging
-        , test "updates the tracked client position if dragging" <|
-            \() ->
-                Session.default
-                    |> Session.trackDraggable
-                        (DragData.DragTracker "3"
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0, width = 0, height = 0 }
-                        )
-                        { x = 0, y = 0, width = 0, height = 0 }
-                    |> Session.updateDragPositions { x = 10, y = 20 }
-                        { x = 100, y = 200 }
-                    |> Session.dragStatus
-                    |> Expect.equal
-                        (Session.Dragging <|
-                            DragData.DragTracker "3"
-                                { x = 10, y = 20 }
-                                { x = 0, y = 0 }
-                                { x = 100, y = 200 }
-                                { x = 0, y = 0, width = 0, height = 0 }
-                        )
-        ]
 
-
-stopTrackingDragable : Test
-stopTrackingDragable =
-    describe "stopTrackingDragable"
-        [ test "stops tracking a TabHeader" <|
-            \() ->
-                Session.default
-                    |> Session.trackDraggable
-                        (DragData.DragTracker "3"
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0 }
-                            { x = 0, y = 0, width = 0, height = 0 }
-                        )
-                        { x = 0, y = 0, width = 0, height = 0 }
-                    |> Session.stopTrackingDragable
-                    |> Session.dragStatus
-                    |> Expect.equal Session.NotDragging
-        ]
+-- stopTrackingDragable : Test
+-- stopTrackingDragable =
+--     describe "stopTrackingDragable"
+--         [ test "stops tracking a TabHeader" <|
+--             \() ->
+--                 Session.default
+--                     |> Session.trackDraggable
+--                         (DragTracker "3"
+--                             { x = 0, y = 0 }
+--                             { x = 0, y = 0 }
+--                             { x = 0, y = 0 }
+--                             { x = 0, y = 0, width = 0, height = 0 }
+--                         )
+--                         { x = 0, y = 0, width = 0, height = 0 }
+--                     |> Session.stopTrackingDragable
+--                     |> Session.isDragging
+--                     |> Expect.equal False
+--         ]
 
 
 replaceTaskItems : Test
@@ -276,6 +274,36 @@ replaceTaskItems =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "n1", "n2", "a1", "a2" ]
+        ]
+
+
+stopTrackingDragable : Test
+stopTrackingDragable =
+    describe "stopTracking"
+        [ test "puts the dragTracker in Dragging state" <|
+            \() ->
+                let
+                    dragData =
+                        { beaconType = ""
+                        , dragAction = DragData.Move
+                        , cursor = { x = 1.1, y = 2.2 }
+                        , offset = { x = 1, y = 2 }
+                        , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
+                        , beacons = []
+                        }
+
+                    clientData =
+                        { uniqueId = "an id"
+                        , clientPos = { x = 0, y = 1 }
+                        , offsetPos = { x = 1, y = 2 }
+                        }
+                in
+                Session.default
+                    |> Session.waitForDrag clientData
+                    |> Session.moveDragable dragData
+                    |> Session.stopTrackingDragable
+                    |> Session.dragTracker
+                    |> Expect.equal DragTracker.NotDragging
         ]
 
 

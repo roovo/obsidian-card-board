@@ -12,7 +12,8 @@ import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
-import DragAndDrop.DragData as DragData exposing (DragData, DragTracker)
+import DragAndDrop.DragData as DragData exposing (DragData)
+import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
@@ -38,7 +39,7 @@ import TimeWithZone exposing (TimeWithZone)
 type Msg
     = ElementDragged DragData
     | SettingsClicked
-    | TabHeaderMouseDown ( String, DragTracker )
+    | TabHeaderMouseDown ( String, DragTracker.ClientData )
     | TabSelected Int
     | TaskItemEditClicked String
     | TaskItemDeleteClicked String
@@ -51,42 +52,16 @@ beaconType =
     "data-card-board-tag-header-beacon"
 
 
-updateBoardOrder : DragTracker -> DragData -> Session -> Session
-updateBoardOrder { nodeId } { cursor, beacons } session =
-    case Rect.closestTo cursor beacons of
-        Nothing ->
-            session
-
-        Just position ->
-            Session.moveBoard nodeId position session
-
-
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    case Session.dragStatus session of
-                        Session.NotDragging ->
-                            ( session
-                            , Cmd.none
-                            , Session.NoOp
-                            )
-
-                        Session.Waiting dragTracker ->
-                            ( Session.trackDraggable dragTracker dragData.draggedNodeRect session
-                            , Cmd.none
-                            , Session.NoOp
-                            )
-
-                        Session.Dragging dragTracker ->
-                            ( session
-                                |> updateBoardOrder dragTracker dragData
-                                |> Session.updateDragPositions dragData.cursor dragData.offset
-                            , Cmd.none
-                            , Session.NoOp
-                            )
+                    ( Session.moveDragable dragData session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
 
                 DragData.Stop ->
                     ( Session.stopTrackingDragable session
@@ -100,9 +75,9 @@ update msg session =
             , Session.SettingsClicked
             )
 
-        TabHeaderMouseDown ( tabId, dragTracker ) ->
-            ( Session.waitForDrag dragTracker session
-            , InteropPorts.trackDraggable beaconType dragTracker.clientPos tabId
+        TabHeaderMouseDown ( domId, clientData ) ->
+            ( Session.waitForDrag clientData session
+            , InteropPorts.trackDraggable beaconType clientData.clientPos domId
             , Session.NoOp
             )
 
@@ -207,15 +182,7 @@ view session =
 
             isDragging : Bool
             isDragging =
-                case Session.dragStatus session of
-                    Session.Dragging _ ->
-                        True
-
-                    Session.NotDragging ->
-                        False
-
-                    Session.Waiting _ ->
-                        False
+                Session.isDragging session
         in
         Html.div
             [ attribute "dir" (TextDirection.toString <| Session.textDirection session)
@@ -272,12 +239,12 @@ tabHeader isDragging currentBoardIndex tabIndex title =
         headerClass =
             tabHeaderClass currentBoardIndex tabIndex
 
-        tabId : String
-        tabId =
+        domId : String
+        domId =
             "card-board-tab:" ++ String.fromInt tabIndex
     in
     Html.div
-        [ id tabId
+        [ id domId
         , class ("workspace-tab-header" ++ headerClass)
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
@@ -285,12 +252,11 @@ tabHeader isDragging currentBoardIndex tabIndex title =
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
-                    ( tabId
-                    , DragTracker title
-                        (Coords.fromFloatTuple e.clientPos)
-                        (Coords.fromFloatTuple e.offsetPos)
-                        (Coords.fromFloatTuple ( 0, 0 ))
-                        { x = 0, y = 0, width = 0, height = 0 }
+                    ( domId
+                    , { uniqueId = title
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
                     )
             )
         ]
@@ -307,25 +273,24 @@ tabHeader isDragging currentBoardIndex tabIndex title =
 selectedTabHeader : Bool -> Int -> String -> Html Msg
 selectedTabHeader isDragging tabIndex title =
     let
-        tabId : String
-        tabId =
+        domId : String
+        domId =
             "card-board-tab:" ++ String.fromInt tabIndex
     in
     Html.div
         [ class "workspace-tab-header is-active"
-        , id tabId
+        , id domId
         , attributeIf (not isDragging) (attribute "aria-label" title)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
-                    ( tabId
-                    , DragTracker title
-                        (Coords.fromFloatTuple e.clientPos)
-                        (Coords.fromFloatTuple e.offsetPos)
-                        (Coords.fromFloatTuple ( 0, 0 ))
-                        { x = 0, y = 0, width = 0, height = 0 }
+                    ( domId
+                    , { uniqueId = title
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
                     )
             )
         ]
@@ -341,30 +306,27 @@ selectedTabHeader isDragging tabIndex title =
 
 viewDraggedHeader : Session -> Html Msg
 viewDraggedHeader session =
-    case Session.dragStatus session of
-        Session.Dragging dragTracker ->
+    case Session.dragTracker session of
+        DragTracker.Dragging clientData domData ->
             Html.div
                 [ class "workspace-tab-header is-active"
                 , id <| "card-board-tab:being-dragged"
                 , style "position" "fixed"
-                , style "top" (String.fromFloat (dragTracker.draggedNodeRect.y - dragTracker.offset.y) ++ "px")
-                , style "left" (String.fromFloat (dragTracker.clientPos.x - dragTracker.offset.x - dragTracker.offsetPos.x) ++ "px")
-                , style "width" (String.fromFloat dragTracker.draggedNodeRect.width ++ "px")
-                , style "height" (String.fromFloat dragTracker.draggedNodeRect.height ++ "px")
+                , style "top" (String.fromFloat (domData.draggedNodeStartRect.y - domData.offset.y) ++ "px")
+                , style "left" (String.fromFloat (clientData.clientPos.x - domData.offset.x - clientData.offsetPos.x) ++ "px")
+                , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
                 , style "cursor" "grabbing"
                 , style "opacity" "0.85"
                 ]
                 [ Html.div
                     [ class "workspace-tab-header-inner" ]
                     [ Html.div [ class "workspace-tab-header-inner-title" ]
-                        [ Html.text <| dragTracker.nodeId ]
+                        [ Html.text <| clientData.uniqueId ]
                     ]
                 ]
 
-        Session.Waiting _ ->
-            empty
-
-        Session.NotDragging ->
+        _ ->
             empty
 
 

@@ -2,7 +2,6 @@ module DragAndDrop.DragData exposing
     ( BeaconData
     , DragAction(..)
     , DragData
-    , DragTracker
     , decoder
     )
 
@@ -35,15 +34,6 @@ type DragAction
 type alias BeaconData =
     { beaconPosition : BeaconPosition
     , rect : Rect
-    }
-
-
-type alias DragTracker =
-    { nodeId : String
-    , clientPos : Coords
-    , offsetPos : Coords
-    , offset : Coords
-    , draggedNodeRect : Rect
     }
 
 
