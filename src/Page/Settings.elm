@@ -19,7 +19,7 @@ import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Html)
-import Html.Attributes exposing (attribute, class, placeholder, selected, style, type_, value)
+import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
@@ -1370,7 +1370,8 @@ settingTitleSelectedView index boardConfig =
     Html.div []
         [ beacon (BeaconPosition.Before title)
         , Html.div
-            [ class "vertical-tab-nav-item is-active"
+            [ id domId
+            , class "vertical-tab-nav-item is-active"
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
@@ -1402,7 +1403,8 @@ settingTitleView index boardConfig =
     Html.div []
         [ beacon (BeaconPosition.Before title)
         , Html.div
-            [ class "vertical-tab-nav-item"
+            [ id domId
+            , class "vertical-tab-nav-item"
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
