@@ -30,7 +30,6 @@ module Session exposing
     , timeWithZone
     , timeWithZoneIs
     , uniqueId
-    , updateBoardOrder
     , updateColumnCollapse
     , updatePath
     , updateSettings
@@ -250,15 +249,8 @@ moveBoard draggedId beaconPosition (Session config) =
 
 
 moveDragable : DragData -> Session -> Session
-moveDragable dragData session =
-    let
-        doMove : Session -> Session
-        doMove (Session config) =
-            Session { config | dragTracker = DragTracker.moveDragable dragData config.dragTracker }
-    in
-    session
-        |> updateBoardOrder dragData
-        |> doMove
+moveDragable dragData (Session config) =
+    Session { config | dragTracker = DragTracker.moveDragable dragData config.dragTracker }
 
 
 stopTrackingDragable : Session -> Session
@@ -279,21 +271,6 @@ timeIs time (Session config) =
 timeWithZoneIs : Time.Zone -> Time.Posix -> Session -> Session
 timeWithZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
-
-
-updateBoardOrder : DragData -> Session -> Session
-updateBoardOrder { cursor, beacons } ((Session config) as session) =
-    case config.dragTracker of
-        DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
-                Nothing ->
-                    session
-
-                Just position ->
-                    moveBoard clientData.uniqueId position session
-
-        _ ->
-            session
 
 
 updateColumnCollapse : Int -> Bool -> Session -> Session
@@ -394,6 +371,21 @@ updatePath oldPath newPath (Session config) =
 
 
 -- PRIVATE
+
+
+updateBoardOrder : DragData -> Session -> Session
+updateBoardOrder { cursor, beacons } ((Session config) as session) =
+    case config.dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    session
+
+                Just position ->
+                    moveBoard clientData.uniqueId position session
+
+        _ ->
+            session
 
 
 updateTaskListState : State TaskList -> Session -> Session

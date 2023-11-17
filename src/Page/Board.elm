@@ -52,13 +52,30 @@ beaconType =
     "data-card-board-tag-header-beacon"
 
 
+updateBoardOrder : DragTracker -> DragData -> Session -> Session
+updateBoardOrder dragTracker { cursor, beacons } session =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    session
+
+                Just position ->
+                    Session.moveBoard clientData.uniqueId position session
+
+        _ ->
+            session
+
+
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    ( Session.moveDragable dragData session
+                    ( session
+                        |> updateBoardOrder (Session.dragTracker session) dragData
+                        |> Session.moveDragable dragData
                     , Cmd.none
                     , Session.NoOp
                     )
