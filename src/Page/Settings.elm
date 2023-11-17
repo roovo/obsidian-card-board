@@ -427,10 +427,14 @@ type CurrentSection
 
 view : Model -> Html Msg
 view model =
+    let
+        dragTracker =
+            Session.dragTracker model.session
+    in
     case model.settingsState of
         SettingsState.AddingBoard newConfig settings ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
@@ -442,15 +446,17 @@ view model =
 
         SettingsState.DeletingBoard settings ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
         SettingsState.EditingBoard settings ->
-            boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+            boardSettingsView (Settings.boardConfigs settings)
+                model.multiSelect
+                dragTracker
 
         SettingsState.EditingGlobalSettings settings ->
-            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings dragTracker
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -546,8 +552,8 @@ modalConfirmDelete =
         ]
 
 
-settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> List (Html Msg) -> Html Msg
-settingsSurroundView currentSection configs formContents =
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> DragTracker -> List (Html Msg) -> Html Msg
+settingsSurroundView currentSection configs dragTracker formContents =
     let
         boardMapFn : Int -> BoardConfig -> Html Msg
         boardMapFn =
@@ -566,6 +572,14 @@ settingsSurroundView currentSection configs formContents =
 
                 Boards ->
                     "vertical-tab-nav-item"
+
+        isDragging : Bool
+        isDragging =
+            DragTracker.isDragging dragTracker && draggedType == Just dragType
+
+        draggedType : Maybe String
+        draggedType =
+            DragTracker.dragType dragTracker
     in
     Html.div [ class "modal-container" ]
         [ Html.div
@@ -611,6 +625,10 @@ settingsSurroundView currentSection configs formContents =
                             (configs
                                 |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
                                 |> SafeZipper.toList
+                                |> (\hs ->
+                                        List.append hs
+                                            [ settingTitleDraggedView isDragging (SafeZipper.current configs) dragTracker ]
+                                   )
                             )
                         ]
                     ]
@@ -623,18 +641,18 @@ settingsSurroundView currentSection configs formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
-boardSettingsView boardConfigs multiselect =
+boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView boardConfigs multiselect dragTracker =
     boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
-        |> settingsSurroundView Boards boardConfigs
+        |> settingsSurroundView Boards boardConfigs dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> Settings -> Html Msg
-globalSettingsView dataviewTaskCompletion settings =
+globalSettingsView : DataviewTaskCompletion -> Settings -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion settings dragTracker =
     settings
         |> Settings.globalSettings
         |> globalSettingsForm dataviewTaskCompletion
-        |> settingsSurroundView Options (Settings.boardConfigs settings)
+        |> settingsSurroundView Options (Settings.boardConfigs settings) dragTracker
 
 
 globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
@@ -1397,6 +1415,39 @@ polaritySelect polarity =
         )
 
 
+settingTitleView : Int -> BoardConfig -> Html Msg
+settingTitleView index boardConfig =
+    let
+        domId : String
+        domId =
+            "card-board-setting-board-name:" ++ String.fromInt index
+
+        title : String
+        title =
+            BoardConfig.title boardConfig
+    in
+    Html.div []
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ id domId
+            , class "vertical-tab-nav-item"
+            , onClick <| BoardNameClicked index
+            , onDown
+                (\e ->
+                    BoardNameMouseDown <|
+                        ( domId
+                        , { uniqueId = title
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
+            ]
+            [ Html.text title ]
+        , beacon (BeaconPosition.After title)
+        ]
+
+
 settingTitleSelectedView : Int -> BoardConfig -> Html Msg
 settingTitleSelectedView index boardConfig =
     let
@@ -1430,37 +1481,35 @@ settingTitleSelectedView index boardConfig =
         ]
 
 
-settingTitleView : Int -> BoardConfig -> Html Msg
-settingTitleView index boardConfig =
-    let
-        domId : String
-        domId =
-            "card-board-setting-board-name:" ++ String.fromInt index
-
-        title : String
-        title =
-            BoardConfig.title boardConfig
-    in
-    Html.div []
-        [ beacon (BeaconPosition.Before title)
-        , Html.div
-            [ id domId
-            , class "vertical-tab-nav-item"
-            , onClick <| BoardNameClicked index
-            , onDown
-                (\e ->
-                    BoardNameMouseDown <|
-                        ( domId
-                        , { uniqueId = title
-                          , clientPos = Coords.fromFloatTuple e.clientPos
-                          , offsetPos = Coords.fromFloatTuple e.offsetPos
-                          }
+settingTitleDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
+settingTitleDraggedView isDragging boardConfig dragTracker =
+    case ( isDragging, boardConfig, dragTracker ) of
+        ( True, Just config, DragTracker.Dragging clientData domData ) ->
+            Html.div []
+                [ Html.div
+                    [ id "card-board-settings-board-title:being-dragged"
+                    , class "vertical-tab-nav-item is-active"
+                    , style "position" "fixed"
+                    , style "top"
+                        (String.fromFloat
+                            (clientData.clientPos.y - domData.offset.y - clientData.offsetPos.y)
+                            ++ "px"
                         )
-                )
-            ]
-            [ Html.text title ]
-        , beacon (BeaconPosition.After title)
-        ]
+                    , style "left"
+                        (String.fromFloat
+                            (domData.draggedNodeStartRect.x - domData.offset.x)
+                            ++ "px"
+                        )
+                    , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                    , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
+                    , style "cursor" "grabbing"
+                    , style "opacity" "0.85"
+                    ]
+                    [ Html.text (BoardConfig.title config) ]
+                ]
+
+        _ ->
+            Html.text ""
 
 
 beaconType : String
