@@ -1,6 +1,5 @@
-- Session.timeWIthZOneIs - WI -> Wi
-- am I using DragData.beaconType ??
 - sort out Session function organisation
+- am I using DragData.beaconType ??
 
 - enable reorder boards on settings page too
 - tidy typescript

@@ -27,8 +27,8 @@ module Session exposing
     , taskList
     , textDirection
     , timeIs
-    , timeWIthZoneIs
     , timeWithZone
+    , timeWithZoneIs
     , uniqueId
     , updateBoardOrder
     , updateColumnCollapse
@@ -264,8 +264,8 @@ timeIs time (Session config) =
     Session { config | timeWithZone = TimeWithZone.time time config.timeWithZone }
 
 
-timeWIthZoneIs : Time.Zone -> Time.Posix -> Session -> Session
-timeWIthZoneIs zone time (Session config) =
+timeWithZoneIs : Time.Zone -> Time.Posix -> Session -> Session
+timeWithZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 

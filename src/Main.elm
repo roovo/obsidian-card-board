@@ -203,7 +203,7 @@ update msg model =
             ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
-            ( mapSession (Session.timeWIthZoneIs zone posix) model
+            ( mapSession (Session.timeWithZoneIs zone posix) model
             , Cmd.none
             )
 
