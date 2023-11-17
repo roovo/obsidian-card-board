@@ -2,7 +2,7 @@ module DragAndDrop.BeaconPosition exposing
     ( BeaconPosition(..)
     , decoder
     , encoder
-    , identifier
+    , uniqueId
     )
 
 import Json.Encode as JE
@@ -43,7 +43,7 @@ encoder beaconPosition =
     in
     JE.object
         [ ( "position", JE.string positionStr )
-        , ( "identifier", JE.string identifierString )
+        , ( "uniqueId", JE.string identifierString )
         ]
 
 
@@ -51,8 +51,8 @@ encoder beaconPosition =
 -- UTILS
 
 
-identifier : BeaconPosition -> String
-identifier beaconPosition =
+uniqueId : BeaconPosition -> String
+uniqueId beaconPosition =
     case beaconPosition of
         Before id ->
             id
@@ -68,4 +68,4 @@ identifier beaconPosition =
 toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
 toElmBeacon tagName constructor decoder_ =
     TsDecode.field "position" (TsDecode.literal constructor (JE.string tagName))
-        |> TsDecode.andMap (TsDecode.field "identifier" decoder_)
+        |> TsDecode.andMap (TsDecode.field "uniqueId" decoder_)

@@ -1,5 +1,4 @@
 - Session.timeWIthZOneIs - WI -> Wi
-- Beacon identifier to uniqueId
 - am I using DragData.beaconType ??
 - sort out Session function organisation
 
