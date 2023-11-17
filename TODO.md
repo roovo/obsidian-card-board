@@ -1,4 +1,3 @@
-- sort out Session function organisation
 - am I using DragData.beaconType ??
 
 - enable reorder boards on settings page too

@@ -125,7 +125,7 @@ fromFlags flags =
 
 
 
--- UTILITIES
+-- INFO
 
 
 boardConfigs : Session -> SafeZipper BoardConfig
@@ -249,6 +249,18 @@ moveBoard draggedId beaconPosition (Session config) =
     Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
 
 
+moveDragable : DragData -> Session -> Session
+moveDragable dragData session =
+    let
+        doMove : Session -> Session
+        doMove (Session config) =
+            Session { config | dragTracker = DragTracker.moveDragable dragData config.dragTracker }
+    in
+    session
+        |> updateBoardOrder dragData
+        |> doMove
+
+
 stopTrackingDragable : Session -> Session
 stopTrackingDragable (Session config) =
     Session { config | dragTracker = DragTracker.stopTracking }
@@ -269,18 +281,6 @@ timeWithZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 
-moveDragable : DragData -> Session -> Session
-moveDragable dragData session =
-    let
-        doMove : Session -> Session
-        doMove (Session config) =
-            Session { config | dragTracker = DragTracker.moveDragable dragData config.dragTracker }
-    in
-    session
-        |> updateBoardOrder dragData
-        |> doMove
-
-
 updateBoardOrder : DragData -> Session -> Session
 updateBoardOrder { cursor, beacons } ((Session config) as session) =
     case config.dragTracker of
@@ -296,9 +296,15 @@ updateBoardOrder { cursor, beacons } ((Session config) as session) =
             session
 
 
-waitForDrag : DragTracker.ClientData -> Session -> Session
-waitForDrag clientData (Session config) =
-    Session { config | dragTracker = DragTracker.waitForDrag clientData }
+updateColumnCollapse : Int -> Bool -> Session -> Session
+updateColumnCollapse columnIndex isCollapsed (Session config) =
+    Session
+        { config
+            | settings =
+                Settings.updateCurrentBoard
+                    (BoardConfig.collapseColumn columnIndex isCollapsed)
+                    config.settings
+        }
 
 
 updateSettings : Settings -> Session -> Session
@@ -309,6 +315,11 @@ updateSettings newSettings (Session config) =
 updateTextDirection : TextDirection -> Session -> Session
 updateTextDirection newTextDirection (Session config) =
     Session { config | textDirection = newTextDirection }
+
+
+waitForDrag : DragTracker.ClientData -> Session -> Session
+waitForDrag clientData (Session config) =
+    Session { config | dragTracker = DragTracker.waitForDrag clientData }
 
 
 
@@ -365,17 +376,6 @@ replaceTaskItems filePath updatedList ((Session config) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
-
-
-updateColumnCollapse : Int -> Bool -> Session -> Session
-updateColumnCollapse columnIndex isCollapsed (Session config) =
-    Session
-        { config
-            | settings =
-                Settings.updateCurrentBoard
-                    (BoardConfig.collapseColumn columnIndex isCollapsed)
-                    config.settings
-        }
 
 
 updatePath : String -> String -> Session -> Session
