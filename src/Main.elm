@@ -162,8 +162,9 @@ update msg model =
             BoardPage.update (BoardPage.ElementDragged dragData) subModel
                 |> updateWith Boards GotBoardPageMsg
 
-        ( ElementDragged _, _ ) ->
-            ( model, Cmd.none )
+        ( ElementDragged dragData, Settings subModel ) ->
+            SettingsPage.update (SettingsPage.ElementDragged dragData) subModel
+                |> updateWith Settings GotSettingsPageMsg
 
         ( FilterCandidatesReceived filterCandidates, Settings subModel ) ->
             SettingsPage.update (SettingsPage.FilterCandidatesReceived filterCandidates) subModel

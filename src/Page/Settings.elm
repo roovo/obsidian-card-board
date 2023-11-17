@@ -14,6 +14,7 @@ import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
+import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
@@ -99,6 +100,7 @@ type Msg
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
+    | ElementDragged DragData
     | EnteredColumName String String
     | EnteredCompletedCount String
     | EnteredNewBoardTitle String
@@ -178,6 +180,13 @@ update msg model =
 
         DeleteBoardConfirmed ->
             wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
+
+        ElementDragged dragData ->
+            let
+                foo =
+                    Debug.log "dragData" dragData
+            in
+            ( model, Cmd.none, Session.NoOp )
 
         EnteredColumName column name ->
             wrap
