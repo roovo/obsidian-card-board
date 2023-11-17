@@ -14,8 +14,9 @@ import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
-import DragAndDrop.DragData exposing (DragData)
+import DragAndDrop.DragData as DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
+import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
@@ -182,11 +183,24 @@ update msg model =
             wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
 
         ElementDragged dragData ->
-            let
-                foo =
-                    Debug.log "dragData" dragData
-            in
-            ( model, Cmd.none, Session.NoOp )
+            case dragData.dragAction of
+                DragData.Move ->
+                    if dragData.dragType == dragType then
+                        ( model
+                            |> updateBoardOrder (Session.dragTracker model.session) dragData
+                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
+                    else
+                        ( model, Cmd.none, Session.NoOp )
+
+                DragData.Stop ->
+                    ( { model | session = Session.stopTrackingDragable model.session }
+                    , Cmd.none
+                    , Session.NoOp
+                    )
 
         EnteredColumName column name ->
             wrap
@@ -377,6 +391,24 @@ mapBoardBeingAdded fn model =
 mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
+
+
+updateBoardOrder : DragTracker -> DragData -> Model -> Model
+updateBoardOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    { model
+                        | settingsState =
+                            SettingsState.moveBoard clientData.uniqueId position model.settingsState
+                    }
+
+        _ ->
+            model
 
 
 wrap : Model -> ( Model, Cmd Msg, Session.Msg )
