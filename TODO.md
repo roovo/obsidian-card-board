@@ -1,7 +1,5 @@
-- enable reorder boards on settings page too
+- why isn't grab cursor working over "draggables"?
 - tidy typescript
-- tidy elm
-
 - can I animate tab moving so it isn't instantaneous?
 - touch events - iPad ??
 
