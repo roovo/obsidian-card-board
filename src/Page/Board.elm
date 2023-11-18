@@ -235,7 +235,7 @@ view session =
                 , Html.div
                     [ class "workspace-tab-header-container-inner" ]
                     (tabHeaders isDragging currentBoardIndex boards
-                        ++ [ viewDraggedHeader session ]
+                        ++ [ viewDraggedHeader isDragging session ]
                     )
                 , Html.div
                     [ class "card-board-tab-header-spacer" ]
@@ -308,6 +308,7 @@ selectedTabHeader isDragging tabIndex title =
         [ class "workspace-tab-header is-active"
         , id domId
         , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf isDragging (attribute "aria-label" "")
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
         , onDown
@@ -331,10 +332,10 @@ selectedTabHeader isDragging tabIndex title =
         ]
 
 
-viewDraggedHeader : Session -> Html Msg
-viewDraggedHeader session =
-    case Session.dragTracker session of
-        DragTracker.Dragging clientData domData ->
+viewDraggedHeader : Bool -> Session -> Html Msg
+viewDraggedHeader isDragging session =
+    case ( isDragging, Session.dragTracker session ) of
+        ( True, DragTracker.Dragging clientData domData ) ->
             Html.div
                 [ class "workspace-tab-header is-active"
                 , id <| "card-board-tab:being-dragged"
