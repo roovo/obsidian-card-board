@@ -47,9 +47,9 @@ type Msg
     | ToggleColumnCollapse Int Bool
 
 
-beaconType : String
-beaconType =
-    "data-card-board-tag-header-beacon"
+dragType : String
+dragType =
+    "card-board-tag-header"
 
 
 updateBoardOrder : DragTracker -> DragData -> Session -> Session
@@ -94,7 +94,7 @@ update msg session =
 
         TabHeaderMouseDown ( domId, clientData ) ->
             ( Session.waitForDrag clientData session
-            , InteropPorts.trackDraggable beaconType clientData.clientPos domId
+            , InteropPorts.trackDraggable dragType clientData.clientPos domId
             , Session.NoOp
             )
 
@@ -345,6 +345,11 @@ viewDraggedHeader session =
 
         _ ->
             empty
+
+
+beaconType : String
+beaconType =
+    "data-" ++ dragType ++ "-beacon"
 
 
 beacon : BeaconPosition -> Html Msg

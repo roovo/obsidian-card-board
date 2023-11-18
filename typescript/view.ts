@@ -327,7 +327,7 @@ export class CardBoardView extends ItemView {
 
   async handleTrackDraggable(
     data : {
-      beaconType: string,
+      dragType: string,
       clientPos : { x: number, y: number },
       draggableId: string
     }
@@ -337,6 +337,7 @@ export class CardBoardView extends ItemView {
     const that = this;
 
     const draggedElement = document.getElementById(data.draggableId);
+    const beaconType = "data-" + data.dragType + "-beacon";
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -396,7 +397,7 @@ export class CardBoardView extends ItemView {
                 width: draggedElementRect.width,
                 height: draggedElementRect.height
               },
-              beacons: beaconPositions(data.beaconType)
+              beacons: beaconPositions(beaconType)
             }
           });
       }
@@ -409,7 +410,7 @@ export class CardBoardView extends ItemView {
 
     function beaconData(elem: Element) {
       const boundingRect = elem.getBoundingClientRect();
-      const beaconId = elem.getAttribute(data.beaconType);
+      const beaconId = elem.getAttribute(beaconType);
       return {
         beaconPosition: tryParse(beaconId),
         rect: {

@@ -589,11 +589,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes TrackDraggable data" <|
             \() ->
-                { beaconType = "someBeaconId", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
+                { dragType = "someDragType", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
                     |> InteropDefinitions.TrackDraggable
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"trackDraggable","data":{"beaconType":"someBeaconId","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
+                    |> Expect.equal """{"tag":"trackDraggable","data":{"dragType":"someDragType","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
