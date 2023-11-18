@@ -9,11 +9,45 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ init
+        [ dragType
+        , init
         , isDragging
         , moveDragable
         , stopTracking
         , waitForDrag
+        ]
+
+
+dragType : Test
+dragType =
+    describe "dragType"
+        [ test "is Nothingl if in NotDragging state" <|
+            \() ->
+                DragTracker.init
+                    |> DragTracker.dragType
+                    |> Expect.equal Nothing
+        , test "returns Nothingl if it was Waiting" <|
+            \() ->
+                DragTracker.waitForDrag
+                    { uniqueId = "an id"
+                    , clientPos = { x = 0, y = 1 }
+                    , offsetPos = { x = 1, y = 2 }
+                    }
+                    |> DragTracker.dragType
+                    |> Expect.equal Nothing
+        , test "returns Just dragType if Dragging" <|
+            \() ->
+                DragTracker.Dragging
+                    { uniqueId = "an id"
+                    , clientPos = { x = 0, y = 0 }
+                    , offsetPos = { x = 1, y = 2 }
+                    }
+                    { offset = { x = 0, y = 0 }
+                    , draggedNodeStartRect = { x = 0, y = 0, width = 0, height = 0 }
+                    , dragType = "aDragType"
+                    }
+                    |> DragTracker.dragType
+                    |> Expect.equal (Just "aDragType")
         ]
 
 

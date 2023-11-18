@@ -203,7 +203,13 @@ view session =
 
             isDragging : Bool
             isDragging =
-                Session.isDragging session
+                Session.isDragging session && draggedType == Just dragType
+
+            draggedType : Maybe String
+            draggedType =
+                session
+                    |> Session.dragTracker
+                    |> DragTracker.dragType
         in
         Html.div
             [ attribute "dir" (TextDirection.toString <| Session.textDirection session)

@@ -1,6 +1,7 @@
 module DragAndDrop.DragTracker exposing
     ( ClientData
     , DragTracker(..)
+    , dragType
     , init
     , isDragging
     , moveDragable
@@ -44,6 +45,19 @@ init =
 
 
 -- INFO
+
+
+dragType : DragTracker -> Maybe String
+dragType dragTracker =
+    case dragTracker of
+        NotDragging ->
+            Nothing
+
+        Waiting _ ->
+            Nothing
+
+        Dragging _ domData ->
+            Just domData.dragType
 
 
 isDragging : DragTracker -> Bool
