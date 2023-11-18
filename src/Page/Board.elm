@@ -52,21 +52,6 @@ dragType =
     "card-board-tag-header"
 
 
-updateBoardOrder : DragTracker -> DragData -> Session -> Session
-updateBoardOrder dragTracker { cursor, beacons } session =
-    case dragTracker of
-        DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
-                Nothing ->
-                    session
-
-                Just position ->
-                    Session.moveBoard clientData.uniqueId position session
-
-        _ ->
-            session
-
-
 update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
 update msg session =
     case msg of
@@ -166,6 +151,21 @@ cmdIfHasTask id session cmd =
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
         |> Maybe.withDefault Cmd.none
+
+
+updateBoardOrder : DragTracker -> DragData -> Session -> Session
+updateBoardOrder dragTracker { cursor, beacons } session =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    session
+
+                Just position ->
+                    Session.moveBoard clientData.uniqueId position session
+
+        _ ->
+            session
 
 
 
