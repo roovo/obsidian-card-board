@@ -20,7 +20,7 @@ import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
-import Html exposing (Html)
+import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
@@ -562,7 +562,7 @@ settingsSurroundView currentSection configs dragTracker formContents =
                     settingTitleView
 
                 Boards ->
-                    settingTitleSelectedView
+                    settingTitleSelectedView isDragging
 
         globalSettingsClass : String
         globalSettingsClass =
@@ -1448,8 +1448,8 @@ settingTitleView index boardConfig =
         ]
 
 
-settingTitleSelectedView : Int -> BoardConfig -> Html Msg
-settingTitleSelectedView index boardConfig =
+settingTitleSelectedView : Bool -> Int -> BoardConfig -> Html Msg
+settingTitleSelectedView isDragging index boardConfig =
     let
         domId : String
         domId =
@@ -1464,6 +1464,7 @@ settingTitleSelectedView index boardConfig =
         , Html.div
             [ id domId
             , class "vertical-tab-nav-item is-active"
+            , attributeIf isDragging (style "opacity" "0.0")
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
@@ -1524,3 +1525,16 @@ beacon beaconPosition =
         , style "font-size" "0"
         ]
         []
+
+
+
+-- HELPERS
+
+
+attributeIf : Bool -> Attribute msg -> Attribute msg
+attributeIf condition attribute =
+    if condition then
+        attribute
+
+    else
+        class ""
