@@ -15,7 +15,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
-- Board reordering - drag and drop the tab headers
+- Board reordering
+  - drag and drop tab headers or board names in the settings dialog
 - Improved styling of tab headers (consistent with obsidian)
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
