@@ -581,7 +581,10 @@ settingsSurroundView currentSection configs dragTracker formContents =
         draggedType =
             DragTracker.dragType dragTracker
     in
-    Html.div [ class "modal-container" ]
+    Html.div
+        [ class "modal-container"
+        , attributeIf isDragging (style "cursor" "grabbing")
+        ]
         [ Html.div
             [ class "modal-bg"
             , onClick ModalCloseClicked
