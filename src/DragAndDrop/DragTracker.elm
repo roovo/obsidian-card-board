@@ -1,5 +1,6 @@
 module DragAndDrop.DragTracker exposing
     ( ClientData
+    , DomData
     , DragTracker(..)
     , dragType
     , init
@@ -9,9 +10,9 @@ module DragAndDrop.DragTracker exposing
     , waitForDrag
     )
 
-import DragAndDrop.Coords as Coords exposing (Coords)
+import DragAndDrop.Coords exposing (Coords)
 import DragAndDrop.DragData exposing (DragData)
-import DragAndDrop.Rect as Rect exposing (Rect)
+import DragAndDrop.Rect exposing (Rect)
 
 
 

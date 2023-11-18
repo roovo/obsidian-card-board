@@ -105,6 +105,7 @@ moveDragable =
         [ test "does nothing if in NotDragging state" <|
             \() ->
                 let
+                    dragData : DragData.DragData
                     dragData =
                         { dragType = "aDragType"
                         , dragAction = DragData.Move
@@ -120,6 +121,7 @@ moveDragable =
         , test "moves into the Dragging state if it was Waiting" <|
             \() ->
                 let
+                    dragData : DragData.DragData
                     dragData =
                         { dragType = "aDragType"
                         , dragAction = DragData.Move
@@ -129,6 +131,7 @@ moveDragable =
                         , beacons = []
                         }
 
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }
@@ -151,6 +154,7 @@ moveDragable =
         , test "updates clientPos, offset and dragType if it was already Dragging" <|
             \() ->
                 let
+                    dragData : DragData.DragData
                     dragData =
                         { dragType = "aDragType"
                         , dragAction = DragData.Move
@@ -158,12 +162,6 @@ moveDragable =
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
                         , beacons = []
-                        }
-
-                    clientData =
-                        { uniqueId = "an id"
-                        , clientPos = { x = 0, y = 1 }
-                        , offsetPos = { x = 1, y = 2 }
                         }
                 in
                 DragTracker.Dragging
@@ -206,6 +204,7 @@ waitForDrag =
         [ test "is in the waiting state" <|
             \() ->
                 let
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }
@@ -217,6 +216,7 @@ waitForDrag =
         , test "it is not dragging" <|
             \() ->
                 let
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }

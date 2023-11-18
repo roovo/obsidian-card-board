@@ -428,6 +428,7 @@ type CurrentSection
 view : Model -> Html Msg
 view model =
     let
+        dragTracker : DragTracker
         dragTracker =
             Session.dragTracker model.session
     in

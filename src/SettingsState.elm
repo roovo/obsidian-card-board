@@ -17,7 +17,7 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
