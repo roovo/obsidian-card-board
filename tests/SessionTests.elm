@@ -219,30 +219,10 @@ moveDragable =
                             }
                             { offset = { x = 1, y = 2 }
                             , draggedNodeStartRect = { x = 2, y = 3, width = 4, height = 5 }
+                            , dragType = "aDragType"
                             }
                         )
         ]
-
-
-
--- stopTrackingDragable : Test
--- stopTrackingDragable =
---     describe "stopTrackingDragable"
---         [ test "stops tracking a TabHeader" <|
---             \() ->
---                 Session.default
---                     |> Session.trackDraggable
---                         (DragTracker "3"
---                             { x = 0, y = 0 }
---                             { x = 0, y = 0 }
---                             { x = 0, y = 0 }
---                             { x = 0, y = 0, width = 0, height = 0 }
---                         )
---                         { x = 0, y = 0, width = 0, height = 0 }
---                     |> Session.stopTrackingDragable
---                     |> Session.isDragging
---                     |> Expect.equal False
---         ]
 
 
 replaceTaskItems : Test

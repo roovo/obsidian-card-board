@@ -31,7 +31,8 @@ type alias ClientData =
 
 
 type alias DomData =
-    { offset : Coords
+    { dragType : String
+    , offset : Coords
     , draggedNodeStartRect : Rect
     }
 
@@ -71,12 +72,18 @@ moveDragable dragData dragTracker =
         Waiting clientData ->
             Dragging
                 { clientData | clientPos = dragData.cursor }
-                { offset = dragData.offset, draggedNodeStartRect = dragData.draggedNodeRect }
+                { offset = dragData.offset
+                , draggedNodeStartRect = dragData.draggedNodeRect
+                , dragType = dragData.dragType
+                }
 
         Dragging clientData domData ->
             Dragging
                 { clientData | clientPos = dragData.cursor }
-                { domData | offset = dragData.offset }
+                { domData
+                    | offset = dragData.offset
+                    , dragType = dragData.dragType
+                }
 
 
 stopTracking : DragTracker

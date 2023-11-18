@@ -58,6 +58,7 @@ isDragging =
                     }
                     { offset = { x = 0, y = 0 }
                     , draggedNodeStartRect = { x = 0, y = 0, width = 0, height = 0 }
+                    , dragType = "aDragType"
                     }
                     |> DragTracker.isDragging
                     |> Expect.equal True
@@ -110,9 +111,10 @@ moveDragable =
                             }
                             { offset = { x = 1, y = 2 }
                             , draggedNodeStartRect = { x = 2, y = 3, width = 4, height = 5 }
+                            , dragType = "aDragType"
                             }
                         )
-        , test "updates clientPos and offset if it was already Dragging" <|
+        , test "updates clientPos, offset and dragType if it was already Dragging" <|
             \() ->
                 let
                     dragData =
@@ -137,6 +139,7 @@ moveDragable =
                     }
                     { offset = { x = 0, y = 0 }
                     , draggedNodeStartRect = { x = 0, y = 0, width = 0, height = 0 }
+                    , dragType = "oldDragType"
                     }
                     |> DragTracker.moveDragable dragData
                     |> Expect.equal
@@ -147,6 +150,7 @@ moveDragable =
                             }
                             { offset = { x = 1, y = 2 }
                             , draggedNodeStartRect = { x = 0, y = 0, width = 0, height = 0 }
+                            , dragType = "aDragType"
                             }
                         )
         ]
