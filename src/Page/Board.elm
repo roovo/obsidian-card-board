@@ -73,12 +73,16 @@ update msg session =
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    ( session
-                        |> updateBoardOrder (Session.dragTracker session) dragData
-                        |> Session.moveDragable dragData
-                    , Cmd.none
-                    , Session.NoOp
-                    )
+                    if dragData.dragType == dragType then
+                        ( session
+                            |> updateBoardOrder (Session.dragTracker session) dragData
+                            |> Session.moveDragable dragData
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
+                    else
+                        ( session, Cmd.none, Session.NoOp )
 
                 DragData.Stop ->
                     ( Session.stopTrackingDragable session
