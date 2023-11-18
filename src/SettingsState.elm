@@ -12,10 +12,12 @@ module SettingsState exposing
     , mapBoardBeingAdded
     , mapBoardBeingEdited
     , mapGlobalSettings
+    , moveBoard
     , settings
     )
 
 import BoardConfig exposing (BoardConfig)
+import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
@@ -216,6 +218,15 @@ editGlobalSettings settingsState =
             settingsState
 
 
+moveBoard : String -> BeaconPosition -> SettingsState -> SettingsState
+moveBoard draggedId beaconPosition settingsState =
+    mapSettings (Settings.moveBoard draggedId beaconPosition) settingsState
+
+
+
+-- MAPPING
+
+
 mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
 mapBoardBeingAdded fn settingsState =
     case settingsState of
@@ -244,3 +255,29 @@ mapGlobalSettings fn settingsState =
 
         _ ->
             settingsState
+
+
+
+-- PRIVATE
+
+
+mapSettings : (Settings -> Settings) -> SettingsState -> SettingsState
+mapSettings fn settingsState =
+    case settingsState of
+        AddingBoard config settings_ ->
+            AddingBoard config (fn settings_)
+
+        ClosingPlugin settings_ ->
+            ClosingPlugin (fn settings_)
+
+        ClosingSettings settings_ ->
+            ClosingSettings (fn settings_)
+
+        DeletingBoard settings_ ->
+            DeletingBoard (fn settings_)
+
+        EditingBoard settings_ ->
+            EditingBoard (fn settings_)
+
+        EditingGlobalSettings settings_ ->
+            EditingGlobalSettings (fn settings_)

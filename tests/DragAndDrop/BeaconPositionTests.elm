@@ -3,7 +3,6 @@ module DragAndDrop.BeaconPositionTests exposing (suite)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition(..))
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
-import Json.Decode as JD
 import Json.Encode as JE
 import Test exposing (..)
 

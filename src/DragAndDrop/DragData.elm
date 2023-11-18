@@ -8,7 +8,6 @@ module DragAndDrop.DragData exposing
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.Rect as Rect exposing (Rect)
-import Json.Encode as JE
 import TsJson.Decode as TsDecode
 
 

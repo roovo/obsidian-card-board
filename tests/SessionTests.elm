@@ -3,7 +3,7 @@ module SessionTests exposing (suite)
 import BoardConfig
 import DataviewTaskCompletion
 import DragAndDrop.DragData as DragData
-import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
+import DragAndDrop.DragTracker as DragTracker
 import Expect
 import Filter
 import GlobalSettings
@@ -173,6 +173,7 @@ waitForDrag =
         [ test "puts the dragTracker in Waiting state" <|
             \() ->
                 let
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }
@@ -192,6 +193,7 @@ moveDragable =
         [ test "puts the dragTracker in Dragging state" <|
             \() ->
                 let
+                    dragData : DragData.DragData
                     dragData =
                         { dragType = "aDragType"
                         , dragAction = DragData.Move
@@ -201,6 +203,7 @@ moveDragable =
                         , beacons = []
                         }
 
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }
@@ -263,6 +266,7 @@ stopTrackingDragable =
         [ test "puts the dragTracker in Dragging state" <|
             \() ->
                 let
+                    dragData : DragData.DragData
                     dragData =
                         { dragType = "aDragType"
                         , dragAction = DragData.Move
@@ -272,6 +276,7 @@ stopTrackingDragable =
                         , beacons = []
                         }
 
+                    clientData : DragTracker.ClientData
                     clientData =
                         { uniqueId = "an id"
                         , clientPos = { x = 0, y = 1 }

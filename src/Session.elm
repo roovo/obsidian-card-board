@@ -43,10 +43,8 @@ import Card exposing (Card)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
-import DragAndDrop.Coords exposing (Coords)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
-import DragAndDrop.Rect as Rect exposing (Rect)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -371,21 +369,6 @@ updatePath oldPath newPath (Session config) =
 
 
 -- PRIVATE
-
-
-updateBoardOrder : DragData -> Session -> Session
-updateBoardOrder { cursor, beacons } ((Session config) as session) =
-    case config.dragTracker of
-        DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
-                Nothing ->
-                    session
-
-                Just position ->
-                    moveBoard clientData.uniqueId position session
-
-        _ ->
-            session
 
 
 updateTaskListState : State TaskList -> Session -> Session

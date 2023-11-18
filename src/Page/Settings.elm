@@ -12,14 +12,21 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.Coords as Coords
+import DragAndDrop.DragData as DragData exposing (DragData)
+import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
+import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
-import Html exposing (Html)
-import Html.Attributes exposing (class, placeholder, selected, type_, value)
+import Html exposing (Attribute, Html)
+import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Html.Events.Extra.Mouse exposing (onDown)
 import Html.Keyed
 import InteropPorts
+import Json.Encode as JE
 import List.Extra as LE
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
@@ -90,9 +97,11 @@ type Msg
     | AddBoardConfirmed
     | BackspacePressed
     | BoardNameClicked Int
+    | BoardNameMouseDown ( String, DragTracker.ClientData )
     | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
+    | ElementDragged DragData
     | EnteredColumName String String
     | EnteredCompletedCount String
     | EnteredNewBoardTitle String
@@ -113,6 +122,11 @@ type Msg
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
     | ToggleTagFilterScope
+
+
+dragType : String
+dragType =
+    "card-board-settings-board-name"
 
 
 switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
@@ -153,6 +167,12 @@ update msg model =
         BoardNameClicked index ->
             wrap <| switchSettingsState (SettingsState.editBoardAt index) model
 
+        BoardNameMouseDown ( domId, clientData ) ->
+            ( { model | session = Session.waitForDrag clientData model.session }
+            , InteropPorts.trackDraggable dragType clientData.clientPos domId
+            , Session.NoOp
+            )
+
         BoardTypeSelected boardType ->
             mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
 
@@ -161,6 +181,26 @@ update msg model =
 
         DeleteBoardConfirmed ->
             wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
+
+        ElementDragged dragData ->
+            case dragData.dragAction of
+                DragData.Move ->
+                    if dragData.dragType == dragType then
+                        ( model
+                            |> updateBoardOrder (Session.dragTracker model.session) dragData
+                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
+                    else
+                        ( model, Cmd.none, Session.NoOp )
+
+                DragData.Stop ->
+                    ( { model | session = Session.stopTrackingDragable model.session }
+                    , Cmd.none
+                    , Session.NoOp
+                    )
 
         EnteredColumName column name ->
             wrap
@@ -353,6 +393,24 @@ mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
+updateBoardOrder : DragTracker -> DragData -> Model -> Model
+updateBoardOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    { model
+                        | settingsState =
+                            SettingsState.moveBoard clientData.uniqueId position model.settingsState
+                    }
+
+        _ ->
+            model
+
+
 wrap : Model -> ( Model, Cmd Msg, Session.Msg )
 wrap model =
     ( model, Cmd.none, Session.NoOp )
@@ -369,10 +427,15 @@ type CurrentSection
 
 view : Model -> Html Msg
 view model =
+    let
+        dragTracker : DragTracker
+        dragTracker =
+            Session.dragTracker model.session
+    in
     case model.settingsState of
         SettingsState.AddingBoard newConfig settings ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
@@ -384,15 +447,17 @@ view model =
 
         SettingsState.DeletingBoard settings ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
         SettingsState.EditingBoard settings ->
-            boardSettingsView (Settings.boardConfigs settings) model.multiSelect
+            boardSettingsView (Settings.boardConfigs settings)
+                model.multiSelect
+                dragTracker
 
         SettingsState.EditingGlobalSettings settings ->
-            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings dragTracker
 
 
 modalAddBoard : BoardConfig -> Html Msg
@@ -488,8 +553,8 @@ modalConfirmDelete =
         ]
 
 
-settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> List (Html Msg) -> Html Msg
-settingsSurroundView currentSection configs formContents =
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> DragTracker -> List (Html Msg) -> Html Msg
+settingsSurroundView currentSection configs dragTracker formContents =
     let
         boardMapFn : Int -> BoardConfig -> Html Msg
         boardMapFn =
@@ -498,7 +563,7 @@ settingsSurroundView currentSection configs formContents =
                     settingTitleView
 
                 Boards ->
-                    settingTitleSelectedView
+                    settingTitleSelectedView isDragging
 
         globalSettingsClass : String
         globalSettingsClass =
@@ -508,8 +573,19 @@ settingsSurroundView currentSection configs formContents =
 
                 Boards ->
                     "vertical-tab-nav-item"
+
+        isDragging : Bool
+        isDragging =
+            DragTracker.isDragging dragTracker && draggedType == Just dragType
+
+        draggedType : Maybe String
+        draggedType =
+            DragTracker.dragType dragTracker
     in
-    Html.div [ class "modal-container" ]
+    Html.div
+        [ class "modal-container"
+        , attributeIf isDragging (style "cursor" "grabbing")
+        ]
         [ Html.div
             [ class "modal-bg"
             , onClick ModalCloseClicked
@@ -553,6 +629,10 @@ settingsSurroundView currentSection configs formContents =
                             (configs
                                 |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
                                 |> SafeZipper.toList
+                                |> (\hs ->
+                                        List.append hs
+                                            [ settingTitleDraggedView isDragging (SafeZipper.current configs) dragTracker ]
+                                   )
                             )
                         ]
                     ]
@@ -565,18 +645,18 @@ settingsSurroundView currentSection configs formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> Html Msg
-boardSettingsView boardConfigs multiselect =
+boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView boardConfigs multiselect dragTracker =
     boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
-        |> settingsSurroundView Boards boardConfigs
+        |> settingsSurroundView Boards boardConfigs dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> Settings -> Html Msg
-globalSettingsView dataviewTaskCompletion settings =
+globalSettingsView : DataviewTaskCompletion -> Settings -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion settings dragTracker =
     settings
         |> Settings.globalSettings
         |> globalSettingsForm dataviewTaskCompletion
-        |> settingsSurroundView Options (Settings.boardConfigs settings)
+        |> settingsSurroundView Options (Settings.boardConfigs settings) dragTracker
 
 
 globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
@@ -1339,19 +1419,126 @@ polaritySelect polarity =
         )
 
 
-settingTitleSelectedView : Int -> BoardConfig -> Html Msg
-settingTitleSelectedView index boardConfig =
-    Html.div
-        [ class "vertical-tab-nav-item is-active"
-        , onClick <| BoardNameClicked index
-        ]
-        [ Html.text <| BoardConfig.title boardConfig ]
-
-
 settingTitleView : Int -> BoardConfig -> Html Msg
 settingTitleView index boardConfig =
-    Html.div
-        [ class "vertical-tab-nav-item"
-        , onClick <| BoardNameClicked index
+    let
+        domId : String
+        domId =
+            "card-board-setting-board-name:" ++ String.fromInt index
+
+        title : String
+        title =
+            BoardConfig.title boardConfig
+    in
+    Html.div []
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ id domId
+            , class "vertical-tab-nav-item"
+            , onClick <| BoardNameClicked index
+            , onDown
+                (\e ->
+                    BoardNameMouseDown <|
+                        ( domId
+                        , { uniqueId = title
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
+            ]
+            [ Html.text title ]
+        , beacon (BeaconPosition.After title)
         ]
-        [ Html.text <| BoardConfig.title boardConfig ]
+
+
+settingTitleSelectedView : Bool -> Int -> BoardConfig -> Html Msg
+settingTitleSelectedView isDragging index boardConfig =
+    let
+        domId : String
+        domId =
+            "card-board-setting-board-name:" ++ String.fromInt index
+
+        title : String
+        title =
+            BoardConfig.title boardConfig
+    in
+    Html.div []
+        [ beacon (BeaconPosition.Before title)
+        , Html.div
+            [ id domId
+            , class "vertical-tab-nav-item is-active"
+            , attributeIf isDragging (style "opacity" "0.0")
+            , onClick <| BoardNameClicked index
+            , onDown
+                (\e ->
+                    BoardNameMouseDown <|
+                        ( domId
+                        , { uniqueId = title
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
+            ]
+            [ Html.text title ]
+        , beacon (BeaconPosition.After title)
+        ]
+
+
+settingTitleDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
+settingTitleDraggedView isDragging boardConfig dragTracker =
+    case ( isDragging, boardConfig, dragTracker ) of
+        ( True, Just config, DragTracker.Dragging clientData domData ) ->
+            Html.div []
+                [ Html.div
+                    [ id "card-board-settings-board-title:being-dragged"
+                    , class "vertical-tab-nav-item is-active"
+                    , style "position" "fixed"
+                    , style "top"
+                        (String.fromFloat
+                            (clientData.clientPos.y - domData.offset.y - clientData.offsetPos.y)
+                            ++ "px"
+                        )
+                    , style "left"
+                        (String.fromFloat
+                            (domData.draggedNodeStartRect.x - domData.offset.x)
+                            ++ "px"
+                        )
+                    , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                    , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
+                    , style "cursor" "grabbing"
+                    , style "opacity" "0.85"
+                    ]
+                    [ Html.text (BoardConfig.title config) ]
+                ]
+
+        _ ->
+            Html.text ""
+
+
+beaconType : String
+beaconType =
+    "data-" ++ dragType ++ "-beacon"
+
+
+beacon : BeaconPosition -> Html Msg
+beacon beaconPosition =
+    Html.span
+        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
+
+
+
+-- HELPERS
+
+
+attributeIf : Bool -> Attribute msg -> Attribute msg
+attributeIf condition attribute =
+    if condition then
+        attribute
+
+    else
+        class ""
