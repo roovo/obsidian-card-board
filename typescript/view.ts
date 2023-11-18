@@ -388,6 +388,7 @@ export class CardBoardView extends ItemView {
           that.elm.ports.interopToElm.send({
             tag: "elementDragged",
             data: {
+              dragType: data.dragType,
               dragAction: dragAction,
               cursor: coords(event),
               offset: { x: offsetLeft, y: offsetTop },

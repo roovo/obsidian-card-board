@@ -71,7 +71,8 @@ moveDragable =
             \() ->
                 let
                     dragData =
-                        { dragAction = DragData.Move
+                        { dragType = "aDragType"
+                        , dragAction = DragData.Move
                         , cursor = { x = 0, y = 1 }
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
@@ -85,7 +86,8 @@ moveDragable =
             \() ->
                 let
                     dragData =
-                        { dragAction = DragData.Move
+                        { dragType = "aDragType"
+                        , dragAction = DragData.Move
                         , cursor = { x = 1.1, y = 2.2 }
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
@@ -114,7 +116,8 @@ moveDragable =
             \() ->
                 let
                     dragData =
-                        { dragAction = DragData.Move
+                        { dragType = "aDragType"
+                        , dragAction = DragData.Move
                         , cursor = { x = 1.1, y = 2.2 }
                         , offset = { x = 1, y = 2 }
                         , draggedNodeRect = { x = 2, y = 3, width = 4, height = 5 }
