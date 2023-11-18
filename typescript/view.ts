@@ -218,7 +218,7 @@ export class CardBoardView extends ItemView {
 
           if (element instanceof HTMLElement) {
             element.innerHTML = "";
-            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, this);
+            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, that.plugin);
 
             const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
 
@@ -327,7 +327,7 @@ export class CardBoardView extends ItemView {
 
   async handleTrackDraggable(
     data : {
-      beaconType: string,
+      dragType: string,
       clientPos : { x: number, y: number },
       draggableId: string
     }
@@ -337,6 +337,7 @@ export class CardBoardView extends ItemView {
     const that = this;
 
     const draggedElement = document.getElementById(data.draggableId);
+    const beaconType = "data-" + data.dragType + "-beacon";
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -372,24 +373,22 @@ export class CardBoardView extends ItemView {
     }
 
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
-      const appContainer  = document.getElementsByClassName("workspace")[0];
-      const tabContainer  = document.getElementsByClassName("workspace-tab-container")[1];
-      const rightSidebarContainer  = document.getElementsByClassName("workspace-tabs")[2];
+      const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
+      const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
+      const leftSplit   = document.getElementsByClassName("workspace-split")[0];
 
-      console.log
-
-      if ((appContainer instanceof HTMLElement) &&
-          (tabContainer instanceof HTMLElement) &&
+      if ((ribbon instanceof HTMLElement) &&
+          (leftSplit instanceof HTMLElement) &&
           (draggedElement instanceof HTMLElement)) {
-          const offsetLeft = appContainer.clientWidth - (tabContainer.clientWidth + rightSidebarContainer.clientWidth);
-          const offsetTop  = appContainer.clientHeight - tabContainer.clientHeight;
+          const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
+          const offsetTop  = tabHeader.clientHeight;
 
           const draggedElementRect = draggedElement.getBoundingClientRect();
 
           that.elm.ports.interopToElm.send({
             tag: "elementDragged",
             data: {
-              beaconType: data.beaconType,
+              dragType: data.dragType,
               dragAction: dragAction,
               cursor: coords(event),
               offset: { x: offsetLeft, y: offsetTop },
@@ -399,7 +398,7 @@ export class CardBoardView extends ItemView {
                 width: draggedElementRect.width,
                 height: draggedElementRect.height
               },
-              beacons: beaconPositions(data.beaconType)
+              beacons: beaconPositions(beaconType)
             }
           });
       }
@@ -412,7 +411,7 @@ export class CardBoardView extends ItemView {
 
     function beaconData(elem: Element) {
       const boundingRect = elem.getBoundingClientRect();
-      const beaconId = elem.getAttribute(data.beaconType);
+      const beaconId = elem.getAttribute(beaconType);
       return {
         beaconPosition: tryParse(beaconId),
         rect: {

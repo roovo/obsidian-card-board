@@ -2,6 +2,7 @@ module DragAndDrop.BeaconPositionTests exposing (suite)
 
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition(..))
 import Expect
+import Helpers.DecodeHelpers as DecodeHelpers
 import Json.Decode as JD
 import Json.Encode as JE
 import Test exposing (..)
@@ -12,7 +13,7 @@ suite =
     concat
         [ decoder
         , encoder
-        , identifier
+        , uniqueId
         ]
 
 
@@ -21,14 +22,16 @@ decoder =
     describe "decoder"
         [ test "decodes an After" <|
             \() ->
-                """{"position":"after","identifier":"some identifier"}"""
-                    |> JD.decodeString BeaconPosition.decoder
-                    |> Expect.equal (Ok <| After "some identifier")
+                """{"position":"after","uniqueId":"some uniqueId"}"""
+                    |> DecodeHelpers.runDecoder BeaconPosition.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok <| After "some uniqueId")
         , test "decodes a Before" <|
             \() ->
-                """{"position":"before","identifier":"some identifier"}"""
-                    |> JD.decodeString BeaconPosition.decoder
-                    |> Expect.equal (Ok <| Before "some identifier")
+                """{"position":"before","uniqueId":"some uniqueId"}"""
+                    |> DecodeHelpers.runDecoder BeaconPosition.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok <| Before "some uniqueId")
         ]
 
 
@@ -37,30 +40,30 @@ encoder =
     describe "encoder"
         [ test "encodes a Before" <|
             \() ->
-                Before "some identifier"
+                Before "some uniqueId"
                     |> BeaconPosition.encoder
                     |> JE.encode 0
-                    |> Expect.equal """{"position":"before","identifier":"some identifier"}"""
+                    |> Expect.equal """{"position":"before","uniqueId":"some uniqueId"}"""
         , test "encodes an After" <|
             \() ->
-                After "some identifier"
+                After "some uniqueId"
                     |> BeaconPosition.encoder
                     |> JE.encode 0
-                    |> Expect.equal """{"position":"after","identifier":"some identifier"}"""
+                    |> Expect.equal """{"position":"after","uniqueId":"some uniqueId"}"""
         ]
 
 
-identifier : Test
-identifier =
-    describe "identifier"
-        [ test "extracts the identifier from a Before" <|
+uniqueId : Test
+uniqueId =
+    describe "uniqueId"
+        [ test "extracts the uniqueId from a Before" <|
             \() ->
-                Before "some identifier"
-                    |> BeaconPosition.identifier
-                    |> Expect.equal "some identifier"
-        , test "extracts the identifier from an After" <|
+                Before "some uniqueId"
+                    |> BeaconPosition.uniqueId
+                    |> Expect.equal "some uniqueId"
+        , test "extracts the uniqueId from an After" <|
             \() ->
-                After "some identifier"
-                    |> BeaconPosition.identifier
-                    |> Expect.equal "some identifier"
+                After "some uniqueId"
+                    |> BeaconPosition.uniqueId
+                    |> Expect.equal "some uniqueId"
         ]

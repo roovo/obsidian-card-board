@@ -2,7 +2,6 @@ module DragAndDrop.DragData exposing
     ( BeaconData
     , DragAction(..)
     , DragData
-    , DragTracker
     , decoder
     )
 
@@ -18,7 +17,7 @@ import TsJson.Decode as TsDecode
 
 
 type alias DragData =
-    { beaconType : String
+    { dragType : String
     , dragAction : DragAction
     , cursor : Coords
     , offset : Coords
@@ -38,15 +37,6 @@ type alias BeaconData =
     }
 
 
-type alias DragTracker =
-    { nodeId : String
-    , clientPos : Coords
-    , offsetPos : Coords
-    , offset : Coords
-    , draggedNodeRect : Rect
-    }
-
-
 
 -- DECODERS
 
@@ -54,7 +44,7 @@ type alias DragTracker =
 decoder : TsDecode.Decoder DragData
 decoder =
     TsDecode.succeed DragData
-        |> TsDecode.andMap (TsDecode.field "beaconType" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "dragType" TsDecode.string)
         |> TsDecode.andMap dragActionDecoder
         |> TsDecode.andMap (TsDecode.field "cursor" Coords.decoder)
         |> TsDecode.andMap (TsDecode.field "offset" Coords.decoder)
@@ -69,16 +59,8 @@ decoder =
 beaconDataDecoder : TsDecode.Decoder BeaconData
 beaconDataDecoder =
     TsDecode.succeed BeaconData
-        |> TsDecode.andMap (TsDecode.field "beaconPosition" beaconPositionDecoder)
+        |> TsDecode.andMap (TsDecode.field "beaconPosition" BeaconPosition.decoder)
         |> TsDecode.andMap (TsDecode.field "rect" Rect.decoder)
-
-
-beaconPositionDecoder : TsDecode.Decoder BeaconPosition
-beaconPositionDecoder =
-    TsDecode.oneOf
-        [ toElmBeacon "after" BeaconPosition.After TsDecode.string
-        , toElmBeacon "before" BeaconPosition.Before TsDecode.string
-        ]
 
 
 dragActionDecoder : TsDecode.Decoder DragAction
@@ -87,9 +69,3 @@ dragActionDecoder =
         [ ( "move", TsDecode.succeed Move )
         , ( "stop", TsDecode.succeed Stop )
         ]
-
-
-toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
-toElmBeacon tagName constructor decoder_ =
-    TsDecode.field "position" (TsDecode.literal constructor (JE.string tagName))
-        |> TsDecode.andMap (TsDecode.field "identifier" decoder_)

@@ -108,14 +108,14 @@ mapGlobalSettings fn settings =
 
 moveBoard : String -> BeaconPosition -> Settings -> Settings
 moveBoard draggedId beaconPosition settings =
-    if BeaconPosition.identifier beaconPosition == draggedId then
+    if BeaconPosition.uniqueId beaconPosition == draggedId then
         let
             boardList : List BoardConfig
             boardList =
                 boardConfigs settings
                     |> SafeZipper.toList
         in
-        case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) boardList of
+        case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.uniqueId beaconPosition) boardList of
             Nothing ->
                 settings
 
@@ -144,7 +144,7 @@ moveBoard draggedId beaconPosition settings =
 
             insertConfig : BoardConfig -> Result String ( List BoardConfig, Int )
             insertConfig foundConfig =
-                case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.identifier beaconPosition) afterRemoving of
+                case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.uniqueId beaconPosition) afterRemoving of
                     Nothing ->
                         Err ""
 

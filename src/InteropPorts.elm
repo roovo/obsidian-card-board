@@ -102,8 +102,8 @@ rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath t
 
 
 trackDraggable : String -> Coords -> String -> Cmd msg
-trackDraggable beaconType clientPos draggableId =
-    { beaconType = beaconType, clientPos = clientPos, draggableId = draggableId }
+trackDraggable dragType clientPos draggableId =
+    { dragType = dragType, clientPos = clientPos, draggableId = draggableId }
         |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder
         |> interopFromElm
 

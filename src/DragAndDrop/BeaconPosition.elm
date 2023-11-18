@@ -2,11 +2,11 @@ module DragAndDrop.BeaconPosition exposing
     ( BeaconPosition(..)
     , decoder
     , encoder
-    , identifier
+    , uniqueId
     )
 
-import Json.Decode as JD
 import Json.Encode as JE
+import TsJson.Decode as TsDecode
 
 
 
@@ -22,13 +22,12 @@ type BeaconPosition
 -- ENCODE / DECODE
 
 
-decoder : JD.Decoder BeaconPosition
+decoder : TsDecode.Decoder BeaconPosition
 decoder =
-    JD.map2
-        Tuple.pair
-        (JD.field "position" JD.string)
-        (JD.field "identifier" JD.string)
-        |> JD.andThen toPosition
+    TsDecode.oneOf
+        [ toElmBeacon "after" After TsDecode.string
+        , toElmBeacon "before" Before TsDecode.string
+        ]
 
 
 encoder : BeaconPosition -> JE.Value
@@ -44,7 +43,7 @@ encoder beaconPosition =
     in
     JE.object
         [ ( "position", JE.string positionStr )
-        , ( "identifier", JE.string identifierString )
+        , ( "uniqueId", JE.string identifierString )
         ]
 
 
@@ -52,8 +51,8 @@ encoder beaconPosition =
 -- UTILS
 
 
-identifier : BeaconPosition -> String
-identifier beaconPosition =
+uniqueId : BeaconPosition -> String
+uniqueId beaconPosition =
     case beaconPosition of
         Before id ->
             id
@@ -66,14 +65,7 @@ identifier beaconPosition =
 -- PRIVATE
 
 
-toPosition : ( String, String ) -> JD.Decoder BeaconPosition
-toPosition ( position, identifier_ ) =
-    case position of
-        "before" ->
-            JD.succeed (Before identifier_)
-
-        "after" ->
-            JD.succeed (After identifier_)
-
-        _ ->
-            JD.fail ("Unknown position: " ++ position)
+toElmBeacon : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a
+toElmBeacon tagName constructor decoder_ =
+    TsDecode.field "position" (TsDecode.literal constructor (JE.string tagName))
+        |> TsDecode.andMap (TsDecode.field "uniqueId" decoder_)

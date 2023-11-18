@@ -1,6 +1,5 @@
 module Session exposing
-    ( DragStatus(..)
-    , Msg(..)
+    ( Msg(..)
     , Session
     , addTaskList
     , boardConfigs
@@ -9,14 +8,16 @@ module Session exposing
     , dataviewTaskCompletion
     , default
     , deleteItemsFromFile
-    , dragStatus
+    , dragTracker
     , finishAdding
     , fromFlags
     , globalSettings
     , ignoreFileNameDates
     , isActiveView
+    , isDragging
     , makeActiveView
     , moveBoard
+    , moveDragable
     , replaceTaskItems
     , settings
     , stopTrackingDragable
@@ -26,12 +27,10 @@ module Session exposing
     , taskList
     , textDirection
     , timeIs
-    , timeWIthZoneIs
     , timeWithZone
-    , trackDraggable
+    , timeWithZoneIs
     , uniqueId
     , updateColumnCollapse
-    , updateDragPositions
     , updatePath
     , updateSettings
     , updateTextDirection
@@ -45,8 +44,9 @@ import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords exposing (Coords)
-import DragAndDrop.DragData exposing (DragTracker)
-import DragAndDrop.Rect exposing (Rect)
+import DragAndDrop.DragData exposing (DragData)
+import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
+import DragAndDrop.Rect as Rect exposing (Rect)
 import GlobalSettings exposing (GlobalSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
@@ -69,7 +69,7 @@ type Session
 
 type alias Config =
     { dataviewTaskCompletion : DataviewTaskCompletion
-    , dragStatus : DragStatus
+    , dragTracker : DragTracker
     , isActiveView : Bool
     , settings : Settings
     , taskList : State TaskList
@@ -77,12 +77,6 @@ type alias Config =
     , timeWithZone : TimeWithZone
     , uniqueId : String
     }
-
-
-type DragStatus
-    = NotDragging
-    | Waiting DragTracker
-    | Dragging DragTracker
 
 
 type Msg
@@ -99,7 +93,7 @@ default : Session
 default =
     Session
         { dataviewTaskCompletion = DataviewTaskCompletion.default
-        , dragStatus = NotDragging
+        , dragTracker = DragTracker.init
         , isActiveView = False
         , settings = Settings.default
         , taskList = State.Waiting
@@ -116,7 +110,7 @@ fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     Session
         { dataviewTaskCompletion = flags.dataviewTaskCompletion
-        , dragStatus = NotDragging
+        , dragTracker = DragTracker.init
         , isActiveView = False
         , settings = flags.settings
         , taskList = State.Waiting
@@ -130,7 +124,7 @@ fromFlags flags =
 
 
 
--- UTILITIES
+-- INFO
 
 
 boardConfigs : Session -> SafeZipper BoardConfig
@@ -156,9 +150,9 @@ dataviewTaskCompletion (Session config) =
     config.dataviewTaskCompletion
 
 
-dragStatus : Session -> DragStatus
-dragStatus (Session config) =
-    config.dragStatus
+dragTracker : Session -> DragTracker
+dragTracker (Session config) =
+    config.dragTracker
 
 
 globalSettings : Session -> GlobalSettings
@@ -174,6 +168,11 @@ ignoreFileNameDates =
 isActiveView : Session -> Bool
 isActiveView (Session config) =
     config.isActiveView
+
+
+isDragging : Session -> Bool
+isDragging (Session config) =
+    DragTracker.isDragging config.dragTracker
 
 
 settings : Session -> Settings
@@ -249,9 +248,14 @@ moveBoard draggedId beaconPosition (Session config) =
     Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
 
 
+moveDragable : DragData -> Session -> Session
+moveDragable dragData (Session config) =
+    Session { config | dragTracker = DragTracker.moveDragable dragData config.dragTracker }
+
+
 stopTrackingDragable : Session -> Session
 stopTrackingDragable (Session config) =
-    Session { config | dragStatus = NotDragging }
+    Session { config | dragTracker = DragTracker.stopTracking }
 
 
 switchToBoardAt : Int -> Session -> Session
@@ -264,53 +268,20 @@ timeIs time (Session config) =
     Session { config | timeWithZone = TimeWithZone.time time config.timeWithZone }
 
 
-timeWIthZoneIs : Time.Zone -> Time.Posix -> Session -> Session
-timeWIthZoneIs zone time (Session config) =
+timeWithZoneIs : Time.Zone -> Time.Posix -> Session -> Session
+timeWithZoneIs zone time (Session config) =
     Session { config | timeWithZone = { zone = zone, time = time } }
 
 
-trackDraggable : DragTracker -> Rect -> Session -> Session
-trackDraggable dragTracker draggedNodeRect (Session config) =
-    let
-        newTracker : DragTracker
-        newTracker =
-            { dragTracker | draggedNodeRect = draggedNodeRect }
-    in
-    Session { config | dragStatus = Dragging newTracker }
-
-
-waitForDrag : DragTracker -> Session -> Session
-waitForDrag dragTracker (Session config) =
-    Session { config | dragStatus = Waiting dragTracker }
-
-
-updateDragPositions : Coords -> Coords -> Session -> Session
-updateDragPositions newPosition newOffset ((Session config) as session) =
-    case config.dragStatus of
-        NotDragging ->
-            session
-
-        Waiting dragTracker ->
-            let
-                newTracker : DragTracker
-                newTracker =
-                    { dragTracker
-                        | clientPos = newPosition
-                        , offset = newOffset
-                    }
-            in
-            Session { config | dragStatus = Dragging newTracker }
-
-        Dragging dragTracker ->
-            let
-                newTracker : DragTracker
-                newTracker =
-                    { dragTracker
-                        | clientPos = newPosition
-                        , offset = newOffset
-                    }
-            in
-            Session { config | dragStatus = Dragging newTracker }
+updateColumnCollapse : Int -> Bool -> Session -> Session
+updateColumnCollapse columnIndex isCollapsed (Session config) =
+    Session
+        { config
+            | settings =
+                Settings.updateCurrentBoard
+                    (BoardConfig.collapseColumn columnIndex isCollapsed)
+                    config.settings
+        }
 
 
 updateSettings : Settings -> Session -> Session
@@ -321,6 +292,11 @@ updateSettings newSettings (Session config) =
 updateTextDirection : TextDirection -> Session -> Session
 updateTextDirection newTextDirection (Session config) =
     Session { config | textDirection = newTextDirection }
+
+
+waitForDrag : DragTracker.ClientData -> Session -> Session
+waitForDrag clientData (Session config) =
+    Session { config | dragTracker = DragTracker.waitForDrag clientData }
 
 
 
@@ -379,17 +355,6 @@ replaceTaskItems filePath updatedList ((Session config) as session) =
             updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
 
 
-updateColumnCollapse : Int -> Bool -> Session -> Session
-updateColumnCollapse columnIndex isCollapsed (Session config) =
-    Session
-        { config
-            | settings =
-                Settings.updateCurrentBoard
-                    (BoardConfig.collapseColumn columnIndex isCollapsed)
-                    config.settings
-        }
-
-
 updatePath : String -> String -> Session -> Session
 updatePath oldPath newPath (Session config) =
     let
@@ -406,6 +371,21 @@ updatePath oldPath newPath (Session config) =
 
 
 -- PRIVATE
+
+
+updateBoardOrder : DragData -> Session -> Session
+updateBoardOrder { cursor, beacons } ((Session config) as session) =
+    case config.dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    session
+
+                Just position ->
+                    moveBoard clientData.uniqueId position session
+
+        _ ->
+            session
 
 
 updateTaskListState : State TaskList -> Session -> Session

@@ -589,11 +589,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
         , test "encodes TrackDraggable data" <|
             \() ->
-                { beaconType = "someBeaconId", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
+                { dragType = "someDragType", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
                     |> InteropDefinitions.TrackDraggable
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"trackDraggable","data":{"beaconType":"someBeaconId","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
+                    |> Expect.equal """{"tag":"trackDraggable","data":{"dragType":"someDragType","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
                 { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
@@ -627,13 +627,13 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.ConfigChanged TextDirection.RightToLeft)
         , test "decodes elementDragged data" <|
             \() ->
-                """{"tag":"elementDragged","data":{"beaconType":"some-beacon-id","dragAction":"stop","cursor":{"x":1.23,"y":4.56},"offset":{"x":1.11,"y":2.22},"draggedNodeRect":{"x":1.1,"y":2.2,"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"identifier":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
+                """{"tag":"elementDragged","data":{"dragType":"someDragType","dragAction":"stop","cursor":{"x":1.23,"y":4.56},"offset":{"x":1.11,"y":2.22},"draggedNodeRect":{"x":1.1,"y":2.2,"width":3.33,"height":4.44},"beacons":[{"beaconPosition":{"uniqueId":"someId","position":"before"},"rect":{"x":1.1,"y":2.2,"width":3.3,"height":4.4}}]}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal
                         (Ok <|
                             InteropDefinitions.ElementDragged
-                                { beaconType = "some-beacon-id"
+                                { dragType = "someDragType"
                                 , dragAction = DragData.Stop
                                 , cursor = { x = 1.23, y = 4.56 }
                                 , offset = { x = 1.11, y = 2.22 }
