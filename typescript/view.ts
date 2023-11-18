@@ -342,8 +342,6 @@ export class CardBoardView extends ItemView {
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
 
-    console.log("tracking " + beaconType);
-
     function maybeDragMove(moveEvent: MouseEvent) {
       const dragDistance = distance({ x: data.clientPos.x, y: data.clientPos.y}, coords(moveEvent));
 
@@ -378,8 +376,6 @@ export class CardBoardView extends ItemView {
       const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
       const leftSplit   = document.getElementsByClassName("workspace-split")[0];
-
-      console.log("dragEvent " + dragAction);
 
       if ((ribbon instanceof HTMLElement) &&
           (leftSplit instanceof HTMLElement) &&
