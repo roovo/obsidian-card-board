@@ -181,7 +181,7 @@ If you wish to set the color based on tags, then you can use a snippet such as:
 
 Which will set the color to yellow for all cards with a tag `#status/doing`. This will
 override any date based highlighting.  If you use nested tags, you will need to replace
-the `/` character with a `-` (as in the example above).  If the card has multipler tags
+the `/` character with a `-` (as in the example above).  If the card has multiple tags
 which you have set different colors for, the last one read from your snippets will take
 priority.  Tag based colors will be applied for tags even if they are [hidden](#hiding-tags).
 
