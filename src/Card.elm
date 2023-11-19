@@ -9,13 +9,14 @@ module Card exposing
     , id
     , markdownWithIds
     , notesId
+    , tags
     , tagsId
     , taskItem
     , taskItemId
     )
 
 import Date exposing (Date)
-import TagList
+import TagList exposing (TagList)
 import TaskItem exposing (TaskItem)
 
 
@@ -160,6 +161,11 @@ markdownWithIds card =
 notesId : Card -> String
 notesId card =
     id card ++ ":notes"
+
+
+tags : Card -> TagList
+tags =
+    TaskItem.tags << taskItem
 
 
 tagsId : Card -> String

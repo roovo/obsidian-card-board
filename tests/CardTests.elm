@@ -17,16 +17,40 @@ import TimeWithZone
 suite : Test
 suite =
     concat
-        [ editButtonId
+        [ descendantTasks
+        , editButtonId
         , filePath
         , fromTaskItem
         , highlight
         , id
         , markdownWithIds
         , notesId
+        , tags
         , tagsId
-        , descendantTasks
         , taskItemId
+        ]
+
+
+descendantTasks : Test
+descendantTasks =
+    describe "descendantTasks"
+        [ test "returns an empty list if there are no descendantTasks" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "")
+                    |> Maybe.map Card.descendantTasks
+                    |> Expect.equal (Just [])
+        , test "returns a list of the descendant tasks with the card idPrefix" <|
+            \() ->
+                """- [ ] foo
+
+  - [ ] bar"""
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.toMaybe
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
+                    |> Maybe.map Card.descendantTasks
+                    |> Maybe.map (List.map <| Tuple.mapSecond TaskItem.title)
+                    |> Expect.equal (Just [ ( "a_prefix:2166136261:3", "bar" ) ])
         ]
 
 
@@ -187,6 +211,25 @@ notesId =
         ]
 
 
+tags : Test
+tags =
+    describe "tags"
+        [ test "returns an empty TagList if the TaskItem has no tags" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
+                    |> Maybe.map Card.tags
+                    |> Expect.equal (Just TagList.empty)
+        , test "returns the Tags from the TaskItem" <|
+            \() ->
+                taskItemWithTags
+                    |> Maybe.map (Card.fromTaskItem "a_prefix")
+                    |> Maybe.map Card.tags
+                    |> Maybe.map TagList.toList
+                    |> Expect.equal (Just [ "arg", "bar", "baz/boo" ])
+        ]
+
+
 tagsId : Test
 tagsId =
     describe "tagsId"
@@ -196,29 +239,6 @@ tagsId =
                     |> Maybe.map (Card.fromTaskItem "a_prefix")
                     |> Maybe.map Card.tagsId
                     |> Expect.equal (Just <| "a_prefix:" ++ TaskHelpers.taskId "taskItemPath" 1 ++ ":tags")
-        ]
-
-
-descendantTasks : Test
-descendantTasks =
-    describe "descendantTasks"
-        [ test "returns an empty list if there are no descendantTasks" <|
-            \() ->
-                taskItem
-                    |> Maybe.map (Card.fromTaskItem "")
-                    |> Maybe.map Card.descendantTasks
-                    |> Expect.equal (Just [])
-        , test "returns a list of the descendant tasks with the card idPrefix" <|
-            \() ->
-                """- [ ] foo
-
-  - [ ] bar"""
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.toMaybe
-                    |> Maybe.map (Card.fromTaskItem "a_prefix")
-                    |> Maybe.map Card.descendantTasks
-                    |> Maybe.map (List.map <| Tuple.mapSecond TaskItem.title)
-                    |> Expect.equal (Just [ ( "a_prefix:2166136261:3", "bar" ) ])
         ]
 
 
@@ -247,5 +267,12 @@ janFirstTwentyTwenty =
 taskItem : Maybe TaskItem
 taskItem =
     "- [ ] foo"
+        |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "taskItemPath" Nothing TagList.empty 0)
+        |> Result.toMaybe
+
+
+taskItemWithTags : Maybe TaskItem
+taskItemWithTags =
+    "- [ ] foo #bar #baz/boo #arg"
         |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "taskItemPath" Nothing TagList.empty 0)
         |> Result.toMaybe
