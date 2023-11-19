@@ -17,6 +17,7 @@ npm run dev             # run dev build
 - elm-coverage
 - elm-format
 - check production build works
+- check nothing is logged to js console
 - check with no config (data.json file)
 - check with previous config file versions
 - is README up to date?

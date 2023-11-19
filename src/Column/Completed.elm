@@ -122,14 +122,13 @@ asColumn : CompletedColumn -> Column TaskItem
 asColumn completedColumn =
     config completedColumn
         |> .taskList
-        |> TaskList.removeTags (tagsToHide completedColumn)
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.reverse
         |> List.sortBy TaskItem.completedPosix
         |> List.reverse
         |> List.take (completedCount completedColumn)
-        |> Column.init (isEnabled completedColumn) (name completedColumn)
+        |> Column.init (isEnabled completedColumn) (name completedColumn) (tagsToHide completedColumn)
 
 
 

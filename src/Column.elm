@@ -9,6 +9,7 @@ module Column exposing
     , isEnabled
     , items
     , name
+    , tagsToHide
     )
 
 -- TYPES
@@ -23,6 +24,7 @@ type alias Config a =
     , name : String
     , items : List a
     , collapsed : Bool
+    , tagsToHide : List String
     }
 
 
@@ -36,13 +38,14 @@ type PlacementResult
 -- CONSTRUCTION
 
 
-init : Bool -> String -> List a -> Column a
-init enabled_ name_ items_ =
+init : Bool -> String -> List String -> List a -> Column a
+init enabled_ name_ tagsToHide_ items_ =
     Column
         { enabled = enabled_
         , name = name_
         , items = items_
         , collapsed = False
+        , tagsToHide = tagsToHide_
         }
 
 
@@ -78,6 +81,11 @@ items =
 name : Column a -> String
 name =
     .name << config
+
+
+tagsToHide : Column a -> List String
+tagsToHide =
+    .tagsToHide << config
 
 
 
