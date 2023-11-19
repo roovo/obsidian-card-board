@@ -27,6 +27,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import SafeZipper
 import Session exposing (Session)
+import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TextDirection
 import TimeWithZone exposing (TimeWithZone)
@@ -484,6 +485,14 @@ cardView today card =
         cardId =
             Card.id card
 
+        dataTags : String
+        dataTags =
+            card
+                |> Card.tags
+                |> TagList.toList
+                |> List.map (String.replace "/" "-")
+                |> String.join " "
+
         taskItem : TaskItem
         taskItem =
             Card.taskItem card
@@ -507,7 +516,10 @@ cardView today card =
                 Card.HighlightNone ->
                     ""
     in
-    Html.li [ class "card-board-card cm-s-obsidian" ]
+    Html.li
+        [ class "card-board-card cm-s-obsidian"
+        , attributeIf (not <| String.isEmpty dataTags) (attribute "data-tags" dataTags)
+        ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []
         , Html.div [ class "card-board-card-content-area" ]
