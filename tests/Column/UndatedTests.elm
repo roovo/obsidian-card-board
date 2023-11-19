@@ -5,10 +5,8 @@ import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 

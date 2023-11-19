@@ -3,11 +3,9 @@ module Column.NamedTagTests exposing (suite)
 import Column
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 

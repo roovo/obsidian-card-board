@@ -6,10 +6,8 @@ import Date exposing (Date)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 

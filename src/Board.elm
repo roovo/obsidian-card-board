@@ -14,7 +14,6 @@ import Date exposing (Date)
 import DateBoardColumns exposing (DateBoardColumns)
 import Filter exposing (Filter, Polarity, Scope)
 import TagBoardColumns exposing (TagBoardColumns)
-import TagList
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 

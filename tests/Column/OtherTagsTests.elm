@@ -4,11 +4,9 @@ import Column
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import ColumnNames exposing (ColumnNames)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 
