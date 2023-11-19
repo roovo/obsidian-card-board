@@ -1,7 +1,9 @@
 module Card exposing
     ( Card
     , Highlight(..)
+    , allTags
     , descendantTasks
+    , displayTags
     , editButtonId
     , filePath
     , fromTaskItem
@@ -15,7 +17,7 @@ module Card exposing
     )
 
 import Date exposing (Date)
-import TagList
+import TagList exposing (TagList)
 import TaskItem exposing (TaskItem)
 
 
@@ -24,7 +26,7 @@ import TaskItem exposing (TaskItem)
 
 
 type Card
-    = Card String TaskItem
+    = Card String TagList TaskItem
 
 
 type Highlight
@@ -38,9 +40,9 @@ type Highlight
 -- CONSTRUCTION
 
 
-fromTaskItem : String -> TaskItem -> Card
-fromTaskItem =
-    Card
+fromTaskItem : String -> List String -> TaskItem -> Card
+fromTaskItem idPrefix tagsToHide taskItem_ =
+    Card idPrefix (TaskItem.tags taskItem_) (TaskItem.removeTags tagsToHide taskItem_)
 
 
 
@@ -48,7 +50,7 @@ fromTaskItem =
 
 
 highlight : Date -> Card -> Highlight
-highlight datestamp (Card _ item) =
+highlight datestamp (Card _ _ item) =
     case ( TaskItem.isCompleted item, TaskItem.due item ) of
         ( False, Just dueDate ) ->
             if datestamp == dueDate then
@@ -68,7 +70,7 @@ highlight datestamp (Card _ item) =
 
 
 id : Card -> String
-id ((Card idPrefix _) as card) =
+id ((Card idPrefix _ _) as card) =
     idPrefix ++ ":" ++ taskItemId card
 
 
@@ -78,7 +80,7 @@ editButtonId card =
 
 
 filePath : Card -> String
-filePath (Card _ item) =
+filePath (Card _ _ item) =
     TaskItem.filePath item
 
 
@@ -162,22 +164,32 @@ notesId card =
     id card ++ ":notes"
 
 
+allTags : Card -> TagList
+allTags (Card _ tagList _) =
+    tagList
+
+
+displayTags : Card -> TagList
+displayTags =
+    TaskItem.tags << taskItem
+
+
 tagsId : Card -> String
 tagsId card =
     id card ++ ":tags"
 
 
 descendantTasks : Card -> List ( String, TaskItem )
-descendantTasks (Card idPrefix item) =
+descendantTasks (Card idPrefix _ item) =
     TaskItem.descendantTasks item
         |> List.map (\sub -> ( idPrefix ++ ":" ++ TaskItem.id sub, sub ))
 
 
 taskItem : Card -> TaskItem
-taskItem (Card _ item) =
+taskItem (Card _ _ item) =
     item
 
 
 taskItemId : Card -> String
-taskItemId (Card _ item) =
+taskItemId (Card _ _ item) =
     TaskItem.id item

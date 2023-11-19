@@ -5,10 +5,8 @@ import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 
@@ -112,35 +110,6 @@ asColumn =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "B", "c", "d", "E", "f" ]
-        , test "removes filter tags from the Column TaskItems (if so configured)" <|
-            \() ->
-                UndatedColumn.init
-                    { defaultDateBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a #atag #xtag")
-                    |> UndatedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column sub-askItems (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                UndatedColumn.init
-                    { defaultDateBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
-                    |> UndatedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
         ]
 
 

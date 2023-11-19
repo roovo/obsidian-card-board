@@ -5,11 +5,9 @@ import Column.Completed as CompletedColumn
 import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 
@@ -183,88 +181,6 @@ asColumn =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "B", "c" ]
-        , test "removes top level tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
-            \() ->
-                CompletedColumn.forTagBoard
-                    { defaultTagBoardConfig
-                        | showColumnTags = False
-                        , columns = [ { tag = "xtag", displayTitle = "" } ]
-                    }
-                    defaultColumnNames
-                    |> CompletedColumn.addTaskItem
-                        [ Column.CompletedInThisColumn ]
-                        (taskItem "- [ ] a #atag #xtag")
-                    |> CompletedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes sub-task tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                CompletedColumn.forTagBoard
-                    { defaultTagBoardConfig
-                        | showColumnTags = False
-                        , columns = [ { tag = "xtag", displayTitle = "" } ]
-                    }
-                    defaultColumnNames
-                    |> CompletedColumn.addTaskItem
-                        [ Column.CompletedInThisColumn ]
-                        (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
-                    |> CompletedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column TaskItems (if so configured)" <|
-            \() ->
-                CompletedColumn.forTagBoard
-                    { defaultTagBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> CompletedColumn.addTaskItem
-                        [ Column.CompletedInThisColumn ]
-                        (taskItem "- [ ] a #atag #xtag")
-                    |> CompletedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column ub-askItems (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                CompletedColumn.forTagBoard
-                    { defaultTagBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> CompletedColumn.addTaskItem
-                        [ Column.CompletedInThisColumn ]
-                        (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
-                    |> CompletedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column TaskItems (if so configured) for DateBoards" <|
-            \() ->
-                CompletedColumn.forDateBoard
-                    { defaultDateBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> CompletedColumn.addTaskItem
-                        [ Column.CompletedInThisColumn ]
-                        (taskItem "- [ ] a #atag #xtag")
-                    |> CompletedColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
         ]
 
 

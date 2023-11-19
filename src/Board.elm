@@ -177,8 +177,8 @@ convertToCards boardId columnList =
         placeCardsInColumn : Int -> Column TaskItem -> Column Card
         placeCardsInColumn columnIndex column =
             Column.items column
-                |> List.map (Card.fromTaskItem <| cardIdPrefix columnIndex)
-                |> Column.init True (Column.name column)
+                |> List.map (Card.fromTaskItem (cardIdPrefix columnIndex) (Column.tagsToHide column))
+                |> Column.init True (Column.name column) (Column.tagsToHide column)
     in
     columnList
         |> List.indexedMap placeCardsInColumn

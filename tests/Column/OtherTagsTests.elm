@@ -4,11 +4,9 @@ import Column
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import ColumnNames exposing (ColumnNames)
 import Expect
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 
@@ -284,64 +282,6 @@ asColumn =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
-        , test "removes top level tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
-            \() ->
-                OtherTagsColumn.init
-                    { defaultTagBoardConfig
-                        | showColumnTags = False
-                        , columns = [ { tag = "xtag", displayTitle = "" } ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a #atag #xtag")
-                    |> OtherTagsColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes sub-task tags from the Column TaskItems as defined in the config for all columns (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                OtherTagsColumn.init
-                    { defaultTagBoardConfig
-                        | showColumnTags = False
-                        , columns = [ { tag = "xtag", displayTitle = "" } ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
-                    |> OtherTagsColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column TaskItems (if so configured)" <|
-            \() ->
-                OtherTagsColumn.init
-                    { defaultTagBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a #atag #xtag")
-                    |> OtherTagsColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column ub-askItems (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                OtherTagsColumn.init
-                    { defaultTagBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    defaultColumnNames
-                    |> justAdd (taskItem "- [ ] a\n  - [ ] b #atag #xtag")
-                    |> OtherTagsColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
         ]
 
 

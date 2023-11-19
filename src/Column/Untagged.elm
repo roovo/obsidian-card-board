@@ -64,7 +64,7 @@ asColumn untaggedColumn =
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init (isEnabled untaggedColumn) (name untaggedColumn)
+        |> Column.init (isEnabled untaggedColumn) (name untaggedColumn) []
 
 
 

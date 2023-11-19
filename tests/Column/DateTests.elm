@@ -6,10 +6,8 @@ import Date exposing (Date)
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
-import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagList
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 
@@ -167,35 +165,6 @@ asColumn =
                     |> Column.items
                     |> List.map TaskItem.title
                     |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
-        , test "removes filter tags from the Column TaskItems (if so configured)" <|
-            \() ->
-                DateColumn.init
-                    { defaultDateBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    { name = "foo", from = Just 0, to = Nothing }
-                    |> justAdd (taskItem ("- [ ] a #atag #xtag " ++ dueString 0))
-                    |> DateColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.topLevelTags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
-        , test "removes filter tags from the Column sub-askItems (if so configured)" <|
-            -- TODO: This is more observed than intended behaviour as I am not sure it this actually matters
-            \() ->
-                DateColumn.init
-                    { defaultDateBoardConfig
-                        | showFilteredTags = False
-                        , filters = [ FilterHelpers.tagFilter "xtag" ]
-                    }
-                    { name = "foo", from = Just 0, to = Nothing }
-                    |> justAdd (taskItem ("- [ ] a " ++ dueString 0 ++ "\n  - [ ] b #atag #xtag"))
-                    |> DateColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
-                    |> Expect.equal [ "atag" ]
         ]
 
 

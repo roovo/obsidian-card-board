@@ -92,11 +92,10 @@ asColumn : DateColumn -> Column TaskItem
 asColumn dateColumn =
     config dateColumn
         |> .taskList
-        |> TaskList.removeTags (tagsToRemove dateColumn)
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init True (name dateColumn)
+        |> Column.init True (name dateColumn) (tagsToHide dateColumn)
 
 
 
@@ -134,6 +133,6 @@ name =
     .name << config
 
 
-tagsToRemove : DateColumn -> List String
-tagsToRemove =
+tagsToHide : DateColumn -> List String
+tagsToHide =
     .tagsToHide << config

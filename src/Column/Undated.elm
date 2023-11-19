@@ -76,10 +76,9 @@ asColumn : UndatedColumn -> Column TaskItem
 asColumn undatedColumn =
     config undatedColumn
         |> .taskList
-        |> TaskList.removeTags (tagsToRemove undatedColumn)
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
-        |> Column.init (isEnabled undatedColumn) (name undatedColumn)
+        |> Column.init (isEnabled undatedColumn) (name undatedColumn) (tagsToHide undatedColumn)
 
 
 
@@ -111,6 +110,6 @@ name =
     .name << config
 
 
-tagsToRemove : UndatedColumn -> List String
-tagsToRemove =
+tagsToHide : UndatedColumn -> List String
+tagsToHide =
     .tagsToHide << config

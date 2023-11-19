@@ -90,11 +90,10 @@ asColumn : NamedTagColumn -> Column TaskItem
 asColumn namedTagColumn =
     config namedTagColumn
         |> .taskList
-        |> TaskList.removeTags (tagsToRemove namedTagColumn)
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init True (name namedTagColumn)
+        |> Column.init True (name namedTagColumn) (tagsToHide namedTagColumn)
 
 
 
@@ -127,6 +126,6 @@ tag =
     .tag << config
 
 
-tagsToRemove : NamedTagColumn -> List String
-tagsToRemove =
+tagsToHide : NamedTagColumn -> List String
+tagsToHide =
     .tagsToHide << config
