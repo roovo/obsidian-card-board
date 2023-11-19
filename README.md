@@ -15,6 +15,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define your boards).
 
 ## New
+- Ability to use css snippets to
+  [set card hightlight color](#customising-card-highlight-color) based on tags
 - Board reordering
   - drag and drop tab headers or board names in the settings dialog
 - Improved styling of tab headers (consistent with obsidian)
@@ -142,6 +144,46 @@ along the lines of:
 
 This will style the tag `#foo/bar` wherever it appears in the CardBoard view with your favorite
 color for foo/bars, which just has to be HotPink :)
+
+### Customising Card Highlight Color
+By default cards with due dates will have a colored bar on their left hand side
+to give a visual indication of when they are due.  These colours are dependent on
+the theme you are using.  There are two way to over-ride this, both of which require
+the use of [css snippets](https://help.obsidian.md/Extending+Obsidian/CSS+snippets).
+
+If you wish to stick with the due date based behaviour, but would like to choose the
+colors, you can use a snippet along these lines:
+
+```css
+/* overdue */
+.card-board-view .card-board-card-highlight-area.critical {
+  background-color: red;
+}
+
+/* due today */
+.card-board-view .card-board-card-highlight-area.important {
+  background-color: orange;
+}
+
+/* due after today */
+.card-board-view .card-board-card-highlight-area.good {
+  background-color: green;
+}
+```
+
+If you wish to set the color based on tags, then you can use a snippet such as:
+
+```css
+.card-board-card[data-tags~=status-doing] .card-board-card-highlight-area {
+  background-color: yellow;
+}
+```
+
+Which will set the color to yellow for all cards with a tag `#status/doing`. This will
+override any date based highlighting.  If you use nested tags, you will need to replace
+the `/` character with a `-` (as in the example above).  If the card has multipler tags
+which you have set different colors for, the last one read from your snippets will take
+priority.  Tag based colors will be applied for tags even if they are [hidden](#hiding-tags).
 
 ## Boards
 Two board types supported:
