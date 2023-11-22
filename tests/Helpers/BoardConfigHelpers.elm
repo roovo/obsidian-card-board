@@ -16,14 +16,15 @@ import TagBoardConfig exposing (TagBoardConfig)
 
 defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
-    { completedCount = 0
+    { collapsedColumns = CollapsedColumns.init
+    , columnConfigs = []
+    , completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
     , filterScope = Filter.Both
-    , showFilteredTags = True
     , includeUndated = False
+    , showFilteredTags = True
     , title = "Date Board Title"
-    , collapsedColumns = CollapsedColumns.init
     }
 
 
@@ -34,14 +35,15 @@ exampleBoardConfig =
 
 exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
-    { completedCount = 12
+    { collapsedColumns = CollapsedColumns.init
+    , columnConfigs = []
+    , completedCount = 12
     , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
     , filterPolarity = Filter.Deny
     , filterScope = Filter.TopLevelOnly
-    , showFilteredTags = True
     , includeUndated = False
+    , showFilteredTags = True
     , title = "Date Board Title"
-    , collapsedColumns = CollapsedColumns.init
     }
 
 

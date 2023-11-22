@@ -44,13 +44,14 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , showFilteredTags = True
                                             , includeUndated = True
-                                            , collapsedColumns = CollapsedColumns.init
+                                            , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
@@ -100,13 +101,14 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , showFilteredTags = True
                                             , includeUndated = True
-                                            , collapsedColumns = CollapsedColumns.init
+                                            , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
@@ -156,14 +158,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -212,14 +215,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -268,14 +272,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -316,14 +321,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -364,14 +370,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -408,14 +415,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -452,14 +460,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
@@ -496,14 +505,15 @@ flagsTests =
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { completedCount = 4
+                                            { collapsedColumns = CollapsedColumns.init
+                                            , columnConfigs = []
+                                            , completedCount = 4
                                             , filters = []
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
-                                            , showFilteredTags = True
                                             , includeUndated = True
+                                            , showFilteredTags = True
                                             , title = "date board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]

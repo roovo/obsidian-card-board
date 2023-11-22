@@ -494,14 +494,15 @@ exampleGlobalSettings =
 
 exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
-    { completedCount = 12
+    { collapsedColumns = CollapsedColumns.init
+    , columnConfigs = []
+    , completedCount = 12
     , filters = []
     , filterPolarity = Filter.Deny
     , filterScope = Filter.SubTasksOnly
-    , showFilteredTags = True
     , includeUndated = False
+    , showFilteredTags = True
     , title = "Date Board Title"
-    , collapsedColumns = CollapsedColumns.init
     }
 
 

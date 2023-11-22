@@ -12,6 +12,7 @@ module DateBoardConfig exposing
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
+import ColumnConfig exposing (ColumnConfig)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -23,6 +24,7 @@ import TsJson.Encode as TsEncode
 
 type alias DateBoardConfig =
     { collapsedColumns : CollapsedColumns
+    , columnConfigs : List ColumnConfig
     , completedCount : Int
     , filters : List Filter
     , filterPolarity : Polarity
@@ -36,6 +38,7 @@ type alias DateBoardConfig =
 default : DateBoardConfig
 default =
     { completedCount = 10
+    , columnConfigs = []
     , filters = []
     , filterPolarity = Filter.defaultPolarity
     , filterScope = Filter.defaultScope
@@ -73,6 +76,7 @@ decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_9_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapsedColumns.decoder)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -86,6 +90,7 @@ decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_5_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -99,6 +104,7 @@ decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_4_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -112,6 +118,7 @@ decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_3_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -125,6 +132,7 @@ decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_2_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
@@ -138,6 +146,7 @@ decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_1_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
+        |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
