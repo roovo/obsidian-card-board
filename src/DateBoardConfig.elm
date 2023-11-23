@@ -40,21 +40,21 @@ type alias DateBoardConfig =
 
 default : DateBoardConfig
 default =
-    { completedCount = 10
+    { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
         [ ColumnConfig.defaultUndated
         , ColumnConfig.todayColumn
         , ColumnConfig.tomorrowColumn
         , ColumnConfig.futureColumn
-        , ColumnConfig.defaultCompleted
+        , ColumnConfig.completed 10
         ]
+    , completedCount = 10
     , filters = []
     , filterPolarity = Filter.defaultPolarity
     , filterScope = Filter.defaultScope
-    , showFilteredTags = True
     , includeUndated = True
+    , showFilteredTags = True
     , title = ""
-    , collapsedColumns = CollapsedColumns.init
     }
 
 
@@ -76,14 +76,41 @@ encoder =
         ]
 
 
+populateColumms : DateBoardConfig -> DateBoardConfig
+populateColumms config =
+    let
+        dateColumns =
+            [ ColumnConfig.todayColumn
+            , ColumnConfig.tomorrowColumn
+            , ColumnConfig.futureColumn
+            ]
+
+        undated =
+            if config.includeUndated then
+                [ ColumnConfig.defaultUndated ]
+
+            else
+                []
+
+        completed =
+            if config.completedCount > 0 then
+                [ ColumnConfig.completed config.completedCount ]
+
+            else
+                []
+    in
+    { config | columnConfigs = undated ++ dateColumns ++ completed }
+
+
 decoder_v_0_10_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_10_0 =
     decoder_v_0_9_0
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_9_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapsedColumns.decoder)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -93,11 +120,13 @@ decoder_v_0_9_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_5_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -107,11 +136,13 @@ decoder_v_0_5_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_4_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -121,11 +152,13 @@ decoder_v_0_4_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "showFilteredTags" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_3_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -135,11 +168,13 @@ decoder_v_0_3_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_2_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -149,11 +184,13 @@ decoder_v_0_2_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms
 
 
 decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_1_0 =
-    TsDecode.succeed DateBoardConfig
+    (TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
@@ -163,3 +200,5 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+    )
+        |> TsDecode.map populateColumms

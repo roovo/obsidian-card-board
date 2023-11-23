@@ -1,6 +1,6 @@
 module ColumnConfig exposing
     ( ColumnConfig
-    , defaultCompleted
+    , completed
     , defaultUndated
     , futureColumn
     , todayColumn
@@ -26,9 +26,9 @@ type ColumnConfig
 -- CONSTRUCTION
 
 
-defaultCompleted : ColumnConfig
-defaultCompleted =
-    Completed CompletedColumnConfig.init
+completed : Int -> ColumnConfig
+completed limit =
+    Completed <| CompletedColumnConfig.init limit
 
 
 defaultUndated : ColumnConfig

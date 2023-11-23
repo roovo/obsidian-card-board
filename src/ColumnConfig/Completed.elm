@@ -20,6 +20,6 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : CompletedConfig
-init =
-    CompletedConfig { name = "Completed", limit = 10 }
+init : Int -> CompletedConfig
+init limit =
+    CompletedConfig { name = "Completed", limit = limit }

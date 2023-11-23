@@ -30,14 +30,14 @@ type RelativeDateRange
 
 today : DateConfig
 today =
-    DateConfig { name = "Today", range = Before 0 }
+    DateConfig { name = "Today", range = Before 1 }
 
 
 tomorrow : DateConfig
 tomorrow =
-    DateConfig { name = "Tomorrow", range = Between 0 0 }
+    DateConfig { name = "Tomorrow", range = Between 1 1 }
 
 
 future : DateConfig
 future =
-    DateConfig { name = "Future", range = After 0 }
+    DateConfig { name = "Future", range = After 1 }
