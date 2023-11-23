@@ -1,7 +1,51 @@
-module ColumnConfig exposing (ColumnConfig)
+module ColumnConfig exposing
+    ( ColumnConfig
+    , defaultCompleted
+    , defaultUndated
+    , futureColumn
+    , todayColumn
+    , tomorrowColumn
+    )
+
+import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
+import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
+import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedConfig)
+
+
 
 -- TYPES
 
 
 type ColumnConfig
-    = String
+    = Completed CompletedConfig
+    | Date DateConfig
+    | Undated UndatedConfig
+
+
+
+-- CONSTRUCTION
+
+
+defaultCompleted : ColumnConfig
+defaultCompleted =
+    Completed CompletedColumnConfig.init
+
+
+defaultUndated : ColumnConfig
+defaultUndated =
+    Undated UndatedColumnConfig.init
+
+
+futureColumn : ColumnConfig
+futureColumn =
+    Date DateColumnConfig.future
+
+
+todayColumn : ColumnConfig
+todayColumn =
+    Date DateColumnConfig.today
+
+
+tomorrowColumn : ColumnConfig
+tomorrowColumn =
+    Date DateColumnConfig.tomorrow

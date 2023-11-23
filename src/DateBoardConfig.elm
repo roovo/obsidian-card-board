@@ -13,6 +13,9 @@ module DateBoardConfig exposing
 
 import CollapsedColumns exposing (CollapsedColumns)
 import ColumnConfig exposing (ColumnConfig)
+import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
+import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
+import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedConfig)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -38,7 +41,13 @@ type alias DateBoardConfig =
 default : DateBoardConfig
 default =
     { completedCount = 10
-    , columnConfigs = []
+    , columnConfigs =
+        [ ColumnConfig.defaultUndated
+        , ColumnConfig.todayColumn
+        , ColumnConfig.tomorrowColumn
+        , ColumnConfig.futureColumn
+        , ColumnConfig.defaultCompleted
+        ]
     , filters = []
     , filterPolarity = Filter.defaultPolarity
     , filterScope = Filter.defaultScope
