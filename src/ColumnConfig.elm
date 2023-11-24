@@ -1,6 +1,6 @@
 module ColumnConfig exposing
     ( ColumnConfig
-    , completed
+    , addTaskItem
     , defaultUndated
     , futureColumn
     , todayColumn
@@ -10,6 +10,8 @@ module ColumnConfig exposing
 import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
 import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
 import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedConfig)
+import TaskItem exposing (TaskItem)
+import TaskList exposing (TaskList)
 
 
 
@@ -17,35 +19,38 @@ import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedConfig)
 
 
 type ColumnConfig
-    = Completed CompletedConfig
-    | Date DateConfig
-    | Undated UndatedConfig
+    = Date DateConfig TaskList
+    | Undated UndatedConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-completed : Int -> ColumnConfig
-completed limit =
-    Completed <| CompletedColumnConfig.init limit
-
-
 defaultUndated : ColumnConfig
 defaultUndated =
-    Undated UndatedColumnConfig.init
+    Undated UndatedColumnConfig.init TaskList.empty
 
 
 futureColumn : ColumnConfig
 futureColumn =
-    Date DateColumnConfig.future
+    Date DateColumnConfig.future TaskList.empty
 
 
 todayColumn : ColumnConfig
 todayColumn =
-    Date DateColumnConfig.today
+    Date DateColumnConfig.today TaskList.empty
 
 
 tomorrowColumn : ColumnConfig
 tomorrowColumn =
-    Date DateColumnConfig.tomorrow
+    Date DateColumnConfig.tomorrow TaskList.empty
+
+
+
+-- MANIPULATION
+
+
+addTaskItem : TaskItem -> ColumnConfig -> ColumnConfig
+addTaskItem taskItem columnConfig =
+    columnConfig

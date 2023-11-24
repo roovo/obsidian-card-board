@@ -86,15 +86,8 @@ populateColumms config =
 
             else
                 []
-
-        completed =
-            if config.completedCount > 0 then
-                [ ColumnConfig.completed config.completedCount ]
-
-            else
-                []
     in
-    { config | columnConfigs = ColumnConfigs.fromList (undated ++ dateColumns ++ completed) }
+    { config | columnConfigs = ColumnConfigs.fromList (undated ++ dateColumns) config.completedCount }
 
 
 decoder_v_0_10_0 : TsDecode.Decoder DateBoardConfig

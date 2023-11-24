@@ -25,6 +25,7 @@ defaultDateBoardConfig =
             , ColumnConfig.tomorrowColumn
             , ColumnConfig.futureColumn
             ]
+            0
     , completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
@@ -48,8 +49,8 @@ exampleDateBoardConfig =
             [ ColumnConfig.todayColumn
             , ColumnConfig.tomorrowColumn
             , ColumnConfig.futureColumn
-            , ColumnConfig.completed 12
             ]
+            12
     , completedCount = 12
     , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
     , filterPolarity = Filter.Deny

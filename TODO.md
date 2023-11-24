@@ -1,5 +1,6 @@
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
+- CompletedColumn vs ColumnConfigs -> where should I store the taskList? compare and contrast!
 
 - why isn't grab cursor working over "draggables"?
 - tidy typescript

@@ -53,8 +53,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -117,8 +117,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -181,8 +181,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -245,8 +245,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -309,8 +309,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -365,8 +365,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -421,8 +421,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -473,8 +473,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -525,8 +525,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
@@ -577,8 +577,8 @@ flagsTests =
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
                                                     , ColumnConfig.futureColumn
-                                                    , ColumnConfig.completed 4
                                                     ]
+                                                    4
                                             , completedCount = 4
                                             , filters = []
                                             , filterPolarity = Filter.Allow
