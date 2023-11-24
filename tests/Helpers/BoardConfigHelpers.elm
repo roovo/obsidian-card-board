@@ -9,6 +9,7 @@ module Helpers.BoardConfigHelpers exposing
 import BoardConfig exposing (BoardConfig)
 import CollapsedColumns
 import ColumnConfig
+import ColumnConfigs
 import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
@@ -19,10 +20,11 @@ defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
-        [ ColumnConfig.todayColumn
-        , ColumnConfig.tomorrowColumn
-        , ColumnConfig.futureColumn
-        ]
+        ColumnConfigs.fromList
+            [ ColumnConfig.todayColumn
+            , ColumnConfig.tomorrowColumn
+            , ColumnConfig.futureColumn
+            ]
     , completedCount = 0
     , filters = []
     , filterPolarity = Filter.Allow
@@ -42,11 +44,12 @@ exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
-        [ ColumnConfig.todayColumn
-        , ColumnConfig.tomorrowColumn
-        , ColumnConfig.futureColumn
-        , ColumnConfig.completed 12
-        ]
+        ColumnConfigs.fromList
+            [ ColumnConfig.todayColumn
+            , ColumnConfig.tomorrowColumn
+            , ColumnConfig.futureColumn
+            , ColumnConfig.completed 12
+            ]
     , completedCount = 12
     , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
     , filterPolarity = Filter.Deny

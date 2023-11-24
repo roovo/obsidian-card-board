@@ -2,6 +2,7 @@ module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import CollapsedColumns
+import ColumnConfigs
 import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
@@ -495,7 +496,7 @@ exampleGlobalSettings =
 exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { collapsedColumns = CollapsedColumns.init
-    , columnConfigs = []
+    , columnConfigs = ColumnConfigs.empty
     , completedCount = 12
     , filters = []
     , filterPolarity = Filter.Deny

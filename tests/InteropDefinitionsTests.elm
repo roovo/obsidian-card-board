@@ -3,6 +3,7 @@ module InteropDefinitionsTests exposing (suite)
 import BoardConfig
 import CollapsedColumns
 import ColumnConfig
+import ColumnConfigs
 import ColumnNames
 import DataviewTaskCompletion
 import DragAndDrop.BeaconPosition as BeaconPosition
@@ -47,12 +48,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -110,12 +112,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -173,12 +176,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -236,12 +240,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -299,12 +304,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -354,12 +360,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -409,12 +416,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -460,12 +468,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
@@ -511,12 +520,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
@@ -562,12 +572,13 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                [ ColumnConfig.defaultUndated
-                                                , ColumnConfig.todayColumn
-                                                , ColumnConfig.tomorrowColumn
-                                                , ColumnConfig.futureColumn
-                                                , ColumnConfig.completed 4
-                                                ]
+                                                ColumnConfigs.fromList
+                                                    [ ColumnConfig.defaultUndated
+                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.tomorrowColumn
+                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.completed 4
+                                                    ]
                                             , completedCount = 4
                                             , filters = []
                                             , filterPolarity = Filter.Allow

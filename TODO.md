@@ -1,3 +1,6 @@
+- remove DateBoardConfig.populateColumms
+- remove ColumnConfigs.fromList
+
 - why isn't grab cursor working over "draggables"?
 - tidy typescript
 - can I animate tab moving so it isn't instantaneous?
