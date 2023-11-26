@@ -1,10 +1,8 @@
 module ColumnConfigs exposing
     ( ColumnConfigs
     , addTaskList
-    , defaultForDateBoard
     , empty
     , fromList
-    , updateColumnNames
     )
 
 import Column exposing (Column, PlacementResult)
@@ -31,10 +29,15 @@ type ColumnConfigs
 -- TEMP TO REMOVE
 
 
-fromList : List ColumnConfig -> Int -> ColumnConfigs
-fromList columnConfigs completedCount =
+fromList : ColumnNames -> List ColumnConfig -> Int -> ColumnConfigs
+fromList columnNames columnConfigs completedCount =
     if completedCount > 0 then
-        WithCompleted columnConfigs (CompletedColumn.init completedCount)
+        WithCompleted
+            columnConfigs
+            (CompletedColumn.init
+                (ColumnNames.nameFor "completed" columnNames)
+                completedCount
+            )
 
     else
         WithoutCompleted columnConfigs
@@ -42,17 +45,6 @@ fromList columnConfigs completedCount =
 
 
 -- CONSTRUCTION
-
-
-defaultForDateBoard : ColumnConfigs
-defaultForDateBoard =
-    WithCompleted
-        [ ColumnConfig.defaultUndated
-        , ColumnConfig.todayColumn
-        , ColumnConfig.tomorrowColumn
-        , ColumnConfig.futureColumn
-        ]
-        (CompletedColumn.init 10)
 
 
 empty : ColumnConfigs
@@ -69,17 +61,6 @@ addTaskList today columnConfigs taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columnConfigs
         |> columns
-
-
-updateColumnNames : ColumnNames -> ColumnConfigs -> ColumnConfigs
-updateColumnNames columnNames columnConfigs =
-    case columnConfigs of
-        WithCompleted nonCompletedConfigs completedConfig ->
-            WithCompleted (List.map (ColumnConfig.updateName columnNames) nonCompletedConfigs)
-                completedConfig
-
-        WithoutCompleted nonCompletedConfigs ->
-            WithoutCompleted (List.map (ColumnConfig.updateName columnNames) nonCompletedConfigs)
 
 
 

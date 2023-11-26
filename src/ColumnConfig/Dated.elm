@@ -1,12 +1,13 @@
 module ColumnConfig.Dated exposing
     ( DatedColumn
+    , RelativeDateRange(..)
     , addTaskItem
     , asColumn
     , forToday
     , future
+    , init
     , name
     , tomorrow
-    , updateName
     )
 
 import Column exposing (Column, PlacementResult)
@@ -38,6 +39,11 @@ type RelativeDateRange
 
 
 -- CONSTRUCTION
+
+
+init : String -> RelativeDateRange -> DatedColumn
+init name_ range_ =
+    DatedColumn { name = name_, range = range_ } TaskList.empty
 
 
 forToday : DatedColumn
@@ -98,11 +104,6 @@ addTaskItem today taskItem ((DatedColumn c tl) as datedColumn) =
 
         Nothing ->
             ( datedColumn, Column.DoesNotBelong )
-
-
-updateName : ColumnNames -> DatedColumn -> DatedColumn
-updateName columnNames datedColumn =
-    datedColumn
 
 
 

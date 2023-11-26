@@ -2,11 +2,12 @@ module ColumnConfig exposing
     ( ColumnConfig
     , addTaskItem
     , asColumn
+    , dated
     , defaultUndated
     , futureColumn
     , todayColumn
     , tomorrowColumn
-    , updateName
+    , undated
     )
 
 import Column exposing (Column, PlacementResult)
@@ -33,7 +34,12 @@ type ColumnConfig
 
 defaultUndated : ColumnConfig
 defaultUndated =
-    Undated UndatedColumn.init
+    Undated <| UndatedColumn.init "delete me"
+
+
+dated : DatedColumn -> ColumnConfig
+dated datedColumn =
+    Dated datedColumn
 
 
 futureColumn : ColumnConfig
@@ -51,6 +57,11 @@ tomorrowColumn =
     Dated DatedColumn.tomorrow
 
 
+undated : String -> ColumnConfig
+undated name =
+    Undated <| UndatedColumn.init name
+
+
 
 -- MANIPULATION
 
@@ -65,16 +76,6 @@ addTaskItem today taskItem columnConfig =
         Undated undatedColumn ->
             UndatedColumn.addTaskItem taskItem undatedColumn
                 |> Tuple.mapFirst Undated
-
-
-updateName : ColumnNames -> ColumnConfig -> ColumnConfig
-updateName columnNames columnConfig =
-    case columnConfig of
-        Dated datedColumn ->
-            Dated <| DatedColumn.updateName columnNames datedColumn
-
-        Undated undatedColumn ->
-            Undated <| UndatedColumn.updateName columnNames undatedColumn
 
 
 

@@ -4,7 +4,6 @@ module ColumnConfig.Undated exposing
     , asColumn
     , init
     , name
-    , updateName
     )
 
 import Column exposing (Column, PlacementResult)
@@ -30,9 +29,9 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : UndatedColumn
-init =
-    UndatedColumn { name = "Undated" } TaskList.empty
+init : String -> UndatedColumn
+init name_ =
+    UndatedColumn { name = name_ } TaskList.empty
 
 
 
@@ -72,8 +71,3 @@ addTaskItem taskItem ((UndatedColumn c tl) as undatedColumn) =
 
     else
         ( undatedColumn, Column.DoesNotBelong )
-
-
-updateName : ColumnNames -> UndatedColumn -> UndatedColumn
-updateName columnNames (UndatedColumn c tl) =
-    UndatedColumn { c | name = ColumnNames.nameFor "undated" columnNames } tl

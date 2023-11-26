@@ -28,9 +28,9 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : Int -> CompletedColumn
-init limit =
-    CompletedColumn { name = "Completed", limit = limit } TaskList.empty
+init : String -> Int -> CompletedColumn
+init name_ limit_ =
+    CompletedColumn { name = name_, limit = limit_ } TaskList.empty
 
 
 
