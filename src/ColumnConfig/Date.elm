@@ -1,9 +1,16 @@
 module ColumnConfig.Date exposing
     ( DateConfig
     , future
+    , name
+    , placementResult
     , today
     , tomorrow
     )
+
+import Column exposing (PlacementResult)
+import TaskItem exposing (TaskItem)
+
+
 
 -- TYPES
 
@@ -41,3 +48,17 @@ tomorrow =
 future : DateConfig
 future =
     DateConfig { name = "Future", range = After 1 }
+
+
+
+-- INFO
+
+
+placementResult : TaskItem -> DateConfig -> PlacementResult
+placementResult taskItem config =
+    Column.DoesNotBelong
+
+
+name : DateConfig -> String
+name (DateConfig c) =
+    c.name

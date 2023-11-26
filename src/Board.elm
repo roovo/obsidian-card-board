@@ -9,6 +9,7 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
+import ColumnConfigs
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DateBoardColumns exposing (DateBoardColumns)
@@ -51,8 +52,7 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
-                |> DateBoardColumns.columns
+                |> ColumnConfigs.addTaskList dateBoardConfig.columnConfigs
                 |> convertToCards (id board)
                 |> collapseColumns config
 

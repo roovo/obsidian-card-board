@@ -4,6 +4,7 @@ module ColumnConfig.Completed exposing
     , init
     )
 
+import Column exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 
 
@@ -34,6 +35,6 @@ init limit =
 -- MANIPULATION
 
 
-addTaskItem : TaskItem -> CompletedConfig -> CompletedConfig
-addTaskItem taskItem completedConfig =
+addTaskItem : List PlacementResult -> TaskItem -> CompletedConfig -> CompletedConfig
+addTaskItem placementResults taskItem completedConfig =
     completedConfig

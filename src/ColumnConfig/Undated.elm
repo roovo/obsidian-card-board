@@ -1,13 +1,22 @@
 module ColumnConfig.Undated exposing
-    ( UndatedConfig
+    ( UndatedColumn
+    , addTaskItem
+    , asColumn
     , init
+    , name
     )
+
+import Column exposing (Column, PlacementResult)
+import TaskItem exposing (TaskItem)
+import TaskList exposing (TaskList)
+
+
 
 -- TYPES
 
 
-type UndatedConfig
-    = UndatedConfig Config
+type UndatedColumn
+    = UndatedColumn Config TaskList
 
 
 type alias Config =
@@ -19,6 +28,45 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : UndatedConfig
+init : UndatedColumn
 init =
-    UndatedConfig { name = "Undated" }
+    UndatedColumn { name = "Undated" } TaskList.empty
+
+
+
+-- INFO
+
+
+asColumn : UndatedColumn -> Column TaskItem
+asColumn ((UndatedColumn c tl) as undatedColumn) =
+    tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> Column.init True (name undatedColumn) []
+
+
+name : UndatedColumn -> String
+name (UndatedColumn c _) =
+    c.name
+
+
+taskList : UndatedColumn -> TaskList
+taskList (UndatedColumn _ tl) =
+    tl
+
+
+
+-- MODIFICATION
+
+
+addTaskItem : TaskItem -> UndatedColumn -> ( UndatedColumn, Column.PlacementResult )
+addTaskItem taskItem ((UndatedColumn c tl) as undatedColumn) =
+    if not <| TaskItem.isDated taskItem then
+        if TaskItem.isCompleted taskItem then
+            ( undatedColumn, Column.CompletedInThisColumn )
+
+        else
+            ( UndatedColumn c (TaskList.add taskItem tl), Column.Placed )
+
+    else
+        ( undatedColumn, Column.DoesNotBelong )

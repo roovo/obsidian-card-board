@@ -1,15 +1,17 @@
 module ColumnConfig exposing
     ( ColumnConfig
     , addTaskItem
+    , asColumn
     , defaultUndated
     , futureColumn
     , todayColumn
     , tomorrowColumn
     )
 
+import Column exposing (Column, PlacementResult)
 import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
 import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
-import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedConfig)
+import ColumnConfig.Undated as UndatedColumn exposing (UndatedColumn)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -19,8 +21,8 @@ import TaskList exposing (TaskList)
 
 
 type ColumnConfig
-    = Date DateConfig TaskList
-    | Undated UndatedConfig TaskList
+    = Dated DateConfig TaskList
+    | Undated UndatedColumn
 
 
 
@@ -29,28 +31,71 @@ type ColumnConfig
 
 defaultUndated : ColumnConfig
 defaultUndated =
-    Undated UndatedColumnConfig.init TaskList.empty
+    Undated UndatedColumn.init
 
 
 futureColumn : ColumnConfig
 futureColumn =
-    Date DateColumnConfig.future TaskList.empty
+    Dated DateColumnConfig.future TaskList.empty
 
 
 todayColumn : ColumnConfig
 todayColumn =
-    Date DateColumnConfig.today TaskList.empty
+    Dated DateColumnConfig.today TaskList.empty
 
 
 tomorrowColumn : ColumnConfig
 tomorrowColumn =
-    Date DateColumnConfig.tomorrow TaskList.empty
+    Dated DateColumnConfig.tomorrow TaskList.empty
 
 
 
 -- MANIPULATION
 
 
-addTaskItem : TaskItem -> ColumnConfig -> ColumnConfig
+addTaskItem : TaskItem -> ColumnConfig -> ( ColumnConfig, PlacementResult )
 addTaskItem taskItem columnConfig =
-    columnConfig
+    case columnConfig of
+        Dated config taskList ->
+            let
+                placementResult =
+                    DateColumnConfig.placementResult taskItem config
+            in
+            ( Dated config (placeTask placementResult taskItem taskList)
+            , placementResult
+            )
+
+        Undated undatedColumn ->
+            UndatedColumn.addTaskItem taskItem undatedColumn
+                |> Tuple.mapFirst Undated
+
+
+
+-- INFO
+
+
+asColumn : ColumnConfig -> Column TaskItem
+asColumn columnConfig =
+    case columnConfig of
+        Dated config taskList ->
+            Column.init True (DateColumnConfig.name config) [] []
+
+        Undated undatedColumn ->
+            UndatedColumn.asColumn undatedColumn
+
+
+
+-- PRIVATE
+
+
+placeTask : PlacementResult -> TaskItem -> TaskList -> TaskList
+placeTask pr item list =
+    case pr of
+        Column.CompletedInThisColumn ->
+            list
+
+        Column.DoesNotBelong ->
+            list
+
+        Column.Placed ->
+            list
