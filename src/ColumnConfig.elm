@@ -9,7 +9,6 @@ module ColumnConfig exposing
     )
 
 import Column exposing (Column, PlacementResult)
-import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
 import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumn exposing (UndatedColumn)
 import Date exposing (Date)

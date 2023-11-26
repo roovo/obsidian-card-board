@@ -8,7 +8,7 @@ module ColumnConfigs exposing
 
 import Column exposing (Column, PlacementResult)
 import ColumnConfig exposing (ColumnConfig)
-import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
+import ColumnConfig.Completed as CompletedColumn exposing (CompletedColumn)
 import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
 import Date exposing (Date)
@@ -21,7 +21,7 @@ import TaskList exposing (TaskList)
 
 
 type ColumnConfigs
-    = WithCompleted (List ColumnConfig) CompletedConfig
+    = WithCompleted (List ColumnConfig) CompletedColumn
     | WithoutCompleted (List ColumnConfig)
 
 
@@ -32,7 +32,7 @@ type ColumnConfigs
 fromList : List ColumnConfig -> Int -> ColumnConfigs
 fromList columnConfigs completedCount =
     if completedCount > 0 then
-        WithCompleted columnConfigs (CompletedColumnConfig.init completedCount)
+        WithCompleted columnConfigs (CompletedColumn.init completedCount)
 
     else
         WithoutCompleted columnConfigs
@@ -50,7 +50,7 @@ defaultForDateBoard =
         , ColumnConfig.tomorrowColumn
         , ColumnConfig.futureColumn
         ]
-        (CompletedColumnConfig.init 10)
+        (CompletedColumn.init 10)
 
 
 empty : ColumnConfigs
@@ -75,6 +75,9 @@ columns columnConfigs =
         WithCompleted nonCompletedConfigs completedConfig ->
             nonCompletedConfigs
                 |> List.map ColumnConfig.asColumn
+                |> List.reverse
+                |> List.append [ CompletedColumn.asColumn completedConfig ]
+                |> List.reverse
 
         WithoutCompleted nonCompletedConfigs ->
             nonCompletedConfigs
@@ -89,7 +92,8 @@ addTaskItem today taskItem columnConfigs =
                 ( newConfigs, allPlacementResults ) =
                     addWithPlacement today taskItem nonCompletedConfigs
             in
-            WithCompleted newConfigs (CompletedColumnConfig.addTaskItem allPlacementResults taskItem completedConfig)
+            WithCompleted newConfigs
+                (CompletedColumn.addTaskItem allPlacementResults taskItem completedConfig)
 
         WithoutCompleted nonCompletedConfigs ->
             let

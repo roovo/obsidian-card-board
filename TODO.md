@@ -1,6 +1,8 @@
+- need to make sure I can place the completed column wherever I like
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
-- CompletedColumn vs ColumnConfigs -> where should I store the taskList? compare and contrast!
+
+- only re-allocate cards to boards when something has changed
 
 - why isn't grab cursor working over "draggables"?
 - tidy typescript
