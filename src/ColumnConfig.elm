@@ -10,8 +10,9 @@ module ColumnConfig exposing
 
 import Column exposing (Column, PlacementResult)
 import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
-import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
+import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumn exposing (UndatedColumn)
+import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -21,7 +22,7 @@ import TaskList exposing (TaskList)
 
 
 type ColumnConfig
-    = Dated DateConfig TaskList
+    = Dated DatedColumn
     | Undated UndatedColumn
 
 
@@ -36,34 +37,29 @@ defaultUndated =
 
 futureColumn : ColumnConfig
 futureColumn =
-    Dated DateColumnConfig.future TaskList.empty
+    Dated DatedColumn.future
 
 
 todayColumn : ColumnConfig
 todayColumn =
-    Dated DateColumnConfig.today TaskList.empty
+    Dated DatedColumn.forToday
 
 
 tomorrowColumn : ColumnConfig
 tomorrowColumn =
-    Dated DateColumnConfig.tomorrow TaskList.empty
+    Dated DatedColumn.tomorrow
 
 
 
 -- MANIPULATION
 
 
-addTaskItem : TaskItem -> ColumnConfig -> ( ColumnConfig, PlacementResult )
-addTaskItem taskItem columnConfig =
+addTaskItem : Date -> TaskItem -> ColumnConfig -> ( ColumnConfig, PlacementResult )
+addTaskItem today taskItem columnConfig =
     case columnConfig of
-        Dated config taskList ->
-            let
-                placementResult =
-                    DateColumnConfig.placementResult taskItem config
-            in
-            ( Dated config (placeTask placementResult taskItem taskList)
-            , placementResult
-            )
+        Dated datedColumn ->
+            DatedColumn.addTaskItem today taskItem datedColumn
+                |> Tuple.mapFirst Dated
 
         Undated undatedColumn ->
             UndatedColumn.addTaskItem taskItem undatedColumn
@@ -77,8 +73,8 @@ addTaskItem taskItem columnConfig =
 asColumn : ColumnConfig -> Column TaskItem
 asColumn columnConfig =
     case columnConfig of
-        Dated config taskList ->
-            Column.init True (DateColumnConfig.name config) [] []
+        Dated datedColumn ->
+            DatedColumn.asColumn datedColumn
 
         Undated undatedColumn ->
             UndatedColumn.asColumn undatedColumn

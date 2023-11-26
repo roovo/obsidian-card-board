@@ -9,8 +9,9 @@ module ColumnConfigs exposing
 import Column exposing (Column, PlacementResult)
 import ColumnConfig exposing (ColumnConfig)
 import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
-import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
+import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
+import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -57,10 +58,10 @@ empty =
     WithoutCompleted []
 
 
-addTaskList : ColumnConfigs -> TaskList -> List (Column TaskItem)
-addTaskList columnConfigs taskList =
+addTaskList : Date -> ColumnConfigs -> TaskList -> List (Column TaskItem)
+addTaskList today columnConfigs taskList =
     taskList
-        |> TaskList.foldl addTaskItem columnConfigs
+        |> TaskList.foldl (addTaskItem today) columnConfigs
         |> columns
 
 
@@ -80,30 +81,30 @@ columns columnConfigs =
                 |> List.map ColumnConfig.asColumn
 
 
-addTaskItem : TaskItem -> ColumnConfigs -> ColumnConfigs
-addTaskItem taskItem columnConfigs =
+addTaskItem : Date -> TaskItem -> ColumnConfigs -> ColumnConfigs
+addTaskItem today taskItem columnConfigs =
     case columnConfigs of
         WithCompleted nonCompletedConfigs completedConfig ->
             let
                 ( newConfigs, allPlacementResults ) =
-                    addWithPlacement taskItem nonCompletedConfigs
+                    addWithPlacement today taskItem nonCompletedConfigs
             in
             WithCompleted newConfigs (CompletedColumnConfig.addTaskItem allPlacementResults taskItem completedConfig)
 
         WithoutCompleted nonCompletedConfigs ->
             let
                 ( newConfigs, allPlacementResults ) =
-                    addWithPlacement taskItem nonCompletedConfigs
+                    addWithPlacement today taskItem nonCompletedConfigs
             in
             WithoutCompleted newConfigs
 
 
-addWithPlacement : TaskItem -> List ColumnConfig -> ( List ColumnConfig, List PlacementResult )
-addWithPlacement taskItem initialConfigs =
+addWithPlacement : Date -> TaskItem -> List ColumnConfig -> ( List ColumnConfig, List PlacementResult )
+addWithPlacement today taskItem initialConfigs =
     let
         fn : ColumnConfig -> ( List ColumnConfig, List PlacementResult ) -> ( List ColumnConfig, List PlacementResult )
         fn thisConfig ( accumulatedConfigs, placementResults ) =
-            ColumnConfig.addTaskItem taskItem thisConfig
+            ColumnConfig.addTaskItem today taskItem thisConfig
                 |> Tuple.mapFirst (\c -> c :: accumulatedConfigs)
                 |> Tuple.mapSecond (\r -> r :: placementResults)
     in

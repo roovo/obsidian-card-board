@@ -52,7 +52,7 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> ColumnConfigs.addTaskList dateBoardConfig.columnConfigs
+                |> ColumnConfigs.addTaskList today dateBoardConfig.columnConfigs
                 |> convertToCards (id board)
                 |> collapseColumns config
 

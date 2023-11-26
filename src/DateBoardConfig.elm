@@ -13,9 +13,6 @@ module DateBoardConfig exposing
 
 import CollapsedColumns exposing (CollapsedColumns)
 import ColumnConfig exposing (ColumnConfig)
-import ColumnConfig.Completed as CompletedColumnConfig exposing (CompletedConfig)
-import ColumnConfig.Date as DateColumnConfig exposing (DateConfig)
-import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
 import ColumnConfigs exposing (ColumnConfigs)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
