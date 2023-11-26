@@ -44,11 +44,6 @@ columns : Bool -> Date -> Board -> List (Column Card)
 columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
-            let
-                emptyDateBoardColumns : DateBoardColumns
-                emptyDateBoardColumns =
-                    DateBoardColumns.init today columnNames dateBoardConfig
-            in
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates

@@ -1,3 +1,7 @@
+- fix tests
+- columnConfig for TagBoard columns
+- are tags being hidden
+- have a collapsed Bool on each column
 - need to make sure I can place the completed column wherever I like
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
