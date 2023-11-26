@@ -19,6 +19,7 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import ColumnNames exposing (ColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
@@ -348,10 +349,12 @@ versionedSettingsDecoder =
 
 v_0_10_0_Decoder : TsDecode.Decoder Settings
 v_0_10_0_Decoder =
-    TsDecode.succeed Settings
+    (TsDecode.succeed Settings
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_10_0)))
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_10_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map overideColumnNames
 
 
 v_0_9_0_Decoder : TsDecode.Decoder Settings
@@ -424,6 +427,21 @@ v_0_1_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_1_0)))
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+
+
+overideColumnNames : Settings -> Settings
+overideColumnNames settings =
+    let
+        updateColumnNames : ColumnNames -> BoardConfig -> BoardConfig
+        updateColumnNames columnNames boardConfig =
+            BoardConfig.updateColumnNames columnNames boardConfig
+    in
+    { settings
+        | boardConfigs =
+            SafeZipper.map (updateColumnNames settings.globalSettings.columnNames)
+                settings.boardConfigs
+    }
+        |> Debug.log "settings"
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings

@@ -6,11 +6,13 @@ module ColumnConfig exposing
     , futureColumn
     , todayColumn
     , tomorrowColumn
+    , updateName
     )
 
 import Column exposing (Column, PlacementResult)
 import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumn exposing (UndatedColumn)
+import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -63,6 +65,16 @@ addTaskItem today taskItem columnConfig =
         Undated undatedColumn ->
             UndatedColumn.addTaskItem taskItem undatedColumn
                 |> Tuple.mapFirst Undated
+
+
+updateName : ColumnNames -> ColumnConfig -> ColumnConfig
+updateName columnNames columnConfig =
+    case columnConfig of
+        Dated datedColumn ->
+            Dated <| DatedColumn.updateName columnNames datedColumn
+
+        Undated undatedColumn ->
+            Undated <| UndatedColumn.updateName columnNames undatedColumn
 
 
 

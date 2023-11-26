@@ -27,6 +27,7 @@ module BoardConfig exposing
     , toggleShowFilteredTags
     , toggleTagFilterScope
     , updateBoardType
+    , updateColumnNames
     , updateCompletedCount
     , updateFilterPolarity
     , updateFilters
@@ -35,6 +36,7 @@ module BoardConfig exposing
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
+import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
 import Filter exposing (Filter, Polarity, Scope)
@@ -339,6 +341,17 @@ toggleTagFilterScope config =
 updateBoardType : String -> BoardConfig -> BoardConfig
 updateBoardType boardType config =
     fromBoardType boardType (title config)
+
+
+updateColumnNames : ColumnNames -> BoardConfig -> BoardConfig
+updateColumnNames columnNames config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig (DateBoardConfig.updateColumnNames columnNames boardConfig)
+
+        TagBoardConfig boardConfig ->
+            -- TagBoardConfig (TagBoardConfig.updateColumnNames columnNames boardConfig)
+            config
 
 
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig

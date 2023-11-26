@@ -6,9 +6,11 @@ module ColumnConfig.Dated exposing
     , future
     , name
     , tomorrow
+    , updateName
     )
 
 import Column exposing (Column, PlacementResult)
+import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -96,6 +98,11 @@ addTaskItem today taskItem ((DatedColumn c tl) as datedColumn) =
 
         Nothing ->
             ( datedColumn, Column.DoesNotBelong )
+
+
+updateName : ColumnNames -> DatedColumn -> DatedColumn
+updateName columnNames datedColumn =
+    datedColumn
 
 
 

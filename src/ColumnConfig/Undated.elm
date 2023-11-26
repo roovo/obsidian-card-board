@@ -4,9 +4,11 @@ module ColumnConfig.Undated exposing
     , asColumn
     , init
     , name
+    , updateName
     )
 
 import Column exposing (Column, PlacementResult)
+import ColumnNames exposing (ColumnNames)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -70,3 +72,8 @@ addTaskItem taskItem ((UndatedColumn c tl) as undatedColumn) =
 
     else
         ( undatedColumn, Column.DoesNotBelong )
+
+
+updateName : ColumnNames -> UndatedColumn -> UndatedColumn
+updateName columnNames (UndatedColumn c tl) =
+    UndatedColumn { c | name = ColumnNames.nameFor "undated" columnNames } tl

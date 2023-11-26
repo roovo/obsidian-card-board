@@ -9,11 +9,13 @@ module DateBoardConfig exposing
     , decoder_v_0_9_0
     , default
     , encoder
+    , updateColumnNames
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
 import ColumnConfig exposing (ColumnConfig)
 import ColumnConfigs exposing (ColumnConfigs)
+import ColumnNames exposing (ColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -187,3 +189,12 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
     )
         |> TsDecode.map populateColumms
+
+
+
+-- MODIFICATION
+
+
+updateColumnNames : ColumnNames -> DateBoardConfig -> DateBoardConfig
+updateColumnNames columnNames dateBoardConfig =
+    { dateBoardConfig | columnConfigs = ColumnConfigs.updateColumnNames columnNames dateBoardConfig.columnConfigs }

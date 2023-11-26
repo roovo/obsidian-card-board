@@ -1,3 +1,4 @@
+- don't set up the columnConfigs till after all settings have been read so I know the column names to use
 - need to make sure I can place the completed column wherever I like
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList

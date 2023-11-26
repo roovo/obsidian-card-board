@@ -4,6 +4,7 @@ module ColumnConfigs exposing
     , defaultForDateBoard
     , empty
     , fromList
+    , updateColumnNames
     )
 
 import Column exposing (Column, PlacementResult)
@@ -11,6 +12,7 @@ import ColumnConfig exposing (ColumnConfig)
 import ColumnConfig.Completed as CompletedColumn exposing (CompletedColumn)
 import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
+import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -58,11 +60,26 @@ empty =
     WithoutCompleted []
 
 
+
+-- MODIFICATION
+
+
 addTaskList : Date -> ColumnConfigs -> TaskList -> List (Column TaskItem)
 addTaskList today columnConfigs taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columnConfigs
         |> columns
+
+
+updateColumnNames : ColumnNames -> ColumnConfigs -> ColumnConfigs
+updateColumnNames columnNames columnConfigs =
+    case columnConfigs of
+        WithCompleted nonCompletedConfigs completedConfig ->
+            WithCompleted (List.map (ColumnConfig.updateName columnNames) nonCompletedConfigs)
+                completedConfig
+
+        WithoutCompleted nonCompletedConfigs ->
+            WithoutCompleted (List.map (ColumnConfig.updateName columnNames) nonCompletedConfigs)
 
 
 
