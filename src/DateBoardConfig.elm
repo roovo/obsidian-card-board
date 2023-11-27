@@ -42,7 +42,14 @@ type alias DateBoardConfig =
 default : DateBoardConfig
 default =
     { collapsedColumns = CollapsedColumns.init
-    , columnConfigs = ColumnConfigs.empty
+    , columnConfigs =
+        ColumnConfigs.fromList ColumnNames.default
+            [ ColumnConfig.undated "Undated"
+            , ColumnConfig.todayColumn
+            , ColumnConfig.tomorrowColumn
+            , ColumnConfig.futureColumn
+            ]
+            10
     , completedCount = 10
     , filters = []
     , filterPolarity = Filter.defaultPolarity

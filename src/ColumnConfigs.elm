@@ -95,6 +95,9 @@ addTaskItem today taskItem columnConfigs =
 
         WithoutCompleted nonCompletedConfigs ->
             let
+                plop =
+                    Debug.log "poo" nonCompletedConfigs
+
                 ( newConfigs, allPlacementResults ) =
                     addWithPlacement today taskItem nonCompletedConfigs
             in

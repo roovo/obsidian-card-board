@@ -1,10 +1,11 @@
 - fix tests
-- columnConfig for TagBoard columns
 - are tags being hidden
 - have a collapsed Bool on each column
 - need to make sure I can place the completed column wherever I like
+- columnConfig for TagBoard columns
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
+- ColumnConfig - do I need all the constructors?
 
 - only re-allocate cards to boards when something has changed
 

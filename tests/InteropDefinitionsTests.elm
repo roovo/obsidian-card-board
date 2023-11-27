@@ -3,6 +3,7 @@ module InteropDefinitionsTests exposing (suite)
 import BoardConfig
 import CollapsedColumns
 import ColumnConfig
+import ColumnConfig.Dated as DatedColumn
 import ColumnConfigs
 import ColumnNames
 import DataviewTaskCompletion
@@ -36,7 +37,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.10.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.10.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"},"ignoreFileNameDates":true},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.10.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -48,11 +49,11 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
                                                     , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
                                                     ]
                                                     4
                                             , completedCount = 4
@@ -86,7 +87,7 @@ flagsTests =
                                         , undated = Nothing
                                         , others = Just "The Others"
                                         , untagged = Nothing
-                                        , completed = Just "Done"
+                                        , completed = Just "Completed"
                                         }
                                     , ignoreFileNameDates = True
                                     }
@@ -100,7 +101,7 @@ flagsTests =
                         )
         , test "decodes valid flags for settings version 0.9.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.9.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.9.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -112,11 +113,11 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
                                                     , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
                                                     ]
                                                     4
                                             , completedCount = 4
@@ -150,7 +151,7 @@ flagsTests =
                                         , undated = Nothing
                                         , others = Just "The Others"
                                         , untagged = Nothing
-                                        , completed = Just "Done"
+                                        , completed = Just "Completed"
                                         }
                                     , ignoreFileNameDates = False
                                     }
@@ -164,7 +165,7 @@ flagsTests =
                         )
         , test "decodes valid flags for settings version 0.8.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.8.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.8.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -176,11 +177,11 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
                                                     , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
                                                     ]
                                                     4
                                             , completedCount = 4
@@ -214,7 +215,7 @@ flagsTests =
                                         , undated = Nothing
                                         , others = Just "The Others"
                                         , untagged = Nothing
-                                        , completed = Just "Done"
+                                        , completed = Just "Completed"
                                         }
                                     , ignoreFileNameDates = False
                                     }
@@ -228,7 +229,7 @@ flagsTests =
                         )
         , test "decodes valid flags for settings version 0.7.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.7.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Done"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.7.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","showFilteredTags":true,"includeUndated":true,"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -240,11 +241,11 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
                                                     , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
                                                     ]
                                                     4
                                             , completedCount = 4
@@ -278,7 +279,7 @@ flagsTests =
                                         , undated = Nothing
                                         , others = Just "The Others"
                                         , untagged = Nothing
-                                        , completed = Just "Done"
+                                        , completed = Just "Completed"
                                         }
                                     , ignoreFileNameDates = False
                                     }
@@ -304,7 +305,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
@@ -360,7 +361,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
@@ -416,7 +417,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
@@ -468,7 +469,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
@@ -520,7 +521,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn
@@ -572,7 +573,7 @@ flagsTests =
                                         [ BoardConfig.DateBoardConfig
                                             { collapsedColumns = CollapsedColumns.init
                                             , columnConfigs =
-                                                ColumnConfigs.fromList
+                                                ColumnConfigs.fromList ColumnNames.default
                                                     [ ColumnConfig.defaultUndated
                                                     , ColumnConfig.todayColumn
                                                     , ColumnConfig.tomorrowColumn

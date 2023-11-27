@@ -34,7 +34,7 @@ type ColumnConfig
 
 defaultUndated : ColumnConfig
 defaultUndated =
-    Undated <| UndatedColumn.init "delete me"
+    Undated <| UndatedColumn.init "Undated"
 
 
 dated : DatedColumn -> ColumnConfig

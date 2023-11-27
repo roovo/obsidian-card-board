@@ -10,6 +10,7 @@ import BoardConfig exposing (BoardConfig)
 import CollapsedColumns
 import ColumnConfig
 import ColumnConfigs
+import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
@@ -20,7 +21,7 @@ defaultDateBoardConfig : DateBoardConfig
 defaultDateBoardConfig =
     { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
-        ColumnConfigs.fromList
+        ColumnConfigs.fromList ColumnNames.default
             [ ColumnConfig.todayColumn
             , ColumnConfig.tomorrowColumn
             , ColumnConfig.futureColumn
@@ -45,7 +46,7 @@ exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
     { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
-        ColumnConfigs.fromList
+        ColumnConfigs.fromList ColumnNames.default
             [ ColumnConfig.todayColumn
             , ColumnConfig.tomorrowColumn
             , ColumnConfig.futureColumn
