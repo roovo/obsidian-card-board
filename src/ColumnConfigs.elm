@@ -36,6 +36,7 @@ fromList columnNames columnConfigs completedCount =
             columnConfigs
             (CompletedColumn.init
                 (ColumnNames.nameFor "completed" columnNames)
+                (List.length columnConfigs)
                 completedCount
             )
 
@@ -73,9 +74,7 @@ columns columnConfigs =
         WithCompleted nonCompletedConfigs completedConfig ->
             nonCompletedConfigs
                 |> List.map ColumnConfig.asColumn
-                |> List.reverse
-                |> List.append [ CompletedColumn.asColumn completedConfig ]
-                |> List.reverse
+                |> insert (CompletedColumn.index completedConfig) (CompletedColumn.asColumn completedConfig)
 
         WithoutCompleted nonCompletedConfigs ->
             nonCompletedConfigs
@@ -111,3 +110,8 @@ addWithPlacement today taskItem initialConfigs =
                 |> Tuple.mapSecond (\r -> r :: placementResults)
     in
     List.foldr fn ( [], [] ) initialConfigs
+
+
+insert : Int -> a -> List a -> List a
+insert i value list =
+    List.take i list ++ [ value ] ++ List.drop i list

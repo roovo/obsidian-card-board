@@ -2,6 +2,7 @@ module ColumnConfig.Completed exposing
     ( CompletedColumn
     , addTaskItem
     , asColumn
+    , index
     , init
     )
 
@@ -20,6 +21,7 @@ type CompletedColumn
 
 type alias Config =
     { collapsed : Bool
+    , index : Int
     , limit : Int
     , name : String
     }
@@ -29,9 +31,9 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : String -> Int -> CompletedColumn
-init name_ limit_ =
-    CompletedColumn { collapsed = False, name = name_, limit = limit_ } TaskList.empty
+init : String -> Int -> Int -> CompletedColumn
+init name_ index_ limit_ =
+    CompletedColumn { collapsed = False, index = index_, limit = limit_, name = name_ } TaskList.empty
 
 
 
@@ -49,6 +51,11 @@ asColumn ((CompletedColumn c tl) as completedColumn) =
         |> List.take c.limit
         |> Column.init True (name completedColumn) []
         |> Column.collapseState c.collapsed
+
+
+index : CompletedColumn -> Int
+index (CompletedColumn c _) =
+    c.index
 
 
 name : CompletedColumn -> String
