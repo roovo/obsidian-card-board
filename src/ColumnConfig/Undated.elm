@@ -21,7 +21,8 @@ type UndatedColumn
 
 
 type alias Config =
-    { name : String
+    { collapsed : Bool
+    , name : String
     }
 
 
@@ -31,7 +32,7 @@ type alias Config =
 
 init : String -> UndatedColumn
 init name_ =
-    UndatedColumn { name = name_ } TaskList.empty
+    UndatedColumn { collapsed = False, name = name_ } TaskList.empty
 
 
 
@@ -44,6 +45,7 @@ asColumn ((UndatedColumn c tl) as undatedColumn) =
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> Column.init True (name undatedColumn) []
+        |> Column.collapseState c.collapsed
 
 
 name : UndatedColumn -> String

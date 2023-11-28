@@ -26,7 +26,8 @@ type DatedColumn
 
 
 type alias Config =
-    { name : String
+    { collapsed : Bool
+    , name : String
     , range : RelativeDateRange
     }
 
@@ -43,22 +44,22 @@ type RelativeDateRange
 
 init : String -> RelativeDateRange -> DatedColumn
 init name_ range_ =
-    DatedColumn { name = name_, range = range_ } TaskList.empty
+    DatedColumn { collapsed = False, name = name_, range = range_ } TaskList.empty
 
 
 forToday : DatedColumn
 forToday =
-    DatedColumn { name = "Today", range = Before 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Today", range = Before 1 } TaskList.empty
 
 
 tomorrow : DatedColumn
 tomorrow =
-    DatedColumn { name = "Tomorrow", range = Between 1 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Tomorrow", range = Between 1 1 } TaskList.empty
 
 
 future : DatedColumn
 future =
-    DatedColumn { name = "Future", range = After 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Future", range = After 1 } TaskList.empty
 
 
 
@@ -72,6 +73,7 @@ asColumn ((DatedColumn c tl) as datedColumn) =
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
         |> Column.init True (name datedColumn) []
+        |> Column.collapseState c.collapsed
 
 
 name : DatedColumn -> String

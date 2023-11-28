@@ -19,8 +19,9 @@ type CompletedColumn
 
 
 type alias Config =
-    { name : String
+    { collapsed : Bool
     , limit : Int
+    , name : String
     }
 
 
@@ -30,7 +31,7 @@ type alias Config =
 
 init : String -> Int -> CompletedColumn
 init name_ limit_ =
-    CompletedColumn { name = name_, limit = limit_ } TaskList.empty
+    CompletedColumn { collapsed = False, name = name_, limit = limit_ } TaskList.empty
 
 
 
@@ -47,6 +48,7 @@ asColumn ((CompletedColumn c tl) as completedColumn) =
         |> List.reverse
         |> List.take c.limit
         |> Column.init True (name completedColumn) []
+        |> Column.collapseState c.collapsed
 
 
 name : CompletedColumn -> String
