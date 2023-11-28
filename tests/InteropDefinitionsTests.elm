@@ -66,6 +66,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -130,6 +136,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -194,6 +206,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -258,6 +276,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -322,6 +346,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -378,6 +408,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -434,6 +470,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = False
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -486,6 +528,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = True
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -538,6 +586,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = True
                                             , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -590,6 +644,12 @@ flagsTests =
                                             }
                                         , BoardConfig.TagBoardConfig
                                             { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
+                                            , columnConfigs =
+                                                ColumnConfigs.fromList ColumnNames.default
+                                                    [ ColumnConfig.defaultUntagged
+                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                                    ]
+                                                    5
                                             , showColumnTags = True
                                             , completedCount = 5
                                             , filters = []

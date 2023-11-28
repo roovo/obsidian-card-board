@@ -32,7 +32,7 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoardConfig -> TagBoardConfig.ColumnConfig -> NamedTagColumn
+init : TagBoardConfig -> TagBoardConfig.LocalColumnConfig -> NamedTagColumn
 init tagBoardConfig columnConfig =
     let
         columnTagsToHide : List String

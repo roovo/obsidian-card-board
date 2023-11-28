@@ -272,7 +272,7 @@ populateColummConfigs columnNames boardConfig =
             DateBoardConfig <| DateBoardConfig.populateColummConfigs columnNames dateBoardConfig
 
         TagBoardConfig tagBoardConfig ->
-            boardConfig
+            TagBoardConfig <| TagBoardConfig.populateColummConfigs columnNames tagBoardConfig
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig
@@ -394,7 +394,7 @@ updateTags tags config =
 
         TagBoardConfig boardConfig ->
             let
-                columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.ColumnConfig)
+                columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.LocalColumnConfig)
                 columnsConfig =
                     Parser.run TagBoardConfig.columnConfigsParser tags
             in

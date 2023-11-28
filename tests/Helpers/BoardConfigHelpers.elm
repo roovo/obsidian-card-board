@@ -65,6 +65,7 @@ exampleDateBoardConfig =
 defaultTagBoardConfig : TagBoardConfig
 defaultTagBoardConfig =
     { columns = []
+    , columnConfigs = ColumnConfigs.fromList ColumnNames.default [] 0
     , showColumnTags = True
     , completedCount = 0
     , filters = []
@@ -81,6 +82,7 @@ defaultTagBoardConfig =
 exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
+    , columnConfigs = ColumnConfigs.fromList ColumnNames.default [ ColumnConfig.defaultUntagged ] 6
     , showColumnTags = True
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]

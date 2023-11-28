@@ -29,32 +29,32 @@ columnConfigsParserTest =
             \() ->
                 "foo"
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo" "Foo" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo" "Foo" ])
         , test "parses '#foo'" <|
             \() ->
                 "#foo"
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo" "Foo" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo" "Foo" ])
         , test "parses '#foo/bar'" <|
             \() ->
                 "#foo/bar"
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo/bar" "Foo bar" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo/bar" "Foo bar" ])
         , test "parses '#foo/bar baz'" <|
             \() ->
                 "#foo/bar baz"
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo/bar" "baz" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo/bar" "baz" ])
         , test "parses '#foo/bar baz bax'" <|
             \() ->
                 "#foo/bar baz bax"
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo/bar" "baz bax" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo/bar" "baz bax" ])
         , test "parses '   #foo/bar     baz     bax    '" <|
             \() ->
                 "   #foo/bar     baz     bax    "
                     |> Parser.run TagBoardConfig.columnConfigsParser
-                    |> Expect.equal (Ok [ TagBoardConfig.ColumnConfig "foo/bar" "baz bax" ])
+                    |> Expect.equal (Ok [ TagBoardConfig.LocalColumnConfig "foo/bar" "baz bax" ])
         , test "parses multilines" <|
             \() ->
                 """#foo     bar     baz
@@ -62,8 +62,8 @@ columnConfigsParserTest =
                     |> Parser.run TagBoardConfig.columnConfigsParser
                     |> Expect.equal
                         (Ok
-                            [ TagBoardConfig.ColumnConfig "foo" "bar baz"
-                            , TagBoardConfig.ColumnConfig "aa" "Aa"
+                            [ TagBoardConfig.LocalColumnConfig "foo" "bar baz"
+                            , TagBoardConfig.LocalColumnConfig "aa" "Aa"
                             ]
                         )
         ]

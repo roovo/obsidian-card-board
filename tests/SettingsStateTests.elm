@@ -2,6 +2,7 @@ module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import CollapsedColumns
+import ColumnConfig
 import ColumnConfigs
 import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
@@ -510,6 +511,7 @@ exampleDateBoardConfig =
 exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
     { columns = [ { tag = "foo", displayTitle = "bar" } ]
+    , columnConfigs = ColumnConfigs.fromList ColumnNames.default [ ColumnConfig.defaultUntagged ] 6
     , showColumnTags = True
     , completedCount = 6
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
