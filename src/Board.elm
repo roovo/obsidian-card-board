@@ -52,16 +52,10 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
                 |> collapseColumns config
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
-            let
-                emptyTagBoardColumns : TagBoardColumns
-                emptyTagBoardColumns =
-                    TagBoardColumns.init columnNames tagBoardConfig
-            in
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
-                |> TagBoardColumns.columns
+                |> ColumnConfigs.addTaskList today tagBoardConfig.columnConfigs
                 |> convertToCards (id board)
                 |> collapseColumns config
 
