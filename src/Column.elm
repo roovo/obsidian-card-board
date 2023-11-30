@@ -107,11 +107,16 @@ untagged name_ =
 -- INFO
 
 
-cards : Column -> List Card
-cards column =
+cards : String -> Column -> List Card
+cards boardId column =
+    let
+        cardIdPrefix : String
+        cardIdPrefix =
+            boardId ++ ":" ++ name column
+    in
     taskList column
         |> TaskList.topLevelTasks
-        |> List.map (Card.fromTaskItem "" [])
+        |> List.map (Card.fromTaskItem cardIdPrefix [])
 
 
 isCollapsed : Column -> Bool

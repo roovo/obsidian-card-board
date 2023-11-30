@@ -404,7 +404,7 @@ boardView ignoreFileNameDates today board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView index today column)
+                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
             )
         ]
 
@@ -420,13 +420,13 @@ selectedBoardView ignoreFileNameDates today board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView index today column)
+                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
             )
         ]
 
 
-columnView : Int -> Date -> Column -> Html Msg
-columnView columnIndex today column =
+columnView : String -> Int -> Date -> Column -> Html Msg
+columnView boardId columnIndex today column =
     let
         columnCollapsedAria : String
         columnCollapsedAria =
@@ -474,7 +474,7 @@ columnView columnIndex today column =
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
             -- (List.map (cardView today) (Column.items column))
-            (List.map (cardView today) (Column.cards column))
+            (List.map (cardView today) (Column.cards boardId column))
         ]
 
 

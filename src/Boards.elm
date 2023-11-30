@@ -11,7 +11,7 @@ module Boards exposing
 import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import Column
+import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import SafeZipper exposing (SafeZipper)
@@ -51,12 +51,17 @@ titles (Boards _ _ configs _) =
 
 cards : Bool -> Date -> Boards -> List Card
 cards ignoreFileNameDates today boards_ =
+    let
+        cardsForBoard : String -> List Column -> List (List Card)
+        cardsForBoard boardId columns =
+            List.map (Column.cards boardId) columns
+    in
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.map (Board.columns ignoreFileNameDates today)
+        |> List.map (\b -> ( Board.id b, Board.columns ignoreFileNameDates today b ))
+        |> List.map (\( bid, cs ) -> cardsForBoard bid cs)
         |> List.concat
-        |> List.map Column.cards
         |> List.concat
 
 

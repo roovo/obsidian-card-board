@@ -1,7 +1,8 @@
-- columnConfig for TagBoard columns
-- ensure columns on a board have unique names
+- card sorting
 - are tags being hidden
 - have a collapsed Bool on each column
+- ensure columns on a board have unique names
+- new version of config
 - fix tests
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
