@@ -8,13 +8,11 @@ module Board exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
-import Column exposing (Column)
+import ColumnConfig exposing (ColumnConfig)
 import ColumnConfigs
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
-import DateBoardColumns exposing (DateBoardColumns)
 import Filter exposing (Filter, Polarity, Scope)
-import TagBoardColumns exposing (TagBoardColumns)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -40,7 +38,7 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : Bool -> Date -> Board -> List (Column Card)
+columns : Bool -> Date -> Board -> List ColumnConfig
 columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
@@ -48,16 +46,14 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
                 |> ColumnConfigs.addTaskList today dateBoardConfig.columnConfigs
-                |> convertToCards (id board)
-                |> collapseColumns config
+                |> ColumnConfigs.toList
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
                 |> ColumnConfigs.addTaskList today tagBoardConfig.columnConfigs
-                |> convertToCards (id board)
-                |> collapseColumns config
+                |> ColumnConfigs.toList
 
 
 id : Board -> String
@@ -67,24 +63,6 @@ id (Board uniqueId _ config _) =
 
 
 -- PRIVATE
-
-
-collapseColumns : BoardConfig -> List (Column Card) -> List (Column Card)
-collapseColumns config cols =
-    let
-        collapsedColumns : CollapsedColumns
-        collapsedColumns =
-            BoardConfig.collapsedColumns config
-
-        performCollapse : Int -> Column Card -> Column Card
-        performCollapse index col =
-            if CollapsedColumns.columnIsCollapsed index collapsedColumns then
-                Column.collapseState True col
-
-            else
-                Column.collapseState False col
-    in
-    List.indexedMap performCollapse cols
 
 
 configureDueDates : Bool -> TaskList -> TaskList
@@ -154,20 +132,3 @@ applyFilters taskList polarity scope filters =
 
     else
         TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
-
-
-convertToCards : String -> List (Column TaskItem) -> List (Column Card)
-convertToCards boardId columnList =
-    let
-        cardIdPrefix : Int -> String
-        cardIdPrefix columnIndex =
-            boardId ++ ":" ++ String.fromInt columnIndex
-
-        placeCardsInColumn : Int -> Column TaskItem -> Column Card
-        placeCardsInColumn columnIndex column =
-            Column.items column
-                |> List.map (Card.fromTaskItem (cardIdPrefix columnIndex) (Column.tagsToHide column))
-                |> Column.init True (Column.name column) (Column.tagsToHide column)
-    in
-    columnList
-        |> List.indexedMap placeCardsInColumn

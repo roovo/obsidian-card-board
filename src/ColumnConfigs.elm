@@ -3,15 +3,16 @@ module ColumnConfigs exposing
     , addTaskList
     , empty
     , fromList
+    , toList
     )
 
-import Column exposing (Column, PlacementResult)
 import ColumnConfig exposing (ColumnConfig)
 import ColumnConfig.Completed as CompletedColumn exposing (CompletedColumn)
 import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
 import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -57,28 +58,25 @@ empty =
 -- MODIFICATION
 
 
-addTaskList : Date -> ColumnConfigs -> TaskList -> List (Column TaskItem)
+addTaskList : Date -> ColumnConfigs -> TaskList -> ColumnConfigs
 addTaskList today columnConfigs taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columnConfigs
-        |> columns
+
+
+toList : ColumnConfigs -> List ColumnConfig
+toList columnConfigs =
+    case columnConfigs of
+        WithCompleted nonCompletedConfigs completedConfig ->
+            nonCompletedConfigs
+                |> insert (CompletedColumn.index completedConfig) (ColumnConfig.completed completedConfig)
+
+        WithoutCompleted nonCompletedConfigs ->
+            nonCompletedConfigs
 
 
 
 -- PRIVATE
-
-
-columns : ColumnConfigs -> List (Column TaskItem)
-columns columnConfigs =
-    case columnConfigs of
-        WithCompleted nonCompletedConfigs completedConfig ->
-            nonCompletedConfigs
-                |> List.map ColumnConfig.asColumn
-                |> insert (CompletedColumn.index completedConfig) (CompletedColumn.asColumn completedConfig)
-
-        WithoutCompleted nonCompletedConfigs ->
-            nonCompletedConfigs
-                |> List.map ColumnConfig.asColumn
 
 
 addTaskItem : Date -> TaskItem -> ColumnConfigs -> ColumnConfigs

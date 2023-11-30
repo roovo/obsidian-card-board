@@ -1,12 +1,14 @@
 module ColumnConfig.Completed exposing
     ( CompletedColumn
     , addTaskItem
-    , asColumn
     , index
     , init
+    , isCollapsed
+    , name
+    , taskList
     )
 
-import Column exposing (Column, PlacementResult)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -40,27 +42,24 @@ init name_ index_ limit_ =
 -- INFO
 
 
-asColumn : CompletedColumn -> Column TaskItem
-asColumn ((CompletedColumn c tl) as completedColumn) =
-    tl
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.reverse
-        |> List.sortBy TaskItem.completedPosix
-        |> List.reverse
-        |> List.take c.limit
-        |> Column.init True (name completedColumn) []
-        |> Column.collapseState c.collapsed
-
-
 index : CompletedColumn -> Int
 index (CompletedColumn c _) =
     c.index
 
 
+isCollapsed : CompletedColumn -> Bool
+isCollapsed (CompletedColumn c _) =
+    c.collapsed
+
+
 name : CompletedColumn -> String
 name (CompletedColumn c _) =
     c.name
+
+
+taskList : CompletedColumn -> TaskList
+taskList (CompletedColumn _ tl) =
+    tl
 
 
 
@@ -73,12 +72,12 @@ addTaskItem placementResults taskItem ((CompletedColumn c tl) as completedColumn
         filteredPlacements : List PlacementResult
         filteredPlacements =
             placementResults
-                |> List.filter (\r -> r /= Column.DoesNotBelong)
+                |> List.filter (\r -> r /= PlacementResult.DoesNotBelong)
 
         shouldBeAdded : Bool
         shouldBeAdded =
             filteredPlacements
-                |> List.all (\r -> r == Column.CompletedInThisColumn)
+                |> List.all (\r -> r == PlacementResult.CompletedInThisColumn)
                 |> (&&) (not <| List.isEmpty filteredPlacements)
     in
     if shouldBeAdded then

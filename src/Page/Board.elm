@@ -7,7 +7,7 @@ module Page.Board exposing
 import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
-import Column exposing (Column)
+import ColumnConfig exposing (ColumnConfig)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
@@ -425,12 +425,12 @@ selectedBoardView ignoreFileNameDates today board =
         ]
 
 
-columnView : Int -> Date -> Column Card -> Html Msg
+columnView : Int -> Date -> ColumnConfig -> Html Msg
 columnView columnIndex today column =
     let
         columnCollapsedAria : String
         columnCollapsedAria =
-            if Column.isCollapsed column then
+            if ColumnConfig.isCollapsed column then
                 "Un-collapse"
 
             else
@@ -438,7 +438,7 @@ columnView columnIndex today column =
 
         columnCollapsedArrow : String
         columnCollapsedArrow =
-            if Column.isCollapsed column then
+            if ColumnConfig.isCollapsed column then
                 "arrow-down"
 
             else
@@ -446,7 +446,7 @@ columnView columnIndex today column =
 
         columnCollapsedClass : String
         columnCollapsedClass =
-            if Column.isCollapsed column then
+            if ColumnConfig.isCollapsed column then
                 " collapsed"
 
             else
@@ -454,27 +454,27 @@ columnView columnIndex today column =
 
         columnCountString : String
         columnCountString =
-            if Column.isCollapsed column then
-                "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"
-
-            else
-                ""
+            -- if ColumnConfig.isCollapsed column then
+            --     "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"
+            -- else
+            ""
     in
     Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
                 [ class columnCollapsedArrow
                 , attribute "aria-label" columnCollapsedAria
-                , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
+                , onClick <| ToggleColumnCollapse columnIndex (not <| ColumnConfig.isCollapsed column)
                 ]
                 []
             , Html.span []
-                [ Html.text <| Column.name column ]
+                [ Html.text <| ColumnConfig.name column ]
             , Html.span [ class "sub-text" ]
                 [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView today) (Column.items column))
+            -- (List.map (cardView today) (Column.items column))
+            (List.map (cardView today) (ColumnConfig.cards column))
         ]
 
 

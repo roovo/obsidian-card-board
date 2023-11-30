@@ -1,13 +1,14 @@
 module ColumnConfig.Undated exposing
     ( UndatedColumn
     , addTaskItem
-    , asColumn
     , init
+    , isCollapsed
     , name
+    , taskList
     )
 
-import Column exposing (Column, PlacementResult)
 import ColumnNames exposing (ColumnNames)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -39,15 +40,6 @@ init name_ =
 -- INFO
 
 
-asColumn : UndatedColumn -> Column TaskItem
-asColumn ((UndatedColumn c tl) as undatedColumn) =
-    tl
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> Column.init True (name undatedColumn) []
-        |> Column.collapseState c.collapsed
-
-
 name : UndatedColumn -> String
 name (UndatedColumn c _) =
     c.name
@@ -58,18 +50,23 @@ taskList (UndatedColumn _ tl) =
     tl
 
 
+isCollapsed : UndatedColumn -> Bool
+isCollapsed (UndatedColumn c _) =
+    c.collapsed
+
+
 
 -- MODIFICATION
 
 
-addTaskItem : TaskItem -> UndatedColumn -> ( UndatedColumn, Column.PlacementResult )
+addTaskItem : TaskItem -> UndatedColumn -> ( UndatedColumn, PlacementResult )
 addTaskItem taskItem ((UndatedColumn c tl) as undatedColumn) =
     if not <| TaskItem.isDated taskItem then
         if TaskItem.isCompleted taskItem then
-            ( undatedColumn, Column.CompletedInThisColumn )
+            ( undatedColumn, PlacementResult.CompletedInThisColumn )
 
         else
-            ( UndatedColumn c (TaskList.add taskItem tl), Column.Placed )
+            ( UndatedColumn c (TaskList.add taskItem tl), PlacementResult.Placed )
 
     else
-        ( undatedColumn, Column.DoesNotBelong )
+        ( undatedColumn, PlacementResult.DoesNotBelong )

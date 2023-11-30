@@ -2,17 +2,18 @@ module ColumnConfig.Dated exposing
     ( DatedColumn
     , RelativeDateRange(..)
     , addTaskItem
-    , asColumn
     , forToday
     , future
     , init
+    , isCollapsed
     , name
+    , taskList
     , tomorrow
     )
 
-import Column exposing (Column, PlacementResult)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -66,14 +67,9 @@ future =
 -- INFO
 
 
-asColumn : DatedColumn -> Column TaskItem
-asColumn ((DatedColumn c tl) as datedColumn) =
-    tl
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> List.sortBy TaskItem.dueRataDie
-        |> Column.init True (name datedColumn) []
-        |> Column.collapseState c.collapsed
+isCollapsed : DatedColumn -> Bool
+isCollapsed (DatedColumn c _) =
+    c.collapsed
 
 
 name : DatedColumn -> String
@@ -90,22 +86,22 @@ taskList (DatedColumn _ tl) =
 -- MODIFICATION
 
 
-addTaskItem : Date -> TaskItem -> DatedColumn -> ( DatedColumn, Column.PlacementResult )
+addTaskItem : Date -> TaskItem -> DatedColumn -> ( DatedColumn, PlacementResult )
 addTaskItem today taskItem ((DatedColumn c tl) as datedColumn) =
     case TaskItem.due taskItem of
         Just dueDate ->
             if belongs today c.range dueDate then
                 if TaskItem.isCompleted taskItem then
-                    ( datedColumn, Column.CompletedInThisColumn )
+                    ( datedColumn, PlacementResult.CompletedInThisColumn )
 
                 else
-                    ( DatedColumn c (TaskList.add taskItem tl), Column.Placed )
+                    ( DatedColumn c (TaskList.add taskItem tl), PlacementResult.Placed )
 
             else
-                ( datedColumn, Column.DoesNotBelong )
+                ( datedColumn, PlacementResult.DoesNotBelong )
 
         Nothing ->
-            ( datedColumn, Column.DoesNotBelong )
+            ( datedColumn, PlacementResult.DoesNotBelong )
 
 
 
