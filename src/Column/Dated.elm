@@ -1,4 +1,4 @@
-module ColumnConfig.Dated exposing
+module Column.Dated exposing
     ( DatedColumn
     , RelativeDateRange(..)
     , addTaskItem

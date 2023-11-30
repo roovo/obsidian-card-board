@@ -11,7 +11,7 @@ module Boards exposing
 import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import ColumnConfig
+import Column
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import SafeZipper exposing (SafeZipper)
@@ -56,7 +56,7 @@ cards ignoreFileNameDates today boards_ =
         |> SafeZipper.toList
         |> List.map (Board.columns ignoreFileNameDates today)
         |> List.concat
-        |> List.map ColumnConfig.cards
+        |> List.map Column.cards
         |> List.concat
 
 

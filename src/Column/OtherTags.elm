@@ -1,4 +1,4 @@
-module ColumnConfig.OtherTags exposing
+module Column.OtherTags exposing
     ( OtherTagsColumn
     , addTaskItem
     , init

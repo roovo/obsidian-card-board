@@ -1,4 +1,4 @@
-module ColumnConfig.Completed exposing
+module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
     , index

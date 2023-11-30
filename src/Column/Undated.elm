@@ -1,4 +1,4 @@
-module ColumnConfig.Undated exposing
+module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
     , init

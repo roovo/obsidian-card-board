@@ -1,4 +1,4 @@
-module ColumnConfig.Untagged exposing
+module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
     , init

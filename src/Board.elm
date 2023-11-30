@@ -8,9 +8,9 @@ module Board exposing
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
-import ColumnConfig exposing (ColumnConfig)
-import ColumnConfigs
+import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
+import Columns
 import Date exposing (Date)
 import Filter exposing (Filter, Polarity, Scope)
 import TaskItem exposing (TaskItem)
@@ -38,22 +38,22 @@ init uniqueId columnNames config taskList =
 -- INFO
 
 
-columns : Bool -> Date -> Board -> List ColumnConfig
+columns : Bool -> Date -> Board -> List Column
 columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> ColumnConfigs.addTaskList today dateBoardConfig.columnConfigs
-                |> ColumnConfigs.toList
+                |> Columns.addTaskList today dateBoardConfig.columnConfigs
+                |> Columns.toList
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> ColumnConfigs.addTaskList today tagBoardConfig.columnConfigs
-                |> ColumnConfigs.toList
+                |> Columns.addTaskList today tagBoardConfig.columnConfigs
+                |> Columns.toList
 
 
 id : Board -> String

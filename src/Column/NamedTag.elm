@@ -1,4 +1,4 @@
-module ColumnConfig.NamedTag exposing
+module Column.NamedTag exposing
     ( NamedTagColumn
     , addTaskItem
     , init

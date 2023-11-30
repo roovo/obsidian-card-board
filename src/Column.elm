@@ -1,5 +1,5 @@
-module ColumnConfig exposing
-    ( ColumnConfig
+module Column exposing
+    ( Column
     , addTaskItem
     , cards
     , completed
@@ -18,12 +18,12 @@ module ColumnConfig exposing
     )
 
 import Card exposing (Card)
-import ColumnConfig.Completed as CompletedColumn exposing (CompletedColumn)
-import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
-import ColumnConfig.NamedTag as NamedTagColumn exposing (NamedTagColumn)
-import ColumnConfig.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
-import ColumnConfig.Undated as UndatedColumn exposing (UndatedColumn)
-import ColumnConfig.Untagged as UntaggedColumn exposing (UntaggedColumn)
+import Column.Completed as CompletedColumn exposing (CompletedColumn)
+import Column.Dated as DatedColumn exposing (DatedColumn)
+import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
+import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
+import Column.Undated as UndatedColumn exposing (UndatedColumn)
+import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import PlacementResult exposing (PlacementResult)
@@ -35,7 +35,7 @@ import TaskList exposing (TaskList)
 -- TYPES
 
 
-type ColumnConfig
+type Column
     = Completed CompletedColumn
     | Dated DatedColumn
     | NamedTag NamedTagColumn
@@ -48,57 +48,57 @@ type ColumnConfig
 -- CONSTRUCTION
 
 
-completed : CompletedColumn -> ColumnConfig
+completed : CompletedColumn -> Column
 completed completedColumn =
     Completed completedColumn
 
 
-defaultUndated : ColumnConfig
+defaultUndated : Column
 defaultUndated =
     Undated <| UndatedColumn.init "Undated"
 
 
-defaultUntagged : ColumnConfig
+defaultUntagged : Column
 defaultUntagged =
     Untagged <| UntaggedColumn.init "Untagged"
 
 
-dated : DatedColumn -> ColumnConfig
+dated : DatedColumn -> Column
 dated datedColumn =
     Dated datedColumn
 
 
-futureColumn : ColumnConfig
+futureColumn : Column
 futureColumn =
     Dated DatedColumn.future
 
 
-namedTag : String -> String -> ColumnConfig
+namedTag : String -> String -> Column
 namedTag name_ tag =
     NamedTag <| NamedTagColumn.init name_ tag
 
 
-otherTags : String -> List String -> ColumnConfig
+otherTags : String -> List String -> Column
 otherTags name_ ots =
     OtherTags <| OtherTagsColumn.init name_ ots
 
 
-todayColumn : ColumnConfig
+todayColumn : Column
 todayColumn =
     Dated DatedColumn.forToday
 
 
-tomorrowColumn : ColumnConfig
+tomorrowColumn : Column
 tomorrowColumn =
     Dated DatedColumn.tomorrow
 
 
-undated : String -> ColumnConfig
+undated : String -> Column
 undated name_ =
     Undated <| UndatedColumn.init name_
 
 
-untagged : String -> ColumnConfig
+untagged : String -> Column
 untagged name_ =
     Untagged <| UntaggedColumn.init name_
 
@@ -107,16 +107,16 @@ untagged name_ =
 -- INFO
 
 
-cards : ColumnConfig -> List Card
-cards columnConfig =
-    taskList columnConfig
+cards : Column -> List Card
+cards column =
+    taskList column
         |> TaskList.topLevelTasks
         |> List.map (Card.fromTaskItem "" [])
 
 
-isCollapsed : ColumnConfig -> Bool
-isCollapsed columnConfig =
-    case columnConfig of
+isCollapsed : Column -> Bool
+isCollapsed column =
+    case column of
         Completed completedColumn ->
             CompletedColumn.isCollapsed completedColumn
 
@@ -136,9 +136,9 @@ isCollapsed columnConfig =
             UntaggedColumn.isCollapsed untaggedColumn
 
 
-name : ColumnConfig -> String
-name columnConfig =
-    case columnConfig of
+name : Column -> String
+name column =
+    case column of
         Completed completedColumn ->
             CompletedColumn.name completedColumn
 
@@ -162,12 +162,12 @@ name columnConfig =
 -- MANIPULATION
 
 
-addTaskItem : Date -> TaskItem -> ColumnConfig -> ( ColumnConfig, PlacementResult )
-addTaskItem today taskItem columnConfig =
-    case columnConfig of
+addTaskItem : Date -> TaskItem -> Column -> ( Column, PlacementResult )
+addTaskItem today taskItem column =
+    case column of
         Completed completedColumn ->
             -- TODO: This shouldn't be here !! just hacking for now
-            ( columnConfig, PlacementResult.DoesNotBelong )
+            ( column, PlacementResult.DoesNotBelong )
 
         Dated datedColumn ->
             DatedColumn.addTaskItem today taskItem datedColumn
@@ -207,9 +207,9 @@ placeTask pr item list =
             list
 
 
-taskList : ColumnConfig -> TaskList
-taskList columnConfig =
-    case columnConfig of
+taskList : Column -> TaskList
+taskList column =
+    case column of
         Completed completedColumn ->
             CompletedColumn.taskList completedColumn
 

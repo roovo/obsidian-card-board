@@ -1,15 +1,15 @@
-module ColumnConfigs exposing
-    ( ColumnConfigs
+module Columns exposing
+    ( Columns
     , addTaskList
     , empty
     , fromList
     , toList
     )
 
-import ColumnConfig exposing (ColumnConfig)
-import ColumnConfig.Completed as CompletedColumn exposing (CompletedColumn)
-import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
-import ColumnConfig.Undated as UndatedColumnConfig exposing (UndatedColumn)
+import Column exposing (Column)
+import Column.Completed as CompletedColumn exposing (CompletedColumn)
+import Column.Dated as DatedColumn exposing (DatedColumn)
+import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import PlacementResult exposing (PlacementResult)
@@ -21,35 +21,35 @@ import TaskList exposing (TaskList)
 -- TYPES
 
 
-type ColumnConfigs
-    = WithCompleted (List ColumnConfig) CompletedColumn
-    | WithoutCompleted (List ColumnConfig)
+type Columns
+    = WithCompleted (List Column) CompletedColumn
+    | WithoutCompleted (List Column)
 
 
 
 -- TEMP TO REMOVE
 
 
-fromList : ColumnNames -> List ColumnConfig -> Int -> ColumnConfigs
-fromList columnNames columnConfigs completedCount =
+fromList : ColumnNames -> List Column -> Int -> Columns
+fromList columnNames columns completedCount =
     if completedCount > 0 then
         WithCompleted
-            columnConfigs
+            columns
             (CompletedColumn.init
                 (ColumnNames.nameFor "completed" columnNames)
-                (List.length columnConfigs)
+                (List.length columns)
                 completedCount
             )
 
     else
-        WithoutCompleted columnConfigs
+        WithoutCompleted columns
 
 
 
 -- CONSTRUCTION
 
 
-empty : ColumnConfigs
+empty : Columns
 empty =
     WithoutCompleted []
 
@@ -58,18 +58,18 @@ empty =
 -- MODIFICATION
 
 
-addTaskList : Date -> ColumnConfigs -> TaskList -> ColumnConfigs
-addTaskList today columnConfigs taskList =
+addTaskList : Date -> Columns -> TaskList -> Columns
+addTaskList today columns taskList =
     taskList
-        |> TaskList.foldl (addTaskItem today) columnConfigs
+        |> TaskList.foldl (addTaskItem today) columns
 
 
-toList : ColumnConfigs -> List ColumnConfig
-toList columnConfigs =
-    case columnConfigs of
+toList : Columns -> List Column
+toList columns =
+    case columns of
         WithCompleted nonCompletedConfigs completedConfig ->
             nonCompletedConfigs
-                |> insert (CompletedColumn.index completedConfig) (ColumnConfig.completed completedConfig)
+                |> insert (CompletedColumn.index completedConfig) (Column.completed completedConfig)
 
         WithoutCompleted nonCompletedConfigs ->
             nonCompletedConfigs
@@ -79,9 +79,9 @@ toList columnConfigs =
 -- PRIVATE
 
 
-addTaskItem : Date -> TaskItem -> ColumnConfigs -> ColumnConfigs
-addTaskItem today taskItem columnConfigs =
-    case columnConfigs of
+addTaskItem : Date -> TaskItem -> Columns -> Columns
+addTaskItem today taskItem columns =
+    case columns of
         WithCompleted nonCompletedConfigs completedConfig ->
             let
                 ( newConfigs, allPlacementResults ) =
@@ -98,12 +98,12 @@ addTaskItem today taskItem columnConfigs =
             WithoutCompleted newConfigs
 
 
-addWithPlacement : Date -> TaskItem -> List ColumnConfig -> ( List ColumnConfig, List PlacementResult )
+addWithPlacement : Date -> TaskItem -> List Column -> ( List Column, List PlacementResult )
 addWithPlacement today taskItem initialConfigs =
     let
-        fn : ColumnConfig -> ( List ColumnConfig, List PlacementResult ) -> ( List ColumnConfig, List PlacementResult )
+        fn : Column -> ( List Column, List PlacementResult ) -> ( List Column, List PlacementResult )
         fn thisConfig ( accumulatedConfigs, placementResults ) =
-            ColumnConfig.addTaskItem today taskItem thisConfig
+            Column.addTaskItem today taskItem thisConfig
                 |> Tuple.mapFirst (\c -> c :: accumulatedConfigs)
                 |> Tuple.mapSecond (\r -> r :: placementResults)
     in

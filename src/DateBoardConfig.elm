@@ -13,10 +13,10 @@ module DateBoardConfig exposing
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
-import ColumnConfig exposing (ColumnConfig)
-import ColumnConfig.Dated as DatedColumn exposing (DatedColumn)
-import ColumnConfigs exposing (ColumnConfigs)
+import Column exposing (Column)
+import Column.Dated as DatedColumn exposing (DatedColumn)
 import ColumnNames exposing (ColumnNames)
+import Columns exposing (Columns)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -28,7 +28,7 @@ import TsJson.Encode as TsEncode
 
 type alias DateBoardConfig =
     { collapsedColumns : CollapsedColumns
-    , columnConfigs : ColumnConfigs
+    , columnConfigs : Columns
     , completedCount : Int
     , filters : List Filter
     , filterPolarity : Polarity
@@ -43,11 +43,11 @@ default : DateBoardConfig
 default =
     { collapsedColumns = CollapsedColumns.init
     , columnConfigs =
-        ColumnConfigs.fromList ColumnNames.default
-            [ ColumnConfig.undated "Undated"
-            , ColumnConfig.todayColumn
-            , ColumnConfig.tomorrowColumn
-            , ColumnConfig.futureColumn
+        Columns.fromList ColumnNames.default
+            [ Column.undated "Undated"
+            , Column.todayColumn
+            , Column.tomorrowColumn
+            , Column.futureColumn
             ]
             10
     , completedCount = 10
@@ -87,7 +87,7 @@ decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_9_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.field "collapsedColumns" CollapsedColumns.decoder)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -101,7 +101,7 @@ decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_5_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -115,7 +115,7 @@ decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_4_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -129,7 +129,7 @@ decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_3_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "filterPolarity" <| Filter.polarityDecoder)
@@ -143,7 +143,7 @@ decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_2_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
@@ -157,7 +157,7 @@ decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_1_0 =
     TsDecode.succeed DateBoardConfig
         |> TsDecode.andMap (TsDecode.succeed CollapsedColumns.init)
-        |> TsDecode.andMap (TsDecode.succeed ColumnConfigs.empty)
+        |> TsDecode.andMap (TsDecode.succeed Columns.empty)
         |> TsDecode.andMap (TsDecode.field "completedCount" TsDecode.int)
         |> TsDecode.andMap (TsDecode.succeed [])
         |> TsDecode.andMap (TsDecode.succeed Filter.Allow)
@@ -175,15 +175,15 @@ populateColummConfigs : ColumnNames -> DateBoardConfig -> DateBoardConfig
 populateColummConfigs columnNames dateBoardConfig =
     let
         dateColumns =
-            [ ColumnConfig.dated <|
+            [ Column.dated <|
                 DatedColumn.init
                     (ColumnNames.nameFor "today" columnNames)
                     (DatedColumn.Before 1)
-            , ColumnConfig.dated <|
+            , Column.dated <|
                 DatedColumn.init
                     (ColumnNames.nameFor "tomorrow" columnNames)
                     (DatedColumn.Between 1 1)
-            , ColumnConfig.dated <|
+            , Column.dated <|
                 DatedColumn.init
                     (ColumnNames.nameFor "future" columnNames)
                     (DatedColumn.After 1)
@@ -191,9 +191,9 @@ populateColummConfigs columnNames dateBoardConfig =
 
         undated =
             if dateBoardConfig.includeUndated then
-                [ ColumnConfig.undated (ColumnNames.nameFor "undated" columnNames) ]
+                [ Column.undated (ColumnNames.nameFor "undated" columnNames) ]
 
             else
                 []
     in
-    { dateBoardConfig | columnConfigs = ColumnConfigs.fromList columnNames (undated ++ dateColumns) dateBoardConfig.completedCount }
+    { dateBoardConfig | columnConfigs = Columns.fromList columnNames (undated ++ dateColumns) dateBoardConfig.completedCount }
