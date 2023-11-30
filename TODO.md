@@ -1,4 +1,3 @@
-- card sorting
 - are tags being hidden
 - have a collapsed Bool on each column
 - ensure columns on a board have unique names

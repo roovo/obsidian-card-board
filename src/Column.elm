@@ -114,8 +114,7 @@ cards boardId column =
         cardIdPrefix =
             boardId ++ ":" ++ name column
     in
-    taskList column
-        |> TaskList.topLevelTasks
+    toList column
         |> List.map (Card.fromTaskItem cardIdPrefix [])
 
 
@@ -212,23 +211,23 @@ placeTask pr item list =
             list
 
 
-taskList : Column -> TaskList
-taskList column =
+toList : Column -> List TaskItem
+toList column =
     case column of
         Completed completedColumn ->
-            CompletedColumn.taskList completedColumn
+            CompletedColumn.toList completedColumn
 
         Dated datedColumn ->
-            DatedColumn.taskList datedColumn
+            DatedColumn.toList datedColumn
 
         NamedTag namedTagColumn ->
-            NamedTagColumn.taskList namedTagColumn
+            NamedTagColumn.toList namedTagColumn
 
         OtherTags otherTagsColumn ->
-            OtherTagsColumn.taskList otherTagsColumn
+            OtherTagsColumn.toList otherTagsColumn
 
         Undated undatedColumn ->
-            UndatedColumn.taskList undatedColumn
+            UndatedColumn.toList undatedColumn
 
         Untagged untaggedColumn ->
-            UntaggedColumn.taskList untaggedColumn
+            UntaggedColumn.toList untaggedColumn

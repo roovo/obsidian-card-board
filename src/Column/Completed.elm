@@ -5,7 +5,7 @@ module Column.Completed exposing
     , init
     , isCollapsed
     , name
-    , taskList
+    , toList
     )
 
 import PlacementResult exposing (PlacementResult)
@@ -57,9 +57,15 @@ name (CompletedColumn c _) =
     c.name
 
 
-taskList : CompletedColumn -> TaskList
-taskList (CompletedColumn _ tl) =
+toList : CompletedColumn -> List TaskItem
+toList (CompletedColumn c tl) =
     tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.reverse
+        |> List.sortBy TaskItem.completedPosix
+        |> List.reverse
+        |> List.take c.limit
 
 
 

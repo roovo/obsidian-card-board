@@ -4,7 +4,7 @@ module Column.Undated exposing
     , init
     , isCollapsed
     , name
-    , taskList
+    , toList
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -45,9 +45,11 @@ name (UndatedColumn c _) =
     c.name
 
 
-taskList : UndatedColumn -> TaskList
-taskList (UndatedColumn _ tl) =
+toList : UndatedColumn -> List TaskItem
+toList (UndatedColumn _ tl) =
     tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
 
 
 isCollapsed : UndatedColumn -> Bool

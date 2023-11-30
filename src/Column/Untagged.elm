@@ -4,7 +4,7 @@ module Column.Untagged exposing
     , init
     , isCollapsed
     , name
-    , taskList
+    , toList
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -45,9 +45,12 @@ name (UntaggedColumn c _) =
     c.name
 
 
-taskList : UntaggedColumn -> TaskList
-taskList (UntaggedColumn _ tl) =
+toList : UntaggedColumn -> List TaskItem
+toList (UntaggedColumn _ tl) =
     tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
 
 
 isCollapsed : UntaggedColumn -> Bool

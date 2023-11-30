@@ -4,7 +4,7 @@ module Column.OtherTags exposing
     , init
     , isCollapsed
     , name
-    , taskList
+    , toList
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -50,9 +50,12 @@ name (OtherTagsColumn c _ _) =
     c.name
 
 
-taskList : OtherTagsColumn -> TaskList
-taskList (OtherTagsColumn _ _ tl) =
+toList : OtherTagsColumn -> List TaskItem
+toList (OtherTagsColumn _ _ tl) =
     tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
 
 
 

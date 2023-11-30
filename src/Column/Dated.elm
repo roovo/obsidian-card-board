@@ -7,7 +7,7 @@ module Column.Dated exposing
     , init
     , isCollapsed
     , name
-    , taskList
+    , toList
     , tomorrow
     )
 
@@ -77,9 +77,12 @@ name (DatedColumn c _) =
     c.name
 
 
-taskList : DatedColumn -> TaskList
-taskList (DatedColumn _ tl) =
+toList : DatedColumn -> List TaskItem
+toList (DatedColumn _ tl) =
     tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+        |> List.sortBy TaskItem.dueRataDie
 
 
 
