@@ -165,20 +165,13 @@ decoder_v_0_1_0 =
 
 
 buildfromPreV11 : List Int -> Columns -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> DateBoardConfig
-buildfromPreV11 collapsedColumns columns completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
+buildfromPreV11 collapsedColumns _ completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
     let
-        datedColumns =
-            [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
-            , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
-            , Column.dated <| DatedColumn.init "Future" (DatedColumn.After 1)
-            ]
-
-        undatedColumn =
-            if includeUndated_ then
-                [ Column.undated "Undated" ]
-
-            else
-                []
+        columns =
+            undatedColumn
+                ++ datedColumns
+                ++ completedColumn
+                |> List.indexedMap handleCollapse
 
         completedColumn =
             if completedCount_ > 0 then
@@ -189,8 +182,29 @@ buildfromPreV11 collapsedColumns columns completedCount_ filters filterPolarity 
 
         completedColumnIndex =
             List.length (undatedColumn ++ datedColumns)
+
+        datedColumns =
+            [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
+            , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
+            , Column.dated <| DatedColumn.init "Future" (DatedColumn.After 1)
+            ]
+
+        handleCollapse : Int -> Column -> Column
+        handleCollapse index column =
+            if List.member index collapsedColumns then
+                Column.toggleCollapse column
+
+            else
+                column
+
+        undatedColumn =
+            if includeUndated_ then
+                [ Column.undated "Undated" ]
+
+            else
+                []
     in
-    { columns = Columns.fromList (undatedColumn ++ datedColumns ++ completedColumn)
+    { columns = Columns.fromList columns
     , filters = filters
     , filterPolarity = filterPolarity
     , filterScope = filterScope

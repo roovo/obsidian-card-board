@@ -8,6 +8,7 @@ module Column.NamedTag exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , toggleCollapse
     , updateName
     )
 
@@ -98,6 +99,11 @@ addTaskItem taskItem ((NamedTagColumn c tth tl) as namedTagColumn) =
 setTagsToHide : List String -> NamedTagColumn -> NamedTagColumn
 setTagsToHide tags (NamedTagColumn c _ tl) =
     NamedTagColumn c tags tl
+
+
+toggleCollapse : NamedTagColumn -> NamedTagColumn
+toggleCollapse (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | collapsed = not c.collapsed } tth tl
 
 
 updateName : ColumnNames -> NamedTagColumn -> NamedTagColumn

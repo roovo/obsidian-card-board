@@ -13,6 +13,7 @@ module Column exposing
     , namedTag
     , otherTags
     , setTagsToHide
+    , toggleCollapse
     , undated
     , untagged
     , updateColumnNames
@@ -253,6 +254,28 @@ setTagsToHide tags column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.setTagsToHide tags untaggedColumn)
+
+
+toggleCollapse : Column -> Column
+toggleCollapse column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.toggleCollapse completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.toggleCollapse datedColumn)
+
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.toggleCollapse namedTagColumn)
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.toggleCollapse otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.toggleCollapse undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
 
 
 updateColumnNames : ColumnNames -> Column -> Column

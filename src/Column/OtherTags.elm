@@ -8,6 +8,7 @@ module Column.OtherTags exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , toggleCollapse
     , updateName
     )
 
@@ -98,6 +99,11 @@ addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn
 setTagsToHide tags (OtherTagsColumn c ots _ tl) =
     OtherTagsColumn c ots tags tl
+
+
+toggleCollapse : OtherTagsColumn -> OtherTagsColumn
+toggleCollapse (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | collapsed = not c.collapsed } ots tth tl
 
 
 updateName : ColumnNames -> OtherTagsColumn -> OtherTagsColumn

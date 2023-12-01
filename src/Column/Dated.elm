@@ -9,6 +9,7 @@ module Column.Dated exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , toggleCollapse
     , updateName
     )
 
@@ -111,6 +112,11 @@ addTaskItem today taskItem ((DatedColumn c tth tl) as datedColumn) =
 setTagsToHide : List String -> DatedColumn -> DatedColumn
 setTagsToHide tags (DatedColumn c _ tl) =
     DatedColumn c tags tl
+
+
+toggleCollapse : DatedColumn -> DatedColumn
+toggleCollapse (DatedColumn c tth tl) =
+    DatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
 updateName : ColumnNames -> DatedColumn -> DatedColumn

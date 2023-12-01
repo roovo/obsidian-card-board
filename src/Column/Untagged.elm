@@ -8,6 +8,7 @@ module Column.Untagged exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , toggleCollapse
     , updateName
     )
 
@@ -98,6 +99,11 @@ addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
 setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn
 setTagsToHide tags (UntaggedColumn c _ tl) =
     UntaggedColumn c tags tl
+
+
+toggleCollapse : UntaggedColumn -> UntaggedColumn
+toggleCollapse (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | collapsed = not c.collapsed } tth tl
 
 
 updateName : ColumnNames -> UntaggedColumn -> UntaggedColumn

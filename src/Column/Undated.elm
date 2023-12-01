@@ -8,6 +8,7 @@ module Column.Undated exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , toggleCollapse
     , updateName
     )
 
@@ -97,6 +98,11 @@ addTaskItem taskItem ((UndatedColumn c tth tl) as undatedColumn) =
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn
 setTagsToHide tags (UndatedColumn c _ tl) =
     UndatedColumn c tags tl
+
+
+toggleCollapse : UndatedColumn -> UndatedColumn
+toggleCollapse (UndatedColumn c tth tl) =
+    UndatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
 updateName : ColumnNames -> UndatedColumn -> UndatedColumn

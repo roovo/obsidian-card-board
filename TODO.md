@@ -1,4 +1,3 @@
-- DateBoardConfig.buildfromPreV11 - handle collapsed columns
 - DateBoardConfig.populateColummConfigs
 - DateBoardConfig.includeUndated
 - DateBoardConfig.completedCount
