@@ -1,4 +1,3 @@
-- DateBoardConfig.completedCount
 - BoardConfig.updateCompletedCount
 - BoardConfig.toggleIncludeUndated
 - BoardConfig.collapsedColumns

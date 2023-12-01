@@ -219,7 +219,7 @@ buildfromPreV11 collapsedColumns _ completedCount_ filters filterPolarity filter
 
 completedCount : DateBoardConfig -> Int
 completedCount dateBoardConfig =
-    10
+    Columns.completedCount dateBoardConfig.columns
 
 
 includeUndated : DateBoardConfig -> Bool

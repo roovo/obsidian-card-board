@@ -1,6 +1,7 @@
 module Columns exposing
     ( Columns
     , addTaskList
+    , completedCount
     , empty
     , encoder
     , fromList
@@ -64,14 +65,14 @@ fromList columns =
 
 
 legacyFromList : ColumnNames -> List Column -> Int -> Columns
-legacyFromList columnNames columns completedCount =
-    if completedCount > 0 then
+legacyFromList columnNames columns completedCount_ =
+    if completedCount_ > 0 then
         WithCompleted
             columns
             (CompletedColumn.init
                 (ColumnNames.nameFor "completed" columnNames)
                 (List.length columns)
-                completedCount
+                completedCount_
             )
 
     else
@@ -89,6 +90,16 @@ encoder =
 
 
 -- INFO
+
+
+completedCount : Columns -> Int
+completedCount columns =
+    case columns of
+        WithCompleted _ completedColumn ->
+            CompletedColumn.limit completedColumn
+
+        WithoutCompleted _ ->
+            0
 
 
 includeUndated : Columns -> Bool
