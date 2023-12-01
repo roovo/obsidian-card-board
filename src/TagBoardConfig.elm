@@ -289,7 +289,7 @@ tagsToHide tagBoardConfig =
                 -- tagBoardConfig
                 --     |> .columns
                 --     |> List.map .tag
-                []
+                Columns.namedTagColumnTags tagBoardConfig.columns
 
         filterTagsToHide : List String
         filterTagsToHide =

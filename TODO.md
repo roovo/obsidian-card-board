@@ -1,4 +1,3 @@
-- TagBoardConfig.tagsToHide (columnTagsToHide)
 - BoardConfig.updateTags
 - BoardConfig.ToggleIncludeUntagged
 - BoardConfig.ToggleIncludeOthers

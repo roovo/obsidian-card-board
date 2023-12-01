@@ -13,6 +13,7 @@ module Column exposing
     , namedTag
     , otherTags
     , setTagsToHide
+    , tag
     , toggleCollapse
     , undated
     , untagged
@@ -62,8 +63,8 @@ dated =
 
 
 namedTag : String -> String -> Column
-namedTag name_ tag =
-    NamedTag <| NamedTagColumn.init name_ tag
+namedTag name_ tag_ =
+    NamedTag <| NamedTagColumn.init name_ tag_
 
 
 otherTags : String -> List String -> Column
@@ -204,6 +205,16 @@ name column =
 
         Untagged untaggedColumn ->
             UntaggedColumn.name untaggedColumn
+
+
+tag : Column -> Maybe String
+tag column =
+    case column of
+        NamedTag namedTagColumn ->
+            Just (NamedTagColumn.tag namedTagColumn)
+
+        _ ->
+            Nothing
 
 
 

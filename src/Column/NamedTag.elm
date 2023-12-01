@@ -6,6 +6,7 @@ module Column.NamedTag exposing
     , isCollapsed
     , name
     , setTagsToHide
+    , tag
     , tagsToHide
     , toList
     , toggleCollapse
@@ -64,6 +65,11 @@ isCollapsed (NamedTagColumn c _ _) =
 name : NamedTagColumn -> String
 name (NamedTagColumn c _ _) =
     c.name
+
+
+tag : NamedTagColumn -> String
+tag (NamedTagColumn c _ _) =
+    c.tag
 
 
 toList : NamedTagColumn -> List TaskItem

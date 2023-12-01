@@ -7,6 +7,7 @@ module Columns exposing
     , fromList
     , includeUndated
     , legacyFromList
+    , namedTagColumnTags
     , toList
     , updateColumnNames
     )
@@ -107,6 +108,14 @@ includeUndated columns =
     columns
         |> toList
         |> List.any Column.isEnabledUndated
+
+
+namedTagColumnTags : Columns -> List String
+namedTagColumnTags columns =
+    columns
+        |> toList
+        |> List.map Column.tag
+        |> ME.values
 
 
 
