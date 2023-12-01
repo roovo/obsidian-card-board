@@ -25,6 +25,7 @@ type UndatedColumn
 
 type alias Config =
     { collapsed : Bool
+    , enabled : Bool
     , name : String
     }
 
@@ -35,7 +36,7 @@ type alias Config =
 
 init : String -> UndatedColumn
 init name_ =
-    UndatedColumn { collapsed = False, name = name_ } [] TaskList.empty
+    UndatedColumn { collapsed = False, enabled = True, name = name_ } [] TaskList.empty
 
 
 

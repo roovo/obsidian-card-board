@@ -25,6 +25,7 @@ type OtherTagsColumn
 
 type alias Config =
     { collapsed : Bool
+    , enabled : Bool
     , name : String
     }
 
@@ -35,7 +36,7 @@ type alias Config =
 
 init : String -> List String -> OtherTagsColumn
 init name_ otherTags_ =
-    OtherTagsColumn { collapsed = False, name = name_ } otherTags_ [] TaskList.empty
+    OtherTagsColumn { collapsed = False, enabled = True, name = name_ } otherTags_ [] TaskList.empty
 
 
 

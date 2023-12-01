@@ -25,6 +25,7 @@ type UntaggedColumn
 
 type alias Config =
     { collapsed : Bool
+    , enabled : Bool
     , name : String
     }
 
@@ -35,7 +36,7 @@ type alias Config =
 
 init : String -> UntaggedColumn
 init name_ =
-    UntaggedColumn { collapsed = False, name = name_ } [] TaskList.empty
+    UntaggedColumn { collapsed = False, enabled = True, name = name_ } [] TaskList.empty
 
 
 
