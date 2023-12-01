@@ -12,6 +12,7 @@ module TagBoardConfig exposing
     , default
     , encoder
     , populateColummConfigs
+    , tagsToHide
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -219,6 +220,37 @@ columnConfigDecoder =
 columnConfigsParser : Parser (List LocalColumnConfig)
 columnConfigsParser =
     P.loop [] columnConfigHelp
+
+
+
+-- INFO
+
+
+tagsToHide : TagBoardConfig -> List String
+tagsToHide tagBoardConfig =
+    let
+        columnTagsToHide : List String
+        columnTagsToHide =
+            if tagBoardConfig.showColumnTags then
+                []
+
+            else
+                tagBoardConfig
+                    |> .columns
+                    |> List.map .tag
+
+        filterTagsToHide : List String
+        filterTagsToHide =
+            if tagBoardConfig.showFilteredTags then
+                []
+
+            else
+                tagBoardConfig
+                    |> .filters
+                    |> List.filter (\f -> Filter.filterType f == "Tags")
+                    |> List.map Filter.value
+    in
+    columnTagsToHide ++ filterTagsToHide
 
 
 

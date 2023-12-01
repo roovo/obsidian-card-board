@@ -1,6 +1,5 @@
-- are tags being hidden
-    - tag board
 - have a collapsed Bool on each column
+- Page.Board.columnCountString
 - ensure columns on a board have unique names
 - new version of config
 - does board need to have ColumnNames any more?

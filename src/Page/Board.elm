@@ -473,7 +473,6 @@ columnView boardId columnIndex today column =
                 [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            -- (List.map (cardView today) (Column.items column))
             (List.map (cardView today) (Column.cards boardId column))
         ]
 
