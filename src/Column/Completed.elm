@@ -5,6 +5,7 @@ module Column.Completed exposing
     , init
     , isCollapsed
     , name
+    , setTagsToHide
     , toList
     )
 
@@ -18,7 +19,7 @@ import TaskList exposing (TaskList)
 
 
 type CompletedColumn
-    = CompletedColumn Config TaskList
+    = CompletedColumn Config (List String) TaskList
 
 
 type alias Config =
@@ -35,7 +36,7 @@ type alias Config =
 
 init : String -> Int -> Int -> CompletedColumn
 init name_ index_ limit_ =
-    CompletedColumn { collapsed = False, index = index_, limit = limit_, name = name_ } TaskList.empty
+    CompletedColumn { collapsed = False, index = index_, limit = limit_, name = name_ } [] TaskList.empty
 
 
 
@@ -43,22 +44,22 @@ init name_ index_ limit_ =
 
 
 index : CompletedColumn -> Int
-index (CompletedColumn c _) =
+index (CompletedColumn c _ _) =
     c.index
 
 
 isCollapsed : CompletedColumn -> Bool
-isCollapsed (CompletedColumn c _) =
+isCollapsed (CompletedColumn c _ _) =
     c.collapsed
 
 
 name : CompletedColumn -> String
-name (CompletedColumn c _) =
+name (CompletedColumn c _ _) =
     c.name
 
 
 toList : CompletedColumn -> List TaskItem
-toList (CompletedColumn c tl) =
+toList (CompletedColumn c _ tl) =
     tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
@@ -73,7 +74,7 @@ toList (CompletedColumn c tl) =
 
 
 addTaskItem : List PlacementResult -> TaskItem -> CompletedColumn -> CompletedColumn
-addTaskItem placementResults taskItem ((CompletedColumn c tl) as completedColumn) =
+addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedColumn) =
     let
         filteredPlacements : List PlacementResult
         filteredPlacements =
@@ -87,7 +88,12 @@ addTaskItem placementResults taskItem ((CompletedColumn c tl) as completedColumn
                 |> (&&) (not <| List.isEmpty filteredPlacements)
     in
     if shouldBeAdded then
-        CompletedColumn c (TaskList.add taskItem tl)
+        CompletedColumn c tth (TaskList.add taskItem tl)
 
     else
         completedColumn
+
+
+setTagsToHide : List String -> CompletedColumn -> CompletedColumn
+setTagsToHide tags completedColumn =
+    completedColumn

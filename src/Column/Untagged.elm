@@ -4,6 +4,7 @@ module Column.Untagged exposing
     , init
     , isCollapsed
     , name
+    , setTagsToHide
     , toList
     )
 
@@ -18,7 +19,7 @@ import TaskList exposing (TaskList)
 
 
 type UntaggedColumn
-    = UntaggedColumn Config TaskList
+    = UntaggedColumn Config (List String) TaskList
 
 
 type alias Config =
@@ -33,7 +34,7 @@ type alias Config =
 
 init : String -> UntaggedColumn
 init name_ =
-    UntaggedColumn { collapsed = False, name = name_ } TaskList.empty
+    UntaggedColumn { collapsed = False, name = name_ } [] TaskList.empty
 
 
 
@@ -41,12 +42,12 @@ init name_ =
 
 
 name : UntaggedColumn -> String
-name (UntaggedColumn c _) =
+name (UntaggedColumn c _ _) =
     c.name
 
 
 toList : UntaggedColumn -> List TaskItem
-toList (UntaggedColumn _ tl) =
+toList (UntaggedColumn _ _ tl) =
     tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
@@ -54,7 +55,7 @@ toList (UntaggedColumn _ tl) =
 
 
 isCollapsed : UntaggedColumn -> Bool
-isCollapsed (UntaggedColumn c _) =
+isCollapsed (UntaggedColumn c _ _) =
     c.collapsed
 
 
@@ -63,13 +64,18 @@ isCollapsed (UntaggedColumn c _) =
 
 
 addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, PlacementResult )
-addTaskItem taskItem ((UntaggedColumn c tl) as untaggedColumn) =
+addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
     if not <| TaskItem.isDated taskItem then
         if TaskItem.isCompleted taskItem then
             ( untaggedColumn, PlacementResult.CompletedInThisColumn )
 
         else
-            ( UntaggedColumn c (TaskList.add taskItem tl), PlacementResult.Placed )
+            ( UntaggedColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
 
     else
         ( untaggedColumn, PlacementResult.DoesNotBelong )
+
+
+setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn
+setTagsToHide tags (UntaggedColumn c _ tl) =
+    UntaggedColumn c tags tl

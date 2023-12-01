@@ -7,6 +7,7 @@ module Column.Dated exposing
     , init
     , isCollapsed
     , name
+    , setTagsToHide
     , toList
     , tomorrow
     )
@@ -23,7 +24,7 @@ import TaskList exposing (TaskList)
 
 
 type DatedColumn
-    = DatedColumn Config TaskList
+    = DatedColumn Config (List String) TaskList
 
 
 type alias Config =
@@ -45,22 +46,22 @@ type RelativeDateRange
 
 init : String -> RelativeDateRange -> DatedColumn
 init name_ range_ =
-    DatedColumn { collapsed = False, name = name_, range = range_ } TaskList.empty
+    DatedColumn { collapsed = False, name = name_, range = range_ } [] TaskList.empty
 
 
 forToday : DatedColumn
 forToday =
-    DatedColumn { collapsed = False, name = "Today", range = Before 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Today", range = Before 1 } [] TaskList.empty
 
 
 tomorrow : DatedColumn
 tomorrow =
-    DatedColumn { collapsed = False, name = "Tomorrow", range = Between 1 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Tomorrow", range = Between 1 1 } [] TaskList.empty
 
 
 future : DatedColumn
 future =
-    DatedColumn { collapsed = False, name = "Future", range = After 1 } TaskList.empty
+    DatedColumn { collapsed = False, name = "Future", range = After 1 } [] TaskList.empty
 
 
 
@@ -68,17 +69,17 @@ future =
 
 
 isCollapsed : DatedColumn -> Bool
-isCollapsed (DatedColumn c _) =
+isCollapsed (DatedColumn c _ _) =
     c.collapsed
 
 
 name : DatedColumn -> String
-name (DatedColumn c _) =
+name (DatedColumn c _ _) =
     c.name
 
 
 toList : DatedColumn -> List TaskItem
-toList (DatedColumn _ tl) =
+toList (DatedColumn _ _ tl) =
     tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
@@ -90,7 +91,7 @@ toList (DatedColumn _ tl) =
 
 
 addTaskItem : Date -> TaskItem -> DatedColumn -> ( DatedColumn, PlacementResult )
-addTaskItem today taskItem ((DatedColumn c tl) as datedColumn) =
+addTaskItem today taskItem ((DatedColumn c tth tl) as datedColumn) =
     case TaskItem.due taskItem of
         Just dueDate ->
             if belongs today c.range dueDate then
@@ -98,13 +99,18 @@ addTaskItem today taskItem ((DatedColumn c tl) as datedColumn) =
                     ( datedColumn, PlacementResult.CompletedInThisColumn )
 
                 else
-                    ( DatedColumn c (TaskList.add taskItem tl), PlacementResult.Placed )
+                    ( DatedColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
 
             else
                 ( datedColumn, PlacementResult.DoesNotBelong )
 
         Nothing ->
             ( datedColumn, PlacementResult.DoesNotBelong )
+
+
+setTagsToHide : List String -> DatedColumn -> DatedColumn
+setTagsToHide tags (DatedColumn c _ tl) =
+    DatedColumn c tags tl
 
 
 

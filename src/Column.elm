@@ -11,6 +11,7 @@ module Column exposing
     , name
     , namedTag
     , otherTags
+    , setTagsToHide
     , todayColumn
     , tomorrowColumn
     , undated
@@ -192,6 +193,29 @@ addTaskItem today taskItem column =
         Untagged untaggedColumn ->
             UntaggedColumn.addTaskItem taskItem untaggedColumn
                 |> Tuple.mapFirst Untagged
+
+
+setTagsToHide : List String -> Column -> Column
+setTagsToHide tags column =
+    case column of
+        Completed completedColumn ->
+            -- TODO: This shouldn't be here !! just hacking for now
+            Completed (CompletedColumn.setTagsToHide tags completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.setTagsToHide tags datedColumn)
+
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.setTagsToHide tags namedTagColumn)
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.setTagsToHide tags otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.setTagsToHide tags undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.setTagsToHide tags untaggedColumn)
 
 
 

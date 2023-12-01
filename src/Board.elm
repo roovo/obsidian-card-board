@@ -12,6 +12,7 @@ import Column exposing (Column)
 import ColumnNames exposing (ColumnNames)
 import Columns
 import Date exposing (Date)
+import DateBoardConfig
 import Filter exposing (Filter, Polarity, Scope)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -45,14 +46,14 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> Columns.addTaskList today dateBoardConfig.columnConfigs
+                |> Columns.addTaskList today (DateBoardConfig.tagsToHide dateBoardConfig) dateBoardConfig.columnConfigs
                 |> Columns.toList
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> Columns.addTaskList today tagBoardConfig.columnConfigs
+                |> Columns.addTaskList today [] tagBoardConfig.columnConfigs
                 |> Columns.toList
 
 

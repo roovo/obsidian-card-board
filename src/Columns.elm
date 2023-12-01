@@ -58,10 +58,11 @@ empty =
 -- MODIFICATION
 
 
-addTaskList : Date -> Columns -> TaskList -> Columns
-addTaskList today columns taskList =
+addTaskList : Date -> List String -> Columns -> TaskList -> Columns
+addTaskList today tagsToHide columns taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columns
+        |> setTagsToHide tagsToHide
 
 
 toList : Columns -> List Column
@@ -113,3 +114,13 @@ addWithPlacement today taskItem initialConfigs =
 insert : Int -> a -> List a -> List a
 insert i value list =
     List.take i list ++ [ value ] ++ List.drop i list
+
+
+setTagsToHide : List String -> Columns -> Columns
+setTagsToHide tags columns =
+    case columns of
+        WithCompleted nonCompletedConfigs completedConfig ->
+            WithCompleted (List.map (Column.setTagsToHide tags) nonCompletedConfigs) (CompletedColumn.setTagsToHide tags completedConfig)
+
+        WithoutCompleted nonCompletedConfigs ->
+            WithoutCompleted (List.map (Column.setTagsToHide tags) nonCompletedConfigs)

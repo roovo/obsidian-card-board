@@ -10,6 +10,7 @@ module DateBoardConfig exposing
     , default
     , encoder
     , populateColummConfigs
+    , tagsToHide
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -165,6 +166,22 @@ decoder_v_0_1_0 =
         |> TsDecode.andMap (TsDecode.field "includeUndated" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.succeed True)
         |> TsDecode.andMap (TsDecode.field "title" TsDecode.string)
+
+
+
+-- INFO
+
+
+tagsToHide : DateBoardConfig -> List String
+tagsToHide dateBoardConfig =
+    if dateBoardConfig.showFilteredTags then
+        []
+
+    else
+        dateBoardConfig
+            |> .filters
+            |> List.filter (\f -> Filter.filterType f == "Tags")
+            |> List.map Filter.value
 
 
 

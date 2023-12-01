@@ -4,6 +4,7 @@ module Column.NamedTag exposing
     , init
     , isCollapsed
     , name
+    , setTagsToHide
     , toList
     )
 
@@ -18,7 +19,7 @@ import TaskList exposing (TaskList)
 
 
 type NamedTagColumn
-    = NamedTagColumn Config TaskList
+    = NamedTagColumn Config (List String) TaskList
 
 
 type alias Config =
@@ -34,7 +35,7 @@ type alias Config =
 
 init : String -> String -> NamedTagColumn
 init name_ tag_ =
-    NamedTagColumn { collapsed = False, name = name_, tag = tag_ } TaskList.empty
+    NamedTagColumn { collapsed = False, name = name_, tag = tag_ } [] TaskList.empty
 
 
 
@@ -42,17 +43,17 @@ init name_ tag_ =
 
 
 isCollapsed : NamedTagColumn -> Bool
-isCollapsed (NamedTagColumn c _) =
+isCollapsed (NamedTagColumn c _ _) =
     c.collapsed
 
 
 name : NamedTagColumn -> String
-name (NamedTagColumn c _) =
+name (NamedTagColumn c _ _) =
     c.name
 
 
 toList : NamedTagColumn -> List TaskItem
-toList (NamedTagColumn _ tl) =
+toList (NamedTagColumn _ _ tl) =
     tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
@@ -64,16 +65,21 @@ toList (NamedTagColumn _ tl) =
 
 
 addTaskItem : TaskItem -> NamedTagColumn -> ( NamedTagColumn, PlacementResult )
-addTaskItem taskItem ((NamedTagColumn c tl) as namedTagColumn) =
+addTaskItem taskItem ((NamedTagColumn c tth tl) as namedTagColumn) =
     if belongs c.tag taskItem then
         if TaskItem.isCompleted taskItem then
             ( namedTagColumn, PlacementResult.CompletedInThisColumn )
 
         else
-            ( NamedTagColumn c (TaskList.add taskItem tl), PlacementResult.Placed )
+            ( NamedTagColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
 
     else
         ( namedTagColumn, PlacementResult.DoesNotBelong )
+
+
+setTagsToHide : List String -> NamedTagColumn -> NamedTagColumn
+setTagsToHide tags (NamedTagColumn c _ tl) =
+    NamedTagColumn c tags tl
 
 
 
