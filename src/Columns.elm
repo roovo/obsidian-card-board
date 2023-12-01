@@ -6,6 +6,7 @@ module Columns exposing
     , fromList
     , legacyFromList
     , toList
+    , updateColumnNames
     )
 
 import Column exposing (Column)
@@ -94,6 +95,18 @@ addTaskList today tagsToHide columns taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columns
         |> setTagsToHide tagsToHide
+
+
+updateColumnNames : ColumnNames -> Columns -> Columns
+updateColumnNames columnNames columns =
+    columns
+        |> toList
+        |> List.map (Column.updateColumnNames columnNames)
+        |> fromList
+
+
+
+-- CONVERSION
 
 
 toList : Columns -> List Column

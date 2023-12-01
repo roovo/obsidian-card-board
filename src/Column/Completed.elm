@@ -9,8 +9,10 @@ module Column.Completed exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , updateName
     )
 
+import ColumnNames exposing (ColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -114,6 +116,11 @@ addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedCo
 setTagsToHide : List String -> CompletedColumn -> CompletedColumn
 setTagsToHide tags completedColumn =
     completedColumn
+
+
+updateName : ColumnNames -> CompletedColumn -> CompletedColumn
+updateName columnNames (CompletedColumn c tth tl) =
+    CompletedColumn { c | name = ColumnNames.nameFor "completed" columnNames } tth tl
 
 
 

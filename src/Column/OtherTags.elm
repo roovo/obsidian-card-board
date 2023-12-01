@@ -8,6 +8,7 @@ module Column.OtherTags exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , updateName
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -97,6 +98,11 @@ addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn
 setTagsToHide tags (OtherTagsColumn c ots _ tl) =
     OtherTagsColumn c ots tags tl
+
+
+updateName : ColumnNames -> OtherTagsColumn -> OtherTagsColumn
+updateName columnNames (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | name = ColumnNames.nameFor "others" columnNames } ots tth tl
 
 
 

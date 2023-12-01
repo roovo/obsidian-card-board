@@ -11,8 +11,8 @@ module DateBoardConfig exposing
     , default
     , encoder
     , includeUndated
-    , populateColummConfigs
     , tagsToHide
+    , updateColumnNames
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -229,28 +229,6 @@ tagsToHide dateBoardConfig =
 -- MODIFICATION
 
 
-populateColummConfigs : ColumnNames -> DateBoardConfig -> DateBoardConfig
-populateColummConfigs columnNames dateBoardConfig =
-    -- let
-    --     dateColumns =
-    --         [ Column.dated <|
-    --             DatedColumn.init
-    --                 (ColumnNames.nameFor "today" columnNames)
-    --                 (DatedColumn.Before 1)
-    --         , Column.dated <|
-    --             DatedColumn.init
-    --                 (ColumnNames.nameFor "tomorrow" columnNames)
-    --                 (DatedColumn.Between 1 1)
-    --         , Column.dated <|
-    --             DatedColumn.init
-    --                 (ColumnNames.nameFor "future" columnNames)
-    --                 (DatedColumn.After 1)
-    --         ]
-    --     undated =
-    --         if dateBoardConfig.includeUndated then
-    --             [ Column.undated (ColumnNames.nameFor "undated" columnNames) ]
-    --         else
-    --             []
-    -- in
-    -- { dateBoardConfig | columnConfigs = Columns.fromList columnNames (undated ++ dateColumns) dateBoardConfig.completedCount }
-    dateBoardConfig
+updateColumnNames : ColumnNames -> DateBoardConfig -> DateBoardConfig
+updateColumnNames columnNames dateBoardConfig =
+    { dateBoardConfig | columns = Columns.updateColumnNames columnNames dateBoardConfig.columns }

@@ -8,6 +8,7 @@ module Column.Untagged exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , updateName
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -97,6 +98,11 @@ addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
 setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn
 setTagsToHide tags (UntaggedColumn c _ tl) =
     UntaggedColumn c tags tl
+
+
+updateName : ColumnNames -> UntaggedColumn -> UntaggedColumn
+updateName columnNames (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | name = ColumnNames.nameFor "untagged" columnNames } tth tl
 
 
 

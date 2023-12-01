@@ -19,7 +19,6 @@ module BoardConfig exposing
     , isForDateBoard
     , isForTagBoard
     , mapFilters
-    , populateColummConfigs
     , title
     , toggleIncludeOthers
     , toggleIncludeUndated
@@ -28,6 +27,7 @@ module BoardConfig exposing
     , toggleShowFilteredTags
     , toggleTagFilterScope
     , updateBoardType
+    , updateColumnNames
     , updateCompletedCount
     , updateFilterPolarity
     , updateFilters
@@ -265,14 +265,14 @@ collapseColumn columnIndex isCollapsed config =
     config
 
 
-populateColummConfigs : ColumnNames -> BoardConfig -> BoardConfig
-populateColummConfigs columnNames boardConfig =
+updateColumnNames : ColumnNames -> BoardConfig -> BoardConfig
+updateColumnNames columnNames boardConfig =
     case boardConfig of
         DateBoardConfig dateBoardConfig ->
-            DateBoardConfig <| DateBoardConfig.populateColummConfigs columnNames dateBoardConfig
+            DateBoardConfig <| DateBoardConfig.updateColumnNames columnNames dateBoardConfig
 
         TagBoardConfig tagBoardConfig ->
-            TagBoardConfig <| TagBoardConfig.populateColummConfigs columnNames tagBoardConfig
+            TagBoardConfig <| TagBoardConfig.updateColumnNames columnNames tagBoardConfig
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

@@ -15,6 +15,7 @@ module Column exposing
     , setTagsToHide
     , undated
     , untagged
+    , updateColumnNames
     )
 
 import Card exposing (Card)
@@ -252,6 +253,28 @@ setTagsToHide tags column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.setTagsToHide tags untaggedColumn)
+
+
+updateColumnNames : ColumnNames -> Column -> Column
+updateColumnNames columnNames column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.updateName columnNames completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.updateName columnNames datedColumn)
+
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.updateName columnNames namedTagColumn)
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.updateName columnNames otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.updateName columnNames undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.updateName columnNames untaggedColumn)
 
 
 

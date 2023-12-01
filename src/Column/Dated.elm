@@ -3,15 +3,13 @@ module Column.Dated exposing
     , RelativeDateRange(..)
     , addTaskItem
     , encoder
-    , forToday
-    , future
     , init
     , isCollapsed
     , name
     , setTagsToHide
     , tagsToHide
     , toList
-    , tomorrow
+    , updateName
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -50,21 +48,6 @@ type RelativeDateRange
 init : String -> RelativeDateRange -> DatedColumn
 init name_ range_ =
     DatedColumn { collapsed = False, name = name_, range = range_ } [] TaskList.empty
-
-
-forToday : DatedColumn
-forToday =
-    DatedColumn { collapsed = False, name = "Today", range = Before 1 } [] TaskList.empty
-
-
-tomorrow : DatedColumn
-tomorrow =
-    DatedColumn { collapsed = False, name = "Tomorrow", range = Between { from = 1, to = 1 } } [] TaskList.empty
-
-
-future : DatedColumn
-future =
-    DatedColumn { collapsed = False, name = "Future", range = After 1 } [] TaskList.empty
 
 
 
@@ -128,6 +111,26 @@ addTaskItem today taskItem ((DatedColumn c tth tl) as datedColumn) =
 setTagsToHide : List String -> DatedColumn -> DatedColumn
 setTagsToHide tags (DatedColumn c _ tl) =
     DatedColumn c tags tl
+
+
+updateName : ColumnNames -> DatedColumn -> DatedColumn
+updateName columnNames (DatedColumn c tth tl) =
+    let
+        newName =
+            case c.name of
+                "Today" ->
+                    ColumnNames.nameFor "today" columnNames
+
+                "Tomorrow" ->
+                    ColumnNames.nameFor "today" columnNames
+
+                "Future" ->
+                    ColumnNames.nameFor "today" columnNames
+
+                _ ->
+                    c.name
+    in
+    DatedColumn { c | name = newName } tth tl
 
 
 

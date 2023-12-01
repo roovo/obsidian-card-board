@@ -354,7 +354,7 @@ v_0_10_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_10_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_9_0_Decoder : TsDecode.Decoder Settings
@@ -364,7 +364,7 @@ v_0_9_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_9_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_8_0_Decoder : TsDecode.Decoder Settings
@@ -374,7 +374,7 @@ v_0_8_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_7_0_Decoder : TsDecode.Decoder Settings
@@ -384,7 +384,7 @@ v_0_7_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_6_0_Decoder : TsDecode.Decoder Settings
@@ -394,7 +394,7 @@ v_0_6_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_6_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_5_0_Decoder : TsDecode.Decoder Settings
@@ -404,7 +404,7 @@ v_0_5_0_Decoder =
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_5_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_4_0_Decoder : TsDecode.Decoder Settings
@@ -414,7 +414,7 @@ v_0_4_0_Decoder =
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_3_0_Decoder : TsDecode.Decoder Settings
@@ -424,7 +424,7 @@ v_0_3_0_Decoder =
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_2_0_Decoder : TsDecode.Decoder Settings
@@ -434,7 +434,7 @@ v_0_2_0_Decoder =
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 v_0_1_0_Decoder : TsDecode.Decoder Settings
@@ -444,7 +444,7 @@ v_0_1_0_Decoder =
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
-        |> TsDecode.map populateColummConfigs
+        |> TsDecode.map updateColumnNames
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings
@@ -452,10 +452,10 @@ unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
 
 
-populateColummConfigs : Settings -> Settings
-populateColummConfigs settings =
+updateColumnNames : Settings -> Settings
+updateColumnNames settings =
     { settings
         | boardConfigs =
-            SafeZipper.map (BoardConfig.populateColummConfigs settings.globalSettings.columnNames)
+            SafeZipper.map (BoardConfig.updateColumnNames settings.globalSettings.columnNames)
                 settings.boardConfigs
     }

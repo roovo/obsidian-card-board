@@ -11,8 +11,8 @@ module TagBoardConfig exposing
     , decoder_v_0_9_0
     , default
     , encoder
-    , populateColummConfigs
     , tagsToHide
+    , updateColumnNames
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -257,8 +257,8 @@ tagsToHide tagBoardConfig =
 -- MODIFICATION
 
 
-populateColummConfigs : ColumnNames -> TagBoardConfig -> TagBoardConfig
-populateColummConfigs columnNames tagBoardConfig =
+updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig
+updateColumnNames columnNames tagBoardConfig =
     let
         columnTags : List String
         columnTags =

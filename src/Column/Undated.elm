@@ -8,6 +8,7 @@ module Column.Undated exposing
     , setTagsToHide
     , tagsToHide
     , toList
+    , updateName
     )
 
 import ColumnNames exposing (ColumnNames)
@@ -96,6 +97,11 @@ addTaskItem taskItem ((UndatedColumn c tth tl) as undatedColumn) =
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn
 setTagsToHide tags (UndatedColumn c _ tl) =
     UndatedColumn c tags tl
+
+
+updateName : ColumnNames -> UndatedColumn -> UndatedColumn
+updateName columnNames (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = ColumnNames.nameFor "undated" columnNames } tth tl
 
 
 
