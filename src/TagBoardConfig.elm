@@ -311,31 +311,7 @@ tagsToHide tagBoardConfig =
 
 updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig
 updateColumnNames columnNames tagBoardConfig =
-    -- let
-    --     columnTags : List String
-    --     columnTags =
-    --         tagBoardConfig
-    --             |> .columns
-    --             |> List.map .tag
-    --     tagColumns : List Column
-    --     tagColumns =
-    --         tagBoardConfig.columns
-    --             |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
-    --     others : List Column
-    --     others =
-    --         if tagBoardConfig.includeOthers then
-    --             [ Column.otherTags (ColumnNames.nameFor "others" columnNames) columnTags ]
-    --         else
-    --             []
-    --     untagged : List Column
-    --     untagged =
-    --         if tagBoardConfig.includeUntagged then
-    --             [ Column.untagged (ColumnNames.nameFor "untagged" columnNames) ]
-    --         else
-    --             []
-    -- in
-    -- { tagBoardConfig | columnConfigs = Columns.legacyFromList columnNames (untagged ++ others ++ tagColumns) tagBoardConfig.completedCount }
-    tagBoardConfig
+    { tagBoardConfig | columns = Columns.updateColumnNames columnNames tagBoardConfig.columns }
 
 
 

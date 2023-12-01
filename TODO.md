@@ -1,4 +1,3 @@
-- TagBoardConfig.updateColumnNames
 - TagBoardConfig.tagsToHide (columnTagsToHide)
 - BoardConfig.updateTags
 - BoardConfig.ToggleIncludeUntagged
@@ -8,6 +7,7 @@
 - Page.Settings.boardSettingsForm.includeOthersStyle
 - Page.Settings.boardSettingsForm. #1324
 
+- why are old config dateboard date colums all being set to the Today global setting (like the tomorrow and future columns)
 
 - don't need to deocode to columns in old decoders
 - BoardConfig.updateCompletedCount
