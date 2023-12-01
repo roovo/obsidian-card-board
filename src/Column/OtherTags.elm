@@ -1,6 +1,7 @@
 module Column.OtherTags exposing
     ( OtherTagsColumn
     , addTaskItem
+    , encoder
     , init
     , isCollapsed
     , name
@@ -13,6 +14,7 @@ import ColumnNames exposing (ColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -37,6 +39,15 @@ type alias Config =
 init : String -> List String -> OtherTagsColumn
 init name_ otherTags_ =
     OtherTagsColumn { collapsed = False, enabled = True, name = name_ } otherTags_ [] TaskList.empty
+
+
+
+-- ENCODE
+
+
+encoder : TsEncode.Encoder OtherTagsColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
@@ -95,6 +106,20 @@ setTagsToHide tags (OtherTagsColumn c ots _ tl) =
 belongs : List String -> TaskItem -> Bool
 belongs tags item =
     TaskItem.hasTaskWithTagOtherThanThese tags item
+
+
+config : OtherTagsColumn -> Config
+config (OtherTagsColumn c _ _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "enabled" .enabled TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        ]
 
 
 isCompleted : List String -> TaskItem -> Bool

@@ -2,7 +2,9 @@ module Columns exposing
     ( Columns
     , addTaskList
     , empty
+    , encoder
     , fromList
+    , legacyFromList
     , toList
     )
 
@@ -12,9 +14,12 @@ import Column.Dated as DatedColumn exposing (DatedColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import List.Extra as LE
+import Maybe.Extra as ME
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -27,11 +32,37 @@ type Columns
 
 
 
--- TEMP TO REMOVE
+-- CONSTRUCTION
 
 
-fromList : ColumnNames -> List Column -> Int -> Columns
-fromList columnNames columns completedCount =
+empty : Columns
+empty =
+    WithoutCompleted []
+
+
+fromList : List Column -> Columns
+fromList columns =
+    let
+        completed : Maybe CompletedColumn
+        completed =
+            LE.find Column.isCompletedColumn columns
+                |> Maybe.map Column.asCompletedColumn
+                |> ME.join
+
+        others : List Column
+        others =
+            LE.filterNot Column.isCompletedColumn columns
+    in
+    case completed of
+        Nothing ->
+            WithoutCompleted others
+
+        Just completedColumn ->
+            WithCompleted others completedColumn
+
+
+legacyFromList : ColumnNames -> List Column -> Int -> Columns
+legacyFromList columnNames columns completedCount =
     if completedCount > 0 then
         WithCompleted
             columns
@@ -46,12 +77,12 @@ fromList columnNames columns completedCount =
 
 
 
--- CONSTRUCTION
+-- ENCODE
 
 
-empty : Columns
-empty =
-    WithoutCompleted []
+encoder : TsEncode.Encoder Columns
+encoder =
+    TsEncode.map toList <| TsEncode.list Column.encoder
 
 
 

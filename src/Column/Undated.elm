@@ -1,6 +1,7 @@
 module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
+    , encoder
     , init
     , isCollapsed
     , name
@@ -13,6 +14,7 @@ import ColumnNames exposing (ColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -40,12 +42,21 @@ init name_ =
 
 
 
+-- ENCODE
+
+
+encoder : TsEncode.Encoder UndatedColumn
+encoder =
+    TsEncode.map config configEncoder
+
+
+
 -- INFO
 
 
 name : UndatedColumn -> String
-name (UndatedColumn c _ _) =
-    c.name
+name =
+    .name << config
 
 
 toList : UndatedColumn -> List TaskItem
@@ -56,8 +67,8 @@ toList (UndatedColumn _ _ tl) =
 
 
 isCollapsed : UndatedColumn -> Bool
-isCollapsed (UndatedColumn c _ _) =
-    c.collapsed
+isCollapsed =
+    .collapsed << config
 
 
 tagsToHide : UndatedColumn -> List String
@@ -85,3 +96,21 @@ addTaskItem taskItem ((UndatedColumn c tth tl) as undatedColumn) =
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn
 setTagsToHide tags (UndatedColumn c _ tl) =
     UndatedColumn c tags tl
+
+
+
+-- PRIVATE
+
+
+config : UndatedColumn -> Config
+config (UndatedColumn c _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "enabled" .enabled TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        ]

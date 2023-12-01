@@ -12,6 +12,7 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DateBoardConfig
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
 import DragAndDrop.DragData as DragData exposing (DragData)
@@ -897,7 +898,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
             let
                 includeUndatedStyle : String
                 includeUndatedStyle =
-                    if config.includeUndated then
+                    if DateBoardConfig.includeUndated config then
                         " is-enabled"
 
                     else
@@ -1046,7 +1047,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| String.fromInt config.completedCount
+                            , value <| String.fromInt (DateBoardConfig.completedCount config)
                             , onInput EnteredCompletedCount
                             ]
                             []

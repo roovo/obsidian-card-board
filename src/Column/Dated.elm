@@ -2,6 +2,7 @@ module Column.Dated exposing
     ( DatedColumn
     , RelativeDateRange(..)
     , addTaskItem
+    , encoder
     , forToday
     , future
     , init
@@ -18,6 +19,7 @@ import Date exposing (Date)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -36,9 +38,9 @@ type alias Config =
 
 
 type RelativeDateRange
-    = Between Int Int
+    = After Int
     | Before Int
-    | After Int
+    | Between { from : Int, to : Int }
 
 
 
@@ -57,12 +59,21 @@ forToday =
 
 tomorrow : DatedColumn
 tomorrow =
-    DatedColumn { collapsed = False, name = "Tomorrow", range = Between 1 1 } [] TaskList.empty
+    DatedColumn { collapsed = False, name = "Tomorrow", range = Between { from = 1, to = 1 } } [] TaskList.empty
 
 
 future : DatedColumn
 future =
     DatedColumn { collapsed = False, name = "Future", range = After 1 } [] TaskList.empty
+
+
+
+-- ENCODE
+
+
+encoder : TsEncode.Encoder DatedColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
@@ -126,11 +137,53 @@ setTagsToHide tags (DatedColumn c _ tl) =
 belongs : Date -> RelativeDateRange -> Date -> Bool
 belongs today range taskDate =
     case range of
-        Between from to ->
-            Date.isBetween (Date.add Date.Days from today) (Date.add Date.Days to today) taskDate
+        Between values ->
+            Date.isBetween (Date.add Date.Days values.from today) (Date.add Date.Days values.to today) taskDate
 
         Before to ->
             Date.diff Date.Days taskDate (Date.add Date.Days (to - 1) today) >= 0
 
         After from ->
             Date.diff Date.Days (Date.add Date.Days (from + 1) today) taskDate >= 0
+
+
+config : DatedColumn -> Config
+config (DatedColumn c _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        , TsEncode.required "range" .range relativeDateRangeEncoder
+        ]
+
+
+relativeDateRangeEncoder : TsEncode.Encoder RelativeDateRange
+relativeDateRangeEncoder =
+    TsEncode.union
+        (\vAfter vBefore vBetween value ->
+            case value of
+                After from ->
+                    vAfter from
+
+                Before to ->
+                    vBefore to
+
+                Between range ->
+                    vBetween range
+        )
+        |> TsEncode.variantTagged "after" TsEncode.int
+        |> TsEncode.variantTagged "before" TsEncode.int
+        |> TsEncode.variantTagged "between" rangeEncoder
+        |> TsEncode.buildUnion
+
+
+rangeEncoder : TsEncode.Encoder { from : Int, to : Int }
+rangeEncoder =
+    TsEncode.object
+        [ TsEncode.required "from" .from TsEncode.int
+        , TsEncode.required "to" .to TsEncode.int
+        ]

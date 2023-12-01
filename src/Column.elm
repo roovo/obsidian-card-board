@@ -1,19 +1,18 @@
 module Column exposing
     ( Column
     , addTaskItem
+    , asCompletedColumn
     , cards
     , completed
     , dated
-    , defaultUndated
     , defaultUntagged
-    , futureColumn
+    , encoder
     , isCollapsed
+    , isCompletedColumn
     , name
     , namedTag
     , otherTags
     , setTagsToHide
-    , todayColumn
-    , tomorrowColumn
     , undated
     , untagged
     )
@@ -30,6 +29,7 @@ import Date exposing (Date)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -50,28 +50,18 @@ type Column
 
 
 completed : CompletedColumn -> Column
-completed completedColumn =
-    Completed completedColumn
+completed =
+    Completed
 
 
-defaultUndated : Column
-defaultUndated =
-    Undated <| UndatedColumn.init "Undated"
+dated : DatedColumn -> Column
+dated =
+    Dated
 
 
 defaultUntagged : Column
 defaultUntagged =
     Untagged <| UntaggedColumn.init "Untagged"
-
-
-dated : DatedColumn -> Column
-dated datedColumn =
-    Dated datedColumn
-
-
-futureColumn : Column
-futureColumn =
-    Dated DatedColumn.future
 
 
 namedTag : String -> String -> Column
@@ -82,16 +72,6 @@ namedTag name_ tag =
 otherTags : String -> List String -> Column
 otherTags name_ ots =
     OtherTags <| OtherTagsColumn.init name_ ots
-
-
-todayColumn : Column
-todayColumn =
-    Dated DatedColumn.forToday
-
-
-tomorrowColumn : Column
-tomorrowColumn =
-    Dated DatedColumn.tomorrow
 
 
 undated : String -> Column
@@ -105,7 +85,53 @@ untagged name_ =
 
 
 
+-- ENCODE
+
+
+encoder : TsEncode.Encoder Column
+encoder =
+    TsEncode.union
+        (\vCompleted vDated vNamedTag vOtherTags vUndated vUntagged value ->
+            case value of
+                Completed config ->
+                    vCompleted config
+
+                Dated config ->
+                    vDated config
+
+                NamedTag config ->
+                    vNamedTag config
+
+                OtherTags config ->
+                    vOtherTags config
+
+                Undated config ->
+                    vUndated config
+
+                Untagged config ->
+                    vUntagged config
+        )
+        |> TsEncode.variantTagged "completed" CompletedColumn.encoder
+        |> TsEncode.variantTagged "dated" DatedColumn.encoder
+        |> TsEncode.variantTagged "namedTag" NamedTagColumn.encoder
+        |> TsEncode.variantTagged "otherTags" OtherTagsColumn.encoder
+        |> TsEncode.variantTagged "undatged" UndatedColumn.encoder
+        |> TsEncode.variantTagged "untagged" UntaggedColumn.encoder
+        |> TsEncode.buildUnion
+
+
+
 -- INFO
+
+
+asCompletedColumn : Column -> Maybe CompletedColumn
+asCompletedColumn column =
+    case column of
+        Completed completedColumn ->
+            Just completedColumn
+
+        _ ->
+            Nothing
 
 
 cards : String -> Column -> List Card
@@ -139,6 +165,16 @@ isCollapsed column =
 
         Untagged untaggedColumn ->
             UntaggedColumn.isCollapsed untaggedColumn
+
+
+isCompletedColumn : Column -> Bool
+isCompletedColumn column =
+    case column of
+        Completed _ ->
+            True
+
+        _ ->
+            False
 
 
 name : Column -> String

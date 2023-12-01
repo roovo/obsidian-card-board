@@ -1,7 +1,18 @@
+- DateBoardConfig.buildfromPreV11 - handle collapsed columns
+- DateBoardConfig.populateColummConfigs
+- DateBoardConfig.includeUndated
+- DateBoardConfig.completedCount
+- BoardConfig.updateCompletedCount
+- BoardConfig.toggleIncludeUndated
+- BoardConfig.collapsedColumns
+- BoardConfig.collapseColumn
+
+- new version of config
+    - DateBoard
+    - TagBaord
 - have a collapsed Bool on each column
 - Page.Board.columnCountString
 - ensure columns on a board have unique names
-- new version of config
 - does board need to have ColumnNames any more?
 - fix tests
 - remove DateBoardConfig.populateColumms

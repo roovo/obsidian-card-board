@@ -47,7 +47,7 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
             taskList
                 |> filterTaskList config
                 |> configureDueDates ignoreFileNameDates
-                |> Columns.addTaskList today (DateBoardConfig.tagsToHide dateBoardConfig) dateBoardConfig.columnConfigs
+                |> Columns.addTaskList today (DateBoardConfig.tagsToHide dateBoardConfig) dateBoardConfig.columns
                 |> Columns.toList
 
         BoardConfig.TagBoardConfig tagBoardConfig ->

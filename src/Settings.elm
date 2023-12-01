@@ -75,7 +75,7 @@ cleanupTitles settings =
 
 currentVersion : Semver.Version
 currentVersion =
-    Semver.version 0 10 0 [] []
+    Semver.version 0 11 0 [] []
 
 
 globalSettings : Settings -> GlobalSettings

@@ -1,6 +1,7 @@
 module Column.NamedTag exposing
     ( NamedTagColumn
     , addTaskItem
+    , encoder
     , init
     , isCollapsed
     , name
@@ -13,6 +14,7 @@ import ColumnNames exposing (ColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -37,6 +39,15 @@ type alias Config =
 init : String -> String -> NamedTagColumn
 init name_ tag_ =
     NamedTagColumn { collapsed = False, name = name_, tag = tag_ } [] TaskList.empty
+
+
+
+-- ENCODE
+
+
+encoder : TsEncode.Encoder NamedTagColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
@@ -95,3 +106,17 @@ setTagsToHide tags (NamedTagColumn c _ tl) =
 belongs : String -> TaskItem -> Bool
 belongs t =
     TaskItem.hasThisTag t
+
+
+config : NamedTagColumn -> Config
+config (NamedTagColumn c _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        , TsEncode.required "tag" .tag TsEncode.string
+        ]

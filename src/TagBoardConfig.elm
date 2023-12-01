@@ -56,7 +56,7 @@ type alias LocalColumnConfig =
 default : TagBoardConfig
 default =
     { columns = []
-    , columnConfigs = Columns.fromList ColumnNames.default [] 10
+    , columnConfigs = Columns.legacyFromList ColumnNames.default [] 10
     , collapsedColumns = CollapsedColumns.init
     , completedCount = 10
     , filters = []
@@ -287,7 +287,7 @@ populateColummConfigs columnNames tagBoardConfig =
             else
                 []
     in
-    { tagBoardConfig | columnConfigs = Columns.fromList columnNames (untagged ++ others ++ tagColumns) tagBoardConfig.completedCount }
+    { tagBoardConfig | columnConfigs = Columns.legacyFromList columnNames (untagged ++ others ++ tagColumns) tagBoardConfig.completedCount }
 
 
 

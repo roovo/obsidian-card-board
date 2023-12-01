@@ -1,6 +1,7 @@
 module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
+    , encoder
     , index
     , init
     , isCollapsed
@@ -13,6 +14,7 @@ module Column.Completed exposing
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Encode as TsEncode
 
 
 
@@ -38,6 +40,15 @@ type alias Config =
 init : String -> Int -> Int -> CompletedColumn
 init name_ index_ limit_ =
     CompletedColumn { collapsed = False, index = index_, limit = limit_, name = name_ } [] TaskList.empty
+
+
+
+-- ENCODE
+
+
+encoder : TsEncode.Encoder CompletedColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
@@ -103,3 +114,22 @@ addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedCo
 setTagsToHide : List String -> CompletedColumn -> CompletedColumn
 setTagsToHide tags completedColumn =
     completedColumn
+
+
+
+-- PRIVATE
+
+
+config : CompletedColumn -> Config
+config (CompletedColumn c _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "index" .index TsEncode.int
+        , TsEncode.required "limit" .limit TsEncode.int
+        , TsEncode.required "name" .name TsEncode.string
+        ]

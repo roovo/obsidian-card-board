@@ -90,12 +90,12 @@ fromBoardType boardType title_ =
 
 collapsedColumns : BoardConfig -> CollapsedColumns
 collapsedColumns config =
-    case config of
-        DateBoardConfig c ->
-            c.collapsedColumns
-
-        TagBoardConfig c ->
-            c.collapsedColumns
+    -- case config of
+    --     DateBoardConfig c ->
+    --         c.collapsedColumns
+    --     TagBoardConfig c ->
+    --         c.collapsedColumns
+    CollapsedColumns.init
 
 
 isForDateBoard : BoardConfig -> Bool
@@ -255,14 +255,14 @@ mapFilters fn config =
 
 collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
 collapseColumn columnIndex isCollapsed config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig <|
-                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig <|
-                { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
+    -- case config of
+    --     DateBoardConfig boardConfig ->
+    --         DateBoardConfig <|
+    --             { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
+    --     TagBoardConfig boardConfig ->
+    --         TagBoardConfig <|
+    --             { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
+    config
 
 
 populateColummConfigs : ColumnNames -> BoardConfig -> BoardConfig
@@ -287,12 +287,11 @@ toggleIncludeOthers config =
 
 toggleIncludeUndated : BoardConfig -> BoardConfig
 toggleIncludeUndated config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | includeUndated = not boardConfig.includeUndated }
-
-        TagBoardConfig _ ->
-            config
+    -- case config of
+    --     DateBoardConfig boardConfig ->
+    --         DateBoardConfig { boardConfig | includeUndated = not boardConfig.includeUndated }
+    --     TagBoardConfig _ ->
+    config
 
 
 toggleIncludeUntagged : BoardConfig -> BoardConfig
@@ -355,15 +354,13 @@ updateBoardType boardType config =
 
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
 updateCompletedCount value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newCount ) ->
-            DateBoardConfig { boardConfig | completedCount = newCount }
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            TagBoardConfig { boardConfig | completedCount = newCount }
-
-        _ ->
-            config
+    -- case ( config, value ) of
+    --     ( DateBoardConfig boardConfig, Just newCount ) ->
+    --         DateBoardConfig { boardConfig | completedCount = newCount }
+    --     ( TagBoardConfig boardConfig, Just newCount ) ->
+    --         TagBoardConfig { boardConfig | completedCount = newCount }
+    --     _ ->
+    config
 
 
 updateFilterPolarity : String -> BoardConfig -> BoardConfig
