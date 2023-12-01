@@ -5,7 +5,6 @@ module Column exposing
     , cards
     , completed
     , dated
-    , defaultUntagged
     , encoder
     , isCollapsed
     , isCompletedColumn
@@ -60,11 +59,6 @@ completed =
 dated : DatedColumn -> Column
 dated =
     Dated
-
-
-defaultUntagged : Column
-defaultUntagged =
-    Untagged <| UntaggedColumn.init "Untagged"
 
 
 namedTag : String -> String -> Column

@@ -1,3 +1,15 @@
+- TagBoardConfig.updateColumnNames
+- TagBoardConfig.tagsToHide (columnTagsToHide)
+- BoardConfig.updateTags
+- BoardConfig.ToggleIncludeUntagged
+- BoardConfig.ToggleIncludeOthers
+- Page.Settings.boardSettingsForm.tagText
+- Page.Settings.boardSettingsForm.includeUntaggedStyle
+- Page.Settings.boardSettingsForm.includeOthersStyle
+- Page.Settings.boardSettingsForm. #1324
+
+
+- don't need to deocode to columns in old decoders
 - BoardConfig.updateCompletedCount
 - BoardConfig.toggleIncludeUndated
 - BoardConfig.collapsedColumns

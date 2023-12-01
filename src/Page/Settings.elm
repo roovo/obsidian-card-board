@@ -1079,19 +1079,17 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 includeOthersStyle : String
                 includeOthersStyle =
-                    if config.includeOthers then
-                        " is-enabled"
-
-                    else
-                        ""
+                    -- if config.includeOthers then
+                    --     " is-enabled"
+                    -- else
+                    ""
 
                 includeUntaggedStyle : String
                 includeUntaggedStyle =
-                    if config.includeUntagged then
-                        " is-enabled"
-
-                    else
-                        ""
+                    -- if config.includeUntagged then
+                    --     " is-enabled"
+                    -- else
+                    ""
 
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
@@ -1135,9 +1133,10 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagText : String
                 tagText =
-                    config.columns
-                        |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
-                        |> String.join "\n"
+                    -- config.columns
+                    --     |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
+                    --     |> String.join "\n"
+                    ""
 
                 untaggedWarningClass : String
                 untaggedWarningClass =
@@ -1321,14 +1320,15 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
                     ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.input
-                        [ type_ "text"
-                        , value <| String.fromInt config.completedCount
-                        , onInput EnteredCompletedCount
-                        ]
-                        []
-                    ]
+
+                -- , Html.div [ class "setting-item-control" ]
+                --     [ Html.input
+                --         [ type_ "text"
+                --         , value <| String.fromInt config.completedCount
+                --         , onInput EnteredCompletedCount
+                --         ]
+                --         []
+                --     ]
                 ]
             , Html.div [ class "setting-item dialog-buttons" ]
                 [ Html.button

@@ -277,12 +277,12 @@ updateColumnNames columnNames boardConfig =
 
 toggleIncludeOthers : BoardConfig -> BoardConfig
 toggleIncludeOthers config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
+    -- case config of
+    --     DateBoardConfig _ ->
+    --         config
+    --     TagBoardConfig boardConfig ->
+    --         TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
+    config
 
 
 toggleIncludeUndated : BoardConfig -> BoardConfig
@@ -296,12 +296,12 @@ toggleIncludeUndated config =
 
 toggleIncludeUntagged : BoardConfig -> BoardConfig
 toggleIncludeUntagged config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
+    -- case config of
+    --     DateBoardConfig _ ->
+    --         config
+    --     TagBoardConfig boardConfig ->
+    --         TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
+    config
 
 
 toggleShowColumnTags : BoardConfig -> BoardConfig
@@ -385,22 +385,21 @@ updateFilters filters_ config =
 
 updateTags : String -> BoardConfig -> BoardConfig
 updateTags tags config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            let
-                columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.LocalColumnConfig)
-                columnsConfig =
-                    Parser.run TagBoardConfig.columnConfigsParser tags
-            in
-            case columnsConfig of
-                Ok parsedConfig ->
-                    TagBoardConfig { boardConfig | columns = parsedConfig }
-
-                _ ->
-                    config
+    -- case config of
+    --     DateBoardConfig _ ->
+    --         config
+    --     TagBoardConfig boardConfig ->
+    --         let
+    --             columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.LocalColumnConfig)
+    --             columnsConfig =
+    --                 Parser.run TagBoardConfig.columnConfigsParser tags
+    --         in
+    --         case columnsConfig of
+    --             Ok parsedConfig ->
+    --                 TagBoardConfig { boardConfig | columns = parsedConfig }
+    --             _ ->
+    --                 config
+    config
 
 
 updateTitle : String -> BoardConfig -> BoardConfig
