@@ -224,7 +224,7 @@ completedCount dateBoardConfig =
 
 includeUndated : DateBoardConfig -> Bool
 includeUndated dateBoardConfig =
-    True
+    Columns.includeUndated dateBoardConfig.columns
 
 
 tagsToHide : DateBoardConfig -> List String

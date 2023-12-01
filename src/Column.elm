@@ -9,6 +9,7 @@ module Column exposing
     , encoder
     , isCollapsed
     , isCompletedColumn
+    , isEnabledUndated
     , name
     , namedTag
     , otherTags
@@ -174,6 +175,16 @@ isCompletedColumn column =
     case column of
         Completed _ ->
             True
+
+        _ ->
+            False
+
+
+isEnabledUndated : Column -> Bool
+isEnabledUndated column =
+    case column of
+        Undated undatedColumn ->
+            UndatedColumn.isEnabled undatedColumn
 
         _ ->
             False

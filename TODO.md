@@ -1,5 +1,3 @@
-- DateBoardConfig.populateColummConfigs
-- DateBoardConfig.includeUndated
 - DateBoardConfig.completedCount
 - BoardConfig.updateCompletedCount
 - BoardConfig.toggleIncludeUndated

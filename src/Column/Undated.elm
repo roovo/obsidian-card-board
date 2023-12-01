@@ -4,6 +4,7 @@ module Column.Undated exposing
     , encoder
     , init
     , isCollapsed
+    , isEnabled
     , name
     , setTagsToHide
     , tagsToHide
@@ -71,6 +72,11 @@ toList (UndatedColumn _ _ tl) =
 isCollapsed : UndatedColumn -> Bool
 isCollapsed =
     .collapsed << config
+
+
+isEnabled : UndatedColumn -> Bool
+isEnabled =
+    .enabled << config
 
 
 tagsToHide : UndatedColumn -> List String

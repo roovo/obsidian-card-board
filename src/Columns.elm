@@ -4,6 +4,7 @@ module Columns exposing
     , empty
     , encoder
     , fromList
+    , includeUndated
     , legacyFromList
     , toList
     , updateColumnNames
@@ -84,6 +85,17 @@ legacyFromList columnNames columns completedCount =
 encoder : TsEncode.Encoder Columns
 encoder =
     TsEncode.map toList <| TsEncode.list Column.encoder
+
+
+
+-- INFO
+
+
+includeUndated : Columns -> Bool
+includeUndated columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledUndated
 
 
 
