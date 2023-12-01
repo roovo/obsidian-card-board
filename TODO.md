@@ -1,5 +1,4 @@
 - are tags being hidden
-    - date board
     - tag board
 - have a collapsed Bool on each column
 - ensure columns on a board have unique names

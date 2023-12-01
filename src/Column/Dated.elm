@@ -8,6 +8,7 @@ module Column.Dated exposing
     , isCollapsed
     , name
     , setTagsToHide
+    , tagsToHide
     , toList
     , tomorrow
     )
@@ -76,6 +77,11 @@ isCollapsed (DatedColumn c _ _) =
 name : DatedColumn -> String
 name (DatedColumn c _ _) =
     c.name
+
+
+tagsToHide : DatedColumn -> List String
+tagsToHide (DatedColumn _ tth _) =
+    tth
 
 
 toList : DatedColumn -> List TaskItem

@@ -5,6 +5,7 @@ module Column.OtherTags exposing
     , isCollapsed
     , name
     , setTagsToHide
+    , tagsToHide
     , toList
     )
 
@@ -57,6 +58,11 @@ toList (OtherTagsColumn _ _ _ tl) =
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
+
+
+tagsToHide : OtherTagsColumn -> List String
+tagsToHide (OtherTagsColumn _ _ tth _) =
+    tth
 
 
 

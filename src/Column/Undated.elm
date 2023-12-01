@@ -5,6 +5,7 @@ module Column.Undated exposing
     , isCollapsed
     , name
     , setTagsToHide
+    , tagsToHide
     , toList
     )
 
@@ -56,6 +57,11 @@ toList (UndatedColumn _ _ tl) =
 isCollapsed : UndatedColumn -> Bool
 isCollapsed (UndatedColumn c _ _) =
     c.collapsed
+
+
+tagsToHide : UndatedColumn -> List String
+tagsToHide (UndatedColumn _ tth _) =
+    tth
 
 
 

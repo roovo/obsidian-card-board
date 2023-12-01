@@ -116,7 +116,7 @@ cards boardId column =
             boardId ++ ":" ++ name column
     in
     toList column
-        |> List.map (Card.fromTaskItem cardIdPrefix [])
+        |> List.map (Card.fromTaskItem cardIdPrefix (tagsToHide column))
 
 
 isCollapsed : Column -> Bool
@@ -233,6 +233,28 @@ placeTask pr item list =
 
         PlacementResult.Placed ->
             list
+
+
+tagsToHide : Column -> List String
+tagsToHide column =
+    case column of
+        Completed completedColumn ->
+            CompletedColumn.tagsToHide completedColumn
+
+        Dated datedColumn ->
+            DatedColumn.tagsToHide datedColumn
+
+        NamedTag namedTagColumn ->
+            NamedTagColumn.tagsToHide namedTagColumn
+
+        OtherTags otherTagsColumn ->
+            OtherTagsColumn.tagsToHide otherTagsColumn
+
+        Undated undatedColumn ->
+            UndatedColumn.tagsToHide undatedColumn
+
+        Untagged untaggedColumn ->
+            UntaggedColumn.tagsToHide untaggedColumn
 
 
 toList : Column -> List TaskItem

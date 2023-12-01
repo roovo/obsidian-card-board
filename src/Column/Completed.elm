@@ -6,6 +6,7 @@ module Column.Completed exposing
     , isCollapsed
     , name
     , setTagsToHide
+    , tagsToHide
     , toList
     )
 
@@ -56,6 +57,11 @@ isCollapsed (CompletedColumn c _ _) =
 name : CompletedColumn -> String
 name (CompletedColumn c _ _) =
     c.name
+
+
+tagsToHide : CompletedColumn -> List String
+tagsToHide (CompletedColumn _ tth _) =
+    tth
 
 
 toList : CompletedColumn -> List TaskItem
