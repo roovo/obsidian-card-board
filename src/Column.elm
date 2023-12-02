@@ -514,7 +514,7 @@ updateColumnNames defaultColumnNames column =
             Dated (DatedColumn.updateName defaultColumnNames datedColumn)
 
         NamedTag namedTagColumn ->
-            NamedTag (NamedTagColumn.updateName defaultColumnNames namedTagColumn)
+            column
 
         OtherTags otherTagsColumn ->
             OtherTags (OtherTagsColumn.updateName defaultColumnNames otherTagsColumn)

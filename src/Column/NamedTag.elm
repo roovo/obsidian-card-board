@@ -14,7 +14,6 @@ module Column.NamedTag exposing
     , tagsToHide
     , toList
     , toggleCollapse
-    , updateName
     )
 
 import DecodeHelpers
@@ -142,11 +141,6 @@ setTagsToHide tags (NamedTagColumn c _ tl) =
 toggleCollapse : NamedTagColumn -> NamedTagColumn
 toggleCollapse (NamedTagColumn c tth tl) =
     NamedTagColumn { c | collapsed = not c.collapsed } tth tl
-
-
-updateName : DefaultColumnNames -> NamedTagColumn -> NamedTagColumn
-updateName defaultColumnNames namedTagColumn =
-    namedTagColumn
 
 
 
