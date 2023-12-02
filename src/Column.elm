@@ -8,14 +8,18 @@ module Column exposing
     , dated
     , decoder
     , disableOthers
+    , disableUntagged
     , enableOthers
+    , enableUntagged
     , encoder
     , isCollapsed
     , isCompletedColumn
     , isDisabledOthers
+    , isDisabledUntagged
     , isEnabled
     , isEnabledOthers
     , isEnabledUndated
+    , isEnabledUntagged
     , isNamedTagColumn
     , name
     , namedTag
@@ -217,6 +221,16 @@ isDisabledOthers column =
             False
 
 
+isDisabledUntagged : Column -> Bool
+isDisabledUntagged column =
+    case column of
+        Untagged untaggedColumn ->
+            not <| UntaggedColumn.isEnabled untaggedColumn
+
+        _ ->
+            False
+
+
 isEnabled : Column -> Bool
 isEnabled column =
     case column of
@@ -254,6 +268,16 @@ isEnabledUndated column =
     case column of
         Undated undatedColumn ->
             UndatedColumn.isEnabled undatedColumn
+
+        _ ->
+            False
+
+
+isEnabledUntagged : Column -> Bool
+isEnabledUntagged column =
+    case column of
+        Untagged untaggedColumn ->
+            UntaggedColumn.isEnabled untaggedColumn
 
         _ ->
             False
@@ -343,11 +367,31 @@ disableOthers column =
             column
 
 
+disableUntagged : Column -> Column
+disableUntagged column =
+    case column of
+        Untagged untaggedColumn ->
+            Untagged <| UntaggedColumn.disable untaggedColumn
+
+        _ ->
+            column
+
+
 enableOthers : Column -> Column
 enableOthers column =
     case column of
         OtherTags otherTagsColumn ->
             OtherTags <| OtherTagsColumn.enable otherTagsColumn
+
+        _ ->
+            column
+
+
+enableUntagged : Column -> Column
+enableUntagged column =
+    case column of
+        Untagged untaggedColumn ->
+            Untagged <| UntaggedColumn.enable untaggedColumn
 
         _ ->
             column

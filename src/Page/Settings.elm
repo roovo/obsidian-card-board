@@ -1090,10 +1090,11 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 includeUntaggedStyle : String
                 includeUntaggedStyle =
-                    -- if config.includeUntagged then
-                    --     " is-enabled"
-                    -- else
-                    ""
+                    if TagBoardConfig.displayUntagged config then
+                        " is-enabled"
+
+                    else
+                        ""
 
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =

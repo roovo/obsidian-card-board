@@ -305,12 +305,12 @@ toggleIncludeUndated config =
 
 toggleIncludeUntagged : BoardConfig -> BoardConfig
 toggleIncludeUntagged config =
-    -- case config of
-    --     DateBoardConfig _ ->
-    --         config
-    --     TagBoardConfig boardConfig ->
-    --         TagBoardConfig { boardConfig | includeUntagged = not boardConfig.includeUntagged }
-    config
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <| TagBoardConfig.toggleIncludeUntagged boardConfig
 
 
 toggleShowColumnTags : BoardConfig -> BoardConfig

@@ -12,9 +12,11 @@ module TagBoardConfig exposing
     , decoder_v_0_9_0
     , default
     , displayOthers
+    , displayUntagged
     , encoder
     , tagsToHide
     , toggleIncludeOthers
+    , toggleIncludeUntagged
     , updateColumnNames
     , updateTags
     )
@@ -298,6 +300,11 @@ displayOthers tagBoardConfig =
     Columns.includesOthers tagBoardConfig.columns
 
 
+displayUntagged : TagBoardConfig -> Bool
+displayUntagged tagBoardConfig =
+    Columns.includesUntagged tagBoardConfig.columns
+
+
 tagsToHide : TagBoardConfig -> List String
 tagsToHide tagBoardConfig =
     let
@@ -333,6 +340,11 @@ tagsToHide tagBoardConfig =
 toggleIncludeOthers : TagBoardConfig -> TagBoardConfig
 toggleIncludeOthers tagBoardConfig =
     { tagBoardConfig | columns = Columns.toggleIncludeOthers tagBoardConfig.columns }
+
+
+toggleIncludeUntagged : TagBoardConfig -> TagBoardConfig
+toggleIncludeUntagged tagBoardConfig =
+    { tagBoardConfig | columns = Columns.toggleIncludeUntagged tagBoardConfig.columns }
 
 
 updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig

@@ -2,6 +2,8 @@ module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
     , decoder
+    , disable
+    , enable
     , encoder
     , init
     , isCollapsed
@@ -114,6 +116,16 @@ addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
 
     else
         ( untaggedColumn, PlacementResult.DoesNotBelong )
+
+
+disable : UntaggedColumn -> UntaggedColumn
+disable (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | enabled = False } tth tl
+
+
+enable : UntaggedColumn -> UntaggedColumn
+enable (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | enabled = True } tth tl
 
 
 setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn

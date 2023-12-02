@@ -8,12 +8,14 @@ module Columns exposing
     , fromList
     , includesOthers
     , includesUndated
+    , includesUntagged
     , legacyFromList
     , namedTagColumnTags
     , namedTagColumns
     , replaceNamedTagColumns
     , toList
     , toggleIncludeOthers
+    , toggleIncludeUntagged
     , updateColumnNames
     )
 
@@ -131,6 +133,13 @@ includesUndated columns =
         |> List.any Column.isEnabledUndated
 
 
+includesUntagged : Columns -> Bool
+includesUntagged columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledUntagged
+
+
 namedTagColumns : Columns -> List NamedTagColumn
 namedTagColumns columns =
     columns
@@ -188,6 +197,27 @@ toggleIncludeOthers columns =
         columns
             |> toList
             |> List.append [ Column.otherTags "Others" <| namedTagColumnTags columns ]
+            |> fromList
+
+
+toggleIncludeUntagged : Columns -> Columns
+toggleIncludeUntagged columns =
+    if includesEnabledUntagged columns then
+        columns
+            |> toList
+            |> List.map Column.disableUntagged
+            |> fromList
+
+    else if includesDisabledUntagged columns then
+        columns
+            |> toList
+            |> List.map Column.enableUntagged
+            |> fromList
+
+    else
+        columns
+            |> toList
+            |> List.append [ Column.untagged "Untagged" ]
             |> fromList
 
 
@@ -256,11 +286,25 @@ includesEnabledOthers columns =
         |> List.any Column.isEnabledOthers
 
 
+includesEnabledUntagged : Columns -> Bool
+includesEnabledUntagged columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledUntagged
+
+
 includesDisabledOthers : Columns -> Bool
 includesDisabledOthers columns =
     columns
         |> toList
         |> List.any Column.isDisabledOthers
+
+
+includesDisabledUntagged : Columns -> Bool
+includesDisabledUntagged columns =
+    columns
+        |> toList
+        |> List.any Column.isDisabledUntagged
 
 
 insert : Int -> a -> List a -> List a
