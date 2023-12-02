@@ -286,12 +286,12 @@ updateColumnNames columnNames boardConfig =
 
 toggleIncludeOthers : BoardConfig -> BoardConfig
 toggleIncludeOthers config =
-    -- case config of
-    --     DateBoardConfig _ ->
-    --         config
-    --     TagBoardConfig boardConfig ->
-    --         TagBoardConfig { boardConfig | includeOthers = not boardConfig.includeOthers }
-    config
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <| TagBoardConfig.toggleIncludeOthers boardConfig
 
 
 toggleIncludeUndated : BoardConfig -> BoardConfig

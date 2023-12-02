@@ -37,6 +37,7 @@ import Session exposing (Session)
 import Settings exposing (Settings)
 import SettingsState exposing (SettingsState)
 import State exposing (State)
+import TagBoardConfig
 
 
 
@@ -1081,10 +1082,11 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 includeOthersStyle : String
                 includeOthersStyle =
-                    -- if config.includeOthers then
-                    --     " is-enabled"
-                    -- else
-                    ""
+                    if TagBoardConfig.displayOthers config then
+                        " is-enabled"
+
+                    else
+                        ""
 
                 includeUntaggedStyle : String
                 includeUntaggedStyle =

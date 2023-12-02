@@ -2,9 +2,12 @@ module Column.OtherTags exposing
     ( OtherTagsColumn
     , addTaskItem
     , decoder
+    , disable
+    , enable
     , encoder
     , init
     , isCollapsed
+    , isEnabled
     , name
     , setTagsToHide
     , tagsToHide
@@ -75,6 +78,11 @@ isCollapsed (OtherTagsColumn c _ _ _) =
     c.collapsed
 
 
+isEnabled : OtherTagsColumn -> Bool
+isEnabled (OtherTagsColumn c _ _ _) =
+    c.enabled
+
+
 name : OtherTagsColumn -> String
 name (OtherTagsColumn c _ _ _) =
     c.name
@@ -108,6 +116,16 @@ addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
 
     else
         ( namedTagColumn, PlacementResult.DoesNotBelong )
+
+
+disable : OtherTagsColumn -> OtherTagsColumn
+disable (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | enabled = False } ots tth tl
+
+
+enable : OtherTagsColumn -> OtherTagsColumn
+enable (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | enabled = True } ots tth tl
 
 
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn

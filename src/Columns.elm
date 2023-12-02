@@ -6,12 +6,14 @@ module Columns exposing
     , empty
     , encoder
     , fromList
-    , includeUndated
+    , includesOthers
+    , includesUndated
     , legacyFromList
     , namedTagColumnTags
     , namedTagColumns
     , replaceNamedTagColumns
     , toList
+    , toggleIncludeOthers
     , updateColumnNames
     )
 
@@ -19,6 +21,7 @@ import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.Dated as DatedColumn exposing (DatedColumn)
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
+import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
@@ -114,8 +117,15 @@ completedCount columns =
             0
 
 
-includeUndated : Columns -> Bool
-includeUndated columns =
+includesOthers : Columns -> Bool
+includesOthers columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledOthers
+
+
+includesUndated : Columns -> Bool
+includesUndated columns =
     columns
         |> toList
         |> List.any Column.isEnabledUndated
@@ -158,6 +168,27 @@ replaceNamedTagColumns newColumns existingColumns =
                 |> LE.filterNot Column.isNamedTagColumn
     in
     fromList (withoutNamed ++ newColumns)
+
+
+toggleIncludeOthers : Columns -> Columns
+toggleIncludeOthers columns =
+    if includesEnabledOthers columns then
+        columns
+            |> toList
+            |> List.map Column.disableOthers
+            |> fromList
+
+    else if includesDisabledOthers columns then
+        columns
+            |> toList
+            |> List.map Column.enableOthers
+            |> fromList
+
+    else
+        columns
+            |> toList
+            |> List.append [ Column.otherTags "Others" <| namedTagColumnTags columns ]
+            |> fromList
 
 
 updateColumnNames : ColumnNames -> Columns -> Columns
@@ -216,6 +247,20 @@ addWithPlacement today taskItem initialConfigs =
                 |> Tuple.mapSecond (\r -> r :: placementResults)
     in
     List.foldr fn ( [], [] ) initialConfigs
+
+
+includesEnabledOthers : Columns -> Bool
+includesEnabledOthers columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledOthers
+
+
+includesDisabledOthers : Columns -> Bool
+includesDisabledOthers columns =
+    columns
+        |> toList
+        |> List.any Column.isDisabledOthers
 
 
 insert : Int -> a -> List a -> List a

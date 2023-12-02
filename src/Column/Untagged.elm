@@ -5,6 +5,7 @@ module Column.Untagged exposing
     , encoder
     , init
     , isCollapsed
+    , isEnabled
     , name
     , setTagsToHide
     , tagsToHide
@@ -86,6 +87,11 @@ toList (UntaggedColumn _ _ tl) =
 isCollapsed : UntaggedColumn -> Bool
 isCollapsed =
     .collapsed << config
+
+
+isEnabled : UntaggedColumn -> Bool
+isEnabled =
+    .enabled << config
 
 
 tagsToHide : UntaggedColumn -> List String

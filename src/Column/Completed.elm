@@ -6,6 +6,7 @@ module Column.Completed exposing
     , index
     , init
     , isCollapsed
+    , isEnabled
     , limit
     , name
     , setTagsToHide
@@ -82,6 +83,11 @@ index (CompletedColumn c _ _) =
 isCollapsed : CompletedColumn -> Bool
 isCollapsed (CompletedColumn c _ _) =
     c.collapsed
+
+
+isEnabled : CompletedColumn -> Bool
+isEnabled (CompletedColumn c _ _) =
+    c.limit > 0
 
 
 limit : CompletedColumn -> Int

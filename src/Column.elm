@@ -7,9 +7,14 @@ module Column exposing
     , completed
     , dated
     , decoder
+    , disableOthers
+    , enableOthers
     , encoder
     , isCollapsed
     , isCompletedColumn
+    , isDisabledOthers
+    , isEnabled
+    , isEnabledOthers
     , isEnabledUndated
     , isNamedTagColumn
     , name
@@ -202,6 +207,48 @@ isCompletedColumn column =
             False
 
 
+isDisabledOthers : Column -> Bool
+isDisabledOthers column =
+    case column of
+        OtherTags otherTagsColumn ->
+            not <| OtherTagsColumn.isEnabled otherTagsColumn
+
+        _ ->
+            False
+
+
+isEnabled : Column -> Bool
+isEnabled column =
+    case column of
+        Completed completedColumn ->
+            CompletedColumn.isEnabled completedColumn
+
+        Dated datedColumn ->
+            DatedColumn.isEnabled datedColumn
+
+        NamedTag namedTagColumn ->
+            NamedTagColumn.isEnabled namedTagColumn
+
+        OtherTags otherTagsColumn ->
+            OtherTagsColumn.isEnabled otherTagsColumn
+
+        Undated undatedColumn ->
+            UndatedColumn.isEnabled undatedColumn
+
+        Untagged untaggedColumn ->
+            UntaggedColumn.isEnabled untaggedColumn
+
+
+isEnabledOthers : Column -> Bool
+isEnabledOthers column =
+    case column of
+        OtherTags otherTagsColumn ->
+            OtherTagsColumn.isEnabled otherTagsColumn
+
+        _ ->
+            False
+
+
 isEnabledUndated : Column -> Bool
 isEnabledUndated column =
     case column of
@@ -284,6 +331,26 @@ addTaskItem today taskItem column =
         Untagged untaggedColumn ->
             UntaggedColumn.addTaskItem taskItem untaggedColumn
                 |> Tuple.mapFirst Untagged
+
+
+disableOthers : Column -> Column
+disableOthers column =
+    case column of
+        OtherTags otherTagsColumn ->
+            OtherTags <| OtherTagsColumn.disable otherTagsColumn
+
+        _ ->
+            column
+
+
+enableOthers : Column -> Column
+enableOthers column =
+    case column of
+        OtherTags otherTagsColumn ->
+            OtherTags <| OtherTagsColumn.enable otherTagsColumn
+
+        _ ->
+            column
 
 
 setTagsToHide : List String -> Column -> Column
