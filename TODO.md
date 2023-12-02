@@ -18,6 +18,7 @@
     - DateBoard
     - TagBaord
 - have a collapsed Bool on each column
+- ColumnNames -> DefaultColumnNames
 - Page.Board.columnCountString
 - ensure columns on a board have unique names
 - does board need to have ColumnNames any more?

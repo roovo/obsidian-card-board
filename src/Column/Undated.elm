@@ -1,6 +1,7 @@
 module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
+    , decoder
     , encoder
     , init
     , isCollapsed
@@ -14,9 +15,12 @@ module Column.Undated exposing
     )
 
 import ColumnNames exposing (ColumnNames)
+import DecodeHelpers
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -45,7 +49,17 @@ init name_ =
 
 
 
--- ENCODE
+-- DECODE / ENCODE
+
+
+decoder : TsDecode.Decoder UndatedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "enabled" TsDecode.bool
+        |> TsDecode.required "name" TsDecode.string
+    )
+        |> TsDecode.map (\c -> UndatedColumn c [] TaskList.empty)
 
 
 encoder : TsEncode.Encoder UndatedColumn

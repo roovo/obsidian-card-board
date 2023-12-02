@@ -3,6 +3,7 @@ module TagBoardConfig exposing
     , TagBoardConfig
     , columnConfigsParser
     , decoder_v_0_10_0
+    , decoder_v_0_11_0
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -88,6 +89,18 @@ columnConfigEncoder =
         [ TsEncode.required "tag" .tag TsEncode.string
         , TsEncode.required "displayTitle" .displayTitle TsEncode.string
         ]
+
+
+decoder_v_0_11_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_11_0 =
+    TsDecode.succeed TagBoardConfig
+        |> TsDecode.required "columns" Columns.decoder
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
 
 
 decoder_v_0_10_0 : TsDecode.Decoder TagBoardConfig

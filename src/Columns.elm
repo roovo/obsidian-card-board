@@ -2,6 +2,7 @@ module Columns exposing
     ( Columns
     , addTaskList
     , completedCount
+    , decoder
     , empty
     , encoder
     , fromList
@@ -23,6 +24,7 @@ import Maybe.Extra as ME
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -81,7 +83,13 @@ legacyFromList columnNames columns completedCount_ =
 
 
 
--- ENCODE
+-- DECODE / ENCODE
+
+
+decoder : TsDecode.Decoder Columns
+decoder =
+    TsDecode.list Column.decoder
+        |> TsDecode.map fromList
 
 
 encoder : TsEncode.Encoder Columns

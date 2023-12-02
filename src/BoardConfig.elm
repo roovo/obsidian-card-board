@@ -3,6 +3,7 @@ module BoardConfig exposing
     , collapseColumn
     , collapsedColumns
     , decoder_v_0_10_0
+    , decoder_v_0_11_0
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -176,6 +177,14 @@ encoder =
         |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.encoder
         |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.encoder
         |> TsEncode.buildUnion
+
+
+decoder_v_0_11_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_11_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig" DateBoardConfig DateBoardConfig.decoder_v_0_11_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig" TagBoardConfig TagBoardConfig.decoder_v_0_11_0
+        ]
 
 
 decoder_v_0_10_0 : TsDecode.Decoder BoardConfig

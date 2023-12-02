@@ -5,6 +5,7 @@ module Column exposing
     , cards
     , completed
     , dated
+    , decoder
     , encoder
     , isCollapsed
     , isCompletedColumn
@@ -29,9 +30,11 @@ import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import DecodeHelpers
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -83,7 +86,19 @@ untagged name_ =
 
 
 
--- ENCODE
+-- DECODE / ENCODE
+
+
+decoder : TsDecode.Decoder Column
+decoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "completed" Completed CompletedColumn.decoder
+        , DecodeHelpers.toElmVariant "dated" Dated DatedColumn.decoder
+        , DecodeHelpers.toElmVariant "namedTag" NamedTag NamedTagColumn.decoder
+        , DecodeHelpers.toElmVariant "otherTags" OtherTags OtherTagsColumn.decoder
+        , DecodeHelpers.toElmVariant "undated" Undated UndatedColumn.decoder
+        , DecodeHelpers.toElmVariant "untagged" Untagged UntaggedColumn.decoder
+        ]
 
 
 encoder : TsEncode.Encoder Column

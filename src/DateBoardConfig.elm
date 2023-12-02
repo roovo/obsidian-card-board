@@ -2,6 +2,7 @@ module DateBoardConfig exposing
     ( DateBoardConfig
     , completedCount
     , decoder_v_0_10_0
+    , decoder_v_0_11_0
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -73,6 +74,17 @@ encoder =
         , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
         , TsEncode.required "title" .title TsEncode.string
         ]
+
+
+decoder_v_0_11_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_11_0 =
+    TsDecode.succeed DateBoardConfig
+        |> TsDecode.required "columns" Columns.decoder
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
 
 
 decoder_v_0_10_0 : TsDecode.Decoder DateBoardConfig

@@ -1,6 +1,7 @@
 module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
+    , decoder
     , encoder
     , index
     , init
@@ -15,9 +16,12 @@ module Column.Completed exposing
     )
 
 import ColumnNames exposing (ColumnNames)
+import DecodeHelpers
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -47,7 +51,18 @@ init name_ index_ limit_ =
 
 
 
--- ENCODE
+-- DECODE / ENCODE
+
+
+decoder : TsDecode.Decoder CompletedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "index" TsDecode.int
+        |> TsDecode.required "limit" TsDecode.int
+        |> TsDecode.required "name" TsDecode.string
+    )
+        |> TsDecode.map (\c -> CompletedColumn c [] TaskList.empty)
 
 
 encoder : TsEncode.Encoder CompletedColumn

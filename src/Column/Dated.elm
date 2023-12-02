@@ -2,6 +2,7 @@ module Column.Dated exposing
     ( DatedColumn
     , RelativeDateRange(..)
     , addTaskItem
+    , decoder
     , encoder
     , init
     , isCollapsed
@@ -15,9 +16,12 @@ module Column.Dated exposing
 
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import DecodeHelpers
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -52,7 +56,17 @@ init name_ range_ =
 
 
 
--- ENCODE
+-- DECODE / ENCODE
+
+
+decoder : TsDecode.Decoder DatedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "name" TsDecode.string
+        |> TsDecode.required "range" relativeDateRangeDecoder
+    )
+        |> TsDecode.map (\c -> DatedColumn c [] TaskList.empty)
 
 
 encoder : TsEncode.Encoder DatedColumn
@@ -170,6 +184,15 @@ configEncoder =
         ]
 
 
+relativeDateRangeDecoder : TsDecode.Decoder RelativeDateRange
+relativeDateRangeDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "after" After TsDecode.int
+        , DecodeHelpers.toElmVariant "before" Before TsDecode.int
+        , DecodeHelpers.toElmVariant "between" Between rangeDecoder
+        ]
+
+
 relativeDateRangeEncoder : TsEncode.Encoder RelativeDateRange
 relativeDateRangeEncoder =
     TsEncode.union
@@ -188,6 +211,13 @@ relativeDateRangeEncoder =
         |> TsEncode.variantTagged "before" TsEncode.int
         |> TsEncode.variantTagged "between" rangeEncoder
         |> TsEncode.buildUnion
+
+
+rangeDecoder : TsDecode.Decoder { from : Int, to : Int }
+rangeDecoder =
+    TsDecode.succeed (\f -> \t -> { from = f, to = t })
+        |> TsDecode.required "from" TsDecode.int
+        |> TsDecode.required "to" TsDecode.int
 
 
 rangeEncoder : TsEncode.Encoder { from : Int, to : Int }
