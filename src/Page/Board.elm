@@ -8,7 +8,6 @@ import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -182,12 +181,7 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
-
-            columnNames : ColumnNames
-            columnNames =
-                Session.globalSettings session
-                    |> .columnNames
+                Boards.init (Session.uniqueId session) (Session.boardConfigs session) (Session.taskList session)
 
             currentBoardIndex : Maybe Int
             currentBoardIndex =

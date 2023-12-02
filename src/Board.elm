@@ -9,7 +9,6 @@ import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
 import Columns
 import Date exposing (Date)
 import DateBoardConfig
@@ -24,16 +23,16 @@ import TaskList exposing (TaskList)
 
 
 type Board
-    = Board String ColumnNames BoardConfig TaskList
+    = Board String BoardConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : String -> ColumnNames -> BoardConfig -> TaskList -> Board
-init uniqueId columnNames config taskList =
-    Board uniqueId columnNames config taskList
+init : String -> BoardConfig -> TaskList -> Board
+init uniqueId config taskList =
+    Board uniqueId config taskList
 
 
 
@@ -41,7 +40,7 @@ init uniqueId columnNames config taskList =
 
 
 columns : Bool -> Date -> Board -> List Column
-columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
+columns ignoreFileNameDates today ((Board _ config taskList) as board) =
     case config of
         BoardConfig.DateBoardConfig dateBoardConfig ->
             taskList
@@ -61,7 +60,7 @@ columns ignoreFileNameDates today ((Board _ columnNames config taskList) as boar
 
 
 id : Board -> String
-id (Board uniqueId _ config _) =
+id (Board uniqueId config _) =
     uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.title config)
 
 
