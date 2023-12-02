@@ -15,6 +15,7 @@ module DateBoardConfig exposing
     , tagsToHide
     , toggleIncludeUndated
     , updateColumnNames
+    , updateCompletedCount
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -264,3 +265,8 @@ toggleIncludeUndated dateBoardConfig =
 updateColumnNames : ColumnNames -> DateBoardConfig -> DateBoardConfig
 updateColumnNames columnNames dateBoardConfig =
     { dateBoardConfig | columns = Columns.updateColumnNames columnNames dateBoardConfig.columns }
+
+
+updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig
+updateCompletedCount newCount dateBoardConfig =
+    { dateBoardConfig | columns = Columns.updateCompletedCount newCount dateBoardConfig.columns }

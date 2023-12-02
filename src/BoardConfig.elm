@@ -364,13 +364,15 @@ updateBoardType boardType config =
 
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
 updateCompletedCount value config =
-    -- case ( config, value ) of
-    --     ( DateBoardConfig boardConfig, Just newCount ) ->
-    --         DateBoardConfig { boardConfig | completedCount = newCount }
-    --     ( TagBoardConfig boardConfig, Just newCount ) ->
-    --         TagBoardConfig { boardConfig | completedCount = newCount }
-    --     _ ->
-    config
+    case ( config, value ) of
+        ( DateBoardConfig boardConfig, Just newCount ) ->
+            DateBoardConfig <| DateBoardConfig.updateCompletedCount newCount boardConfig
+
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            TagBoardConfig <| TagBoardConfig.updateCompletedCount newCount boardConfig
+
+        _ ->
+            config
 
 
 updateFilterPolarity : String -> BoardConfig -> BoardConfig

@@ -18,6 +18,7 @@ module Columns exposing
     , toggleIncludeUndated
     , toggleIncludeUntagged
     , updateColumnNames
+    , updateCompletedCount
     )
 
 import Column exposing (Column)
@@ -249,6 +250,24 @@ updateColumnNames columnNames columns =
         |> toList
         |> List.map (Column.updateColumnNames columnNames)
         |> fromList
+
+
+updateCompletedCount : Int -> Columns -> Columns
+updateCompletedCount newCount columns =
+    case columns of
+        WithCompleted nonCompletedConfigs completedConfig ->
+            WithCompleted
+                nonCompletedConfigs
+                (CompletedColumn.updateCompletedCount newCount completedConfig)
+
+        WithoutCompleted nonCompletedConfigs ->
+            WithCompleted
+                nonCompletedConfigs
+                (CompletedColumn.init
+                    "Completed"
+                    (List.length nonCompletedConfigs)
+                    newCount
+                )
 
 
 

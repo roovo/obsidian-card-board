@@ -2,6 +2,7 @@ module TagBoardConfig exposing
     ( LocalColumnConfig
     , TagBoardConfig
     , columnConfigsParser
+    , completedCount
     , decoder_v_0_10_0
     , decoder_v_0_11_0
     , decoder_v_0_1_0
@@ -18,6 +19,7 @@ module TagBoardConfig exposing
     , toggleIncludeOthers
     , toggleIncludeUntagged
     , updateColumnNames
+    , updateCompletedCount
     , updateTags
     )
 
@@ -223,7 +225,7 @@ columnConfigDecoder =
 
 
 buildfromPreV11 : List LocalColumnConfig -> Columns -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> TagBoardConfig
-buildfromPreV11 localColumnConfigs _ collapsedColumns completedCount filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
+buildfromPreV11 localColumnConfigs _ collapsedColumns completedCount_ filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
     let
         columns =
             untaggedColumn
@@ -233,8 +235,8 @@ buildfromPreV11 localColumnConfigs _ collapsedColumns completedCount filters fil
                 |> List.indexedMap handleCollapse
 
         completedColumn =
-            if completedCount > 0 then
-                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount ]
+            if completedCount_ > 0 then
+                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
 
             else
                 []
@@ -295,6 +297,11 @@ columnConfigsParser =
 -- INFO
 
 
+completedCount : TagBoardConfig -> Int
+completedCount tagBoardConfig =
+    Columns.completedCount tagBoardConfig.columns
+
+
 displayOthers : TagBoardConfig -> Bool
 displayOthers tagBoardConfig =
     Columns.includesOthers tagBoardConfig.columns
@@ -350,6 +357,11 @@ toggleIncludeUntagged tagBoardConfig =
 updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig
 updateColumnNames columnNames tagBoardConfig =
     { tagBoardConfig | columns = Columns.updateColumnNames columnNames tagBoardConfig.columns }
+
+
+updateCompletedCount : Int -> TagBoardConfig -> TagBoardConfig
+updateCompletedCount newCount tagBoardConfig =
+    { tagBoardConfig | columns = Columns.updateCompletedCount newCount tagBoardConfig.columns }
 
 
 updateTags : String -> TagBoardConfig -> TagBoardConfig

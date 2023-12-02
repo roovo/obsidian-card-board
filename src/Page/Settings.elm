@@ -1325,15 +1325,14 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
                     ]
-
-                -- , Html.div [ class "setting-item-control" ]
-                --     [ Html.input
-                --         [ type_ "text"
-                --         , value <| String.fromInt config.completedCount
-                --         , onInput EnteredCompletedCount
-                --         ]
-                --         []
-                --     ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.input
+                        [ type_ "text"
+                        , value <| String.fromInt (TagBoardConfig.completedCount config)
+                        , onInput EnteredCompletedCount
+                        ]
+                        []
+                    ]
                 ]
             , Html.div [ class "setting-item dialog-buttons" ]
                 [ Html.button

@@ -13,6 +13,7 @@ module Column.Completed exposing
     , tagsToHide
     , toList
     , toggleCollapse
+    , updateCompletedCount
     , updateName
     )
 
@@ -149,6 +150,11 @@ setTagsToHide tags completedColumn =
 toggleCollapse : CompletedColumn -> CompletedColumn
 toggleCollapse (CompletedColumn c tth tl) =
     CompletedColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateCompletedCount : Int -> CompletedColumn -> CompletedColumn
+updateCompletedCount newCount (CompletedColumn c tth tl) =
+    CompletedColumn { c | limit = newCount } tth tl
 
 
 updateName : ColumnNames -> CompletedColumn -> CompletedColumn
