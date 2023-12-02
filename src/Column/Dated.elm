@@ -154,10 +154,10 @@ updateName defaultColumnNames (DatedColumn c tth tl) =
                     DefaultColumnNames.nameFor "today" defaultColumnNames
 
                 "Tomorrow" ->
-                    DefaultColumnNames.nameFor "today" defaultColumnNames
+                    DefaultColumnNames.nameFor "tomorrow" defaultColumnNames
 
                 "Future" ->
-                    DefaultColumnNames.nameFor "today" defaultColumnNames
+                    DefaultColumnNames.nameFor "future" defaultColumnNames
 
                 _ ->
                     c.name
