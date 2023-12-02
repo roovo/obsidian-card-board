@@ -448,10 +448,11 @@ columnView boardId columnIndex today column =
 
         columnCountString : String
         columnCountString =
-            -- if Column.isCollapsed column then
-            --     "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"
-            -- else
-            ""
+            if Column.isCollapsed column then
+                "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
+
+            else
+                ""
     in
     Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
         [ Html.div [ class "card-board-column-header" ]

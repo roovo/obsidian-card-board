@@ -3,6 +3,7 @@ module Column exposing
     , addTaskItem
     , asCompletedColumn
     , asNamedTagColumn
+    , cardCount
     , cards
     , completed
     , dated
@@ -170,6 +171,11 @@ asNamedTagColumn column =
 
         _ ->
             Nothing
+
+
+cardCount : Column -> Int
+cardCount column =
+    List.length (toList column)
 
 
 cards : String -> Column -> List Card
