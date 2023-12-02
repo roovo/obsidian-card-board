@@ -264,14 +264,12 @@ mapFilters fn config =
 
 collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
 collapseColumn columnIndex isCollapsed config =
-    -- case config of
-    --     DateBoardConfig boardConfig ->
-    --         DateBoardConfig <|
-    --             { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
-    --     TagBoardConfig boardConfig ->
-    --         TagBoardConfig <|
-    --             { boardConfig | collapsedColumns = CollapsedColumns.collapseColumn columnIndex isCollapsed boardConfig.collapsedColumns }
-    config
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <| DateBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <| TagBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
 
 
 updateColumnNames : ColumnNames -> BoardConfig -> BoardConfig

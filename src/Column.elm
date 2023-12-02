@@ -27,6 +27,7 @@ module Column exposing
     , name
     , namedTag
     , otherTags
+    , setCollapse
     , setTagsToHide
     , tag
     , toggleCollapse
@@ -428,6 +429,28 @@ enableUntagged column =
 
         _ ->
             column
+
+
+setCollapse : Bool -> Column -> Column
+setCollapse isCollapsed_ column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.setCollapse isCollapsed_ completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.setCollapse isCollapsed_ datedColumn)
+
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.setCollapse isCollapsed_ namedTagColumn)
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.setCollapse isCollapsed_ otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.setCollapse isCollapsed_ undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.setCollapse isCollapsed_ untaggedColumn)
 
 
 setTagsToHide : List String -> Column -> Column

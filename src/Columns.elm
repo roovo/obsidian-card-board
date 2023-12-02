@@ -1,6 +1,7 @@
 module Columns exposing
     ( Columns
     , addTaskList
+    , collapseColumn
     , completedCount
     , decoder
     , empty
@@ -167,6 +168,14 @@ addTaskList today tagsToHide columns taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columns
         |> setTagsToHide tagsToHide
+
+
+collapseColumn : Int -> Bool -> Columns -> Columns
+collapseColumn columnIndex isCollapsed columns =
+    columns
+        |> toList
+        |> LE.updateAt columnIndex (Column.setCollapse isCollapsed)
+        |> fromList
 
 
 replaceNamedTagColumns : List Column -> Columns -> Columns

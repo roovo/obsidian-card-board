@@ -8,6 +8,7 @@ module Column.Dated exposing
     , isCollapsed
     , isEnabled
     , name
+    , setCollapse
     , setTagsToHide
     , tagsToHide
     , toList
@@ -127,6 +128,11 @@ addTaskItem today taskItem ((DatedColumn c tth tl) as datedColumn) =
 
         Nothing ->
             ( datedColumn, PlacementResult.DoesNotBelong )
+
+
+setCollapse : Bool -> DatedColumn -> DatedColumn
+setCollapse isCollapsed_ (DatedColumn c tth tl) =
+    DatedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
 setTagsToHide : List String -> DatedColumn -> DatedColumn

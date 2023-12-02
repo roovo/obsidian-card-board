@@ -9,6 +9,7 @@ module Column.Completed exposing
     , isEnabled
     , limit
     , name
+    , setCollapse
     , setTagsToHide
     , tagsToHide
     , toList
@@ -140,6 +141,11 @@ addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedCo
 
     else
         completedColumn
+
+
+setCollapse : Bool -> CompletedColumn -> CompletedColumn
+setCollapse isCollapsed_ (CompletedColumn c tth tl) =
+    CompletedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
 setTagsToHide : List String -> CompletedColumn -> CompletedColumn

@@ -1,6 +1,7 @@
 module TagBoardConfig exposing
     ( LocalColumnConfig
     , TagBoardConfig
+    , collapseColumn
     , columnConfigsParser
     , completedCount
     , decoder_v_0_10_0
@@ -336,6 +337,11 @@ tagsToHide tagBoardConfig =
 
 
 -- MODIFICATION
+
+
+collapseColumn : Int -> Bool -> TagBoardConfig -> TagBoardConfig
+collapseColumn columnIndex isCollapsed tagBoardConfig =
+    { tagBoardConfig | columns = Columns.collapseColumn columnIndex isCollapsed tagBoardConfig.columns }
 
 
 toggleIncludeOthers : TagBoardConfig -> TagBoardConfig

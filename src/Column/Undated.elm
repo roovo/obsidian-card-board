@@ -9,6 +9,7 @@ module Column.Undated exposing
     , isCollapsed
     , isEnabled
     , name
+    , setCollapse
     , setTagsToHide
     , tagsToHide
     , toList
@@ -125,6 +126,11 @@ disable (UndatedColumn c tth tl) =
 enable : UndatedColumn -> UndatedColumn
 enable (UndatedColumn c tth tl) =
     UndatedColumn { c | enabled = True } tth tl
+
+
+setCollapse : Bool -> UndatedColumn -> UndatedColumn
+setCollapse isCollapsed_ (UndatedColumn c tth tl) =
+    UndatedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn

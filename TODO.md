@@ -1,7 +1,3 @@
-- BoardConfig.collapsedColumns
-- BoardConfig.collapseColumn
-- have a collapsed Bool on each column
-
 - why are old config dateboard date colums all being set to the Today global setting (like the tomorrow and future columns)
 
 

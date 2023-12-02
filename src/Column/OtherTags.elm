@@ -9,6 +9,7 @@ module Column.OtherTags exposing
     , isCollapsed
     , isEnabled
     , name
+    , setCollapse
     , setTagsToHide
     , tagsToHide
     , toList
@@ -126,6 +127,11 @@ disable (OtherTagsColumn c ots tth tl) =
 enable : OtherTagsColumn -> OtherTagsColumn
 enable (OtherTagsColumn c ots tth tl) =
     OtherTagsColumn { c | enabled = True } ots tth tl
+
+
+setCollapse : Bool -> OtherTagsColumn -> OtherTagsColumn
+setCollapse isCollapsed_ (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | collapsed = isCollapsed_ } ots tth tl
 
 
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn

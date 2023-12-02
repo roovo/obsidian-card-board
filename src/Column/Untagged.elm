@@ -9,6 +9,7 @@ module Column.Untagged exposing
     , isCollapsed
     , isEnabled
     , name
+    , setCollapse
     , setTagsToHide
     , tagsToHide
     , toList
@@ -126,6 +127,11 @@ disable (UntaggedColumn c tth tl) =
 enable : UntaggedColumn -> UntaggedColumn
 enable (UntaggedColumn c tth tl) =
     UntaggedColumn { c | enabled = True } tth tl
+
+
+setCollapse : Bool -> UntaggedColumn -> UntaggedColumn
+setCollapse isCollapsed_ (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
 setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn

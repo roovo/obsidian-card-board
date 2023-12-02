@@ -1,5 +1,6 @@
 module DateBoardConfig exposing
     ( DateBoardConfig
+    , collapseColumn
     , completedCount
     , decoder_v_0_10_0
     , decoder_v_0_11_0
@@ -249,6 +250,11 @@ tagsToHide dateBoardConfig =
 
 
 -- MODIFICATION
+
+
+collapseColumn : Int -> Bool -> DateBoardConfig -> DateBoardConfig
+collapseColumn columnIndex isCollapsed dateBoardConfig =
+    { dateBoardConfig | columns = Columns.collapseColumn columnIndex isCollapsed dateBoardConfig.columns }
 
 
 toggleIncludeUndated : DateBoardConfig -> DateBoardConfig

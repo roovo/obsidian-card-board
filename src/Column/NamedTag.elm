@@ -8,6 +8,7 @@ module Column.NamedTag exposing
     , isCollapsed
     , isEnabled
     , name
+    , setCollapse
     , setTagsToHide
     , tag
     , tagsToHide
@@ -84,7 +85,7 @@ isCollapsed (NamedTagColumn c _ _) =
 
 
 isEnabled : NamedTagColumn -> Bool
-isEnabled (NamedTagColumn c _ _) =
+isEnabled _ =
     True
 
 
@@ -126,6 +127,11 @@ addTaskItem taskItem ((NamedTagColumn c tth tl) as namedTagColumn) =
 
     else
         ( namedTagColumn, PlacementResult.DoesNotBelong )
+
+
+setCollapse : Bool -> NamedTagColumn -> NamedTagColumn
+setCollapse isCollapsed_ (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | collapsed = isCollapsed_ } tth tl
 
 
 setTagsToHide : List String -> NamedTagColumn -> NamedTagColumn
