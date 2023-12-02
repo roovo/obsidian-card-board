@@ -28,8 +28,8 @@ import Column.Dated as DatedColumn exposing (DatedColumn)
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
-import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import List.Extra as LE
 import Maybe.Extra as ME
 import PlacementResult exposing (PlacementResult)
@@ -78,13 +78,13 @@ fromList columns =
             WithCompleted others completedColumn
 
 
-legacyFromList : ColumnNames -> List Column -> Int -> Columns
-legacyFromList columnNames columns completedCount_ =
+legacyFromList : DefaultColumnNames -> List Column -> Int -> Columns
+legacyFromList defaultColumnNames columns completedCount_ =
     if completedCount_ > 0 then
         WithCompleted
             columns
             (CompletedColumn.init
-                (ColumnNames.nameFor "completed" columnNames)
+                (DefaultColumnNames.nameFor "completed" defaultColumnNames)
                 (List.length columns)
                 completedCount_
             )
@@ -253,11 +253,11 @@ toggleIncludeUntagged columns =
             |> fromList
 
 
-updateColumnNames : ColumnNames -> Columns -> Columns
-updateColumnNames columnNames columns =
+updateColumnNames : DefaultColumnNames -> Columns -> Columns
+updateColumnNames defaultColumnNames columns =
     columns
         |> toList
-        |> List.map (Column.updateColumnNames columnNames)
+        |> List.map (Column.updateColumnNames defaultColumnNames)
         |> fromList
 
 

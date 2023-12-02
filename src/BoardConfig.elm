@@ -37,9 +37,9 @@ module BoardConfig exposing
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
-import ColumnNames exposing (ColumnNames)
 import DateBoardConfig exposing (DateBoardConfig)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import Parser
 import TagBoardConfig exposing (TagBoardConfig)
@@ -272,14 +272,14 @@ collapseColumn columnIndex isCollapsed config =
             TagBoardConfig <| TagBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
 
 
-updateColumnNames : ColumnNames -> BoardConfig -> BoardConfig
-updateColumnNames columnNames boardConfig =
+updateColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig
+updateColumnNames defaultColumnNames boardConfig =
     case boardConfig of
         DateBoardConfig dateBoardConfig ->
-            DateBoardConfig <| DateBoardConfig.updateColumnNames columnNames dateBoardConfig
+            DateBoardConfig <| DateBoardConfig.updateColumnNames defaultColumnNames dateBoardConfig
 
         TagBoardConfig tagBoardConfig ->
-            TagBoardConfig <| TagBoardConfig.updateColumnNames columnNames tagBoardConfig
+            TagBoardConfig <| TagBoardConfig.updateColumnNames defaultColumnNames tagBoardConfig
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

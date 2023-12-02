@@ -1,5 +1,5 @@
-module ColumnNames exposing
-    ( ColumnNames
+module DefaultColumnNames exposing
+    ( DefaultColumnNames
     , decoder
     , default
     , encoder
@@ -15,7 +15,7 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type alias ColumnNames =
+type alias DefaultColumnNames =
     { today : Maybe String
     , tomorrow : Maybe String
     , future : Maybe String
@@ -26,7 +26,7 @@ type alias ColumnNames =
     }
 
 
-default : ColumnNames
+default : DefaultColumnNames
 default =
     { today = Nothing
     , tomorrow = Nothing
@@ -42,29 +42,29 @@ default =
 -- INFO
 
 
-nameFor : String -> ColumnNames -> String
-nameFor column columnNames =
+nameFor : String -> DefaultColumnNames -> String
+nameFor column defaultColumnNames =
     case column of
         "today" ->
-            Maybe.withDefault "Today" columnNames.today
+            Maybe.withDefault "Today" defaultColumnNames.today
 
         "tomorrow" ->
-            Maybe.withDefault "Tomorrow" columnNames.tomorrow
+            Maybe.withDefault "Tomorrow" defaultColumnNames.tomorrow
 
         "future" ->
-            Maybe.withDefault "Future" columnNames.future
+            Maybe.withDefault "Future" defaultColumnNames.future
 
         "undated" ->
-            Maybe.withDefault "Undated" columnNames.undated
+            Maybe.withDefault "Undated" defaultColumnNames.undated
 
         "others" ->
-            Maybe.withDefault "Others" columnNames.others
+            Maybe.withDefault "Others" defaultColumnNames.others
 
         "untagged" ->
-            Maybe.withDefault "Untagged" columnNames.untagged
+            Maybe.withDefault "Untagged" defaultColumnNames.untagged
 
         "completed" ->
-            Maybe.withDefault "Completed" columnNames.completed
+            Maybe.withDefault "Completed" defaultColumnNames.completed
 
         _ ->
             ""
@@ -74,9 +74,9 @@ nameFor column columnNames =
 -- SERIALIZE
 
 
-decoder : TsDecode.Decoder ColumnNames
+decoder : TsDecode.Decoder DefaultColumnNames
 decoder =
-    TsDecode.succeed ColumnNames
+    TsDecode.succeed DefaultColumnNames
         |> TsDecode.andMap (TsDecode.field "today" <| TsDecode.map toMaybe TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "tomorrow" <| TsDecode.map toMaybe TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "future" <| TsDecode.map toMaybe TsDecode.string)
@@ -86,7 +86,7 @@ decoder =
         |> TsDecode.andMap (TsDecode.field "completed" <| TsDecode.map toMaybe TsDecode.string)
 
 
-encoder : TsEncode.Encoder ColumnNames
+encoder : TsEncode.Encoder DefaultColumnNames
 encoder =
     TsEncode.object
         [ TsEncode.required "today" (fromMaybe .today) TsEncode.string
@@ -103,39 +103,39 @@ encoder =
 -- MODIFICATION
 
 
-updateColumnName : String -> String -> ColumnNames -> ColumnNames
-updateColumnName column newName columnNames =
+updateColumnName : String -> String -> DefaultColumnNames -> DefaultColumnNames
+updateColumnName column newName defaultColumnNames =
     case column of
         "today" ->
-            { columnNames | today = toMaybe newName }
+            { defaultColumnNames | today = toMaybe newName }
 
         "tomorrow" ->
-            { columnNames | tomorrow = toMaybe newName }
+            { defaultColumnNames | tomorrow = toMaybe newName }
 
         "future" ->
-            { columnNames | future = toMaybe newName }
+            { defaultColumnNames | future = toMaybe newName }
 
         "undated" ->
-            { columnNames | undated = toMaybe newName }
+            { defaultColumnNames | undated = toMaybe newName }
 
         "others" ->
-            { columnNames | others = toMaybe newName }
+            { defaultColumnNames | others = toMaybe newName }
 
         "untagged" ->
-            { columnNames | untagged = toMaybe newName }
+            { defaultColumnNames | untagged = toMaybe newName }
 
         "completed" ->
-            { columnNames | completed = toMaybe newName }
+            { defaultColumnNames | completed = toMaybe newName }
 
         _ ->
-            columnNames
+            defaultColumnNames
 
 
 
 -- PRIVATE
 
 
-fromMaybe : (ColumnNames -> Maybe String) -> ColumnNames -> String
+fromMaybe : (DefaultColumnNames -> Maybe String) -> DefaultColumnNames -> String
 fromMaybe mapper =
     Maybe.withDefault "" << mapper
 

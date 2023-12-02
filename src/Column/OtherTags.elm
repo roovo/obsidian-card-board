@@ -17,8 +17,8 @@ module Column.OtherTags exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -144,9 +144,9 @@ toggleCollapse (OtherTagsColumn c ots tth tl) =
     OtherTagsColumn { c | collapsed = not c.collapsed } ots tth tl
 
 
-updateName : ColumnNames -> OtherTagsColumn -> OtherTagsColumn
-updateName columnNames (OtherTagsColumn c ots tth tl) =
-    OtherTagsColumn { c | name = ColumnNames.nameFor "others" columnNames } ots tth tl
+updateName : DefaultColumnNames -> OtherTagsColumn -> OtherTagsColumn
+updateName defaultColumnNames (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn { c | name = DefaultColumnNames.nameFor "others" defaultColumnNames } ots tth tl
 
 
 

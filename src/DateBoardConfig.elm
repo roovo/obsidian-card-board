@@ -23,8 +23,8 @@ import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.Dated as DatedColumn exposing (DatedColumn)
-import ColumnNames exposing (ColumnNames)
 import Columns exposing (Columns)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import TsJson.Decode as TsDecode
 import TsJson.Decode.Pipeline as TsDecode
@@ -262,9 +262,9 @@ toggleIncludeUndated dateBoardConfig =
     { dateBoardConfig | columns = Columns.toggleIncludeUndated dateBoardConfig.columns }
 
 
-updateColumnNames : ColumnNames -> DateBoardConfig -> DateBoardConfig
-updateColumnNames columnNames dateBoardConfig =
-    { dateBoardConfig | columns = Columns.updateColumnNames columnNames dateBoardConfig.columns }
+updateColumnNames : DefaultColumnNames -> DateBoardConfig -> DateBoardConfig
+updateColumnNames defaultColumnNames dateBoardConfig =
+    { dateBoardConfig | columns = Columns.updateColumnNames defaultColumnNames dateBoardConfig.columns }
 
 
 updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig

@@ -16,9 +16,9 @@ module Column.Dated exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -145,19 +145,19 @@ toggleCollapse (DatedColumn c tth tl) =
     DatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : ColumnNames -> DatedColumn -> DatedColumn
-updateName columnNames (DatedColumn c tth tl) =
+updateName : DefaultColumnNames -> DatedColumn -> DatedColumn
+updateName defaultColumnNames (DatedColumn c tth tl) =
     let
         newName =
             case c.name of
                 "Today" ->
-                    ColumnNames.nameFor "today" columnNames
+                    DefaultColumnNames.nameFor "today" defaultColumnNames
 
                 "Tomorrow" ->
-                    ColumnNames.nameFor "today" columnNames
+                    DefaultColumnNames.nameFor "today" defaultColumnNames
 
                 "Future" ->
-                    ColumnNames.nameFor "today" columnNames
+                    DefaultColumnNames.nameFor "today" defaultColumnNames
 
                 _ ->
                     c.name

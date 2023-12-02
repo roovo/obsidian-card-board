@@ -17,8 +17,8 @@ module Column.Untagged exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -144,9 +144,9 @@ toggleCollapse (UntaggedColumn c tth tl) =
     UntaggedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : ColumnNames -> UntaggedColumn -> UntaggedColumn
-updateName columnNames (UntaggedColumn c tth tl) =
-    UntaggedColumn { c | name = ColumnNames.nameFor "untagged" columnNames } tth tl
+updateName : DefaultColumnNames -> UntaggedColumn -> UntaggedColumn
+updateName defaultColumnNames (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | name = DefaultColumnNames.nameFor "untagged" defaultColumnNames } tth tl
 
 
 

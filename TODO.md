@@ -1,8 +1,8 @@
-- ColumnNames -> DefaultColumnNames
 - Page.Board.columnCountString
 - why are old config dateboard date colums all being set to the Today global setting (like the tomorrow and future columns)
 
 
+- NamedTag.updateName doesn't do anything!
 - ensure columns on a board have unique names
 - fix tests
 - when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end

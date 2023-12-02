@@ -43,9 +43,9 @@ import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
-import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -498,26 +498,26 @@ toggleCollapse column =
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
 
 
-updateColumnNames : ColumnNames -> Column -> Column
-updateColumnNames columnNames column =
+updateColumnNames : DefaultColumnNames -> Column -> Column
+updateColumnNames defaultColumnNames column =
     case column of
         Completed completedColumn ->
-            Completed (CompletedColumn.updateName columnNames completedColumn)
+            Completed (CompletedColumn.updateName defaultColumnNames completedColumn)
 
         Dated datedColumn ->
-            Dated (DatedColumn.updateName columnNames datedColumn)
+            Dated (DatedColumn.updateName defaultColumnNames datedColumn)
 
         NamedTag namedTagColumn ->
-            NamedTag (NamedTagColumn.updateName columnNames namedTagColumn)
+            NamedTag (NamedTagColumn.updateName defaultColumnNames namedTagColumn)
 
         OtherTags otherTagsColumn ->
-            OtherTags (OtherTagsColumn.updateName columnNames otherTagsColumn)
+            OtherTags (OtherTagsColumn.updateName defaultColumnNames otherTagsColumn)
 
         Undated undatedColumn ->
-            Undated (UndatedColumn.updateName columnNames undatedColumn)
+            Undated (UndatedColumn.updateName defaultColumnNames undatedColumn)
 
         Untagged untaggedColumn ->
-            Untagged (UntaggedColumn.updateName columnNames untaggedColumn)
+            Untagged (UntaggedColumn.updateName defaultColumnNames untaggedColumn)
 
 
 

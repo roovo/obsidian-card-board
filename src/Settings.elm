@@ -19,7 +19,7 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import ColumnNames exposing (ColumnNames)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
@@ -468,6 +468,6 @@ updateColumnNames : Settings -> Settings
 updateColumnNames settings =
     { settings
         | boardConfigs =
-            SafeZipper.map (BoardConfig.updateColumnNames settings.globalSettings.columnNames)
+            SafeZipper.map (BoardConfig.updateColumnNames settings.globalSettings.defaultColumnNames)
                 settings.boardConfigs
     }

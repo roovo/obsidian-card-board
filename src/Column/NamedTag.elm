@@ -17,8 +17,8 @@ module Column.NamedTag exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -144,8 +144,8 @@ toggleCollapse (NamedTagColumn c tth tl) =
     NamedTagColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : ColumnNames -> NamedTagColumn -> NamedTagColumn
-updateName columnNames namedTagColumn =
+updateName : DefaultColumnNames -> NamedTagColumn -> NamedTagColumn
+updateName defaultColumnNames namedTagColumn =
     namedTagColumn
 
 

@@ -27,8 +27,8 @@ module TagBoardConfig exposing
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
-import ColumnNames exposing (ColumnNames)
 import Columns exposing (Columns)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
@@ -354,9 +354,9 @@ toggleIncludeUntagged tagBoardConfig =
     { tagBoardConfig | columns = Columns.toggleIncludeUntagged tagBoardConfig.columns }
 
 
-updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig
-updateColumnNames columnNames tagBoardConfig =
-    { tagBoardConfig | columns = Columns.updateColumnNames columnNames tagBoardConfig.columns }
+updateColumnNames : DefaultColumnNames -> TagBoardConfig -> TagBoardConfig
+updateColumnNames defaultColumnNames tagBoardConfig =
+    { tagBoardConfig | columns = Columns.updateColumnNames defaultColumnNames tagBoardConfig.columns }
 
 
 updateCompletedCount : Int -> TagBoardConfig -> TagBoardConfig

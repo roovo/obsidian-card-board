@@ -18,8 +18,8 @@ module Column.Completed exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -163,9 +163,9 @@ updateCompletedCount newCount (CompletedColumn c tth tl) =
     CompletedColumn { c | limit = newCount } tth tl
 
 
-updateName : ColumnNames -> CompletedColumn -> CompletedColumn
-updateName columnNames (CompletedColumn c tth tl) =
-    CompletedColumn { c | name = ColumnNames.nameFor "completed" columnNames } tth tl
+updateName : DefaultColumnNames -> CompletedColumn -> CompletedColumn
+updateName defaultColumnNames (CompletedColumn c tth tl) =
+    CompletedColumn { c | name = DefaultColumnNames.nameFor "completed" defaultColumnNames } tth tl
 
 
 

@@ -17,8 +17,8 @@ module Column.Undated exposing
     , updateName
     )
 
-import ColumnNames exposing (ColumnNames)
 import DecodeHelpers
+import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -143,9 +143,9 @@ toggleCollapse (UndatedColumn c tth tl) =
     UndatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : ColumnNames -> UndatedColumn -> UndatedColumn
-updateName columnNames (UndatedColumn c tth tl) =
-    UndatedColumn { c | name = ColumnNames.nameFor "undated" columnNames } tth tl
+updateName : DefaultColumnNames -> UndatedColumn -> UndatedColumn
+updateName defaultColumnNames (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = DefaultColumnNames.nameFor "undated" defaultColumnNames } tth tl
 
 
 

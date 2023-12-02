@@ -11,10 +11,10 @@ module Page.Settings exposing
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import Column.NamedTag as NamedTagColumn
-import ColumnNames exposing (ColumnNames)
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DateBoardConfig
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
 import DragAndDrop.DragData as DragData exposing (DragData)
@@ -756,13 +756,13 @@ globalSettingsForm dataviewTaskCompletion gs =
                 [ taskCompletionFormatSelect gs.taskCompletionFormat ]
             ]
          ]
-            ++ columNamesForm gs.columnNames
+            ++ columNamesForm gs.defaultColumnNames
         )
     ]
 
 
-columNamesForm : ColumnNames -> List (Html Msg)
-columNamesForm columnNames =
+columNamesForm : DefaultColumnNames -> List (Html Msg)
+columNamesForm defaultColumnNames =
     [ Html.div [ class "setting-item setting-item-heading" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
@@ -783,7 +783,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Today"
-                , value (Maybe.withDefault "" columnNames.today)
+                , value (Maybe.withDefault "" defaultColumnNames.today)
                 , onInput (EnteredColumName "today")
                 ]
                 []
@@ -800,7 +800,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Tomorrow"
-                , value (Maybe.withDefault "" columnNames.tomorrow)
+                , value (Maybe.withDefault "" defaultColumnNames.tomorrow)
                 , onInput (EnteredColumName "tomorrow")
                 ]
                 []
@@ -817,7 +817,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Future"
-                , value (Maybe.withDefault "" columnNames.future)
+                , value (Maybe.withDefault "" defaultColumnNames.future)
                 , onInput (EnteredColumName "future")
                 ]
                 []
@@ -834,7 +834,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Undated"
-                , value (Maybe.withDefault "" columnNames.undated)
+                , value (Maybe.withDefault "" defaultColumnNames.undated)
                 , onInput (EnteredColumName "undated")
                 ]
                 []
@@ -851,7 +851,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Others"
-                , value (Maybe.withDefault "" columnNames.others)
+                , value (Maybe.withDefault "" defaultColumnNames.others)
                 , onInput (EnteredColumName "others")
                 ]
                 []
@@ -868,7 +868,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Untagged"
-                , value (Maybe.withDefault "" columnNames.untagged)
+                , value (Maybe.withDefault "" defaultColumnNames.untagged)
                 , onInput (EnteredColumName "untagged")
                 ]
                 []
@@ -885,7 +885,7 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Completed"
-                , value (Maybe.withDefault "" columnNames.completed)
+                , value (Maybe.withDefault "" defaultColumnNames.completed)
                 , onInput (EnteredColumName "completed")
                 ]
                 []
