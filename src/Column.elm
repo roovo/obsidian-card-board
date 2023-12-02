@@ -2,6 +2,7 @@ module Column exposing
     ( Column
     , addTaskItem
     , asCompletedColumn
+    , asNamedTagColumn
     , cards
     , completed
     , dated
@@ -142,6 +143,16 @@ asCompletedColumn column =
     case column of
         Completed completedColumn ->
             Just completedColumn
+
+        _ ->
+            Nothing
+
+
+asNamedTagColumn : Column -> Maybe NamedTagColumn
+asNamedTagColumn column =
+    case column of
+        NamedTag namedTagColumn ->
+            Just namedTagColumn
 
         _ ->
             Nothing

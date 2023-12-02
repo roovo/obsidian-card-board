@@ -10,7 +10,9 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
+import Column.NamedTag as NamedTagColumn
 import ColumnNames exposing (ColumnNames)
+import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DateBoardConfig
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
@@ -1133,10 +1135,10 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagText : String
                 tagText =
-                    -- config.columns
-                    --     |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
-                    --     |> String.join "\n"
-                    ""
+                    config.columns
+                        |> Columns.namedTagColumns
+                        |> List.map NamedTagColumn.asInputString
+                        |> String.join "\n"
 
                 untaggedWarningClass : String
                 untaggedWarningClass =

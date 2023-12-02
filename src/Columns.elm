@@ -9,6 +9,7 @@ module Columns exposing
     , includeUndated
     , legacyFromList
     , namedTagColumnTags
+    , namedTagColumns
     , toList
     , updateColumnNames
     )
@@ -16,6 +17,7 @@ module Columns exposing
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.Dated as DatedColumn exposing (DatedColumn)
+import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
@@ -116,6 +118,14 @@ includeUndated columns =
     columns
         |> toList
         |> List.any Column.isEnabledUndated
+
+
+namedTagColumns : Columns -> List NamedTagColumn
+namedTagColumns columns =
+    columns
+        |> toList
+        |> List.map Column.asNamedTagColumn
+        |> ME.values
 
 
 namedTagColumnTags : Columns -> List String

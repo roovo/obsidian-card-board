@@ -1,7 +1,6 @@
 - BoardConfig.updateTags
 - BoardConfig.ToggleIncludeUntagged
 - BoardConfig.ToggleIncludeOthers
-- Page.Settings.boardSettingsForm.tagText
 - Page.Settings.boardSettingsForm.includeUntaggedStyle
 - Page.Settings.boardSettingsForm.includeOthersStyle
 - Page.Settings.boardSettingsForm. #1324

@@ -1,6 +1,7 @@
 module Column.NamedTag exposing
     ( NamedTagColumn
     , addTaskItem
+    , asInputString
     , decoder
     , encoder
     , init
@@ -71,6 +72,11 @@ encoder =
 -- INFO
 
 
+asInputString : NamedTagColumn -> String
+asInputString (NamedTagColumn c _ _) =
+    "#" ++ c.tag ++ " " ++ c.name
+
+
 isCollapsed : NamedTagColumn -> Bool
 isCollapsed (NamedTagColumn c _ _) =
     c.collapsed
@@ -86,17 +92,17 @@ tag (NamedTagColumn c _ _) =
     c.tag
 
 
+tagsToHide : NamedTagColumn -> List String
+tagsToHide (NamedTagColumn _ tth _) =
+    tth
+
+
 toList : NamedTagColumn -> List TaskItem
 toList (NamedTagColumn _ _ tl) =
     tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-
-
-tagsToHide : NamedTagColumn -> List String
-tagsToHide (NamedTagColumn _ tth _) =
-    tth
 
 
 
