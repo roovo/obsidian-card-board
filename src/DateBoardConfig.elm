@@ -13,9 +13,9 @@ module DateBoardConfig exposing
     , default
     , displayUndated
     , encoder
+    , setNamesToDefault
     , tagsToHide
     , toggleIncludeUndated
-    , updateColumnNames
     , updateCompletedCount
     )
 
@@ -262,9 +262,9 @@ toggleIncludeUndated dateBoardConfig =
     { dateBoardConfig | columns = Columns.toggleIncludeUndated dateBoardConfig.columns }
 
 
-updateColumnNames : DefaultColumnNames -> DateBoardConfig -> DateBoardConfig
-updateColumnNames defaultColumnNames dateBoardConfig =
-    { dateBoardConfig | columns = Columns.updateColumnNames defaultColumnNames dateBoardConfig.columns }
+setNamesToDefault : DefaultColumnNames -> DateBoardConfig -> DateBoardConfig
+setNamesToDefault defaultColumnNames dateBoardConfig =
+    { dateBoardConfig | columns = Columns.setNamesToDefault defaultColumnNames dateBoardConfig.columns }
 
 
 updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig

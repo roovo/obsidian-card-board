@@ -16,10 +16,10 @@ module TagBoardConfig exposing
     , displayOthers
     , displayUntagged
     , encoder
+    , setNamesToDefault
     , tagsToHide
     , toggleIncludeOthers
     , toggleIncludeUntagged
-    , updateColumnNames
     , updateCompletedCount
     , updateTags
     )
@@ -354,9 +354,9 @@ toggleIncludeUntagged tagBoardConfig =
     { tagBoardConfig | columns = Columns.toggleIncludeUntagged tagBoardConfig.columns }
 
 
-updateColumnNames : DefaultColumnNames -> TagBoardConfig -> TagBoardConfig
-updateColumnNames defaultColumnNames tagBoardConfig =
-    { tagBoardConfig | columns = Columns.updateColumnNames defaultColumnNames tagBoardConfig.columns }
+setNamesToDefault : DefaultColumnNames -> TagBoardConfig -> TagBoardConfig
+setNamesToDefault defaultColumnNames tagBoardConfig =
+    { tagBoardConfig | columns = Columns.setNamesToDefault defaultColumnNames tagBoardConfig.columns }
 
 
 updateCompletedCount : Int -> TagBoardConfig -> TagBoardConfig

@@ -14,11 +14,11 @@ module Columns exposing
     , namedTagColumnTags
     , namedTagColumns
     , replaceNamedTagColumns
+    , setNamesToDefault
     , toList
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
-    , updateColumnNames
     , updateCompletedCount
     )
 
@@ -190,6 +190,14 @@ replaceNamedTagColumns newColumns existingColumns =
     fromList (withoutNamed ++ newColumns)
 
 
+setNamesToDefault : DefaultColumnNames -> Columns -> Columns
+setNamesToDefault defaultColumnNames columns =
+    columns
+        |> toList
+        |> List.map (Column.setNamesToDefault defaultColumnNames)
+        |> fromList
+
+
 toggleIncludeOthers : Columns -> Columns
 toggleIncludeOthers columns =
     if includesEnabledOthers columns then
@@ -251,14 +259,6 @@ toggleIncludeUntagged columns =
             |> toList
             |> List.append [ Column.untagged "Untagged" ]
             |> fromList
-
-
-updateColumnNames : DefaultColumnNames -> Columns -> Columns
-updateColumnNames defaultColumnNames columns =
-    columns
-        |> toList
-        |> List.map (Column.updateColumnNames defaultColumnNames)
-        |> fromList
 
 
 updateCompletedCount : Int -> Columns -> Columns

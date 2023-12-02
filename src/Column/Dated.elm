@@ -9,11 +9,11 @@ module Column.Dated exposing
     , isEnabled
     , name
     , setCollapse
+    , setNameToDefault
     , setTagsToHide
     , tagsToHide
     , toList
     , toggleCollapse
-    , updateName
     )
 
 import Date exposing (Date)
@@ -145,8 +145,8 @@ toggleCollapse (DatedColumn c tth tl) =
     DatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : DefaultColumnNames -> DatedColumn -> DatedColumn
-updateName defaultColumnNames (DatedColumn c tth tl) =
+setNameToDefault : DefaultColumnNames -> DatedColumn -> DatedColumn
+setNameToDefault defaultColumnNames (DatedColumn c tth tl) =
     let
         newName =
             case c.name of

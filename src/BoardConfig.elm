@@ -20,6 +20,7 @@ module BoardConfig exposing
     , isForDateBoard
     , isForTagBoard
     , mapFilters
+    , setNamesToDefault
     , title
     , toggleIncludeOthers
     , toggleIncludeUndated
@@ -28,7 +29,6 @@ module BoardConfig exposing
     , toggleShowFilteredTags
     , toggleTagFilterScope
     , updateBoardType
-    , updateColumnNames
     , updateCompletedCount
     , updateFilterPolarity
     , updateFilters
@@ -272,14 +272,14 @@ collapseColumn columnIndex isCollapsed config =
             TagBoardConfig <| TagBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
 
 
-updateColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig
-updateColumnNames defaultColumnNames boardConfig =
+setNamesToDefault : DefaultColumnNames -> BoardConfig -> BoardConfig
+setNamesToDefault defaultColumnNames boardConfig =
     case boardConfig of
         DateBoardConfig dateBoardConfig ->
-            DateBoardConfig <| DateBoardConfig.updateColumnNames defaultColumnNames dateBoardConfig
+            DateBoardConfig <| DateBoardConfig.setNamesToDefault defaultColumnNames dateBoardConfig
 
         TagBoardConfig tagBoardConfig ->
-            TagBoardConfig <| TagBoardConfig.updateColumnNames defaultColumnNames tagBoardConfig
+            TagBoardConfig <| TagBoardConfig.setNamesToDefault defaultColumnNames tagBoardConfig
 
 
 toggleIncludeOthers : BoardConfig -> BoardConfig

@@ -10,11 +10,11 @@ module Column.Untagged exposing
     , isEnabled
     , name
     , setCollapse
+    , setNameToDefault
     , setTagsToHide
     , tagsToHide
     , toList
     , toggleCollapse
-    , updateName
     )
 
 import DecodeHelpers
@@ -144,8 +144,8 @@ toggleCollapse (UntaggedColumn c tth tl) =
     UntaggedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-updateName : DefaultColumnNames -> UntaggedColumn -> UntaggedColumn
-updateName defaultColumnNames (UntaggedColumn c tth tl) =
+setNameToDefault : DefaultColumnNames -> UntaggedColumn -> UntaggedColumn
+setNameToDefault defaultColumnNames (UntaggedColumn c tth tl) =
     UntaggedColumn { c | name = DefaultColumnNames.nameFor "untagged" defaultColumnNames } tth tl
 
 

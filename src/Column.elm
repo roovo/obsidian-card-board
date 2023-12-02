@@ -29,12 +29,12 @@ module Column exposing
     , namedTag
     , otherTags
     , setCollapse
+    , setNamesToDefault
     , setTagsToHide
     , tag
     , toggleCollapse
     , undated
     , untagged
-    , updateColumnNames
     )
 
 import Card exposing (Card)
@@ -459,6 +459,28 @@ setCollapse isCollapsed_ column =
             Untagged (UntaggedColumn.setCollapse isCollapsed_ untaggedColumn)
 
 
+setNamesToDefault : DefaultColumnNames -> Column -> Column
+setNamesToDefault defaultColumnNames column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.setNameToDefault defaultColumnNames completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.setNameToDefault defaultColumnNames datedColumn)
+
+        NamedTag namedTagColumn ->
+            column
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.setNameToDefault defaultColumnNames otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.setNameToDefault defaultColumnNames undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.setNameToDefault defaultColumnNames untaggedColumn)
+
+
 setTagsToHide : List String -> Column -> Column
 setTagsToHide tags column =
     case column of
@@ -502,28 +524,6 @@ toggleCollapse column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
-
-
-updateColumnNames : DefaultColumnNames -> Column -> Column
-updateColumnNames defaultColumnNames column =
-    case column of
-        Completed completedColumn ->
-            Completed (CompletedColumn.updateName defaultColumnNames completedColumn)
-
-        Dated datedColumn ->
-            Dated (DatedColumn.updateName defaultColumnNames datedColumn)
-
-        NamedTag namedTagColumn ->
-            column
-
-        OtherTags otherTagsColumn ->
-            OtherTags (OtherTagsColumn.updateName defaultColumnNames otherTagsColumn)
-
-        Undated undatedColumn ->
-            Undated (UndatedColumn.updateName defaultColumnNames undatedColumn)
-
-        Untagged untaggedColumn ->
-            Untagged (UntaggedColumn.updateName defaultColumnNames untaggedColumn)
 
 
 

@@ -10,11 +10,11 @@ module Column.OtherTags exposing
     , isEnabled
     , name
     , setCollapse
+    , setNameToDefault
     , setTagsToHide
     , tagsToHide
     , toList
     , toggleCollapse
-    , updateName
     )
 
 import DecodeHelpers
@@ -144,8 +144,8 @@ toggleCollapse (OtherTagsColumn c ots tth tl) =
     OtherTagsColumn { c | collapsed = not c.collapsed } ots tth tl
 
 
-updateName : DefaultColumnNames -> OtherTagsColumn -> OtherTagsColumn
-updateName defaultColumnNames (OtherTagsColumn c ots tth tl) =
+setNameToDefault : DefaultColumnNames -> OtherTagsColumn -> OtherTagsColumn
+setNameToDefault defaultColumnNames (OtherTagsColumn c ots tth tl) =
     OtherTagsColumn { c | name = DefaultColumnNames.nameFor "others" defaultColumnNames } ots tth tl
 
 

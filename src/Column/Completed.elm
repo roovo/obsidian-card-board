@@ -10,12 +10,12 @@ module Column.Completed exposing
     , limit
     , name
     , setCollapse
+    , setNameToDefault
     , setTagsToHide
     , tagsToHide
     , toList
     , toggleCollapse
     , updateCompletedCount
-    , updateName
     )
 
 import DecodeHelpers
@@ -149,8 +149,8 @@ setCollapse isCollapsed_ (CompletedColumn c tth tl) =
 
 
 setTagsToHide : List String -> CompletedColumn -> CompletedColumn
-setTagsToHide tags completedColumn =
-    completedColumn
+setTagsToHide tags (CompletedColumn c tth tl) =
+    CompletedColumn c tags tl
 
 
 toggleCollapse : CompletedColumn -> CompletedColumn
@@ -163,8 +163,8 @@ updateCompletedCount newCount (CompletedColumn c tth tl) =
     CompletedColumn { c | limit = newCount } tth tl
 
 
-updateName : DefaultColumnNames -> CompletedColumn -> CompletedColumn
-updateName defaultColumnNames (CompletedColumn c tth tl) =
+setNameToDefault : DefaultColumnNames -> CompletedColumn -> CompletedColumn
+setNameToDefault defaultColumnNames (CompletedColumn c tth tl) =
     CompletedColumn { c | name = DefaultColumnNames.nameFor "completed" defaultColumnNames } tth tl
 
 
