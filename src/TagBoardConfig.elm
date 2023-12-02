@@ -14,6 +14,7 @@ module TagBoardConfig exposing
     , encoder
     , tagsToHide
     , updateColumnNames
+    , updateTags
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -325,6 +326,26 @@ tagsToHide tagBoardConfig =
 updateColumnNames : ColumnNames -> TagBoardConfig -> TagBoardConfig
 updateColumnNames columnNames tagBoardConfig =
     { tagBoardConfig | columns = Columns.updateColumnNames columnNames tagBoardConfig.columns }
+
+
+updateTags : String -> TagBoardConfig -> TagBoardConfig
+updateTags tags tagBoardConfig =
+    let
+        columnsConfig : Result (List P.DeadEnd) (List LocalColumnConfig)
+        columnsConfig =
+            P.run columnConfigsParser tags
+    in
+    case columnsConfig of
+        Ok localColumnConfigs ->
+            let
+                newNamedTagColumns =
+                    localColumnConfigs
+                        |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
+            in
+            { tagBoardConfig | columns = Columns.replaceNamedTagColumns newNamedTagColumns tagBoardConfig.columns }
+
+        _ ->
+            tagBoardConfig
 
 
 

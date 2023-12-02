@@ -1,4 +1,3 @@
-- BoardConfig.updateTags
 - BoardConfig.ToggleIncludeUntagged
 - BoardConfig.ToggleIncludeOthers
 - Page.Settings.boardSettingsForm.includeUntaggedStyle
@@ -22,6 +21,7 @@
 - ensure columns on a board have unique names
 - does board need to have ColumnNames any more?
 - fix tests
+- when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
 - ColumnConfig - do I need all the constructors?

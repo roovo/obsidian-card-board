@@ -11,6 +11,7 @@ module Column exposing
     , isCollapsed
     , isCompletedColumn
     , isEnabledUndated
+    , isNamedTagColumn
     , name
     , namedTag
     , otherTags
@@ -206,6 +207,16 @@ isEnabledUndated column =
     case column of
         Undated undatedColumn ->
             UndatedColumn.isEnabled undatedColumn
+
+        _ ->
+            False
+
+
+isNamedTagColumn : Column -> Bool
+isNamedTagColumn column =
+    case column of
+        NamedTag _ ->
+            True
 
         _ ->
             False

@@ -10,6 +10,7 @@ module Columns exposing
     , legacyFromList
     , namedTagColumnTags
     , namedTagColumns
+    , replaceNamedTagColumns
     , toList
     , updateColumnNames
     )
@@ -145,6 +146,18 @@ addTaskList today tagsToHide columns taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columns
         |> setTagsToHide tagsToHide
+
+
+replaceNamedTagColumns : List Column -> Columns -> Columns
+replaceNamedTagColumns newColumns existingColumns =
+    let
+        withoutNamed : List Column
+        withoutNamed =
+            existingColumns
+                |> toList
+                |> LE.filterNot Column.isNamedTagColumn
+    in
+    fromList (withoutNamed ++ newColumns)
 
 
 updateColumnNames : ColumnNames -> Columns -> Columns

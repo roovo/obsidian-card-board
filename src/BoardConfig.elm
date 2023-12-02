@@ -394,21 +394,12 @@ updateFilters filters_ config =
 
 updateTags : String -> BoardConfig -> BoardConfig
 updateTags tags config =
-    -- case config of
-    --     DateBoardConfig _ ->
-    --         config
-    --     TagBoardConfig boardConfig ->
-    --         let
-    --             columnsConfig : Result (List Parser.DeadEnd) (List TagBoardConfig.LocalColumnConfig)
-    --             columnsConfig =
-    --                 Parser.run TagBoardConfig.columnConfigsParser tags
-    --         in
-    --         case columnsConfig of
-    --             Ok parsedConfig ->
-    --                 TagBoardConfig { boardConfig | columns = parsedConfig }
-    --             _ ->
-    --                 config
-    config
+    case config of
+        DateBoardConfig _ ->
+            config
+
+        TagBoardConfig boardConfig ->
+            TagBoardConfig <| TagBoardConfig.updateTags tags boardConfig
 
 
 updateTitle : String -> BoardConfig -> BoardConfig
