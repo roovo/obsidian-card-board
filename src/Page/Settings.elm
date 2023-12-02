@@ -901,7 +901,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
             let
                 includeUndatedStyle : String
                 includeUndatedStyle =
-                    if DateBoardConfig.includeUndated config then
+                    if DateBoardConfig.displayUndated config then
                         " is-enabled"
 
                     else

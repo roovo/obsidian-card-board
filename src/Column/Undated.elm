@@ -2,6 +2,8 @@ module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
     , decoder
+    , disable
+    , enable
     , encoder
     , init
     , isCollapsed
@@ -113,6 +115,16 @@ addTaskItem taskItem ((UndatedColumn c tth tl) as undatedColumn) =
 
     else
         ( undatedColumn, PlacementResult.DoesNotBelong )
+
+
+disable : UndatedColumn -> UndatedColumn
+disable (UndatedColumn c tth tl) =
+    UndatedColumn { c | enabled = False } tth tl
+
+
+enable : UndatedColumn -> UndatedColumn
+enable (UndatedColumn c tth tl) =
+    UndatedColumn { c | enabled = True } tth tl
 
 
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn

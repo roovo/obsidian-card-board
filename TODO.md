@@ -1,10 +1,9 @@
-- BoardConfig.ToggleIncludeUndated
+- BoardConfig.updateCompletedCount
 - Page.Settings.boardSettingsForm. #1324
 
 - why are old config dateboard date colums all being set to the Today global setting (like the tomorrow and future columns)
 
 - don't need to deocode to columns in old decoders
-- BoardConfig.updateCompletedCount
 - BoardConfig.collapsedColumns
 - BoardConfig.collapseColumn
 

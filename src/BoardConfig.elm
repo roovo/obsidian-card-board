@@ -296,11 +296,12 @@ toggleIncludeOthers config =
 
 toggleIncludeUndated : BoardConfig -> BoardConfig
 toggleIncludeUndated config =
-    -- case config of
-    --     DateBoardConfig boardConfig ->
-    --         DateBoardConfig { boardConfig | includeUndated = not boardConfig.includeUndated }
-    --     TagBoardConfig _ ->
-    config
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <| DateBoardConfig.toggleIncludeUndated boardConfig
+
+        TagBoardConfig _ ->
+            config
 
 
 toggleIncludeUntagged : BoardConfig -> BoardConfig

@@ -10,9 +10,10 @@ module DateBoardConfig exposing
     , decoder_v_0_5_0
     , decoder_v_0_9_0
     , default
+    , displayUndated
     , encoder
-    , includeUndated
     , tagsToHide
+    , toggleIncludeUndated
     , updateColumnNames
     )
 
@@ -234,8 +235,8 @@ completedCount dateBoardConfig =
     Columns.completedCount dateBoardConfig.columns
 
 
-includeUndated : DateBoardConfig -> Bool
-includeUndated dateBoardConfig =
+displayUndated : DateBoardConfig -> Bool
+displayUndated dateBoardConfig =
     Columns.includesUndated dateBoardConfig.columns
 
 
@@ -253,6 +254,11 @@ tagsToHide dateBoardConfig =
 
 
 -- MODIFICATION
+
+
+toggleIncludeUndated : DateBoardConfig -> DateBoardConfig
+toggleIncludeUndated dateBoardConfig =
+    { dateBoardConfig | columns = Columns.toggleIncludeUndated dateBoardConfig.columns }
 
 
 updateColumnNames : ColumnNames -> DateBoardConfig -> DateBoardConfig

@@ -15,6 +15,7 @@ module Columns exposing
     , replaceNamedTagColumns
     , toList
     , toggleIncludeOthers
+    , toggleIncludeUndated
     , toggleIncludeUntagged
     , updateColumnNames
     )
@@ -200,6 +201,27 @@ toggleIncludeOthers columns =
             |> fromList
 
 
+toggleIncludeUndated : Columns -> Columns
+toggleIncludeUndated columns =
+    if includesEnabledUndated columns then
+        columns
+            |> toList
+            |> List.map Column.disableUndated
+            |> fromList
+
+    else if includesDisabledUndated columns then
+        columns
+            |> toList
+            |> List.map Column.enableUndated
+            |> fromList
+
+    else
+        columns
+            |> toList
+            |> List.append [ Column.undated "Undated" ]
+            |> fromList
+
+
 toggleIncludeUntagged : Columns -> Columns
 toggleIncludeUntagged columns =
     if includesEnabledUntagged columns then
@@ -286,6 +308,13 @@ includesEnabledOthers columns =
         |> List.any Column.isEnabledOthers
 
 
+includesEnabledUndated : Columns -> Bool
+includesEnabledUndated columns =
+    columns
+        |> toList
+        |> List.any Column.isEnabledUndated
+
+
 includesEnabledUntagged : Columns -> Bool
 includesEnabledUntagged columns =
     columns
@@ -298,6 +327,13 @@ includesDisabledOthers columns =
     columns
         |> toList
         |> List.any Column.isDisabledOthers
+
+
+includesDisabledUndated : Columns -> Bool
+includesDisabledUndated columns =
+    columns
+        |> toList
+        |> List.any Column.isDisabledUndated
 
 
 includesDisabledUntagged : Columns -> Bool

@@ -8,13 +8,16 @@ module Column exposing
     , dated
     , decoder
     , disableOthers
+    , disableUndated
     , disableUntagged
     , enableOthers
+    , enableUndated
     , enableUntagged
     , encoder
     , isCollapsed
     , isCompletedColumn
     , isDisabledOthers
+    , isDisabledUndated
     , isDisabledUntagged
     , isEnabled
     , isEnabledOthers
@@ -139,7 +142,7 @@ encoder =
         |> TsEncode.variantTagged "dated" DatedColumn.encoder
         |> TsEncode.variantTagged "namedTag" NamedTagColumn.encoder
         |> TsEncode.variantTagged "otherTags" OtherTagsColumn.encoder
-        |> TsEncode.variantTagged "undatged" UndatedColumn.encoder
+        |> TsEncode.variantTagged "undated" UndatedColumn.encoder
         |> TsEncode.variantTagged "untagged" UntaggedColumn.encoder
         |> TsEncode.buildUnion
 
@@ -216,6 +219,16 @@ isDisabledOthers column =
     case column of
         OtherTags otherTagsColumn ->
             not <| OtherTagsColumn.isEnabled otherTagsColumn
+
+        _ ->
+            False
+
+
+isDisabledUndated : Column -> Bool
+isDisabledUndated column =
+    case column of
+        Undated undatedColumn ->
+            not <| UndatedColumn.isEnabled undatedColumn
 
         _ ->
             False
@@ -367,6 +380,16 @@ disableOthers column =
             column
 
 
+disableUndated : Column -> Column
+disableUndated column =
+    case column of
+        Undated undatedColumn ->
+            Undated <| UndatedColumn.disable undatedColumn
+
+        _ ->
+            column
+
+
 disableUntagged : Column -> Column
 disableUntagged column =
     case column of
@@ -382,6 +405,16 @@ enableOthers column =
     case column of
         OtherTags otherTagsColumn ->
             OtherTags <| OtherTagsColumn.enable otherTagsColumn
+
+        _ ->
+            column
+
+
+enableUndated : Column -> Column
+enableUndated column =
+    case column of
+        Undated undatedColumn ->
+            Undated <| UndatedColumn.enable undatedColumn
 
         _ ->
             column
