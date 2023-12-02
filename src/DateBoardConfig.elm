@@ -98,7 +98,6 @@ decoder_v_0_9_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_9_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "collapsedColumns" (TsDecode.list TsDecode.int)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
@@ -112,7 +111,6 @@ decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_5_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
@@ -126,7 +124,6 @@ decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_4_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
@@ -140,7 +137,6 @@ decoder_v_0_3_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_3_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
@@ -154,7 +150,6 @@ decoder_v_0_2_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_2_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.hardcoded Filter.Allow
@@ -168,7 +163,6 @@ decoder_v_0_1_0 : TsDecode.Decoder DateBoardConfig
 decoder_v_0_1_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.hardcoded []
         |> TsDecode.hardcoded Filter.Allow
@@ -178,8 +172,8 @@ decoder_v_0_1_0 =
         |> TsDecode.required "title" TsDecode.string
 
 
-buildfromPreV11 : List Int -> Columns -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> DateBoardConfig
-buildfromPreV11 collapsedColumns _ completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
+buildfromPreV11 : List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> DateBoardConfig
+buildfromPreV11 collapsedColumns completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
     let
         columns =
             undatedColumn

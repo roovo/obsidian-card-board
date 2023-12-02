@@ -119,7 +119,6 @@ decoder_v_0_9_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_9_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.required "collapsedColumns" (TsDecode.list TsDecode.int)
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
@@ -136,7 +135,6 @@ decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_5_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
@@ -153,7 +151,6 @@ decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_4_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
@@ -170,7 +167,6 @@ decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_3_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
@@ -187,7 +183,6 @@ decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_2_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
@@ -204,7 +199,6 @@ decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_1_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
-        |> TsDecode.hardcoded Columns.empty
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
         |> TsDecode.hardcoded []
@@ -224,8 +218,8 @@ columnConfigDecoder =
         |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
 
 
-buildfromPreV11 : List LocalColumnConfig -> Columns -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> TagBoardConfig
-buildfromPreV11 localColumnConfigs _ collapsedColumns completedCount_ filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
+buildfromPreV11 : List LocalColumnConfig -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> TagBoardConfig
+buildfromPreV11 localColumnConfigs collapsedColumns completedCount_ filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
     let
         columns =
             untaggedColumn
