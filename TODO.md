@@ -1,9 +1,10 @@
-- match up decoder versions - makes tracking changes simpler
-
-- ensure columns on a board have unique names
-
 - allow custom date boards to be specified
 - update input for tag boards to be similar as that for dateboards
+- no more need for separate date and tag board types
+    - they are just boards
+    - allow basic tag and date boards to be created tho
+- ensure columns on a board have unique names
+    - when entering and when reading from config
 
 - npm run generate
 - ts types for settings

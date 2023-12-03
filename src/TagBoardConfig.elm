@@ -11,6 +11,9 @@ module TagBoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_6_0
+    , decoder_v_0_7_0
+    , decoder_v_0_8_0
     , decoder_v_0_9_0
     , default
     , displayOthers
@@ -137,8 +140,8 @@ decoder_v_0_9_0 =
         |> TsDecode.map configureOtherTagsColumn
 
 
-decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
-decoder_v_0_5_0 =
+decoder_v_0_8_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_8_0 =
     (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
@@ -153,6 +156,21 @@ decoder_v_0_5_0 =
         |> TsDecode.required "title" TsDecode.string
     )
         |> TsDecode.map configureOtherTagsColumn
+
+
+decoder_v_0_7_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_7_0 =
+    decoder_v_0_6_0
+
+
+decoder_v_0_6_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_6_0 =
+    decoder_v_0_5_0
+
+
+decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
+decoder_v_0_5_0 =
+    decoder_v_0_4_0
 
 
 decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig

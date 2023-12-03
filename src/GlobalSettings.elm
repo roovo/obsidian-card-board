@@ -11,6 +11,7 @@ module GlobalSettings exposing
     , v_0_5_0_decoder
     , v_0_6_0_decoder
     , v_0_7_0_decoder
+    , v_0_8_0_decoder
     , v_0_9_0_decoder
     )
 
@@ -96,6 +97,11 @@ v_0_10_0_decoder =
 
 v_0_9_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_9_0_decoder =
+    v_0_8_0_decoder
+
+
+v_0_8_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_8_0_decoder =
     v_0_7_0_decoder
 
 

@@ -393,9 +393,9 @@ v_0_8_0_Decoder =
     (TsDecode.succeed Settings
         |> TsDecode.andMap
             (TsDecode.field "boardConfigs"
-                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_6_0))
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_8_0))
             )
-        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
+        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_8_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
         |> TsDecode.map setNamesToDefault
@@ -406,7 +406,7 @@ v_0_7_0_Decoder =
     (TsDecode.succeed Settings
         |> TsDecode.andMap
             (TsDecode.field "boardConfigs"
-                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0))
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_7_0))
             )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
@@ -419,7 +419,7 @@ v_0_6_0_Decoder =
     (TsDecode.succeed Settings
         |> TsDecode.andMap
             (TsDecode.field "boardConfigs"
-                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0))
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_6_0))
             )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_6_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)

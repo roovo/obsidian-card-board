@@ -9,6 +9,9 @@ module DateBoardConfig exposing
     , decoder_v_0_3_0
     , decoder_v_0_4_0
     , decoder_v_0_5_0
+    , decoder_v_0_6_0
+    , decoder_v_0_7_0
+    , decoder_v_0_8_0
     , decoder_v_0_9_0
     , default
     , displayUndated
@@ -108,8 +111,8 @@ decoder_v_0_9_0 =
         |> TsDecode.required "title" TsDecode.string
 
 
-decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
-decoder_v_0_5_0 =
+decoder_v_0_8_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_8_0 =
     TsDecode.succeed buildfromPreV11
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -119,6 +122,21 @@ decoder_v_0_5_0 =
         |> TsDecode.required "includeUndated" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
         |> TsDecode.required "title" TsDecode.string
+
+
+decoder_v_0_7_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_7_0 =
+    decoder_v_0_6_0
+
+
+decoder_v_0_6_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_6_0 =
+    decoder_v_0_5_0
+
+
+decoder_v_0_5_0 : TsDecode.Decoder DateBoardConfig
+decoder_v_0_5_0 =
+    decoder_v_0_4_0
 
 
 decoder_v_0_4_0 : TsDecode.Decoder DateBoardConfig
