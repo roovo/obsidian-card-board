@@ -108,7 +108,7 @@ tagsToHide (UntaggedColumn _ tth _) =
 
 addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, PlacementResult )
 addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
-    if not <| TaskItem.isDated taskItem then
+    if isEnabled untaggedColumn && (not <| TaskItem.hasTags taskItem) then
         if TaskItem.isCompleted taskItem then
             ( untaggedColumn, PlacementResult.CompletedInThisColumn )
 

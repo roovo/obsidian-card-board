@@ -2,7 +2,7 @@
     - check that columns that are not enabled do not have cards added to them
         - others
         - undated - checked
-        - untagged
+        - untagged - checked
 - ensure columns on a board have unique names
 - when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
 - when toggling standard boards, their names are hardcoded and don't use those in global settings
