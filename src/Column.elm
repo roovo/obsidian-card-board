@@ -17,9 +17,6 @@ module Column exposing
     , encoder
     , isCollapsed
     , isCompletedColumn
-    , isDisabledOthers
-    , isDisabledUndated
-    , isDisabledUntagged
     , isEnabled
     , isEnabledOthers
     , isEnabledUndated
@@ -27,11 +24,11 @@ module Column exposing
     , isNamedTagColumn
     , name
     , namedTag
+    , namedTagTag
     , otherTags
     , setCollapse
-    , setNamesToDefault
+    , setNameToDefault
     , setTagsToHide
-    , tag
     , toggleCollapse
     , undated
     , untagged
@@ -221,36 +218,6 @@ isCompletedColumn column =
             False
 
 
-isDisabledOthers : Column -> Bool
-isDisabledOthers column =
-    case column of
-        OtherTags otherTagsColumn ->
-            not <| OtherTagsColumn.isEnabled otherTagsColumn
-
-        _ ->
-            False
-
-
-isDisabledUndated : Column -> Bool
-isDisabledUndated column =
-    case column of
-        Undated undatedColumn ->
-            not <| UndatedColumn.isEnabled undatedColumn
-
-        _ ->
-            False
-
-
-isDisabledUntagged : Column -> Bool
-isDisabledUntagged column =
-    case column of
-        Untagged untaggedColumn ->
-            not <| UntaggedColumn.isEnabled untaggedColumn
-
-        _ ->
-            False
-
-
 isEnabled : Column -> Bool
 isEnabled column =
     case column of
@@ -335,8 +302,8 @@ name column =
             UntaggedColumn.name untaggedColumn
 
 
-tag : Column -> Maybe String
-tag column =
+namedTagTag : Column -> Maybe String
+namedTagTag column =
     case column of
         NamedTag namedTagColumn ->
             Just (NamedTagColumn.tag namedTagColumn)
@@ -353,7 +320,6 @@ addTaskItem : Date -> TaskItem -> Column -> ( Column, PlacementResult )
 addTaskItem today taskItem column =
     case column of
         Completed completedColumn ->
-            -- TODO: This shouldn't be here !! just hacking for now
             ( column, PlacementResult.DoesNotBelong )
 
         Dated datedColumn ->
@@ -459,8 +425,8 @@ setCollapse isCollapsed_ column =
             Untagged (UntaggedColumn.setCollapse isCollapsed_ untaggedColumn)
 
 
-setNamesToDefault : DefaultColumnNames -> Column -> Column
-setNamesToDefault defaultColumnNames column =
+setNameToDefault : DefaultColumnNames -> Column -> Column
+setNameToDefault defaultColumnNames column =
     case column of
         Completed completedColumn ->
             Completed (CompletedColumn.setNameToDefault defaultColumnNames completedColumn)
@@ -485,7 +451,6 @@ setTagsToHide : List String -> Column -> Column
 setTagsToHide tags column =
     case column of
         Completed completedColumn ->
-            -- TODO: This shouldn't be here !! just hacking for now
             Completed (CompletedColumn.setTagsToHide tags completedColumn)
 
         Dated datedColumn ->

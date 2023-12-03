@@ -1,12 +1,14 @@
 - fix tests
 - ensure columns on a board have unique names
-- when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
-- when toggling standard boards, their names are hardcoded and don't use those in global settings
-- remove DateBoardConfig.populateColumms
-- remove ColumnConfigs.fromList
-- ColumnConfig - do I need all the constructors?
+- allow custom date boards to be specified
+- update input for tag boards to be similar as that for dateboards
 - npm run generate
 - ts types for settings
+
+- add ColumnsTests after I have changed the way boards are set up on the settings page
+    - as this will change what functions are in there
+    - when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
+    - when toggling standard boards, their names are hardcoded and don't use those in global settings
 
 - only re-allocate cards to boards when something has changed
 

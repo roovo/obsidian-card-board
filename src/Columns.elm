@@ -155,7 +155,7 @@ namedTagColumnTags : Columns -> List String
 namedTagColumnTags columns =
     columns
         |> toList
-        |> List.map Column.tag
+        |> List.map Column.namedTagTag
         |> ME.values
 
 
@@ -194,7 +194,7 @@ setNamesToDefault : DefaultColumnNames -> Columns -> Columns
 setNamesToDefault defaultColumnNames columns =
     columns
         |> toList
-        |> List.map (Column.setNamesToDefault defaultColumnNames)
+        |> List.map (Column.setNameToDefault defaultColumnNames)
         |> fromList
 
 
@@ -354,21 +354,21 @@ includesDisabledOthers : Columns -> Bool
 includesDisabledOthers columns =
     columns
         |> toList
-        |> List.any Column.isDisabledOthers
+        |> List.any (not << Column.isEnabledOthers)
 
 
 includesDisabledUndated : Columns -> Bool
 includesDisabledUndated columns =
     columns
         |> toList
-        |> List.any Column.isDisabledUndated
+        |> List.any (not << Column.isEnabledUndated)
 
 
 includesDisabledUntagged : Columns -> Bool
 includesDisabledUntagged columns =
     columns
         |> toList
-        |> List.any Column.isDisabledUntagged
+        |> List.any (not << Column.isEnabledUntagged)
 
 
 insert : Int -> a -> List a -> List a
