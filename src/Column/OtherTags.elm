@@ -108,7 +108,7 @@ tagsToHide (OtherTagsColumn _ _ tth _) =
 
 addTaskItem : TaskItem -> OtherTagsColumn -> ( OtherTagsColumn, PlacementResult )
 addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
-    if belongs ots taskItem then
+    if isEnabled namedTagColumn && belongs ots taskItem then
         if isCompleted ots taskItem then
             ( namedTagColumn, PlacementResult.CompletedInThisColumn )
 

@@ -41,6 +41,14 @@ addTaskItem =
                     |> Tuple.mapFirst OtherTagsColumn.toList
                     |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+        , test "DoesNotBelong an incomplete tagged card when no otherTags have been configured if the column is not enabled" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
+                    |> OtherTagsColumn.disable
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
         , test "DOES NOT place an incomplete tagged card when otherTags INCLUDES the current one" <|
             \() ->
                 OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag", "aTag" ]
