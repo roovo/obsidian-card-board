@@ -1,11 +1,10 @@
 module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import CollapsedColumns
-import ColumnConfig
-import ColumnConfigs
-import ColumnNames
+import Column
+import Columns
 import DateBoardConfig exposing (DateBoardConfig)
+import DefaultColumnNames
 import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
@@ -489,20 +488,17 @@ exampleBoardConfigTagBoard =
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , columnNames = ColumnNames.default
+    , defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
     }
 
 
 exampleDateBoardConfig : DateBoardConfig
 exampleDateBoardConfig =
-    { collapsedColumns = CollapsedColumns.init
-    , columnConfigs = ColumnConfigs.empty
-    , completedCount = 12
+    { columns = Columns.empty
     , filters = []
     , filterPolarity = Filter.Deny
     , filterScope = Filter.SubTasksOnly
-    , includeUndated = False
     , showFilteredTags = True
     , title = "Date Board Title"
     }
@@ -510,18 +506,13 @@ exampleDateBoardConfig =
 
 exampleTagBoardConfig : TagBoardConfig
 exampleTagBoardConfig =
-    { columns = [ { tag = "foo", displayTitle = "bar" } ]
-    , columnConfigs = ColumnConfigs.fromList ColumnNames.default [ ColumnConfig.defaultUntagged ] 6
-    , showColumnTags = True
-    , completedCount = 6
+    { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
     , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
     , filterPolarity = Filter.Deny
     , filterScope = Filter.TopLevelOnly
+    , showColumnTags = True
     , showFilteredTags = True
-    , includeOthers = False
-    , includeUntagged = True
     , title = "Tag Board Title"
-    , collapsedColumns = CollapsedColumns.init
     }
 
 

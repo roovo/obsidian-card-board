@@ -1,6 +1,6 @@
 module GlobalSettingsTests exposing (suite)
 
-import ColumnNames
+import DefaultColumnNames
 import Expect
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -27,7 +27,7 @@ default =
                 GlobalSettings.default
                     |> Expect.equal
                         { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                        , columnNames = ColumnNames.default
+                        , defaultColumnNames = DefaultColumnNames.default
                         , ignoreFileNameDates = False
                         }
         ]
@@ -39,7 +39,7 @@ encodeDecode =
         [ test "can decode an encoded string back to the original" <|
             \() ->
                 { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                , columnNames =
+                , defaultColumnNames =
                     { today = Just "Do Today"
                     , tomorrow = Nothing
                     , future = Just "The Future"
@@ -52,12 +52,12 @@ encodeDecode =
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_10_0_decoder
+                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_11_0_decoder
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                            , columnNames =
+                            , defaultColumnNames =
                                 { today = Just "Do Today"
                                 , tomorrow = Nothing
                                 , future = Just "The Future"
@@ -91,7 +91,7 @@ updateColumnName =
             \() ->
                 GlobalSettings.default
                     |> GlobalSettings.updateColumnName "future" "Back to the"
-                    |> .columnNames
+                    |> .defaultColumnNames
                     |> Expect.equal
                         { today = Nothing
                         , tomorrow = Nothing
@@ -151,6 +151,6 @@ updateTaskCompletionFormat =
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , columnNames = ColumnNames.default
+    , defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
     }

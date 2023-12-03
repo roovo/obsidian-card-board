@@ -11,6 +11,7 @@ module Column.OtherTags exposing
     , name
     , setCollapse
     , setNameToDefault
+    , setOtherTags
     , setTagsToHide
     , tagsToHide
     , toList
@@ -132,6 +133,11 @@ enable (OtherTagsColumn c ots tth tl) =
 setCollapse : Bool -> OtherTagsColumn -> OtherTagsColumn
 setCollapse isCollapsed_ (OtherTagsColumn c ots tth tl) =
     OtherTagsColumn { c | collapsed = isCollapsed_ } ots tth tl
+
+
+setOtherTags : List String -> OtherTagsColumn -> OtherTagsColumn
+setOtherTags tags (OtherTagsColumn c ots tth tl) =
+    OtherTagsColumn c tags tth tl
 
 
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn

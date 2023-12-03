@@ -1,7 +1,10 @@
-- fix tests
+- match up decoder versions - makes tracking changes simpler
+
 - ensure columns on a board have unique names
+
 - allow custom date boards to be specified
 - update input for tag boards to be similar as that for dateboards
+
 - npm run generate
 - ts types for settings
 
@@ -9,6 +12,7 @@
     - as this will change what functions are in there
     - when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
     - when toggling standard boards, their names are hardcoded and don't use those in global settings
+    - do the same with the commented out BoardConfig tests
 
 - only re-allocate cards to boards when something has changed
 

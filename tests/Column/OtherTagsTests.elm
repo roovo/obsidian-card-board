@@ -25,6 +25,7 @@ suite =
         , init
         , setCollapse
         , setNameToDefault
+        , setOtherTags
         , setTagsToHide
         , toList
         , toggleCollapse
@@ -262,6 +263,27 @@ setNameToDefault =
                     |> OtherTagsColumn.setNameToDefault exampleColumnNames
                     |> OtherTagsColumn.name
                     |> Expect.equal "Other Tags"
+        ]
+
+
+setOtherTags : Test
+setOtherTags =
+    describe "setOtherTags"
+        [ test "doesn't place TaskItem if other tags include the tag" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+        , test "places TaskItem if I use setOtherTags to change other tags to something else" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.setOtherTags [ "bTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
         ]
 
 

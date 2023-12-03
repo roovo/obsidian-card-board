@@ -1,7 +1,7 @@
 module SettingsTests exposing (suite)
 
 import BoardConfig
-import ColumnNames
+import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
 import GlobalSettings exposing (GlobalSettings)
@@ -78,11 +78,11 @@ cleanupTitles =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.10.0" <|
+        [ test "is 0.11.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.10.0"
+                    |> Expect.equal "0.11.0"
         ]
 
 
@@ -246,7 +246,7 @@ uniqueBoardTitles =
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , columnNames = ColumnNames.default
+    , defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
     }
 

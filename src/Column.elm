@@ -32,6 +32,7 @@ module Column exposing
     , toggleCollapse
     , undated
     , untagged
+    , updateOthers
     )
 
 import Card exposing (Card)
@@ -489,6 +490,16 @@ toggleCollapse column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
+
+
+updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column
+updateOthers fn column =
+    case column of
+        OtherTags otherTagsColumn ->
+            OtherTags <| fn otherTagsColumn
+
+        _ ->
+            column
 
 
 

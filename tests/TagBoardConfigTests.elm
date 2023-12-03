@@ -77,7 +77,7 @@ encodeDecode =
                 exampleConfig
                     |> TsEncode.runExample TagBoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder TagBoardConfig.decoder_v_0_5_0
+                    |> DecodeHelpers.runDecoder TagBoardConfig.decoder_v_0_11_0
                     |> .decoded
                     |> Expect.equal (Ok exampleConfig)
         ]

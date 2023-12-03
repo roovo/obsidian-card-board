@@ -1,6 +1,6 @@
-module ColumnNamesTests exposing (suite)
+module DefaultColumnNamesTests exposing (suite)
 
-import ColumnNames exposing (ColumnNames)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
@@ -21,19 +21,19 @@ encodeDecode =
     describe "encodeDecode"
         [ test "can decode the encoded default back to the original" <|
             \() ->
-                ColumnNames.default
-                    |> TsEncode.runExample ColumnNames.encoder
+                DefaultColumnNames.default
+                    |> TsEncode.runExample DefaultColumnNames.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder ColumnNames.decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
                     |> .decoded
-                    |> Expect.equal (Ok ColumnNames.default)
+                    |> Expect.equal (Ok DefaultColumnNames.default)
         , test "can decode an encoded non default back to the original" <|
             \() ->
                 exampleColumnNames
-                    |> DecodeHelpers.runDecoder ColumnNames.decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
                     |> .decoded
-                    |> Result.withDefault ColumnNames.default
-                    |> TsEncode.runExample ColumnNames.encoder
+                    |> Result.withDefault DefaultColumnNames.default
+                    |> TsEncode.runExample DefaultColumnNames.encoder
                     |> .output
                     |> Expect.equal exampleColumnNames
         ]
@@ -44,73 +44,73 @@ nameFor =
     describe "nameFor"
         [ test "default for today is Today" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "today"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "today"
                     |> Expect.equal "Today"
         , test "default for tomorrow is Tomorrow" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "tomorrow"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "tomorrow"
                     |> Expect.equal "Tomorrow"
         , test "default for future is Future" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "future"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "future"
                     |> Expect.equal "Future"
         , test "default for undated is Undated" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "undated"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "undated"
                     |> Expect.equal "Undated"
         , test "default for others is Others" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "others"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "others"
                     |> Expect.equal "Others"
         , test "default for untagged is Untagged" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "untagged"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "untagged"
                     |> Expect.equal "Untagged"
         , test "default for completed is Completed" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.nameFor "completed"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "completed"
                     |> Expect.equal "Completed"
         , test "can set the value for today" <|
             \() ->
                 { defaultNames | today = Just "Foo" }
-                    |> ColumnNames.nameFor "today"
+                    |> DefaultColumnNames.nameFor "today"
                     |> Expect.equal "Foo"
         , test "can set the value for tomorrow" <|
             \() ->
                 { defaultNames | tomorrow = Just "Foo" }
-                    |> ColumnNames.nameFor "tomorrow"
+                    |> DefaultColumnNames.nameFor "tomorrow"
                     |> Expect.equal "Foo"
         , test "can set the value for future" <|
             \() ->
                 { defaultNames | future = Just "Foo" }
-                    |> ColumnNames.nameFor "future"
+                    |> DefaultColumnNames.nameFor "future"
                     |> Expect.equal "Foo"
         , test "can set the value for undated" <|
             \() ->
                 { defaultNames | undated = Just "Foo" }
-                    |> ColumnNames.nameFor "undated"
+                    |> DefaultColumnNames.nameFor "undated"
                     |> Expect.equal "Foo"
         , test "can set the value for others" <|
             \() ->
                 { defaultNames | others = Just "Foo" }
-                    |> ColumnNames.nameFor "others"
+                    |> DefaultColumnNames.nameFor "others"
                     |> Expect.equal "Foo"
         , test "can set the value for untagged" <|
             \() ->
                 { defaultNames | untagged = Just "Foo" }
-                    |> ColumnNames.nameFor "untagged"
+                    |> DefaultColumnNames.nameFor "untagged"
                     |> Expect.equal "Foo"
         , test "can set the value for completed" <|
             \() ->
                 { defaultNames | completed = Just "Foo" }
-                    |> ColumnNames.nameFor "completed"
+                    |> DefaultColumnNames.nameFor "completed"
                     |> Expect.equal "Foo"
         ]
 
@@ -120,8 +120,8 @@ updateColumnName =
     describe "updateColumnName"
         [ test "updates a valid column name" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.updateColumnName "future" "Back to the"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.updateColumnName "future" "Back to the"
                     |> Expect.equal
                         { today = Nothing
                         , tomorrow = Nothing
@@ -141,13 +141,13 @@ updateColumnName =
                 , untagged = Nothing
                 , completed = Nothing
                 }
-                    |> ColumnNames.updateColumnName "future" ""
+                    |> DefaultColumnNames.updateColumnName "future" ""
                     |> Expect.equal
-                        ColumnNames.default
+                        DefaultColumnNames.default
         , test "does nothing if the column name is not recognised" <|
             \() ->
-                ColumnNames.default
-                    |> ColumnNames.updateColumnName "xxx" "Back to the"
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.updateColumnName "xxx" "Back to the"
                     |> Expect.equal
                         { today = Nothing
                         , tomorrow = Nothing
@@ -164,9 +164,9 @@ updateColumnName =
 -- HELPERS
 
 
-defaultNames : ColumnNames
+defaultNames : DefaultColumnNames
 defaultNames =
-    ColumnNames.default
+    DefaultColumnNames.default
 
 
 exampleColumnNames : String

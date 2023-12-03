@@ -5,7 +5,6 @@ import BoardConfig
 import Card
 import CollapsedColumns
 import Column
-import ColumnNames
 import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
@@ -36,13 +35,10 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
-                                        [ FilterHelpers.fileFilter "gg/xx/yy.md"
-                                        ]
+                                { exampleDateBoardConfig
+                                    | filters =
+                                        [ FilterHelpers.fileFilter "gg/xx/yy.md" ]
                                     , filterPolarity = Filter.Allow
                                 }
                             )
@@ -62,12 +58,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , completedCount = 20
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.fileFilter "gg/xx/yy.md"
                                         , FilterHelpers.fileFilter "x"
                                         , FilterHelpers.fileFilter "b"
@@ -91,11 +84,9 @@ columnsDateBoard =
                     TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = [ FilterHelpers.pathFilter "aa/bb" ]
+                                { exampleDateBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa/bb" ]
                                     , filterPolarity = Filter.Allow
                                 }
                             )
@@ -109,11 +100,9 @@ columnsDateBoard =
                     TaskListHelpers.taskListFromFile "aa/bb/c.ext"
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = [ FilterHelpers.pathFilter "aa/bb" ]
+                                { exampleDateBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa/bb" ]
                                     , filterPolarity = Filter.Deny
                                 }
                             )
@@ -127,11 +116,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = [ FilterHelpers.tagFilter "aTag" ]
+                                { exampleDateBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
                                     , filterPolarity = Filter.Allow
                                     , filterScope = Filter.Both
                                 }
@@ -146,11 +133,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = [ FilterHelpers.tagFilter "aTag" ]
+                                { exampleDateBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
                                     , filterPolarity = Filter.Allow
                                     , filterScope = Filter.TopLevelOnly
                                 }
@@ -165,11 +150,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = [ FilterHelpers.tagFilter "aTag" ]
+                                { exampleDateBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
                                     , filterPolarity = Filter.Allow
                                     , filterScope = Filter.SubTasksOnly
                                 }
@@ -184,11 +167,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.tagFilter "aTag"
                                         , FilterHelpers.tagFilter "cTag"
                                         ]
@@ -211,11 +192,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.tagFilter "aTag"
                                         , FilterHelpers.tagFilter "cTag"
                                         ]
@@ -240,11 +219,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.tagFilter "aTag"
                                         , FilterHelpers.tagFilter "cTag"
                                         ]
@@ -270,11 +247,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.fileFilter "f"
                                         , FilterHelpers.pathFilter "gg"
                                         , FilterHelpers.tagFilter "aTag"
@@ -299,11 +274,9 @@ columnsDateBoard =
                     TaskListHelpers.exampleDateBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
+                                { exampleDateBoardConfig
+                                    | filters =
                                         [ FilterHelpers.fileFilter "f"
                                         , FilterHelpers.pathFilter "gg"
                                         , FilterHelpers.tagFilter "aTag"
@@ -319,90 +292,6 @@ columnsDateBoard =
                         |> Expect.equal
                             [ "more undated incomplete with cTag" ]
             ]
-        , describe "collapsing columns"
-            [ test "does not collapse an initialized column containing cards" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Undated"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
-            , test "does not collapse an initialized column with no cards" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
-                                        [ FilterHelpers.fileFilter "f"
-                                        , FilterHelpers.pathFilter "gg"
-                                        , FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "bTag"
-                                        , FilterHelpers.tagFilter "cTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Undated"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
-            , test "collapses a column containing cards if is has been set to collapsed" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Undated"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            , test "collapses a column with no cards if it has been set as collapsed" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.DateBoardConfig
-                                { defaultDateBoardConfig
-                                    | includeUndated = True
-                                    , filters =
-                                        [ FilterHelpers.fileFilter "f"
-                                        , FilterHelpers.pathFilter "gg"
-                                        , FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "bTag"
-                                        , FilterHelpers.tagFilter "cTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Undated"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            ]
         ]
 
 
@@ -415,11 +304,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.fileFilter "a" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.fileFilter "a" ]
                                     , filterPolarity = Filter.Allow
                                 }
                             )
@@ -437,11 +324,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.fileFilter "a" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.fileFilter "a" ]
                                     , filterPolarity = Filter.Deny
                                 }
                             )
@@ -462,11 +347,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.pathFilter "aa" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa" ]
                                     , filterPolarity = Filter.Allow
                                 }
                             )
@@ -484,11 +367,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.pathFilter "aa" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa" ]
                                     , filterPolarity = Filter.Deny
                                 }
                             )
@@ -509,12 +390,11 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.tagFilter "tag1" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
                                     , filterPolarity = Filter.Allow
+                                    , filterScope = Filter.Both
                                 }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
@@ -531,12 +411,11 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters = [ FilterHelpers.tagFilter "tag1" ]
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
                                     , filterPolarity = Filter.Deny
+                                    , filterScope = Filter.Both
                                 }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
@@ -556,17 +435,16 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters =
+                                { exampleTagBoardConfig
+                                    | filters =
                                         [ FilterHelpers.fileFilter "a"
                                         , FilterHelpers.pathFilter "aa"
                                         , FilterHelpers.tagFilter "tag1"
                                         , FilterHelpers.tagFilter "tag2"
                                         ]
                                     , filterPolarity = Filter.Allow
+                                    , filterScope = Filter.Both
                                 }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
@@ -584,17 +462,16 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            ColumnNames.default
                             (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeOthers = True
-                                    , filters =
+                                { exampleTagBoardConfig
+                                    | filters =
                                         [ FilterHelpers.fileFilter "a"
                                         , FilterHelpers.pathFilter "aa"
                                         , FilterHelpers.tagFilter "tag1"
                                         , FilterHelpers.tagFilter "tag2"
                                         ]
                                     , filterPolarity = Filter.Deny
+                                    , filterScope = Filter.Both
                                 }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
@@ -603,94 +480,6 @@ columnsTagBoard =
                         |> List.map TaskItem.title
                         |> Expect.equal [ "b.tag3" ]
             ]
-        , describe "collapsing columns"
-            [ test "does not collapse an initialized column containing cards" <|
-                \() ->
-                    TaskListHelpers.exampleTagBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeUntagged = False
-                                    , includeOthers = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Others"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
-            , test "does not collapse an initialized column with no cards" <|
-                \() ->
-                    TaskListHelpers.exampleTagBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeUntagged = False
-                                    , includeOthers = True
-                                    , filters =
-                                        [ FilterHelpers.fileFilter "a"
-                                        , FilterHelpers.pathFilter "aa"
-                                        , FilterHelpers.tagFilter "tag1"
-                                        , FilterHelpers.tagFilter "tag2"
-                                        , FilterHelpers.tagFilter "tag3"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Others"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just False)
-            , test "collapses a column containing cards if it has been set to collapsed" <|
-                \() ->
-                    TaskListHelpers.exampleTagBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeUntagged = False
-                                    , includeOthers = True
-                                    , filters = []
-                                    , filterPolarity = Filter.Deny
-                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Others"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            , test "collapses a column with no cards if it has been set to collapsed" <|
-                \() ->
-                    TaskListHelpers.exampleTagBoardTaskList
-                        |> Board.init
-                            "d1"
-                            ColumnNames.default
-                            (BoardConfig.TagBoardConfig
-                                { defaultTagBoardConfig
-                                    | includeUntagged = False
-                                    , includeOthers = True
-                                    , filters =
-                                        [ FilterHelpers.fileFilter "a"
-                                        , FilterHelpers.pathFilter "aa"
-                                        , FilterHelpers.tagFilter "tag1"
-                                        , FilterHelpers.tagFilter "tag2"
-                                        , FilterHelpers.tagFilter "tag3"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 0 True
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.columnTitled "Others"
-                        |> Maybe.map Column.isCollapsed
-                        |> Expect.equal (Just True)
-            ]
         ]
 
 
@@ -698,11 +487,11 @@ columnsTagBoard =
 -- HELPERS
 
 
-defaultDateBoardConfig : DateBoardConfig
-defaultDateBoardConfig =
-    DateBoardConfig.default
+exampleDateBoardConfig : DateBoardConfig
+exampleDateBoardConfig =
+    BoardConfigHelpers.exampleDateBoardConfig
 
 
-defaultTagBoardConfig : TagBoardConfig
-defaultTagBoardConfig =
-    BoardConfigHelpers.defaultTagBoardConfig
+exampleTagBoardConfig : TagBoardConfig
+exampleTagBoardConfig =
+    BoardConfigHelpers.exampleTagBoardConfig

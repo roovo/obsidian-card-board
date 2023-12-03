@@ -173,55 +173,6 @@ decoder_v_0_1_0 =
         |> TsDecode.required "title" TsDecode.string
 
 
-buildfromPreV11 : List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> DateBoardConfig
-buildfromPreV11 collapsedColumns completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
-    let
-        columns =
-            undatedColumn
-                ++ datedColumns
-                ++ completedColumn
-                |> List.indexedMap handleCollapse
-
-        completedColumn =
-            if completedCount_ > 0 then
-                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
-
-            else
-                []
-
-        completedColumnIndex =
-            List.length (undatedColumn ++ datedColumns)
-
-        datedColumns =
-            [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
-            , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
-            , Column.dated <| DatedColumn.init "Future" (DatedColumn.After 1)
-            ]
-
-        handleCollapse : Int -> Column -> Column
-        handleCollapse index column =
-            if List.member index collapsedColumns then
-                Column.toggleCollapse column
-
-            else
-                column
-
-        undatedColumn =
-            if includeUndated_ then
-                [ Column.undated "Undated" ]
-
-            else
-                []
-    in
-    { columns = Columns.fromList columns
-    , filters = filters
-    , filterPolarity = filterPolarity
-    , filterScope = filterScope
-    , showFilteredTags = showFilteredTags
-    , title = title
-    }
-
-
 
 -- INFO
 
@@ -270,3 +221,56 @@ setNamesToDefault defaultColumnNames dateBoardConfig =
 updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig
 updateCompletedCount newCount dateBoardConfig =
     { dateBoardConfig | columns = Columns.updateCompletedCount newCount dateBoardConfig.columns }
+
+
+
+-- PRIVATE
+
+
+buildfromPreV11 : List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> DateBoardConfig
+buildfromPreV11 collapsedColumns completedCount_ filters filterPolarity filterScope includeUndated_ showFilteredTags title =
+    let
+        columns =
+            undatedColumn
+                ++ datedColumns
+                ++ completedColumn
+                |> List.indexedMap handleCollapse
+
+        completedColumn =
+            if completedCount_ > 0 then
+                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
+
+            else
+                []
+
+        completedColumnIndex =
+            List.length (undatedColumn ++ datedColumns)
+
+        datedColumns =
+            [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
+            , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
+            , Column.dated <| DatedColumn.init "Future" (DatedColumn.After 1)
+            ]
+
+        handleCollapse : Int -> Column -> Column
+        handleCollapse index column =
+            if List.member index collapsedColumns then
+                Column.toggleCollapse column
+
+            else
+                column
+
+        undatedColumn =
+            if includeUndated_ then
+                [ Column.undated "Undated" ]
+
+            else
+                []
+    in
+    { columns = Columns.fromList columns
+    , filters = filters
+    , filterPolarity = filterPolarity
+    , filterScope = filterScope
+    , showFilteredTags = showFilteredTags
+    , title = title
+    }

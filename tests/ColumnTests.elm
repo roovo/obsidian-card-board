@@ -5,6 +5,7 @@ import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn exposing (DatedColumn)
 import Column.NamedTag as NamedTagColumn
+import Column.OtherTags as OtherTagsColumn
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
@@ -40,6 +41,7 @@ suite =
         , setCollapse
         , setNameToDefault
         , toggleCollapse
+        , updateOthers
         ]
 
 
@@ -835,6 +837,60 @@ setCollapse =
         ]
 
 
+setNameToDefault : Test
+setNameToDefault =
+    describe "setNameToDefault"
+        [ test "sets the name of a CompletedColumn using the defaults" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "Is Done"
+        , test "sets the name of a Today DatedColumn using the defaults" <|
+            \() ->
+                Column.dated (DatedColumn.init "Today" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "This Day"
+        , test "sets the name of a Tomorrow DatedColumn using the defaults" <|
+            \() ->
+                Column.dated (DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "The Morrow"
+        , test "sets the name of a Future DatedColumn using the defaults" <|
+            \() ->
+                Column.dated (DatedColumn.init "Future" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "Way Out"
+        , test "DOES NOT change the name of a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "a name" "aTag"
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "a name"
+        , test "sets the name of a OtherTagsColumn using the defaults" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "Other Tags"
+        , test "sets the name of a UndatedColumn using the defaults" <|
+            \() ->
+                Column.undated ""
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "No Date"
+        , test "sets the name of a UntaggedColumn using the defaults" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.setNameToDefault exampleColumnNames
+                    |> Column.name
+                    |> Expect.equal "No Tags"
+        ]
+
+
 toggleCollapse : Test
 toggleCollapse =
     describe "toggleCollapse"
@@ -925,57 +981,45 @@ toggleCollapse =
         ]
 
 
-setNameToDefault : Test
-setNameToDefault =
-    describe "setNameToDefault"
-        [ test "sets the name of a CompletedColumn using the defaults" <|
+updateOthers : Test
+updateOthers =
+    describe "updateOthers"
+        [ test "does nothing if it is a CompletedColumn" <|
             \() ->
                 Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "Is Done"
-        , test "sets the name of a Today DatedColumn using the defaults" <|
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "does nothing if it is a DatedColumn" <|
             \() ->
-                Column.dated (DatedColumn.init "Today" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "This Day"
-        , test "sets the name of a Tomorrow DatedColumn using the defaults" <|
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "does nothing if it is a NamedTagColumn" <|
             \() ->
-                Column.dated (DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "The Morrow"
-        , test "sets the name of a Future DatedColumn using the defaults" <|
-            \() ->
-                Column.dated (DatedColumn.init "Future" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "Way Out"
-        , test "DOES NOT change the name of a NamedTagColumn" <|
-            \() ->
-                Column.namedTag "a name" "aTag"
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "a name"
-        , test "sets the name of a OtherTagsColumn using the defaults" <|
+                Column.namedTag "" "aTag"
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "applies the function if it is a OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "Other Tags"
-        , test "sets the name of a UndatedColumn using the defaults" <|
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal True
+        , test "does nothing if it is a UndatedColumn" <|
             \() ->
                 Column.undated ""
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "No Date"
-        , test "sets the name of a UntaggedColumn using the defaults" <|
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal False
+        , test "does nothing if it is a UntaggedColumn" <|
             \() ->
                 Column.untagged ""
-                    |> Column.setNameToDefault exampleColumnNames
-                    |> Column.name
-                    |> Expect.equal "No Tags"
+                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.isCollapsed
+                    |> Expect.equal False
         ]
 
 

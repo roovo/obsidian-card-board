@@ -27,6 +27,7 @@ module TagBoardConfig exposing
 import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
+import Column.OtherTags as OtherTagsColumn
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
@@ -101,7 +102,7 @@ columnConfigEncoder =
 
 decoder_v_0_11_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_11_0 =
-    TsDecode.succeed TagBoardConfig
+    (TsDecode.succeed TagBoardConfig
         |> TsDecode.required "columns" Columns.decoder
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
@@ -109,6 +110,8 @@ decoder_v_0_11_0 =
         |> TsDecode.required "showColumnTags" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_10_0 : TsDecode.Decoder TagBoardConfig
@@ -118,7 +121,7 @@ decoder_v_0_10_0 =
 
 decoder_v_0_9_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_9_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.required "collapsedColumns" (TsDecode.list TsDecode.int)
         |> TsDecode.required "completedCount" TsDecode.int
@@ -130,11 +133,13 @@ decoder_v_0_9_0 =
         |> TsDecode.required "showColumnTags" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_5_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_5_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -146,11 +151,13 @@ decoder_v_0_5_0 =
         |> TsDecode.required "showColumnTags" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_4_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_4_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -162,11 +169,13 @@ decoder_v_0_4_0 =
         |> TsDecode.required "showColumnTags" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_3_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_3_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -178,11 +187,13 @@ decoder_v_0_3_0 =
         |> TsDecode.hardcoded True
         |> TsDecode.hardcoded True
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_2_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_2_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -194,11 +205,13 @@ decoder_v_0_2_0 =
         |> TsDecode.hardcoded True
         |> TsDecode.hardcoded True
         |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 decoder_v_0_1_0 : TsDecode.Decoder TagBoardConfig
 decoder_v_0_1_0 =
-    TsDecode.succeed buildfromPreV11
+    (TsDecode.succeed buildfromPreV11
         |> TsDecode.required "columns" (TsDecode.list columnConfigDecoder)
         |> TsDecode.hardcoded []
         |> TsDecode.required "completedCount" TsDecode.int
@@ -210,73 +223,8 @@ decoder_v_0_1_0 =
         |> TsDecode.hardcoded True
         |> TsDecode.hardcoded True
         |> TsDecode.required "title" TsDecode.string
-
-
-columnConfigDecoder : TsDecode.Decoder LocalColumnConfig
-columnConfigDecoder =
-    TsDecode.succeed LocalColumnConfig
-        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
-
-
-buildfromPreV11 : List LocalColumnConfig -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> TagBoardConfig
-buildfromPreV11 localColumnConfigs collapsedColumns completedCount_ filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
-    let
-        columns =
-            untaggedColumn
-                ++ otherTagsColumn
-                ++ namedTagColumns
-                ++ completedColumn
-                |> List.indexedMap handleCollapse
-
-        completedColumn =
-            if completedCount_ > 0 then
-                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
-
-            else
-                []
-
-        completedColumnIndex =
-            List.length (untaggedColumn ++ otherTagsColumn ++ namedTagColumns)
-
-        handleCollapse : Int -> Column -> Column
-        handleCollapse index column =
-            if List.member index collapsedColumns then
-                Column.toggleCollapse column
-
-            else
-                column
-
-        namedTagColumns =
-            localColumnConfigs
-                |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
-
-        otherTags =
-            localColumnConfigs
-                |> List.map .tag
-
-        otherTagsColumn =
-            if includeOthers then
-                [ Column.otherTags "Others" otherTags ]
-
-            else
-                []
-
-        untaggedColumn =
-            if includeUntagged then
-                [ Column.untagged "Untagged" ]
-
-            else
-                []
-    in
-    { columns = Columns.fromList columns
-    , filters = filters
-    , filterPolarity = filterPolarity
-    , filterScope = filterScope
-    , showColumnTags = showColumnTags
-    , showFilteredTags = showFilteredTags
-    , title = title
-    }
+    )
+        |> TsDecode.map configureOtherTagsColumn
 
 
 
@@ -388,6 +336,73 @@ updateTags tags tagBoardConfig =
 -- PRIVATE
 
 
+buildfromPreV11 : List LocalColumnConfig -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> TagBoardConfig
+buildfromPreV11 localColumnConfigs collapsedColumns completedCount_ filters filterPolarity filterScope includeOthers includeUntagged showColumnTags showFilteredTags title =
+    let
+        columns =
+            untaggedColumn
+                ++ otherTagsColumn
+                ++ namedTagColumns
+                ++ completedColumn
+                |> List.indexedMap handleCollapse
+
+        completedColumn =
+            if completedCount_ > 0 then
+                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
+
+            else
+                []
+
+        completedColumnIndex =
+            List.length (untaggedColumn ++ otherTagsColumn ++ namedTagColumns)
+
+        handleCollapse : Int -> Column -> Column
+        handleCollapse index column =
+            if List.member index collapsedColumns then
+                Column.toggleCollapse column
+
+            else
+                column
+
+        namedTagColumns =
+            localColumnConfigs
+                |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
+
+        otherTags =
+            localColumnConfigs
+                |> List.map .tag
+
+        otherTagsColumn =
+            if includeOthers then
+                [ Column.otherTags "Others" otherTags ]
+
+            else
+                []
+
+        untaggedColumn =
+            if includeUntagged then
+                [ Column.untagged "Untagged" ]
+
+            else
+                []
+    in
+    { columns = Columns.fromList columns
+    , filters = filters
+    , filterPolarity = filterPolarity
+    , filterScope = filterScope
+    , showColumnTags = showColumnTags
+    , showFilteredTags = showFilteredTags
+    , title = title
+    }
+
+
+columnConfigDecoder : TsDecode.Decoder LocalColumnConfig
+columnConfigDecoder =
+    TsDecode.succeed LocalColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
+
+
 columnConfigHelp : List LocalColumnConfig -> Parser (P.Step (List LocalColumnConfig) (List LocalColumnConfig))
 columnConfigHelp revStmts =
     P.oneOf
@@ -437,3 +452,17 @@ columnConfigParser =
             , P.succeed Nothing
             ]
         |> P.andThen buildColumnConfig
+
+
+configureOtherTagsColumn : TagBoardConfig -> TagBoardConfig
+configureOtherTagsColumn tagBoardConfig =
+    { tagBoardConfig
+        | columns =
+            Columns.updateOthers
+                (OtherTagsColumn.setOtherTags <| Columns.namedTagColumnTags tagBoardConfig.columns)
+                tagBoardConfig.columns
+    }
+
+
+
+-- tagBoardConfig

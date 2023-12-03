@@ -20,6 +20,7 @@ module Columns exposing
     , toggleIncludeUndated
     , toggleIncludeUntagged
     , updateCompletedCount
+    , updateOthers
     )
 
 import Column exposing (Column)
@@ -277,6 +278,14 @@ updateCompletedCount newCount columns =
                     (List.length nonCompletedConfigs)
                     newCount
                 )
+
+
+updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Columns -> Columns
+updateOthers fn columns =
+    columns
+        |> toList
+        |> List.map (Column.updateOthers fn)
+        |> fromList
 
 
 

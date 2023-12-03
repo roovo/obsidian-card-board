@@ -1,12 +1,12 @@
 module InteropDefinitionsTests exposing (suite)
 
 import BoardConfig
-import CollapsedColumns
-import ColumnConfig
-import ColumnConfig.Dated as DatedColumn
-import ColumnConfigs
-import ColumnNames
+import Column
+import Column.Completed as CompletedColumn
+import Column.Dated as DatedColumn
+import Columns
 import DataviewTaskCompletion
+import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import DragAndDrop.DragData as DragData
 import Expect
@@ -35,58 +35,115 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        [ test "decodes valid flags for settings version 0.10.0" <|
+        [ test "decodes valid flags for settings version 0.11.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.10.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.11.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},
+                "boardConfigs":[{"tag":"dateBoardConfig","data":{"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,
+                "columns":[{"tag":"undated","data":{"collapsed":false,"enabled":true,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],"title":"date board title"}},
+                  {"tag":"tagBoardConfig","data":{"columns":[{"tag":"untagged","data":{"collapsed":false,"enabled":true,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"title 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],"showColumnTags":false,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag1" |> Column.setCollapse True
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.SubTasksOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
-                                            , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 1 True |> CollapsedColumns.collapseColumn 4 True
                                             , title = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames =
+                                    , defaultColumnNames =
+                                        { today = Just "Do Today"
+                                        , tomorrow = Nothing
+                                        , future = Just "The Future"
+                                        , undated = Nothing
+                                        , others = Just "The Others"
+                                        , untagged = Nothing
+                                        , completed = Just "Completed"
+                                        }
+                                    , ignoreFileNameDates = True
+                                    }
+                                }
+                            , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , rightToLeft = False
+                            , now = 11
+                            , zone = 22
+                            , uniqueId = "12345"
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.10.0" <|
+            \() ->
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.10.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1],"title":"tag board title"}}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 11 0 [] []
+                                , boardConfigs =
+                                    SafeZipper.fromList
+                                        [ BoardConfig.DateBoardConfig
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
+                                                    ]
+                                            , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                            , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.TopLevelOnly
+                                            , showFilteredTags = True
+                                            , title = "date board title"
+                                            }
+                                        , BoardConfig.TagBoardConfig
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1" |> Column.setCollapse True
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
+                                                    ]
+                                            , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                            , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.SubTasksOnly
+                                            , showColumnTags = False
+                                            , showFilteredTags = False
+                                            , title = "tag board title"
+                                            }
+                                        ]
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianTasks
+                                    , defaultColumnNames =
                                         { today = Just "Do Today"
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
@@ -107,56 +164,48 @@ flagsTests =
                         )
         , test "decodes valid flags for settings version 0.9.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.9.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1,4],"title":"tag board title"}}]}}}"""
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.9.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","columnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"}},"boardConfigs":[{"tag":"dateBoardConfig","data":{"completedCount":4,"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,"includeUndated":true,"collapsedColumns":[],"title":"date board title"}},{"tag":"tagBoardConfig","data":{"columns":[{"tag":"tag 1","displayTitle":"title 1"}],"showColumnTags":false,"completedCount":5,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"includeOthers":false,"includeUntagged":true,"collapsedColumns":[1],"title":"tag board title"}}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1" |> Column.setCollapse True
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.SubTasksOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
-                                            , collapsedColumns = CollapsedColumns.init |> CollapsedColumns.collapseColumn 1 True |> CollapsedColumns.collapseColumn 4 True
                                             , title = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames =
+                                    , defaultColumnNames =
                                         { today = Just "Do Today"
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
@@ -183,50 +232,42 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.SubTasksOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames =
+                                    , defaultColumnNames =
                                         { today = Just "Do Today"
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
@@ -253,50 +294,42 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames =
+                                    , defaultColumnNames =
                                         { today = Just "Do Today"
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
@@ -323,50 +356,50 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames = ColumnNames.default
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
                                     , ignoreFileNameDates = False
                                     }
                                 }
@@ -385,50 +418,50 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
                                 , globalSettings =
                                     { taskCompletionFormat = GlobalSettings.ObsidianTasks
-                                    , columnNames = ColumnNames.default
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
                                     , ignoreFileNameDates = False
                                     }
                                 }
@@ -447,48 +480,52 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = False
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = False
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
-                                , globalSettings = GlobalSettings.default
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
+                                    , ignoreFileNameDates = False
+                                    }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
                             , rightToLeft = False
@@ -505,48 +542,52 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = True
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = True
                                             , showFilteredTags = True
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
-                                , globalSettings = GlobalSettings.default
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
+                                    , ignoreFileNameDates = False
+                                    }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
                             , rightToLeft = False
@@ -563,48 +604,52 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = True
-                                            , completedCount = 5
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = True
                                             , showFilteredTags = True
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
-                                , globalSettings = GlobalSettings.default
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
+                                    , ignoreFileNameDates = False
+                                    }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
                             , rightToLeft = False
@@ -621,48 +666,52 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 10 0 [] []
+                                { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig.DateBoardConfig
-                                            { collapsedColumns = CollapsedColumns.init
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUndated
-                                                    , ColumnConfig.todayColumn
-                                                    , ColumnConfig.tomorrowColumn
-                                                    , ColumnConfig.futureColumn
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
                                                     ]
-                                                    4
-                                            , completedCount = 4
                                             , filters = []
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
-                                            , includeUndated = True
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
                                         , BoardConfig.TagBoardConfig
-                                            { columns = [ { displayTitle = "title 1", tag = "tag 1" } ]
-                                            , columnConfigs =
-                                                ColumnConfigs.fromList ColumnNames.default
-                                                    [ ColumnConfig.defaultUntagged
-                                                    , ColumnConfig.namedTag "title 1" "tag 1"
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "title 1" "tag 1"
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
-                                                    5
-                                            , showColumnTags = True
-                                            , completedCount = 5
                                             , filters = []
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = True
                                             , showFilteredTags = True
-                                            , includeOthers = False
-                                            , includeUntagged = True
                                             , title = "tag board title"
-                                            , collapsedColumns = CollapsedColumns.init
                                             }
                                         ]
-                                , globalSettings = GlobalSettings.default
+                                , globalSettings =
+                                    { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                                    , defaultColumnNames =
+                                        { today = Nothing
+                                        , tomorrow = Nothing
+                                        , future = Nothing
+                                        , undated = Nothing
+                                        , others = Nothing
+                                        , untagged = Nothing
+                                        , completed = Nothing
+                                        }
+                                    , ignoreFileNameDates = False
+                                    }
                                 }
                             , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
                             , rightToLeft = False
@@ -847,49 +896,49 @@ toElmTests =
                 """{"tag":"settingsUpdated","data":{"version":"0.8.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default, ignoreFileNameDates = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, defaultColumnNames = DefaultColumnNames.default, ignoreFileNameDates = False } })
         , test "decodes version 0.7.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.7.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default, ignoreFileNameDates = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, defaultColumnNames = DefaultColumnNames.default, ignoreFileNameDates = False } })
         , test "decodes version 0.6.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.6.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, columnNames = ColumnNames.default, ignoreFileNameDates = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { taskCompletionFormat = GlobalSettings.ObsidianDataview, defaultColumnNames = DefaultColumnNames.default, ignoreFileNameDates = False } })
         , test "decodes version 0.5.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskUpdateFormat":"ObsidianCardBoard"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.4.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.4.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.3.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.3.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 10 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 11 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = GlobalSettings.default })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
