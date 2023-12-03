@@ -5,6 +5,8 @@
 - remove DateBoardConfig.populateColumms
 - remove ColumnConfigs.fromList
 - ColumnConfig - do I need all the constructors?
+- npm run generate
+- ts types for settings
 
 - only re-allocate cards to boards when something has changed
 

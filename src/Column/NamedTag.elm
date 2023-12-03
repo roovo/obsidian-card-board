@@ -118,7 +118,7 @@ toList (NamedTagColumn _ _ tl) =
 addTaskItem : TaskItem -> NamedTagColumn -> ( NamedTagColumn, PlacementResult )
 addTaskItem taskItem ((NamedTagColumn c tth tl) as namedTagColumn) =
     if belongs c.tag taskItem then
-        if TaskItem.isCompleted taskItem then
+        if isCompleted c.tag taskItem then
             ( namedTagColumn, PlacementResult.CompletedInThisColumn )
 
         else
@@ -164,3 +164,9 @@ configEncoder =
         , TsEncode.required "name" .name TsEncode.string
         , TsEncode.required "tag" .tag TsEncode.string
         ]
+
+
+isCompleted : String -> TaskItem -> Bool
+isCompleted t taskItem =
+    TaskItem.isCompleted taskItem
+        || (TaskItem.hasSubtasks taskItem && TaskItem.allSubtasksWithMatchingTagCompleted t taskItem)
