@@ -374,6 +374,20 @@ ul.card-board-column-list > li.card-board-card::before {
   height: auto;
 }
 
+.cardboard-settings-columns {
+  display: grid;
+  grid-template-columns: 8em 2fr 1fr;
+  width: 100%;
+}
+
+.cardboard-settings-column-item {
+  border: var(--border-width) solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  width: 100%;
+  padding: 0.5em;
+  margin-bottom: 0.4em;
+}
+
 .vertical-tab-header-group-title-icon {
   justify-self: end;
   cursor: pointer;

@@ -10,6 +10,9 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
+import Column exposing (Column)
+import Column.Completed as CompletedColumn
+import Column.Dated as DatedColumn
 import Column.NamedTag as NamedTagColumn
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
@@ -1026,35 +1029,16 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item-control" ] []
                     ]
                 , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include undated" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Whether to include a column for tasks with no due date." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ includeUndatedStyle
-                            , onClick ToggleIncludeUndated
-                            ]
-                            []
-                        ]
+                    [ Html.div [ class "cardboard-settings-columns" ]
+                        (config.columns
+                            |> Columns.toList
+                            |> List.map settingsColumnView
+                            |> List.concat
+                        )
                     ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Completed count" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value <| String.fromInt (DateBoardConfig.completedCount config)
-                            , onInput EnteredCompletedCount
-                            ]
-                            []
-                        ]
+                , Html.div [ class "setting-item-control" ]
+                    [ Html.button []
+                        [ Html.text "Add Column" ]
                     ]
                 , Html.div [ class "setting-item dialog-buttons" ]
                     [ Html.button
@@ -1346,6 +1330,50 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
         _ ->
             [ Html.text "" ]
+
+
+settingsColumnView : Column -> List (Html Msg)
+settingsColumnView column =
+    [ Html.div [ class "cardboard-settings-column-item" ]
+        [ Html.text <| Column.typeString column ]
+    , Html.div [ class "cardboard-settings-column-item" ]
+        [ Html.input
+            [ type_ "text"
+            , value <| Column.name column
+            ]
+            []
+        ]
+    , settingsColumnControlView column
+    ]
+
+
+settingsColumnControlView : Column -> Html Msg
+settingsColumnControlView column =
+    case column of
+        Column.Completed completedColumn ->
+            Html.div [ class "cardboard-settings-column-item" ]
+                [ Html.text <| "Limit: " ++ String.fromInt (CompletedColumn.limit completedColumn) ]
+
+        Column.Dated datedColumn ->
+            Html.div [ class "cardboard-settings-column-item" ]
+                [ case DatedColumn.range datedColumn of
+                    DatedColumn.Before to ->
+                        Html.text <| "Before: " ++ String.fromInt to
+
+                    DatedColumn.After from ->
+                        Html.text <| "After: " ++ String.fromInt from
+
+                    DatedColumn.Between fromTo ->
+                        Html.text <|
+                            "Between: "
+                                ++ String.fromInt fromTo.from
+                                ++ " and "
+                                ++ String.fromInt fromTo.to
+                ]
+
+        _ ->
+            Html.div [ class "cardboard-settings-column-item" ]
+                [ Html.text "" ]
 
 
 taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg

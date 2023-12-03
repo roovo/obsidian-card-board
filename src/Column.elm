@@ -1,5 +1,5 @@
 module Column exposing
-    ( Column
+    ( Column(..)
     , addTaskItem
     , asCompletedColumn
     , asNamedTagColumn
@@ -30,6 +30,7 @@ module Column exposing
     , setNameToDefault
     , setTagsToHide
     , toggleCollapse
+    , typeString
     , undated
     , untagged
     , updateOthers
@@ -311,6 +312,28 @@ namedTagTag column =
 
         _ ->
             Nothing
+
+
+typeString : Column -> String
+typeString column =
+    case column of
+        Completed completedColumn ->
+            "Completed"
+
+        Dated datedColumn ->
+            "Date"
+
+        NamedTag namedTagColumn ->
+            "Tag"
+
+        OtherTags otherTagsColumn ->
+            "Other Tags"
+
+        Undated undatedColumn ->
+            "Undated"
+
+        Untagged untaggedColumn ->
+            "Untagged"
 
 
 

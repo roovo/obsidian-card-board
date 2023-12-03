@@ -8,6 +8,7 @@ module Column.Dated exposing
     , isCollapsed
     , isEnabled
     , name
+    , range
     , setCollapse
     , setNameToDefault
     , setTagsToHide
@@ -95,6 +96,11 @@ name (DatedColumn c _ _) =
     c.name
 
 
+range : DatedColumn -> RelativeDateRange
+range (DatedColumn c _ _) =
+    c.range
+
+
 tagsToHide : DatedColumn -> List String
 tagsToHide (DatedColumn _ tth _) =
     tth
@@ -170,8 +176,8 @@ setNameToDefault defaultColumnNames (DatedColumn c tth tl) =
 
 
 belongs : Date -> RelativeDateRange -> Date -> Bool
-belongs today range taskDate =
-    case range of
+belongs today range_ taskDate =
+    case range_ of
         Between values ->
             Date.isBetween (Date.add Date.Days values.from today) (Date.add Date.Days values.to today) taskDate
 
@@ -216,8 +222,8 @@ relativeDateRangeEncoder =
                 Before to ->
                     vBefore to
 
-                Between range ->
-                    vBetween range
+                Between range_ ->
+                    vBetween range_
         )
         |> TsEncode.variantTagged "after" TsEncode.int
         |> TsEncode.variantTagged "before" TsEncode.int

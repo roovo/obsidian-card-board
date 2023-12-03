@@ -35,12 +35,13 @@ suite =
         , enableUndated
         , enableUntagged
         , encoder
-        , namedTagTag
         , isCompletedColumn
         , isNamedTagColumn
+        , namedTagTag
         , setCollapse
         , setNameToDefault
         , toggleCollapse
+        , typeString
         , updateOthers
         ]
 
@@ -978,6 +979,42 @@ toggleCollapse =
                     |> Column.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
+        ]
+
+
+typeString : Test
+typeString =
+    describe "typeString"
+        [ test "returns 'Completed' if it is a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.typeString
+                    |> Expect.equal "Completed"
+        , test "returns 'Date' if it is a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.typeString
+                    |> Expect.equal "Date"
+        , test "returns 'Tag' if it is a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "" "aTag"
+                    |> Column.typeString
+                    |> Expect.equal "Tag"
+        , test "returns 'Other Tags' if it is a OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.typeString
+                    |> Expect.equal "Other Tags"
+        , test "returns 'Undated' if it is a UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.typeString
+                    |> Expect.equal "Undated"
+        , test "returns 'Untagged' if it is a UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.typeString
+                    |> Expect.equal "Untagged"
         ]
 
 
