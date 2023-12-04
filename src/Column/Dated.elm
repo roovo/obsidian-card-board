@@ -15,6 +15,7 @@ module Column.Dated exposing
     , tagsToHide
     , toList
     , toggleCollapse
+    , updateName
     )
 
 import Date exposing (Date)
@@ -141,16 +142,6 @@ setCollapse isCollapsed_ (DatedColumn c tth tl) =
     DatedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
-setTagsToHide : List String -> DatedColumn -> DatedColumn
-setTagsToHide tags (DatedColumn c _ tl) =
-    DatedColumn c tags tl
-
-
-toggleCollapse : DatedColumn -> DatedColumn
-toggleCollapse (DatedColumn c tth tl) =
-    DatedColumn { c | collapsed = not c.collapsed } tth tl
-
-
 setNameToDefault : DefaultColumnNames -> DatedColumn -> DatedColumn
 setNameToDefault defaultColumnNames (DatedColumn c tth tl) =
     let
@@ -168,6 +159,21 @@ setNameToDefault defaultColumnNames (DatedColumn c tth tl) =
                 _ ->
                     c.name
     in
+    DatedColumn { c | name = newName } tth tl
+
+
+setTagsToHide : List String -> DatedColumn -> DatedColumn
+setTagsToHide tags (DatedColumn c _ tl) =
+    DatedColumn c tags tl
+
+
+toggleCollapse : DatedColumn -> DatedColumn
+toggleCollapse (DatedColumn c tth tl) =
+    DatedColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateName : String -> DatedColumn -> DatedColumn
+updateName newName (DatedColumn c tth tl) =
     DatedColumn { c | name = newName } tth tl
 
 

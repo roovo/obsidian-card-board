@@ -19,6 +19,7 @@ module Columns exposing
     , toggleIncludeOthers
     , toggleIncludeUndated
     , toggleIncludeUntagged
+    , updateColumnName
     , updateCompletedCount
     , updateOthers
     )
@@ -260,6 +261,14 @@ toggleIncludeUntagged columns =
             |> toList
             |> List.append [ Column.untagged "Untagged" ]
             |> fromList
+
+
+updateColumnName : Int -> String -> Columns -> Columns
+updateColumnName index newName columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateName newName)
+        |> fromList
 
 
 updateCompletedCount : Int -> Columns -> Columns

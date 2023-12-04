@@ -2,6 +2,7 @@ module BoardConfig exposing
     ( BoardConfig(..)
     , collapseColumn
     , collapsedColumns
+    , dateBoardConfig
     , decoder_v_0_10_0
     , decoder_v_0_11_0
     , decoder_v_0_1_0
@@ -31,6 +32,7 @@ module BoardConfig exposing
     , toggleShowFilteredTags
     , toggleTagFilterScope
     , updateBoardType
+    , updateColumnName
     , updateCompletedCount
     , updateFilterPolarity
     , updateFilters
@@ -99,6 +101,16 @@ collapsedColumns config =
     --     TagBoardConfig c ->
     --         c.collapsedColumns
     CollapsedColumns.init
+
+
+dateBoardConfig : BoardConfig -> Maybe DateBoardConfig
+dateBoardConfig boardConfig =
+    case boardConfig of
+        DateBoardConfig c ->
+            Just c
+
+        TagBoardConfig c ->
+            Nothing
 
 
 isForDateBoard : BoardConfig -> Bool
@@ -340,8 +352,8 @@ collapseColumn columnIndex isCollapsed config =
 setNamesToDefault : DefaultColumnNames -> BoardConfig -> BoardConfig
 setNamesToDefault defaultColumnNames boardConfig =
     case boardConfig of
-        DateBoardConfig dateBoardConfig ->
-            DateBoardConfig <| DateBoardConfig.setNamesToDefault defaultColumnNames dateBoardConfig
+        DateBoardConfig dateBoardConfig_ ->
+            DateBoardConfig <| DateBoardConfig.setNamesToDefault defaultColumnNames dateBoardConfig_
 
         TagBoardConfig tagBoardConfig ->
             TagBoardConfig <| TagBoardConfig.setNamesToDefault defaultColumnNames tagBoardConfig
@@ -423,6 +435,16 @@ toggleTagFilterScope config =
 updateBoardType : String -> BoardConfig -> BoardConfig
 updateBoardType boardType config =
     fromBoardType boardType (title config)
+
+
+updateColumnName : Int -> String -> BoardConfig -> BoardConfig
+updateColumnName index newTitle config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <| DateBoardConfig.updateColumnName index newTitle boardConfig
+
+        TagBoardConfig boardConfig ->
+            config
 
 
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig

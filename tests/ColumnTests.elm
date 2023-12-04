@@ -43,6 +43,7 @@ suite =
         , toggleCollapse
         , typeString
         , updateOthers
+        , updateName
         ]
 
 
@@ -1057,6 +1058,48 @@ updateOthers =
                     |> Column.updateOthers OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name of a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
+        , test "updates the name of a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
+        , test "updates the name of a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "" "aTag"
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
+        , test "updates the name of an OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
+        , test "updates the name of an UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
+        , test "updates the name of an UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.updateName "eek"
+                    |> Column.name
+                    |> Expect.equal "eek"
         ]
 
 

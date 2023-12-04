@@ -15,6 +15,7 @@ module Column.Undated exposing
     , tagsToHide
     , toList
     , toggleCollapse
+    , updateName
     )
 
 import DecodeHelpers
@@ -133,6 +134,11 @@ setCollapse isCollapsed_ (UndatedColumn c tth tl) =
     UndatedColumn { c | collapsed = isCollapsed_ } tth tl
 
 
+setNameToDefault : DefaultColumnNames -> UndatedColumn -> UndatedColumn
+setNameToDefault defaultColumnNames (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = DefaultColumnNames.nameFor "undated" defaultColumnNames } tth tl
+
+
 setTagsToHide : List String -> UndatedColumn -> UndatedColumn
 setTagsToHide tags (UndatedColumn c _ tl) =
     UndatedColumn c tags tl
@@ -143,9 +149,9 @@ toggleCollapse (UndatedColumn c tth tl) =
     UndatedColumn { c | collapsed = not c.collapsed } tth tl
 
 
-setNameToDefault : DefaultColumnNames -> UndatedColumn -> UndatedColumn
-setNameToDefault defaultColumnNames (UndatedColumn c tth tl) =
-    UndatedColumn { c | name = DefaultColumnNames.nameFor "undated" defaultColumnNames } tth tl
+updateName : String -> UndatedColumn -> UndatedColumn
+updateName newName (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = newName } tth tl
 
 
 

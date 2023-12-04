@@ -33,6 +33,7 @@ module Column exposing
     , typeString
     , undated
     , untagged
+    , updateName
     , updateOthers
     )
 
@@ -513,6 +514,28 @@ toggleCollapse column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
+
+
+updateName : String -> Column -> Column
+updateName newName column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.updateName newName completedColumn)
+
+        Dated datedColumn ->
+            Dated (DatedColumn.updateName newName datedColumn)
+
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.updateName newName namedTagColumn)
+
+        OtherTags otherTagsColumn ->
+            OtherTags (OtherTagsColumn.updateName newName otherTagsColumn)
+
+        Undated undatedColumn ->
+            Undated (UndatedColumn.updateName newName undatedColumn)
+
+        Untagged untaggedColumn ->
+            Untagged (UntaggedColumn.updateName newName untaggedColumn)
 
 
 updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column

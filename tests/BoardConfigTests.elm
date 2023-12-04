@@ -17,13 +17,14 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ default
+        [ collapseColumn
+        , default
         , encodeDecode
         , fromBoardType
         , isForDateBoard
         , isForTagBoard
         , mapFilters
-        , collapseColumn
+        , updateColumnTitle
 
         -- , toggleIncludeOthers
         -- , toggleIncludeUndated
@@ -37,6 +38,33 @@ suite =
         -- , updateFilterPolarity
         -- , updateTags
         -- , updateTitle
+        ]
+
+
+collapseColumn : Test
+collapseColumn =
+    describe "collapseColumn"
+        [ test "collapses a column for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.collapseColumn 1 True
+                    |> extractDateBoardConfig
+                    |> Maybe.map .columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, True, False, False, False ]
+        , test "uncollapses a column for a DateBoard config" <|
+            \() ->
+                BoardConfig.fromBoardType "dateBoard" ""
+                    |> BoardConfig.collapseColumn 1 True
+                    |> BoardConfig.collapseColumn 1 False
+                    |> extractDateBoardConfig
+                    |> Maybe.map .columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, False, False, False, False ]
         ]
 
 
@@ -145,30 +173,19 @@ mapFilters =
         ]
 
 
-collapseColumn : Test
-collapseColumn =
-    describe "collapseColumn"
-        [ test "collapses a column for a DateBoard config" <|
+updateColumnTitle : Test
+updateColumnTitle =
+    describe "updateColumnTitle"
+        [ test "updates a column title for a DateBoard config" <|
             \() ->
-                BoardConfig.fromBoardType "dateBoard" ""
-                    |> BoardConfig.collapseColumn 1 True
-                    |> extractDateBoardConfig
+                BoardConfig.DateBoardConfig DateBoardConfig.default
+                    |> BoardConfig.updateColumnTitle 1 "new title"
+                    |> BoardConfig.dateBoardConfig
                     |> Maybe.map .columns
                     |> Maybe.map Columns.toList
                     |> Maybe.withDefault []
-                    |> List.map Column.isCollapsed
-                    |> Expect.equal [ False, True, False, False, False ]
-        , test "uncollapses a column for a DateBoard config" <|
-            \() ->
-                BoardConfig.fromBoardType "dateBoard" ""
-                    |> BoardConfig.collapseColumn 1 True
-                    |> BoardConfig.collapseColumn 1 False
-                    |> extractDateBoardConfig
-                    |> Maybe.map .columns
-                    |> Maybe.map Columns.toList
-                    |> Maybe.withDefault []
-                    |> List.map Column.isCollapsed
-                    |> Expect.equal [ False, False, False, False, False ]
+                    |> List.map Column.name
+                    |> Expect.equal [ "Undated", "new title", "Tomorrow", "Future", "Completed" ]
         ]
 
 

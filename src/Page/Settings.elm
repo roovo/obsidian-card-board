@@ -114,6 +114,7 @@ type Msg
     | EnteredColumName String String
     | EnteredCompletedCount String
     | EnteredNewBoardTitle String
+    | EnteredNewColumnTitle Int String
     | EnteredTags String
     | EnteredTitle String
     | FilterCandidatesReceived (List Filter)
@@ -225,6 +226,9 @@ update msg model =
 
         EnteredNewBoardTitle title ->
             mapBoardBeingAdded (BoardConfig.updateTitle title) model
+
+        EnteredNewColumnTitle columnIndex title ->
+            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex title) model
 
         EnteredTags tags ->
             mapBoardBeingEdited (BoardConfig.updateTags tags) model
@@ -1034,7 +1038,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     [ Html.div [ class "cardboard-settings-columns-list" ]
                         (config.columns
                             |> Columns.toList
-                            |> List.map settingsColumnView
+                            |> List.indexedMap settingsColumnView
                         )
                     ]
                 , Html.div [ class "setting-item-control" ]
@@ -1333,8 +1337,8 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-settingsColumnView : Column -> Html Msg
-settingsColumnView column =
+settingsColumnView : Int -> Column -> Html Msg
+settingsColumnView index column =
     Html.div [ class "cardboard-settings-column-item" ]
         [ FeatherIcons.toHtml [] dragIcon
         , Html.div [ class "cardboard-settings-column-item-detail" ]
@@ -1343,6 +1347,7 @@ settingsColumnView column =
             [ Html.input
                 [ type_ "text"
                 , value <| Column.name column
+                , onInput <| EnteredNewColumnTitle index
                 ]
                 []
             ]
