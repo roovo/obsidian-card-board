@@ -20,6 +20,7 @@ module DateBoardConfig exposing
     , tagsToHide
     , toggleIncludeUndated
     , updateColumnName
+    , updateCompletedColumnLimit
     , updateCompletedCount
     )
 
@@ -240,6 +241,11 @@ setNamesToDefault defaultColumnNames dateBoardConfig =
 updateColumnName : Int -> String -> DateBoardConfig -> DateBoardConfig
 updateColumnName index newTitle dateBoardConfig =
     { dateBoardConfig | columns = Columns.updateColumnName index newTitle dateBoardConfig.columns }
+
+
+updateCompletedColumnLimit : Int -> Int -> DateBoardConfig -> DateBoardConfig
+updateCompletedColumnLimit index newLimit dateBoardConfig =
+    { dateBoardConfig | columns = Columns.updateCompletedColumnLimit index newLimit dateBoardConfig.columns }
 
 
 updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig

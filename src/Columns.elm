@@ -20,6 +20,7 @@ module Columns exposing
     , toggleIncludeUndated
     , toggleIncludeUntagged
     , updateColumnName
+    , updateCompletedColumnLimit
     , updateCompletedCount
     , updateOthers
     )
@@ -268,6 +269,14 @@ updateColumnName index newName columns =
     columns
         |> toList
         |> LE.updateAt index (Column.updateName newName)
+        |> fromList
+
+
+updateCompletedColumnLimit : Int -> Int -> Columns -> Columns
+updateCompletedColumnLimit index newLimit columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateCompletedColumnLimit newLimit)
         |> fromList
 
 

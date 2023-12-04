@@ -114,6 +114,7 @@ type Msg
     | EnteredColumName String String
     | EnteredCompletedCount String
     | EnteredNewBoardTitle String
+    | EnteredNewColumnCompletedLimit Int String
     | EnteredNewColumnTitle Int String
     | EnteredTags String
     | EnteredTitle String
@@ -226,6 +227,9 @@ update msg model =
 
         EnteredNewBoardTitle title ->
             mapBoardBeingAdded (BoardConfig.updateTitle title) model
+
+        EnteredNewColumnCompletedLimit columnIndex limit ->
+            mapBoardBeingEdited (BoardConfig.updateCompletedColumnLimit columnIndex (String.toInt limit)) model
 
         EnteredNewColumnTitle columnIndex title ->
             mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex title) model
@@ -1351,12 +1355,12 @@ settingsColumnView index column =
                 ]
                 []
             ]
-        , settingsColumnControlView column
+        , settingsColumnControlView index column
         ]
 
 
-settingsColumnControlView : Column -> Html Msg
-settingsColumnControlView column =
+settingsColumnControlView : Int -> Column -> Html Msg
+settingsColumnControlView index column =
     case column of
         Column.Completed completedColumn ->
             Html.div [ class "cardboard-settings-column-item-detail" ]
@@ -1365,6 +1369,7 @@ settingsColumnControlView column =
                     [ type_ "text"
                     , value <| String.fromInt (CompletedColumn.limit completedColumn)
                     , attribute "size" "3"
+                    , onInput <| EnteredNewColumnCompletedLimit index
                     ]
                     []
                 ]

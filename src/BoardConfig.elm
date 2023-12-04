@@ -33,6 +33,7 @@ module BoardConfig exposing
     , toggleTagFilterScope
     , updateBoardType
     , updateColumnName
+    , updateCompletedColumnLimit
     , updateCompletedCount
     , updateFilterPolarity
     , updateFilters
@@ -444,6 +445,19 @@ updateColumnName index newTitle config =
             DateBoardConfig <| DateBoardConfig.updateColumnName index newTitle boardConfig
 
         TagBoardConfig boardConfig ->
+            config
+
+
+updateCompletedColumnLimit : Int -> Maybe Int -> BoardConfig -> BoardConfig
+updateCompletedColumnLimit index value config =
+    case ( config, value ) of
+        ( DateBoardConfig boardConfig, Just newLimit ) ->
+            DateBoardConfig <| DateBoardConfig.updateCompletedColumnLimit index newLimit boardConfig
+
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            config
+
+        _ ->
             config
 
 

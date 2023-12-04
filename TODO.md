@@ -1,8 +1,22 @@
 - allow custom date boards to be specified
-- update input for tag boards to be similar as that for dateboards
-- no more need for separate date and tag board types
-    - they are just boards
-    - allow basic tag and date boards to be created tho
+    - editing ranges
+    - add column
+        (restrict to dateboard types - specify column type and name)
+        if the last column is Completed then put the new one before it
+        otherwise put it at the end
+    - delete column (with confirmation)
+    - drag and drop to re-order columns (on settings page)
+- no more need for separate date and tag board types, they are just boards
+    - update configs to loose the distinction
+    - add tag board column types to the add column options
+    - make the column settings look nice
+    - allow basic tag and date boards to be created (as well as blank boards)
+    - do I need to handle enabled/disabled columns - it would be simpler to just
+      delete and recreate them
+    - ensure that there is a max of one of any of the special columns
+      (completed, undated, untagged, undated)
+      - when using the settings pane
+      - when reading from config
 - ensure columns on a board have unique names
     - when entering and when reading from config
 
@@ -19,7 +33,7 @@
 
 - why isn't grab cursor working over "draggables"?
 - tidy typescript
-- can I animate tab moving so it isn't instantaneous?
+- can I animate tab moving so it isn't instantaneous? (look at settings page checkboxes)
 - touch events - iPad ??
 
 # Cleanups

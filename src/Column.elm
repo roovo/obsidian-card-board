@@ -33,6 +33,7 @@ module Column exposing
     , typeString
     , undated
     , untagged
+    , updateCompletedColumnLimit
     , updateName
     , updateOthers
     )
@@ -514,6 +515,16 @@ toggleCollapse column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
+
+
+updateCompletedColumnLimit : Int -> Column -> Column
+updateCompletedColumnLimit newLimit column =
+    case column of
+        Completed completedColumn ->
+            Completed (CompletedColumn.updateCompletedCount newLimit completedColumn)
+
+        _ ->
+            column
 
 
 updateName : String -> Column -> Column
