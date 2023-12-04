@@ -12,7 +12,7 @@ import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn
-import Column.Dated as DatedColumn
+import Column.Dated as DatedColumn exposing (RelativeDateRange)
 import Column.NamedTag as NamedTagColumn
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
@@ -23,7 +23,7 @@ import DragAndDrop.Coords as Coords
 import DragAndDrop.DragData as DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
-import FeatherIcons
+import FeatherIcons exposing (Icon)
 import Filter exposing (Filter, Polarity)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
@@ -40,6 +40,8 @@ import Session exposing (Session)
 import Settings exposing (Settings)
 import SettingsState exposing (SettingsState)
 import State exposing (State)
+import Svg
+import Svg.Attributes as Svg
 import TagBoardConfig
 
 
@@ -1029,11 +1031,10 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     , Html.div [ class "setting-item-control" ] []
                     ]
                 , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "cardboard-settings-columns" ]
+                    [ Html.div [ class "cardboard-settings-columns-list" ]
                         (config.columns
                             |> Columns.toList
                             |> List.map settingsColumnView
-                            |> List.concat
                         )
                     ]
                 , Html.div [ class "setting-item-control" ]
@@ -1332,48 +1333,120 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-settingsColumnView : Column -> List (Html Msg)
+settingsColumnView : Column -> Html Msg
 settingsColumnView column =
-    [ Html.div [ class "cardboard-settings-column-item" ]
-        [ Html.text <| Column.typeString column ]
-    , Html.div [ class "cardboard-settings-column-item" ]
-        [ Html.input
-            [ type_ "text"
-            , value <| Column.name column
+    Html.div [ class "cardboard-settings-column-item" ]
+        [ FeatherIcons.toHtml [] dragIcon
+        , Html.div [ class "cardboard-settings-column-item-detail" ]
+            [ Html.text <| Column.typeString column ]
+        , Html.div [ class "cardboard-settings-column-item-detail" ]
+            [ Html.input
+                [ type_ "text"
+                , value <| Column.name column
+                ]
+                []
             ]
-            []
+        , settingsColumnControlView column
         ]
-    , settingsColumnControlView column
-    ]
 
 
 settingsColumnControlView : Column -> Html Msg
 settingsColumnControlView column =
     case column of
         Column.Completed completedColumn ->
-            Html.div [ class "cardboard-settings-column-item" ]
-                [ Html.text <| "Limit: " ++ String.fromInt (CompletedColumn.limit completedColumn) ]
+            Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ Html.text <| "Limit: "
+                , Html.input
+                    [ type_ "text"
+                    , value <| String.fromInt (CompletedColumn.limit completedColumn)
+                    , attribute "size" "3"
+                    ]
+                    []
+                ]
 
         Column.Dated datedColumn ->
-            Html.div [ class "cardboard-settings-column-item" ]
-                [ case DatedColumn.range datedColumn of
-                    DatedColumn.Before to ->
-                        Html.text <| "Before: " ++ String.fromInt to
-
-                    DatedColumn.After from ->
-                        Html.text <| "After: " ++ String.fromInt from
-
-                    DatedColumn.Between fromTo ->
-                        Html.text <|
-                            "Between: "
-                                ++ String.fromInt fromTo.from
-                                ++ " and "
-                                ++ String.fromInt fromTo.to
+            Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ rangeSelectView (DatedColumn.range datedColumn)
+                , rangeInputsView (DatedColumn.range datedColumn)
                 ]
 
         _ ->
-            Html.div [ class "cardboard-settings-column-item" ]
+            Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.text "" ]
+
+
+rangeInputsView : RelativeDateRange -> Html Msg
+rangeInputsView range =
+    case range of
+        DatedColumn.Before to ->
+            Html.input
+                [ type_ "text"
+                , value <| String.fromInt to
+                , attribute "size" "3"
+                ]
+                []
+
+        DatedColumn.After from ->
+            Html.input
+                [ type_ "text"
+                , value <| String.fromInt from
+                , attribute "size" "3"
+                ]
+                []
+
+        DatedColumn.Between fromTo ->
+            Html.div []
+                [ Html.input
+                    [ type_ "text"
+                    , value <| String.fromInt fromTo.from
+                    , attribute "size" "3"
+                    ]
+                    []
+                , Html.span [] [ Html.text "and" ]
+                , Html.input
+                    [ type_ "text"
+                    , value <| String.fromInt fromTo.to
+                    , attribute "size" "3"
+                    ]
+                    []
+                ]
+
+
+rangeSelectView : RelativeDateRange -> Html Msg
+rangeSelectView range =
+    case range of
+        DatedColumn.Before _ ->
+            Html.select
+                [ class "dropdown" ]
+                [ Html.option [ value "Before", selected True ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+        DatedColumn.After _ ->
+            Html.select
+                [ class "dropdown" ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After", selected True ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+        DatedColumn.Between _ ->
+            Html.select
+                [ class "dropdown" ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between", selected True ]
+                    [ Html.text "Between" ]
+                ]
 
 
 taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
@@ -1575,3 +1648,21 @@ attributeIf condition attribute =
 
     else
         class ""
+
+
+dragIcon : Icon
+dragIcon =
+    [ Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "6", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "6", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "14", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "14", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "22", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "22", Svg.width "4", Svg.height "4" ] []
+    ]
+        |> FeatherIcons.customIcon
+        |> FeatherIcons.withSize 32
+        |> FeatherIcons.withViewBox "0 0 32 32"
+
+
+
+-- |> FeatherIcons.toHtml []
