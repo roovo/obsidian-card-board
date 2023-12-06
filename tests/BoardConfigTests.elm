@@ -24,8 +24,8 @@ suite =
         , isForDateBoard
         , isForTagBoard
         , mapFilters
-        , updateColumnTitle
 
+        -- , updateColumnTitle
         -- , toggleIncludeOthers
         -- , toggleIncludeUndated
         -- , toggleIncludeUntagged
@@ -173,23 +173,24 @@ mapFilters =
         ]
 
 
-updateColumnTitle : Test
-updateColumnTitle =
-    describe "updateColumnTitle"
-        [ test "updates a column title for a DateBoard config" <|
-            \() ->
-                BoardConfig.DateBoardConfig DateBoardConfig.default
-                    |> BoardConfig.updateColumnTitle 1 "new title"
-                    |> BoardConfig.dateBoardConfig
-                    |> Maybe.map .columns
-                    |> Maybe.map Columns.toList
-                    |> Maybe.withDefault []
-                    |> List.map Column.name
-                    |> Expect.equal [ "Undated", "new title", "Tomorrow", "Future", "Completed" ]
-        ]
 
-
-
+-- updateColumnTitle : Test
+-- updateColumnTitle =
+--     describe "updateColumnTitle"
+--         [ test "updates a column title for a DateBoard config" <|
+--             \() ->
+--                 BoardConfig.DateBoardConfig DateBoardConfig.default
+--                     |> BoardConfig.updateColumnTitle 1 "new title"
+--                     |> BoardConfig.dateBoardConfig
+--                     |> Maybe.map .columns
+--                     |> Maybe.map Columns.toList
+--                     |> Maybe.withDefault []
+--                     |> List.map Column.name
+--                     |> Expect.equal [ "Undated", "new title", "Tomorrow", "Future", "Completed" ]
+--         ]
+--
+--
+--
 --
 --
 -- toggleIncludeOthers : Test

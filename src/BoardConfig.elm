@@ -35,6 +35,7 @@ module BoardConfig exposing
     , updateColumnName
     , updateCompletedColumnLimit
     , updateCompletedCount
+    , updateDatedColumnRangeType
     , updateFilterPolarity
     , updateFilters
     , updateTags
@@ -471,6 +472,16 @@ updateCompletedCount value config =
             TagBoardConfig <| TagBoardConfig.updateCompletedCount newCount boardConfig
 
         _ ->
+            config
+
+
+updateDatedColumnRangeType : Int -> String -> BoardConfig -> BoardConfig
+updateDatedColumnRangeType index rangeType config =
+    case config of
+        DateBoardConfig boardConfig ->
+            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeType index rangeType boardConfig
+
+        TagBoardConfig boardConfig ->
             config
 
 

@@ -34,6 +34,7 @@ module Column exposing
     , undated
     , untagged
     , updateCompletedColumnLimit
+    , updateDatedColumnRangeType
     , updateName
     , updateOthers
     )
@@ -522,6 +523,16 @@ updateCompletedColumnLimit newLimit column =
     case column of
         Completed completedColumn ->
             Completed (CompletedColumn.updateCompletedCount newLimit completedColumn)
+
+        _ ->
+            column
+
+
+updateDatedColumnRangeType : String -> Column -> Column
+updateDatedColumnRangeType rangeType column =
+    case column of
+        Dated datedColumn ->
+            Dated (DatedColumn.updateRangeType rangeType datedColumn)
 
         _ ->
             column

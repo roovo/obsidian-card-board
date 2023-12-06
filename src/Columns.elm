@@ -22,6 +22,7 @@ module Columns exposing
     , updateColumnName
     , updateCompletedColumnLimit
     , updateCompletedCount
+    , updateDatedColumnRangeType
     , updateOthers
     )
 
@@ -296,6 +297,14 @@ updateCompletedCount newCount columns =
                     (List.length nonCompletedConfigs)
                     newCount
                 )
+
+
+updateDatedColumnRangeType : Int -> String -> Columns -> Columns
+updateDatedColumnRangeType index rangeType columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateDatedColumnRangeType rangeType)
+        |> fromList
 
 
 updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Columns -> Columns

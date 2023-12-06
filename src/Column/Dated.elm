@@ -16,6 +16,7 @@ module Column.Dated exposing
     , toList
     , toggleCollapse
     , updateName
+    , updateRangeType
     )
 
 import Date exposing (Date)
@@ -175,6 +176,31 @@ toggleCollapse (DatedColumn c tth tl) =
 updateName : String -> DatedColumn -> DatedColumn
 updateName newName (DatedColumn c tth tl) =
     DatedColumn { c | name = newName } tth tl
+
+
+updateRangeType : String -> DatedColumn -> DatedColumn
+updateRangeType rangeType ((DatedColumn c tth tl) as datedColumn) =
+    case ( c.range, rangeType ) of
+        ( Before to, "After" ) ->
+            DatedColumn { c | range = After to } tth tl
+
+        ( Before to, "Between" ) ->
+            DatedColumn { c | range = Between { from = to, to = to } } tth tl
+
+        ( After from, "Before" ) ->
+            DatedColumn { c | range = Before from } tth tl
+
+        ( After from, "Between" ) ->
+            DatedColumn { c | range = Between { from = from, to = from } } tth tl
+
+        ( Between fromTo, "Before" ) ->
+            DatedColumn { c | range = Before (min fromTo.from fromTo.to) } tth tl
+
+        ( Between fromTo, "After" ) ->
+            DatedColumn { c | range = After (max fromTo.from fromTo.to) } tth tl
+
+        _ ->
+            datedColumn
 
 
 

@@ -125,6 +125,7 @@ type Msg
     | ModalCloseClicked
     | PathsRequested Int String
     | PolaritySelected String
+    | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleIgnoreFileNameDate
     | ToggleIncludeOthers
@@ -294,6 +295,9 @@ update msg model =
 
         PolaritySelected polarity ->
             mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+
+        SelectedDatedColumnRangeType index rangeType ->
+            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeType index rangeType) model
 
         TaskCompletionFormatSelected taskCompletionFormat ->
             wrap
@@ -1376,13 +1380,56 @@ settingsColumnControlView index column =
 
         Column.Dated datedColumn ->
             Html.div [ class "cardboard-settings-column-item-detail" ]
-                [ rangeSelectView (DatedColumn.range datedColumn)
+                [ rangeSelectView index (DatedColumn.range datedColumn)
                 , rangeInputsView (DatedColumn.range datedColumn)
                 ]
 
         _ ->
             Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.text "" ]
+
+
+rangeSelectView : Int -> RelativeDateRange -> Html Msg
+rangeSelectView index range =
+    case range of
+        DatedColumn.Before _ ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before", selected True ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+        DatedColumn.After _ ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After", selected True ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+        DatedColumn.Between _ ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between", selected True ]
+                    [ Html.text "Between" ]
+                ]
 
 
 rangeInputsView : RelativeDateRange -> Html Msg
@@ -1419,43 +1466,6 @@ rangeInputsView range =
                     , attribute "size" "3"
                     ]
                     []
-                ]
-
-
-rangeSelectView : RelativeDateRange -> Html Msg
-rangeSelectView range =
-    case range of
-        DatedColumn.Before _ ->
-            Html.select
-                [ class "dropdown" ]
-                [ Html.option [ value "Before", selected True ]
-                    [ Html.text "Before" ]
-                , Html.option [ value "After" ]
-                    [ Html.text "After" ]
-                , Html.option [ value "Between" ]
-                    [ Html.text "Between" ]
-                ]
-
-        DatedColumn.After _ ->
-            Html.select
-                [ class "dropdown" ]
-                [ Html.option [ value "Before" ]
-                    [ Html.text "Before" ]
-                , Html.option [ value "After", selected True ]
-                    [ Html.text "After" ]
-                , Html.option [ value "Between" ]
-                    [ Html.text "Between" ]
-                ]
-
-        DatedColumn.Between _ ->
-            Html.select
-                [ class "dropdown" ]
-                [ Html.option [ value "Before" ]
-                    [ Html.text "Before" ]
-                , Html.option [ value "After" ]
-                    [ Html.text "After" ]
-                , Html.option [ value "Between", selected True ]
-                    [ Html.text "Between" ]
                 ]
 
 

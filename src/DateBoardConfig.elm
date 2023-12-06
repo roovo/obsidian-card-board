@@ -22,6 +22,7 @@ module DateBoardConfig exposing
     , updateColumnName
     , updateCompletedColumnLimit
     , updateCompletedCount
+    , updateDatedColumnRangeType
     )
 
 import CollapsedColumns exposing (CollapsedColumns)
@@ -251,6 +252,11 @@ updateCompletedColumnLimit index newLimit dateBoardConfig =
 updateCompletedCount : Int -> DateBoardConfig -> DateBoardConfig
 updateCompletedCount newCount dateBoardConfig =
     { dateBoardConfig | columns = Columns.updateCompletedCount newCount dateBoardConfig.columns }
+
+
+updateDatedColumnRangeType : Int -> String -> DateBoardConfig -> DateBoardConfig
+updateDatedColumnRangeType index rangeType dateBoardConfig =
+    { dateBoardConfig | columns = Columns.updateDatedColumnRangeType index rangeType dateBoardConfig.columns }
 
 
 
