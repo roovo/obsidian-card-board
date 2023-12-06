@@ -239,7 +239,10 @@ belongs : Date -> RelativeDateRange -> Date -> Bool
 belongs today range_ taskDate =
     case range_ of
         Between values ->
-            Date.isBetween (Date.add Date.Days values.from today) (Date.add Date.Days values.to today) taskDate
+            Date.isBetween
+                (Date.add Date.Days (min values.from values.to) today)
+                (Date.add Date.Days (max values.from values.to) today)
+                taskDate
 
         Before to ->
             Date.diff Date.Days taskDate (Date.add Date.Days (to - 1) today) >= 0

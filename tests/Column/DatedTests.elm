@@ -45,6 +45,13 @@ addTaskItem =
                         |> Tuple.mapFirst DatedColumn.toList
                         |> Tuple.mapFirst (List.map TaskItem.title)
                         |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+            , test "Places an incomplete task item with a matching due date even if from and to are the wrong way around" <|
+                \() ->
+                    DatedColumn.init "" (DatedColumn.Between { from = 2, to = 0 })
+                        |> DatedColumn.addTaskItem today (taskItem ("- [ ] foo " ++ dueString 1))
+                        |> Tuple.mapFirst DatedColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
             , test "CompletedInThisColumn a completed task item with a matching due date" <|
                 \() ->
                     DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 })

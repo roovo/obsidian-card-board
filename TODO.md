@@ -1,5 +1,4 @@
 - allow custom date boards to be specified
-    - handle Betwen from, to being the wrong way around
     - add column
         (restrict to dateboard types - specify column type and name)
         if the last column is Completed then put the new one before it
