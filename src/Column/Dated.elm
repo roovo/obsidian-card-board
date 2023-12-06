@@ -17,6 +17,8 @@ module Column.Dated exposing
     , toggleCollapse
     , updateName
     , updateRangeType
+    , updateRangeValueFrom
+    , updateRangeValueTo
     )
 
 import Date exposing (Date)
@@ -201,6 +203,32 @@ updateRangeType rangeType ((DatedColumn c tth tl) as datedColumn) =
 
         _ ->
             datedColumn
+
+
+updateRangeValueFrom : Int -> DatedColumn -> DatedColumn
+updateRangeValueFrom newValue ((DatedColumn c tth tl) as datedColumn) =
+    case c.range of
+        Before value ->
+            DatedColumn { c | range = Before value } tth tl
+
+        After value ->
+            DatedColumn { c | range = After newValue } tth tl
+
+        Between fromTo ->
+            DatedColumn { c | range = Between { from = newValue, to = fromTo.to } } tth tl
+
+
+updateRangeValueTo : Int -> DatedColumn -> DatedColumn
+updateRangeValueTo newValue ((DatedColumn c tth tl) as datedColumn) =
+    case c.range of
+        Before value ->
+            DatedColumn { c | range = Before newValue } tth tl
+
+        After value ->
+            DatedColumn { c | range = After value } tth tl
+
+        Between fromTo ->
+            DatedColumn { c | range = Between { from = fromTo.from, to = newValue } } tth tl
 
 
 

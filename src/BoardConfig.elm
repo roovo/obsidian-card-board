@@ -36,6 +36,8 @@ module BoardConfig exposing
     , updateCompletedColumnLimit
     , updateCompletedCount
     , updateDatedColumnRangeType
+    , updateDatedColumnRangeValueFrom
+    , updateDatedColumnRangeValueTo
     , updateFilterPolarity
     , updateFilters
     , updateTags
@@ -482,6 +484,32 @@ updateDatedColumnRangeType index rangeType config =
             DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeType index rangeType boardConfig
 
         TagBoardConfig boardConfig ->
+            config
+
+
+updateDatedColumnRangeValueFrom : Int -> Maybe Int -> BoardConfig -> BoardConfig
+updateDatedColumnRangeValueFrom index value config =
+    case ( config, value ) of
+        ( DateBoardConfig boardConfig, Just newValue ) ->
+            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeValueFrom index newValue boardConfig
+
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            config
+
+        _ ->
+            config
+
+
+updateDatedColumnRangeValueTo : Int -> Maybe Int -> BoardConfig -> BoardConfig
+updateDatedColumnRangeValueTo index value config =
+    case ( config, value ) of
+        ( DateBoardConfig boardConfig, Just newValue ) ->
+            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeValueTo index newValue boardConfig
+
+        ( TagBoardConfig boardConfig, Just newCount ) ->
+            config
+
+        _ ->
             config
 
 

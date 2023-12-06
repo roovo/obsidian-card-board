@@ -23,6 +23,8 @@ module Columns exposing
     , updateCompletedColumnLimit
     , updateCompletedCount
     , updateDatedColumnRangeType
+    , updateDatedColumnRangeValueFrom
+    , updateDatedColumnRangeValueTo
     , updateOthers
     )
 
@@ -304,6 +306,22 @@ updateDatedColumnRangeType index rangeType columns =
     columns
         |> toList
         |> LE.updateAt index (Column.updateDatedColumnRangeType rangeType)
+        |> fromList
+
+
+updateDatedColumnRangeValueFrom : Int -> Int -> Columns -> Columns
+updateDatedColumnRangeValueFrom index newValue columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateDatedColumnRangeValueFrom newValue)
+        |> fromList
+
+
+updateDatedColumnRangeValueTo : Int -> Int -> Columns -> Columns
+updateDatedColumnRangeValueTo index newValue columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateDatedColumnRangeValueTo newValue)
         |> fromList
 
 

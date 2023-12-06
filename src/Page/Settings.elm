@@ -113,6 +113,8 @@ type Msg
     | ElementDragged DragData
     | EnteredColumName String String
     | EnteredCompletedCount String
+    | EnteredDatedColumnRangeValueFrom Int String
+    | EnteredDatedColumnRangeValueTo Int String
     | EnteredNewBoardTitle String
     | EnteredNewColumnCompletedLimit Int String
     | EnteredNewColumnTitle Int String
@@ -225,6 +227,12 @@ update msg model =
 
         EnteredCompletedCount value ->
             mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
+
+        EnteredDatedColumnRangeValueFrom index value ->
+            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model
+
+        EnteredDatedColumnRangeValueTo index value ->
+            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
 
         EnteredNewBoardTitle title ->
             mapBoardBeingAdded (BoardConfig.updateTitle title) model
@@ -1381,7 +1389,7 @@ settingsColumnControlView index column =
         Column.Dated datedColumn ->
             Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ rangeSelectView index (DatedColumn.range datedColumn)
-                , rangeInputsView (DatedColumn.range datedColumn)
+                , rangeInputsView index (DatedColumn.range datedColumn)
                 ]
 
         _ ->
@@ -1432,14 +1440,15 @@ rangeSelectView index range =
                 ]
 
 
-rangeInputsView : RelativeDateRange -> Html Msg
-rangeInputsView range =
+rangeInputsView : Int -> RelativeDateRange -> Html Msg
+rangeInputsView index range =
     case range of
         DatedColumn.Before to ->
             Html.input
                 [ type_ "text"
                 , value <| String.fromInt to
                 , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueTo index
                 ]
                 []
 
@@ -1448,6 +1457,7 @@ rangeInputsView range =
                 [ type_ "text"
                 , value <| String.fromInt from
                 , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueFrom index
                 ]
                 []
 
@@ -1457,6 +1467,7 @@ rangeInputsView range =
                     [ type_ "text"
                     , value <| String.fromInt fromTo.from
                     , attribute "size" "3"
+                    , onInput <| EnteredDatedColumnRangeValueFrom index
                     ]
                     []
                 , Html.span [] [ Html.text "and" ]
@@ -1464,6 +1475,7 @@ rangeInputsView range =
                     [ type_ "text"
                     , value <| String.fromInt fromTo.to
                     , attribute "size" "3"
+                    , onInput <| EnteredDatedColumnRangeValueTo index
                     ]
                     []
                 ]

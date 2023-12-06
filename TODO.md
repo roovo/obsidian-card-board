@@ -1,5 +1,5 @@
 - allow custom date boards to be specified
-    - editing ranges
+    - handle Betwen from, to being the wrong way around
     - add column
         (restrict to dateboard types - specify column type and name)
         if the last column is Completed then put the new one before it
@@ -19,6 +19,8 @@
       - when reading from config
 - ensure columns on a board have unique names
     - when entering and when reading from config
+- do I want to do something with input boxes for numbers as they are a bit
+  odd due to the fact that they cannot be empty..
 
 - npm run generate
 - ts types for settings

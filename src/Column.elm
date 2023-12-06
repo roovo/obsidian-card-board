@@ -35,6 +35,8 @@ module Column exposing
     , untagged
     , updateCompletedColumnLimit
     , updateDatedColumnRangeType
+    , updateDatedColumnRangeValueFrom
+    , updateDatedColumnRangeValueTo
     , updateName
     , updateOthers
     )
@@ -533,6 +535,26 @@ updateDatedColumnRangeType rangeType column =
     case column of
         Dated datedColumn ->
             Dated (DatedColumn.updateRangeType rangeType datedColumn)
+
+        _ ->
+            column
+
+
+updateDatedColumnRangeValueFrom : Int -> Column -> Column
+updateDatedColumnRangeValueFrom newValue column =
+    case column of
+        Dated datedColumn ->
+            Dated (DatedColumn.updateRangeValueFrom newValue datedColumn)
+
+        _ ->
+            column
+
+
+updateDatedColumnRangeValueTo : Int -> Column -> Column
+updateDatedColumnRangeValueTo newValue column =
+    case column of
+        Dated datedColumn ->
+            Dated (DatedColumn.updateRangeValueTo newValue datedColumn)
 
         _ ->
             column
