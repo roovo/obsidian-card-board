@@ -17,6 +17,7 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
 import NewBoardConfig exposing (NewBoardConfig)
@@ -133,11 +134,13 @@ cancelCurrentState settingsState =
             ClosingSettings settings_
 
 
-confirmAddBoard : SettingsState -> SettingsState
-confirmAddBoard settingsState =
+confirmAddBoard : DefaultColumnNames -> SettingsState -> SettingsState
+confirmAddBoard defaultColumnNames settingsState =
     case settingsState of
         AddingBoard c settings_ ->
-            EditingBoard <| Settings.cleanupNames <| Settings.addBoard c settings_
+            EditingBoard <|
+                Settings.cleanupNames <|
+                    Settings.addBoard defaultColumnNames c settings_
 
         _ ->
             settingsState

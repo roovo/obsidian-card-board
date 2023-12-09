@@ -13,7 +13,6 @@ module BoardConfig exposing
     , decoder_v_0_7_0
     , decoder_v_0_8_0
     , decoder_v_0_9_0
-    , default
     , encoder
     , filterPolarity
     , filterScope
@@ -29,7 +28,6 @@ module BoardConfig exposing
     , toggleTagFilterScope
     , updateColumnName
     , updateCompletedColumnLimit
-    , updateCompletedCount
     , updateDatedColumnRangeType
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
@@ -83,33 +81,53 @@ type alias LocalColumnConfig =
 -- CREATE
 
 
-default : BoardConfig
-default =
-    BoardConfig
-        { columns =
-            Columns.fromList
-                [ Column.completed <| CompletedColumn.init "Completed" 0 10
-                ]
-        , filters = []
-        , filterPolarity = Filter.defaultPolarity
-        , filterScope = Filter.defaultScope
-        , name = ""
-        , showColumnTags = True
-        , showFilteredTags = True
-        }
+fromNewBoardConfig : DefaultColumnNames -> NewBoardConfig -> BoardConfig
+fromNewBoardConfig defaultColumnNames newBoardConfig =
+    case newBoardConfig.boardType of
+        "dateBoard" ->
+            BoardConfig
+                { columns =
+                    Columns.fromList
+                        [ Column.undated (DefaultColumnNames.nameFor "undated" defaultColumnNames)
+                        , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "today" defaultColumnNames) (DatedColumn.Before 1)
+                        , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "tomorrow" defaultColumnNames) (DatedColumn.Between { from = 1, to = 1 })
+                        , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "future" defaultColumnNames) (DatedColumn.After 1)
+                        , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 4 10
+                        ]
+                , filters = []
+                , filterPolarity = Filter.defaultPolarity
+                , filterScope = Filter.defaultScope
+                , name = newBoardConfig.name
+                , showColumnTags = True
+                , showFilteredTags = True
+                }
 
+        "tagBoard" ->
+            BoardConfig
+                { columns =
+                    Columns.fromList
+                        [ Column.untagged (DefaultColumnNames.nameFor "untagged" defaultColumnNames)
+                        , Column.otherTags (DefaultColumnNames.nameFor "otherTags" defaultColumnNames) []
+                        , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 2 10
+                        ]
+                , filters = []
+                , filterPolarity = Filter.defaultPolarity
+                , filterScope = Filter.defaultScope
+                , name = newBoardConfig.name
+                , showColumnTags = True
+                , showFilteredTags = True
+                }
 
-fromNewBoardConfig : NewBoardConfig -> BoardConfig
-fromNewBoardConfig newBoardConfig =
-    BoardConfig
-        { columns = Columns.empty
-        , filters = []
-        , filterPolarity = Filter.defaultPolarity
-        , filterScope = Filter.defaultScope
-        , name = newBoardConfig.name
-        , showColumnTags = True
-        , showFilteredTags = True
-        }
+        _ ->
+            BoardConfig
+                { columns = Columns.empty
+                , filters = []
+                , filterPolarity = Filter.defaultPolarity
+                , filterScope = Filter.defaultScope
+                , name = newBoardConfig.name
+                , showColumnTags = True
+                , showFilteredTags = True
+                }
 
 
 
@@ -241,16 +259,6 @@ updateCompletedColumnLimit index value ((BoardConfig c) as boardConfig) =
     case value of
         Just newLimit ->
             BoardConfig { c | columns = Columns.updateCompletedColumnLimit index newLimit c.columns }
-
-        _ ->
-            boardConfig
-
-
-updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
-updateCompletedCount value ((BoardConfig c) as boardConfig) =
-    case value of
-        Just newCount ->
-            BoardConfig { c | columns = Columns.updateCompletedCount newCount c.columns }
 
         _ ->
             boardConfig

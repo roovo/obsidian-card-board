@@ -2,7 +2,7 @@ module Columns exposing
     ( Columns
     , addTaskList
     , collapseColumn
-    , completedCount
+    , completedLimit
     , decoder
     , empty
     , encoder
@@ -116,8 +116,8 @@ encoder =
 -- INFO
 
 
-completedCount : Columns -> Int
-completedCount columns =
+completedLimit : Columns -> Int
+completedLimit columns =
     case columns of
         WithCompleted _ completedColumn ->
             CompletedColumn.limit completedColumn

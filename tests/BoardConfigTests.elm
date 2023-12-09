@@ -2,12 +2,16 @@ module BoardConfigTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import Column
+import Column.Dated as DatedColumn
 import Columns
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
+import List.Extra as LE
+import Maybe.Extra as ME
 import NewBoardConfig exposing (NewBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
@@ -16,554 +20,576 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        -- [ collapseColumn
-        [ default
-
-        -- , encodeDecode
+        [ collapseColumn
+        , encodeDecode
         , fromNewBoardConfig
-
-        -- , fromBoardType
-        -- , isForDateBoard
-        -- , isForTagBoard
-        -- , mapFilters
-        -- , updateColumnTitle
-        -- , toggleIncludeOthers
-        -- , toggleIncludeUndated
-        -- , toggleIncludeUntagged
-        -- , toggleShowColumnTags
-        -- , toggleShowFilteredTags
-        -- , toggleTagFilterScope
-        -- , updateBoardType
-        -- , updateCompletedCount
-        -- , updateFilters
-        -- , updateFilterPolarity
-        -- , updateTags
-        -- , updateTitle
+        , mapFilters
+        , setNamesToDefault
+        , toggleShowColumnTags
+        , toggleShowFilteredTags
+        , toggleTagFilterScope
+        , updateColumnName
+        , updateCompletedColumnLimit
+        , updateDatedColumnRangeType
+        , updateDatedColumnRangeValueFrom
+        , updateDatedColumnRangeValueTo
+        , updateFilterPolarity
+        , updateFilterScope
+        , updateFilters
+        , updateName
         ]
 
 
-
--- collapseColumn : Test
--- collapseColumn =
---     describe "collapseColumn"
---         [ test "collapses a column for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.collapseColumn 1 True
---                     |> extractDateBoardConfig
---                     |> Maybe.map .columns
---                     |> Maybe.map Columns.toList
---                     |> Maybe.withDefault []
---                     |> List.map Column.isCollapsed
---                     |> Expect.equal [ False, True, False, False, False ]
---         , test "uncollapses a column for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.collapseColumn 1 True
---                     |> BoardConfig.collapseColumn 1 False
---                     |> extractDateBoardConfig
---                     |> Maybe.map .columns
---                     |> Maybe.map Columns.toList
---                     |> Maybe.withDefault []
---                     |> List.map Column.isCollapsed
---                     |> Expect.equal [ False, False, False, False, False ]
---         ]
---
-
-
-default : Test
-default =
-    describe "default"
-        [ test "has a Completed column" <|
+collapseColumn : Test
+collapseColumn =
+    describe "collapseColumn"
+        [ test "collapses a column" <|
             \() ->
-                BoardConfig.default
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.collapseColumn 1 True
                     |> BoardConfig.columns
-                    |> Columns.includesCompleted
-                    |> Expect.equal True
+                    |> Columns.toList
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, True, False, False, False ]
+        , test "UNcollapses a column" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.collapseColumn 1 True
+                    |> BoardConfig.collapseColumn 1 False
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, False, False, False, False ]
         ]
 
 
-
---
--- default : BoardConfig
--- default =
---     BoardConfig
---         { columns =
---             Columns.fromList
---                 [ Column.completed <| CompletedColumn.init "Completed" 0 10
---                 ]
---         , filters = []
---         , filterPolarity = Filter.defaultPolarity
---         , filterScope = Filter.defaultScope
---         , showColumnTags = True
---         , showFilteredTags = True
---         , title = ""
---         }
--- encodeDecode : Test
--- encodeDecode =
---     describe "encoding and decoding config"
---         [ test "can decode an encoded string back to the original" <|
---             \() ->
---                 BoardConfigHelpers.exampleBoardConfig
---                     |> TsEncode.runExample BoardConfig.encoder
---                     |> .output
---                     |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_11_0
---                     |> .decoded
---                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
---         ]
---
+encodeDecode : Test
+encodeDecode =
+    describe "encoding and decoding config"
+        [ test "can decode an encoded string back to the original" <|
+            \() ->
+                BoardConfigHelpers.exampleBoardConfig
+                    |> TsEncode.runExample BoardConfig.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_11_0
+                    |> .decoded
+                    |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
+        ]
 
 
 fromNewBoardConfig : Test
 fromNewBoardConfig =
     describe "fromNewBoardConfig"
-        [ describe "emptyBoard"
-            [ test "sets the board name" <|
+        [ describe "dateBoard"
+            [ test "has the basic date columns" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
-                        |> BoardConfig.fromNewBoardConfig
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.columns
+                        |> Columns.toList
+                        |> List.map Column.name
+                        |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
+            , test "can override the names of the basic date columns" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig customColumnNames
+                        |> BoardConfig.columns
+                        |> Columns.toList
+                        |> List.map Column.name
+                        |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
+            , test "has no filters" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filters
+                        |> Expect.equal []
+            , test "has the default filter polarity" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterPolarity
+                        |> Expect.equal Filter.defaultPolarity
+            , test "has the default filter scope" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterScope
+                        |> Expect.equal Filter.defaultScope
+            , test "sets the board name" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.name
                         |> Expect.equal "foo"
+            , test "shows column tags" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showColumnTags
+                        |> Expect.equal True
+            , test "shows filtered tags" <|
+                \() ->
+                    NewBoardConfig "foo" "dateBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showFilteredTags
+                        |> Expect.equal True
+            ]
+        , describe "emptyBoard"
+            [ test "has no columns" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.columns
+                        |> Expect.equal Columns.empty
+            , test "has no filters" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filters
+                        |> Expect.equal []
+            , test "has the default filter polarity" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterPolarity
+                        |> Expect.equal Filter.defaultPolarity
+            , test "has the default filter scope" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterScope
+                        |> Expect.equal Filter.defaultScope
+            , test "sets the board name" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.name
+                        |> Expect.equal "foo"
+            , test "shows column tags" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showColumnTags
+                        |> Expect.equal True
+            , test "shows filtered tags" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showFilteredTags
+                        |> Expect.equal True
+            ]
+        , describe "tagBoard"
+            [ test "has the basic tag board columns" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.columns
+                        |> Columns.toList
+                        |> List.map Column.name
+                        |> Expect.equal [ "Untagged", "Other Tags", "Completed" ]
+            , test "can override the names of tag board columns" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig customColumnNames
+                        |> BoardConfig.columns
+                        |> Columns.toList
+                        |> List.map Column.name
+                        |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
+            , test "has no filters" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filters
+                        |> Expect.equal []
+            , test "has the default filter polarity" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterPolarity
+                        |> Expect.equal Filter.defaultPolarity
+            , test "has the default filter scope" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.filterScope
+                        |> Expect.equal Filter.defaultScope
+            , test "sets the board name" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.name
+                        |> Expect.equal "foo"
+            , test "shows column tags" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showColumnTags
+                        |> Expect.equal True
+            , test "shows filtered tags" <|
+                \() ->
+                    NewBoardConfig "foo" "tagBoard"
+                        |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                        |> BoardConfig.showFilteredTags
+                        |> Expect.equal True
             ]
         ]
 
 
+mapFilters : Test
+mapFilters =
+    describe "mapFilters"
+        [ test "updates the filters" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.mapFilters (always Filter.dummy)
+                    |> BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "", "", "" ]
+        ]
 
--- type BoardConfig
---     = BoardConfig Config
---
---
--- type alias Config =
---     { columns : Columns
---     , filters : List Filter
---     , filterPolarity : Polarity
---     , filterScope : Scope
---     , name : String
---     , showColumnTags : Bool
---     , showFilteredTags : Bool
---     }
---
---
---
--- fromBoardType : Test
--- fromBoardType =
---     describe "fromBoardType"
---         [ test "builds a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.isForDateBoard
---                     |> Expect.equal True
---         , test "sets the title of the DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.title
---                     |> Expect.equal "some title"
---         , test "builds a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "NOT dateBoard" "some title"
---                     |> BoardConfig.isForTagBoard
---                     |> Expect.equal True
---         , test "sets the title of the TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "NOT dateBoard" "some title"
---                     |> BoardConfig.title
---                     |> Expect.equal "some title"
---         ]
---
---
--- isForDateBoard : Test
--- isForDateBoard =
---     describe "isForDateBoard"
---         [ test "returns True for a DateBoard" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.isForDateBoard
---                     |> Expect.equal True
---         , test "returns False for a TagBoard" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "some title"
---                     |> BoardConfig.isForDateBoard
---                     |> Expect.equal False
---         ]
---
---
--- isForTagBoard : Test
--- isForTagBoard =
---     describe "isForTagBoard"
---         [ test "returns True for a TagBoard" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "some title"
---                     |> BoardConfig.isForTagBoard
---                     |> Expect.equal True
---         , test "returns False for a TagBoard" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.isForTagBoard
---                     |> Expect.equal False
---         ]
---
---
--- mapFilters : Test
--- mapFilters =
---     describe "mapFilters"
---         [ test "updates the filters for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "a title"
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.mapFilters (always Filter.dummy)
---                     |> BoardConfig.filters
---                     |> List.map Filter.value
---                     |> Expect.equal [ "", "", "" ]
---         , test "updates the filters for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "a title"
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.mapFilters (always Filter.dummy)
---                     |> BoardConfig.filters
---                     |> List.map Filter.value
---                     |> Expect.equal [ "", "", "" ]
---         ]
---
--- updateColumnTitle : Test
--- updateColumnTitle =
---     describe "updateColumnTitle"
---         [ test "updates a column title for a DateBoard config" <|
---             \() ->
---                 BoardConfig.DateBoardConfig DateBoardConfig.default
---                     |> BoardConfig.updateColumnTitle 1 "new title"
---                     |> BoardConfig.dateBoardConfig
---                     |> Maybe.map .columns
---                     |> Maybe.map Columns.toList
---                     |> Maybe.withDefault []
---                     |> List.map Column.name
---                     |> Expect.equal [ "Undated", "new title", "Tomorrow", "Future", "Completed" ]
---         ]
---
---
---
---
---
--- toggleIncludeOthers : Test
--- toggleIncludeOthers =
---     describe "toggleIncludeOthers"
---         [ test "does nothing to a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.toggleIncludeOthers
---                     |> extractDateBoardConfig
---                     |> Expect.equal (Just DateBoardConfig.default)
---         , test "toggles includeOthers for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.toggleIncludeOthers
---                     |> extractTagBoardConfig
---                     |> Maybe.map .includeOthers
---                     |> Expect.equal (Just <| not defaultTagBoardConfig.includeOthers)
---         ]
---
---
--- toggleIncludeUndated : Test
--- toggleIncludeUndated =
---     describe "toggleIncludeUndated"
---         [ test "toggled includeUndated for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.toggleIncludeUndated
---                     |> extractDateBoardConfig
---                     |> Maybe.map .includeUndated
---                     |> Expect.equal (Just <| not defaultDateBoardConfig.includeUndated)
---         , test "does nothing for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.toggleIncludeUndated
---                     |> extractTagBoardConfig
---                     |> Expect.equal (Just TagBoardConfig.default)
---         ]
---
---
--- toggleIncludeUntagged : Test
--- toggleIncludeUntagged =
---     describe "toggleIncludeUntagged"
---         [ test "does nothing to a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.toggleIncludeUntagged
---                     |> extractDateBoardConfig
---                     |> Expect.equal (Just DateBoardConfig.default)
---         , test "toggles includeUntagged for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.toggleIncludeUntagged
---                     |> extractTagBoardConfig
---                     |> Maybe.map .includeUntagged
---                     |> Expect.equal (Just <| not defaultTagBoardConfig.includeUntagged)
---         ]
---
---
--- toggleShowColumnTags : Test
--- toggleShowColumnTags =
---     describe "toggleShowColumnTags"
---         [ test "does nothing to a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.toggleShowColumnTags
---                     |> extractDateBoardConfig
---                     |> Expect.equal (Just DateBoardConfig.default)
---         , test "toggles includeUntagged for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.toggleShowColumnTags
---                     |> extractTagBoardConfig
---                     |> Maybe.map .showColumnTags
---                     |> Expect.equal (Just <| not defaultTagBoardConfig.showColumnTags)
---         ]
---
---
--- toggleShowFilteredTags : Test
--- toggleShowFilteredTags =
---     describe "toggleShowFilteredTags"
---         [ test "toggles includeUntagged for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.toggleShowFilteredTags
---                     |> extractDateBoardConfig
---                     |> Maybe.map .showFilteredTags
---                     |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
---         , test "toggles includeUntagged for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.toggleShowFilteredTags
---                     |> extractTagBoardConfig
---                     |> Maybe.map .showFilteredTags
---                     |> Expect.equal (Just <| not defaultTagBoardConfig.showFilteredTags)
---         ]
---
---
--- toggleTagFilterScope : Test
--- toggleTagFilterScope =
---     describe "toggleTagFilterScope"
---         [ test "toggles TopLevelOnly -> SubTasksOnly for a DateBoard config" <|
---             \() ->
---                 DateBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.TopLevelOnly })
---                     |> BoardConfig.DateBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractDateBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.SubTasksOnly)
---         , test "toggles SubTasksOnly -> Both for a DateBoard config" <|
---             \() ->
---                 DateBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.SubTasksOnly })
---                     |> BoardConfig.DateBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractDateBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.Both)
---         , test "toggles Both -> TopLevelOnly for a DateBoard config" <|
---             \() ->
---                 DateBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.Both })
---                     |> BoardConfig.DateBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractDateBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.TopLevelOnly)
---         , test "toggles TopLevelOnly -> SubTasksOnly for a TagBoard config" <|
---             \() ->
---                 TagBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.TopLevelOnly })
---                     |> BoardConfig.TagBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractTagBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.SubTasksOnly)
---         , test "toggles SubTasksOnly -> Both for a TagBoard config" <|
---             \() ->
---                 TagBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.SubTasksOnly })
---                     |> BoardConfig.TagBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractTagBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.Both)
---         , test "toggles Both -> TopLevelOnly for a TagBoard config" <|
---             \() ->
---                 TagBoardConfig.default
---                     |> (\c -> { c | filterScope = Filter.Both })
---                     |> BoardConfig.TagBoardConfig
---                     |> BoardConfig.toggleTagFilterScope
---                     |> extractTagBoardConfig
---                     |> Maybe.map .filterScope
---                     |> Expect.equal (Just Filter.TopLevelOnly)
---         ]
---
---
--- updateBoardType : Test
--- updateBoardType =
---     describe "updateBoardType"
---         [ test "builds a new DateBoard config from a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "some title"
---                     |> BoardConfig.updateBoardType "dateBoard"
---                     |> BoardConfig.isForDateBoard
---                     |> Expect.equal True
---         , test "keeps the title when converting a TagBoard into a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "some title"
---                     |> BoardConfig.updateBoardType "dateBoard"
---                     |> BoardConfig.title
---                     |> Expect.equal "some title"
---         , test "builds a new TagBoard config from a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.updateBoardType "tagBoard"
---                     |> BoardConfig.isForTagBoard
---                     |> Expect.equal True
---         , test "keeps the title when converting a DateBoard into a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "some title"
---                     |> BoardConfig.updateBoardType "tagBoard"
---                     |> BoardConfig.title
---                     |> Expect.equal "some title"
---         ]
---
---
--- updateCompletedCount : Test
--- updateCompletedCount =
---     describe "updateCompletedCount"
---         [ test "updates the completedCount for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.updateCompletedCount (Just 33)
---                     |> extractDateBoardConfig
---                     |> Maybe.map .completedCount
---                     |> Expect.equal (Just 33)
---         , test "updates the completedCount for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.updateCompletedCount (Just 33)
---                     |> extractTagBoardConfig
---                     |> Maybe.map .completedCount
---                     |> Expect.equal (Just 33)
---         , test "does NOT update the completedCount for a DateBoard config if the count is Nothing" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.updateCompletedCount Nothing
---                     |> extractDateBoardConfig
---                     |> Maybe.map .completedCount
---                     |> Expect.equal (Just 10)
---         , test "does NOT update the completedCount for a TagBoard config if the count is Nothing" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.updateCompletedCount Nothing
---                     |> extractTagBoardConfig
---                     |> Maybe.map .completedCount
---                     |> Expect.equal (Just 10)
---         ]
---
---
--- updateFilters : Test
--- updateFilters =
---     describe "updateFilters"
---         [ test "updates the filters for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "a title"
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.filters
---                     |> Expect.equal FilterHelpers.exampleFilters
---         , test "updates the filters for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "a title"
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.filters
---                     |> Expect.equal FilterHelpers.exampleFilters
---         ]
---
---
--- updateFilterPolarity : Test
--- updateFilterPolarity =
---     describe "updateFilterPolarity"
---         [ test "updates the filter polarity for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "a title"
---                     |> BoardConfig.updateFilterPolarity "Deny"
---                     |> BoardConfig.filterPolarity
---                     |> Expect.equal Filter.Deny
---         , test "updates the filter polarity for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "a title"
---                     |> BoardConfig.updateFilterPolarity "Deny"
---                     |> BoardConfig.filterPolarity
---                     |> Expect.equal Filter.Deny
---         ]
---
---
--- updateTags : Test
--- updateTags =
---     describe "updateTags"
---         [ test "does nothing to a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" ""
---                     |> BoardConfig.updateTags ""
---                     |> extractDateBoardConfig
---                     |> Expect.equal (Just DateBoardConfig.default)
---         , test "updates the tags for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" ""
---                     |> BoardConfig.updateTags "bar"
---                     |> BoardConfig.updateTags "foo"
---                     |> extractTagBoardConfig
---                     |> Maybe.map .columns
---                     |> Expect.equal (Just [ { tag = "foo", displayTitle = "Foo" } ])
---         ]
---
---
--- updateTitle : Test
--- updateTitle =
---     describe "updateTitle"
---         [ test "updates the title for a DateBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "dateBoard" "a title"
---                     |> BoardConfig.updateTitle "new title"
---                     |> BoardConfig.title
---                     |> Expect.equal "new title"
---         , test "updates the title for a TagBoard config" <|
---             \() ->
---                 BoardConfig.fromBoardType "tagBoard" "a title"
---                     |> BoardConfig.updateTitle "new title"
---                     |> BoardConfig.title
---                     |> Expect.equal "new title"
---         ]
---
---
---
--- -- HELPERS
---
---
--- defaultDateBoardConfig : DateBoardConfig
--- defaultDateBoardConfig =
---     DateBoardConfig.default
---
---
--- defaultTagBoardConfig : TagBoardConfig
--- defaultTagBoardConfig =
---     TagBoardConfig.default
--- extractDateBoardConfig : BoardConfig -> Maybe DateBoardConfig
--- extractDateBoardConfig boardConfig =
---     case boardConfig of
---         BoardConfig.DateBoardConfig config ->
---             Just config
---
---         _ ->
---             Nothing
---
---
--- extractTagBoardConfig : BoardConfig -> Maybe TagBoardConfig
--- extractTagBoardConfig boardConfig =
---     case boardConfig of
---         BoardConfig.TagBoardConfig config ->
---             Just config
---
---         _ ->
---             Nothing
+
+setNamesToDefault : Test
+setNamesToDefault =
+    describe "setNamesToDefault"
+        [ test "can set standard date board column names to the given defaults" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.setNamesToDefault customColumnNames
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
+        , test "can set standard tag board column names to the given defaults" <|
+            \() ->
+                NewBoardConfig "foo" "tagBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.setNamesToDefault customColumnNames
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
+        ]
+
+
+toggleShowColumnTags : Test
+toggleShowColumnTags =
+    describe "toggleShowColumnTags"
+        [ test "toggles showColumnTags" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.toggleShowColumnTags
+                    |> BoardConfig.showColumnTags
+                    |> Expect.equal False
+        ]
+
+
+toggleShowFilteredTags : Test
+toggleShowFilteredTags =
+    describe "toggleShowFilteredTags"
+        [ test "toggles showFilteredTags" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.toggleShowFilteredTags
+                    |> BoardConfig.showFilteredTags
+                    |> Expect.equal False
+        ]
+
+
+toggleTagFilterScope : Test
+toggleTagFilterScope =
+    describe "toggleTagFilterScope"
+        [ test "toggles Both -> TopLevelOnly" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.filterScope
+                    |> Expect.equal Filter.TopLevelOnly
+        , test "toggles TopLevelOnly -> SubTasksOnly" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.filterScope
+                    |> Expect.equal Filter.SubTasksOnly
+        , test "toggles SubTasksOnly -> Both" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.toggleTagFilterScope
+                    |> BoardConfig.filterScope
+                    |> Expect.equal Filter.Both
+        ]
+
+
+updateColumnName : Test
+updateColumnName =
+    describe "updateColumnName"
+        [ test "updates a column name" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateColumnName 1 "new name"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Undated", "new name", "Tomorrow", "Future", "Completed" ]
+        ]
+
+
+updateCompletedColumnLimit : Test
+updateCompletedColumnLimit =
+    describe "updateCompletedColumnLimit"
+        [ test "updates the limit" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateCompletedColumnLimit 4 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.completedLimit
+                    |> Expect.equal 7
+        , test "does nothing if given the wrong index" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateCompletedColumnLimit 0 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.completedLimit
+                    |> Expect.equal 10
+        , test "does nothing if given Nothing" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateCompletedColumnLimit 4 Nothing
+                    |> BoardConfig.columns
+                    |> Columns.completedLimit
+                    |> Expect.equal 10
+        ]
+
+
+updateDatedColumnRangeType : Test
+updateDatedColumnRangeType =
+    describe "updateDatedColumnRangeType"
+        [ test "updates the limit" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeType 1 "After"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.After 1)
+        , test "does nothing if given the wrong index" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeType 0 "After"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Before 1)
+        , test "does nothing if given an invalid range type" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeType 1 "Xxxx"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Before 1)
+        ]
+
+
+updateDatedColumnRangeValueFrom : Test
+updateDatedColumnRangeValueFrom =
+    describe "updateDatedColumnRangeValueFrom"
+        [ test "updates the limit for an After range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueFrom 3 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 3
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.After 7)
+        , test "does nothing if given a column with a Before range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueFrom 1 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Before 1)
+        , test "updates the from part of a Between range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueFrom 2 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 2
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Between { from = 7, to = 1 })
+        , test "does nothing if given Nothing" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueFrom 3 Nothing
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 3
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.After 1)
+        ]
+
+
+updateDatedColumnRangeValueTo : Test
+updateDatedColumnRangeValueTo =
+    describe "updateDatedColumnRangeValueTo"
+        [ test "updates the limit for a Before range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueTo 1 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Before 7)
+        , test "does nothing if given a column with an After range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueTo 3 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 3
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.After 1)
+        , test "updates the to part of a Between range" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueTo 2 (Just 7)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 2
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Between { from = 1, to = 7 })
+        , test "does nothing if given Nothing" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateDatedColumnRangeValueTo 1 Nothing
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> LE.getAt 1
+                    |> Maybe.map Column.asDatedColumn
+                    |> ME.join
+                    |> Maybe.map DatedColumn.range
+                    |> Expect.equal (Just <| DatedColumn.Before 1)
+        ]
+
+
+updateFilterPolarity : Test
+updateFilterPolarity =
+    describe "updateFilterPolarity"
+        [ test "updates the filter polarity" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateFilterPolarity "Deny"
+                    |> BoardConfig.filterPolarity
+                    |> Expect.equal Filter.Deny
+        ]
+
+
+updateFilterScope : Test
+updateFilterScope =
+    describe "updateFilterScope"
+        [ test "updates the filter scope" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateFilterScope Filter.SubTasksOnly
+                    |> BoardConfig.filterScope
+                    |> Expect.equal Filter.SubTasksOnly
+        ]
+
+
+updateFilters : Test
+updateFilters =
+    describe "updateFilters"
+        [ test "updates the filters for a DateBoard config" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateFilters FilterHelpers.exampleFilters
+                    |> BoardConfig.filters
+                    |> Expect.equal FilterHelpers.exampleFilters
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the title for a DateBoard config" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.updateName "new title"
+                    |> BoardConfig.name
+                    |> Expect.equal "new title"
+        ]
+
+
+
+-- HELPERS
+
+
+customColumnNames : DefaultColumnNames
+customColumnNames =
+    { today = Just "This Day"
+    , tomorrow = Just "The Morrow"
+    , future = Just "Way Out"
+    , undated = Just "No Date"
+    , otherTags = Just "Other Taggy-Waggys"
+    , untagged = Just "No Tags"
+    , completed = Just "Done"
+    }

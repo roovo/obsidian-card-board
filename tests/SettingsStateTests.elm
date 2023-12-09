@@ -153,12 +153,12 @@ confirmAddBoard =
             \() ->
                 SettingsState.AddingBoard exampleNewBoardConfig
                     (settingsFromBoardConfigs [ exampleBoardConfig ])
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal
                         (SettingsState.EditingBoard
                             (settingsFromBoardConfigsWithIndex 1
                                 [ exampleBoardConfig
-                                , BoardConfig.fromNewBoardConfig exampleNewBoardConfig
+                                , BoardConfig.fromNewBoardConfig DefaultColumnNames.default exampleNewBoardConfig
                                 ]
                             )
                         )
@@ -166,39 +166,39 @@ confirmAddBoard =
             \() ->
                 SettingsState.AddingBoard noNameNewBoardConfig
                     (settingsFromBoardConfigs [ exampleBoardConfig ])
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal
                         (SettingsState.EditingBoard
                             (settingsFromBoardConfigsWithIndex 1
                                 [ exampleBoardConfig
-                                , BoardConfig.fromNewBoardConfig unnamedNameNewBoardConfig
+                                , BoardConfig.fromNewBoardConfig DefaultColumnNames.default unnamedNameNewBoardConfig
                                 ]
                             )
                         )
         , test "does nothing if ClosingPlugin" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default)
         , test "does nothing if ClosingSettings" <|
             \() ->
                 SettingsState.ClosingSettings Settings.default
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.ClosingSettings Settings.default)
         , test "does nothing if DeletingBoard" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
         , test "does nothing if EditingBoard" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.EditingBoard Settings.default)
         , test "does nothing if EditingGlobalSettings" <|
             \() ->
                 SettingsState.EditingGlobalSettings Settings.default
-                    |> SettingsState.confirmAddBoard
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default)
         ]
 

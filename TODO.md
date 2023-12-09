@@ -1,30 +1,25 @@
-- Settings.addBoard
-- BoardConfig.configureOtherTagsColumn
-- SettingsStateTests.confirmAddBoard
+- no more need for separate date and tag board types, they are just boards
+    - BoardsTests
+    - Settings.addBoard
+    - BoardConfig.configureOtherTagsColumn
+    - SettingsStateTests.confirmAddBoard
+    - handle new board - either date, tag, or blank
+    - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
+    - any tests missed in deleting Tag & Date board configs (and columns)
 
-- handle new board - either date, tag, or blank
-- what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
-- BoardConfig tests
-- BoardsTests
-
-- allow custom date boards to be specified
+- allow custom boards to be specified
     - add column
-        (restrict to dateboard types - specify column type and name)
-        if the last column is Completed then put the new one before it
-        otherwise put it at the end
     - delete column (with confirmation)
     - drag and drop to re-order columns (on settings page)
-- no more need for separate date and tag board types, they are just boards
-    - add tag board column types to the add column options
     - make the column settings look nice
     - allow basic tag and date boards to be created (as well as blank boards)
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
       - when using the settings pane
       - when reading from config
-- any tests missed in deleting Tag & Date board configs (and columns)
 - ensure columns on a board have unique names
     - when entering and when reading from config
+- Call Column Names Default CNs on Global Setting dialog...
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
 
@@ -54,9 +49,6 @@
   but no other tags then it appears in the others column.  It feels like
   it should really be in the untagged column.
 - check coverage and add tests
-- are there any failure cases for TagBoard.columnConfigsParser?
-- tabs are not very visible
-- I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
@@ -83,9 +75,6 @@
   are there any sensible options I can give them if I do?
   - gets stuck on "Loading tasks..." if flags parsing fails
   - I could use State if I added a State.Failed
-- do I want the last board who's settings I've edited to the one shown when closing settings?
-- allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
-  into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete
   taskItem block (if is has indented content).  Will have to explore the setEphemeralState
   code to see if I can do this using line numbers or whether I need to track characters..
@@ -120,7 +109,6 @@
 - do I want a way of flagging cards?
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
 - context menu to set due date to today
-- don't display all completed tasks - can get quite long!
 - filter cards on board (e.g. by tag)
 - sort order for columns?
 

@@ -111,7 +111,6 @@ type Msg
     | DeleteBoardConfirmed
     | ElementDragged DragData
     | EnteredColumName String String
-    | EnteredCompletedCount String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
     | EnteredNewBoardName String
@@ -168,7 +167,16 @@ update msg model =
             mapSettingsState SettingsState.addBoardRequested model
 
         AddBoardConfirmed ->
-            wrap <| switchSettingsState SettingsState.confirmAddBoard model
+            let
+                defaultColumnNames : DefaultColumnNames
+                defaultColumnNames =
+                    model
+                        |> toSession
+                        |> Session.settings
+                        |> Settings.globalSettings
+                        |> .defaultColumnNames
+            in
+            wrap <| switchSettingsState (SettingsState.confirmAddBoard defaultColumnNames) model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
@@ -219,9 +227,6 @@ update msg model =
                             (GlobalSettings.updateColumnName column name)
                             model.settingsState
                 }
-
-        EnteredCompletedCount value ->
-            mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
 
         EnteredDatedColumnRangeValueFrom index value ->
             mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model

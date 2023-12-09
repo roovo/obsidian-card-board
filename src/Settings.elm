@@ -93,13 +93,13 @@ hasAnyBordsConfigured settings =
 -- TRANSFORM
 
 
-addBoard : NewBoardConfig -> Settings -> Settings
-addBoard configToAdd settings =
+addBoard : DefaultColumnNames -> NewBoardConfig -> Settings -> Settings
+addBoard defaultColumnNames configToAdd settings =
     { settings
         | boardConfigs =
             SafeZipper.last <|
                 SafeZipper.add
-                    (BoardConfig.fromNewBoardConfig configToAdd)
+                    (BoardConfig.fromNewBoardConfig defaultColumnNames configToAdd)
                     settings.boardConfigs
     }
 

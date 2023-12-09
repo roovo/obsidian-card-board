@@ -24,6 +24,7 @@ suite =
     concat
         [ addTaskItem
         , asCompletedColumn
+        , asDatedColumn
         , asNamedTagColumn
         , cardCount
         , cards
@@ -167,6 +168,43 @@ asCompletedColumn =
             \() ->
                 Column.untagged ""
                     |> Column.asCompletedColumn
+                    |> Expect.equal Nothing
+        ]
+
+
+asDatedColumn : Test
+asDatedColumn =
+    describe "asDatedColumn"
+        [ test "returns Nothing if it is a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "" 0 10)
+                    |> Column.asDatedColumn
+                    |> Expect.equal Nothing
+        , test "returns Just the DatedColumn if it is one" <|
+            \() ->
+                Column.dated (DatedColumn.init "foo" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.asDatedColumn
+                    |> Maybe.map DatedColumn.name
+                    |> Expect.equal (Just "foo")
+        , test "returns Nothing if it is a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "" "aTag"
+                    |> Column.asDatedColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.asDatedColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.asDatedColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.asDatedColumn
                     |> Expect.equal Nothing
         ]
 
