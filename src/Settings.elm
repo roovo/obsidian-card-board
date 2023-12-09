@@ -24,6 +24,7 @@ import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
+import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -92,9 +93,15 @@ hasAnyBordsConfigured settings =
 -- TRANSFORM
 
 
-addBoard : BoardConfig -> Settings -> Settings
+addBoard : NewBoardConfig -> Settings -> Settings
 addBoard configToAdd settings =
-    { settings | boardConfigs = SafeZipper.last <| SafeZipper.add configToAdd settings.boardConfigs }
+    { settings
+        | boardConfigs =
+            SafeZipper.last <|
+                SafeZipper.add
+                    (BoardConfig.fromNewBoardConfig configToAdd)
+                    settings.boardConfigs
+    }
 
 
 deleteCurrentBoard : Settings -> Settings

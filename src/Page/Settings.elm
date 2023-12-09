@@ -33,6 +33,7 @@ import Html.Keyed
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
+import NewBoardConfig exposing (NewBoardConfig)
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -182,8 +183,7 @@ update msg model =
             )
 
         BoardTypeSelected boardType ->
-            -- mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
-            ( model, Cmd.none, Session.NoOp )
+            mapBoardBeingAdded (NewBoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
@@ -230,7 +230,7 @@ update msg model =
             mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
 
         EnteredNewBoardName name ->
-            mapBoardBeingAdded (BoardConfig.updateName name) model
+            mapBoardBeingAdded (NewBoardConfig.updateName name) model
 
         EnteredNewColumnCompletedLimit columnIndex limit ->
             mapBoardBeingEdited (BoardConfig.updateCompletedColumnLimit columnIndex (String.toInt limit)) model
@@ -395,7 +395,7 @@ mapSettingsState fn model =
     wrap { model | settingsState = fn model.settingsState }
 
 
-mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded : (NewBoardConfig -> NewBoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
@@ -472,8 +472,8 @@ view model =
             globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings dragTracker
 
 
-modalAddBoard : BoardConfig -> Html Msg
-modalAddBoard newConfig =
+modalAddBoard : NewBoardConfig -> Html Msg
+modalAddBoard newBoardConfig =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -491,7 +491,7 @@ modalAddBoard newConfig =
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| BoardConfig.name newConfig
+                            , value <| newBoardConfig.name
                             , onInput EnteredNewBoardName
                             ]
                             []
@@ -505,15 +505,16 @@ modalAddBoard newConfig =
                             [ class "dropdown"
                             , onInput BoardTypeSelected
                             ]
-                            [ Html.option
-                                [ value "dateBoard"
-                                ]
-                                [ Html.text "Date board" ]
-                            , Html.option
-                                [ value "tagBoard"
-                                ]
-                                [ Html.text "Tag board" ]
-                            ]
+                            (NewBoardConfig.optionsForSelect newBoardConfig
+                                |> List.map
+                                    (\c ->
+                                        Html.option
+                                            [ value c.value
+                                            , selected c.isSelected
+                                            ]
+                                            [ Html.text c.text ]
+                                    )
+                            )
                         ]
                     ]
                 , Html.div [ class "dialog-buttons" ]

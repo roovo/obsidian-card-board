@@ -19,6 +19,7 @@ module SettingsState exposing
 import BoardConfig exposing (BoardConfig)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
+import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 
@@ -28,7 +29,7 @@ import Settings exposing (Settings)
 
 
 type SettingsState
-    = AddingBoard BoardConfig Settings
+    = AddingBoard NewBoardConfig Settings
     | ClosingPlugin Settings
     | ClosingSettings Settings
     | DeletingBoard Settings
@@ -46,7 +47,7 @@ init settings_ =
         EditingBoard settings_
 
     else
-        AddingBoard BoardConfig.default settings_
+        AddingBoard NewBoardConfig.default settings_
 
 
 
@@ -91,19 +92,19 @@ addBoardRequested settingsState =
             settingsState
 
         ClosingPlugin settings_ ->
-            AddingBoard BoardConfig.default settings_
+            AddingBoard NewBoardConfig.default settings_
 
         ClosingSettings settings_ ->
-            AddingBoard BoardConfig.default settings_
+            AddingBoard NewBoardConfig.default settings_
 
         DeletingBoard settings_ ->
-            AddingBoard BoardConfig.default settings_
+            AddingBoard NewBoardConfig.default settings_
 
         EditingBoard settings_ ->
-            AddingBoard BoardConfig.default settings_
+            AddingBoard NewBoardConfig.default settings_
 
         EditingGlobalSettings settings_ ->
-            AddingBoard BoardConfig.default settings_
+            AddingBoard NewBoardConfig.default settings_
 
 
 cancelCurrentState : SettingsState -> SettingsState
@@ -227,7 +228,7 @@ moveBoard draggedId beaconPosition settingsState =
 -- MAPPING
 
 
-mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+mapBoardBeingAdded : (NewBoardConfig -> NewBoardConfig) -> SettingsState -> SettingsState
 mapBoardBeingAdded fn settingsState =
     case settingsState of
         AddingBoard c settings_ ->

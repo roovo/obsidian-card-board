@@ -18,6 +18,7 @@ module BoardConfig exposing
     , filterPolarity
     , filterScope
     , filters
+    , fromNewBoardConfig
     , mapFilters
     , name
     , setNamesToDefault
@@ -46,6 +47,7 @@ import Columns exposing (Columns)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
+import NewBoardConfig exposing (NewBoardConfig)
 import Parser
 import TsJson.Decode as TsDecode
 import TsJson.Decode.Pipeline as TsDecode
@@ -92,6 +94,19 @@ default =
         , filterPolarity = Filter.defaultPolarity
         , filterScope = Filter.defaultScope
         , name = ""
+        , showColumnTags = True
+        , showFilteredTags = True
+        }
+
+
+fromNewBoardConfig : NewBoardConfig -> BoardConfig
+fromNewBoardConfig newBoardConfig =
+    BoardConfig
+        { columns = Columns.empty
+        , filters = []
+        , filterPolarity = Filter.defaultPolarity
+        , filterScope = Filter.defaultScope
+        , name = newBoardConfig.name
         , showColumnTags = True
         , showFilteredTags = True
         }

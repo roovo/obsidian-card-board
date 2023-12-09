@@ -8,6 +8,7 @@ import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
+import NewBoardConfig exposing (NewBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -19,6 +20,8 @@ suite =
         [ default
 
         -- , encodeDecode
+        , fromNewBoardConfig
+
         -- , fromBoardType
         -- , isForDateBoard
         -- , isForTagBoard
@@ -108,6 +111,38 @@ default =
 --                     |> .decoded
 --                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
 --         ]
+--
+
+
+fromNewBoardConfig : Test
+fromNewBoardConfig =
+    describe "fromNewBoardConfig"
+        [ describe "emptyBoard"
+            [ test "sets the board name" <|
+                \() ->
+                    NewBoardConfig "foo" "emptyBoard"
+                        |> BoardConfig.fromNewBoardConfig
+                        |> BoardConfig.name
+                        |> Expect.equal "foo"
+            ]
+        ]
+
+
+
+-- type BoardConfig
+--     = BoardConfig Config
+--
+--
+-- type alias Config =
+--     { columns : Columns
+--     , filters : List Filter
+--     , filterPolarity : Polarity
+--     , filterScope : Scope
+--     , name : String
+--     , showColumnTags : Bool
+--     , showFilteredTags : Bool
+--     }
+--
 --
 --
 -- fromBoardType : Test

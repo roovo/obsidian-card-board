@@ -1,4 +1,7 @@
+- Settings.addBoard
 - BoardConfig.configureOtherTagsColumn
+- SettingsStateTests.confirmAddBoard
+
 - handle new board - either date, tag, or blank
 - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - BoardConfig tests
