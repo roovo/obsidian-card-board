@@ -773,16 +773,16 @@ typeString =
                 Column.completed (CompletedColumn.init "foo" 0 10)
                     |> Column.typeString
                     |> Expect.equal "Completed"
-        , test "returns 'Date' if it is a DatedColumn" <|
+        , test "returns 'Dated' if it is a DatedColumn" <|
             \() ->
                 Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
                     |> Column.typeString
-                    |> Expect.equal "Date"
-        , test "returns 'Tag' if it is a NamedTagColumn" <|
+                    |> Expect.equal "Dated"
+        , test "returns 'Tagged' if it is a NamedTagColumn" <|
             \() ->
                 Column.namedTag "" "aTag"
                     |> Column.typeString
-                    |> Expect.equal "Tag"
+                    |> Expect.equal "Tagged"
         , test "returns 'Other Tags' if it is a OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]

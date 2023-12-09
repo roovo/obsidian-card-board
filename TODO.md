@@ -3,7 +3,6 @@
 - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - BoardConfig tests
 - BoardsTests
-- Date column type -> Dated (and tagged)
 
 - allow custom date boards to be specified
     - add column

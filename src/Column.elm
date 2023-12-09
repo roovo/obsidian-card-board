@@ -297,10 +297,10 @@ typeString column =
             "Completed"
 
         Dated datedColumn ->
-            "Date"
+            "Dated"
 
         NamedTag namedTagColumn ->
-            "Tag"
+            "Tagged"
 
         OtherTags otherTagsColumn ->
             "Other Tags"
