@@ -47,7 +47,7 @@ columns ignoreFileNameDates today ((Board _ config taskList) as board) =
 
 id : Board -> String
 id (Board uniqueId config _) =
-    uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.title config)
+    uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.name config)
 
 
 

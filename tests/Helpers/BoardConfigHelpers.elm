@@ -30,7 +30,7 @@ defaultDateBoardConfig =
         , filterScope = Filter.Both
         , showColumnTags = False
         , showFilteredTags = True
-        , title = "Date Board Title"
+        , name = "Date Board Name"
         }
 
 
@@ -55,7 +55,7 @@ exampleDateBoardConfig =
         , filterScope = Filter.TopLevelOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , title = "Date Board Title"
+        , name = "Date Board Name"
         }
 
 
@@ -68,7 +68,7 @@ defaultTagBoardConfig =
         , filterScope = Filter.Both
         , showColumnTags = True
         , showFilteredTags = True
-        , title = "Tag Board Title"
+        , name = "Tag Board Name"
         }
 
 
@@ -87,5 +87,5 @@ exampleTagBoardConfig =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = True
         , showFilteredTags = False
-        , title = "Tag Board Title"
+        , name = "Tag Board Name"
         }

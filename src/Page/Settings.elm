@@ -113,10 +113,10 @@ type Msg
     | EnteredCompletedCount String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
-    | EnteredNewBoardTitle String
+    | EnteredNewBoardName String
     | EnteredNewColumnCompletedLimit Int String
-    | EnteredNewColumnTitle Int String
-    | EnteredTitle String
+    | EnteredNewColumnName Int String
+    | EnteredName String
     | FilterCandidatesReceived (List Filter)
     | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
@@ -229,17 +229,17 @@ update msg model =
         EnteredDatedColumnRangeValueTo index value ->
             mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
 
-        EnteredNewBoardTitle title ->
-            mapBoardBeingAdded (BoardConfig.updateTitle title) model
+        EnteredNewBoardName name ->
+            mapBoardBeingAdded (BoardConfig.updateName name) model
 
         EnteredNewColumnCompletedLimit columnIndex limit ->
             mapBoardBeingEdited (BoardConfig.updateCompletedColumnLimit columnIndex (String.toInt limit)) model
 
-        EnteredNewColumnTitle columnIndex title ->
-            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex title) model
+        EnteredNewColumnName columnIndex name ->
+            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex name) model
 
-        EnteredTitle title ->
-            mapBoardBeingEdited (BoardConfig.updateTitle title) model
+        EnteredName name ->
+            mapBoardBeingEdited (BoardConfig.updateName name) model
 
         FilterCandidatesReceived filterCandidates ->
             let
@@ -487,12 +487,12 @@ modalAddBoard newConfig =
             , Html.div [ class "modal-form" ]
                 [ Html.div [ class "form-item" ]
                     [ Html.div [ class "form-item-name" ]
-                        [ Html.text "Title" ]
+                        [ Html.text "Name" ]
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| BoardConfig.title newConfig
-                            , onInput EnteredNewBoardTitle
+                            , value <| BoardConfig.name newConfig
+                            , onInput EnteredNewBoardName
                             ]
                             []
                         ]
@@ -570,10 +570,10 @@ settingsSurroundView currentSection configs dragTracker formContents =
         boardMapFn =
             case currentSection of
                 Options ->
-                    settingTitleView
+                    settingNameView
 
                 Boards ->
-                    settingTitleSelectedView isDragging
+                    settingNameSelectedView isDragging
 
         globalSettingsClass : String
         globalSettingsClass =
@@ -637,11 +637,11 @@ settingsSurroundView currentSection configs dragTracker formContents =
                             ]
                         , Html.div [ class "vertical-tab-header-group-items" ]
                             (configs
-                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
+                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingNameView
                                 |> SafeZipper.toList
                                 |> (\hs ->
                                         List.append hs
-                                            [ settingTitleDraggedView isDragging (SafeZipper.current configs) dragTracker ]
+                                            [ settingNameDraggedView isDragging (SafeZipper.current configs) dragTracker ]
                                    )
                             )
                         ]
@@ -955,15 +955,15 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Title" ]
+                        [ Html.text "Name" ]
                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "The name of this board" ]
                     ]
                 , Html.div [ class "setting-item-control" ]
                     [ Html.input
                         [ type_ "text"
-                        , value <| BoardConfig.title config
-                        , onInput EnteredTitle
+                        , value <| BoardConfig.name config
+                        , onInput EnteredName
                         ]
                         []
                     ]
@@ -1087,7 +1087,7 @@ settingsColumnView index column =
             [ Html.input
                 [ type_ "text"
                 , value <| Column.name column
-                , onInput <| EnteredNewColumnTitle index
+                , onInput <| EnteredNewColumnName index
                 ]
                 []
             ]
@@ -1281,19 +1281,19 @@ polaritySelect polarity =
         )
 
 
-settingTitleView : Int -> BoardConfig -> Html Msg
-settingTitleView index boardConfig =
+settingNameView : Int -> BoardConfig -> Html Msg
+settingNameView index boardConfig =
     let
         domId : String
         domId =
             "card-board-setting-board-name:" ++ String.fromInt index
 
-        title : String
-        title =
-            BoardConfig.title boardConfig
+        name : String
+        name =
+            BoardConfig.name boardConfig
     in
     Html.div []
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
             , class "vertical-tab-nav-item"
@@ -1302,31 +1302,31 @@ settingTitleView index boardConfig =
                 (\e ->
                     BoardNameMouseDown <|
                         ( domId
-                        , { uniqueId = title
+                        , { uniqueId = name
                           , clientPos = Coords.fromFloatTuple e.clientPos
                           , offsetPos = Coords.fromFloatTuple e.offsetPos
                           }
                         )
                 )
             ]
-            [ Html.text title ]
-        , beacon (BeaconPosition.After title)
+            [ Html.text name ]
+        , beacon (BeaconPosition.After name)
         ]
 
 
-settingTitleSelectedView : Bool -> Int -> BoardConfig -> Html Msg
-settingTitleSelectedView isDragging index boardConfig =
+settingNameSelectedView : Bool -> Int -> BoardConfig -> Html Msg
+settingNameSelectedView isDragging index boardConfig =
     let
         domId : String
         domId =
             "card-board-setting-board-name:" ++ String.fromInt index
 
-        title : String
-        title =
-            BoardConfig.title boardConfig
+        name : String
+        name =
+            BoardConfig.name boardConfig
     in
     Html.div []
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
             , class "vertical-tab-nav-item is-active"
@@ -1336,20 +1336,20 @@ settingTitleSelectedView isDragging index boardConfig =
                 (\e ->
                     BoardNameMouseDown <|
                         ( domId
-                        , { uniqueId = title
+                        , { uniqueId = name
                           , clientPos = Coords.fromFloatTuple e.clientPos
                           , offsetPos = Coords.fromFloatTuple e.offsetPos
                           }
                         )
                 )
             ]
-            [ Html.text title ]
-        , beacon (BeaconPosition.After title)
+            [ Html.text name ]
+        , beacon (BeaconPosition.After name)
         ]
 
 
-settingTitleDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
-settingTitleDraggedView isDragging boardConfig dragTracker =
+settingNameDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
+settingNameDraggedView isDragging boardConfig dragTracker =
     case ( isDragging, boardConfig, dragTracker ) of
         ( True, Just config, DragTracker.Dragging clientData domData ) ->
             Html.div []
@@ -1372,7 +1372,7 @@ settingTitleDraggedView isDragging boardConfig dragTracker =
                     , style "cursor" "grabbing"
                     , style "opacity" "0.85"
                     ]
-                    [ Html.text (BoardConfig.title config) ]
+                    [ Html.text (BoardConfig.name config) ]
                 ]
 
         _ ->

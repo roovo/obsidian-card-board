@@ -153,11 +153,11 @@ confirmAddBoard =
                 SettingsState.AddingBoard exampleBoardConfigNoColumns (settingsFromBoardConfigs [ exampleBoardConfig ])
                     |> SettingsState.confirmAddBoard
                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfig, exampleBoardConfigNoColumns ]))
-        , test "AddingBoard -> EditingBoard changes blank title to Untitled" <|
+        , test "AddingBoard -> EditingBoard changes blank name to Unnamed" <|
             \() ->
-                SettingsState.AddingBoard noTitleBoardConfig (settingsFromBoardConfigs [ exampleBoardConfig ])
+                SettingsState.AddingBoard noNameBoardConfig (settingsFromBoardConfigs [ exampleBoardConfig ])
                     |> SettingsState.confirmAddBoard
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfig, untitledTitleBoardConfigDateBoard ]))
+                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfig, unnamedNameBoardConfigDateBoard ]))
         , test "does nothing if ClosingPlugin" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
@@ -482,7 +482,7 @@ exampleBoardConfig =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , title = "Board Title"
+        , name = "Board Name"
         }
 
 
@@ -495,7 +495,7 @@ exampleBoardConfigNoColumns =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , title = "No Columns Board Title"
+        , name = "No Columns Board Name"
         }
 
 
@@ -507,8 +507,8 @@ exampleGlobalSettings =
     }
 
 
-noTitleBoardConfig : BoardConfig
-noTitleBoardConfig =
+noNameBoardConfig : BoardConfig
+noNameBoardConfig =
     BoardConfig.BoardConfig
         { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
         , filters = []
@@ -516,7 +516,7 @@ noTitleBoardConfig =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , title = ""
+        , name = ""
         }
 
 
@@ -532,8 +532,8 @@ settingsFromBoardConfigsWithIndex index boardConfigs_ =
         |> Settings.updateBoardConfigs (SafeZipper.atIndex index <| SafeZipper.fromList boardConfigs_)
 
 
-untitledTitleBoardConfigDateBoard : BoardConfig
-untitledTitleBoardConfigDateBoard =
+unnamedNameBoardConfigDateBoard : BoardConfig
+unnamedNameBoardConfigDateBoard =
     BoardConfig.BoardConfig
         { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
         , filters = []
@@ -541,5 +541,5 @@ untitledTitleBoardConfigDateBoard =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , title = "Untitled"
+        , name = "Unnamed"
         }

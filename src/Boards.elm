@@ -5,7 +5,7 @@ module Boards exposing
     , currentIndex
     , init
     , length
-    , titles
+    , names
     )
 
 import Board exposing (Board)
@@ -43,9 +43,9 @@ boardZipper (Boards uniqueId configs taskList) =
     SafeZipper.map (board uniqueId taskList) configs
 
 
-titles : Boards -> SafeZipper String
-titles (Boards _ configs _) =
-    SafeZipper.map tabTitle configs
+names : Boards -> SafeZipper String
+names (Boards _ configs _) =
+    SafeZipper.map tabName configs
 
 
 cards : Bool -> Date -> Boards -> List Card
@@ -78,9 +78,9 @@ length (Boards _ config _) =
 -- PRIVATE
 
 
-tabTitle : BoardConfig -> String
-tabTitle =
-    BoardConfig.title
+tabName : BoardConfig -> String
+tabName =
+    BoardConfig.name
 
 
 board : String -> TaskList -> BoardConfig -> Board

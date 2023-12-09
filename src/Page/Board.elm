@@ -249,13 +249,13 @@ view session =
 
 tabHeaders : Bool -> Maybe Int -> Boards -> List (Html Msg)
 tabHeaders isDragging currentBoardIndex boards =
-    Boards.titles boards
+    Boards.names boards
         |> SafeZipper.indexedMapSelectedAndRest (selectedTabHeader isDragging) (tabHeader isDragging currentBoardIndex)
         |> SafeZipper.toList
 
 
 tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
-tabHeader isDragging currentBoardIndex tabIndex title =
+tabHeader isDragging currentBoardIndex tabIndex name =
     let
         headerClass : String
         headerClass =
@@ -268,32 +268,32 @@ tabHeader isDragging currentBoardIndex tabIndex title =
     Html.div
         [ id domId
         , class ("workspace-tab-header" ++ headerClass)
-        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label" name)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , onClick <| TabSelected tabIndex
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
                     ( domId
-                    , { uniqueId = title
+                    , { uniqueId = name
                       , clientPos = Coords.fromFloatTuple e.clientPos
                       , offsetPos = Coords.fromFloatTuple e.offsetPos
                       }
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
-                [ Html.text <| title ]
+                [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After title)
+        , beacon (BeaconPosition.After name)
         ]
 
 
 selectedTabHeader : Bool -> Int -> String -> Html Msg
-selectedTabHeader isDragging tabIndex title =
+selectedTabHeader isDragging tabIndex name =
     let
         domId : String
         domId =
@@ -302,7 +302,7 @@ selectedTabHeader isDragging tabIndex title =
     Html.div
         [ class "workspace-tab-header is-active"
         , id domId
-        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label" name)
         , attributeIf isDragging (attribute "aria-label" "")
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
@@ -310,20 +310,20 @@ selectedTabHeader isDragging tabIndex title =
             (\e ->
                 TabHeaderMouseDown <|
                     ( domId
-                    , { uniqueId = title
+                    , { uniqueId = name
                       , clientPos = Coords.fromFloatTuple e.clientPos
                       , offsetPos = Coords.fromFloatTuple e.offsetPos
                       }
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
-                [ Html.text <| title ]
+                [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After title)
+        , beacon (BeaconPosition.After name)
         ]
 
 

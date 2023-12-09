@@ -19,10 +19,10 @@ module BoardConfig exposing
     , filterScope
     , filters
     , mapFilters
+    , name
     , setNamesToDefault
     , showColumnTags
     , showFilteredTags
-    , title
     , toggleShowColumnTags
     , toggleShowFilteredTags
     , toggleTagFilterScope
@@ -35,7 +35,7 @@ module BoardConfig exposing
     , updateFilterPolarity
     , updateFilterScope
     , updateFilters
-    , updateTitle
+    , updateName
     )
 
 import Column exposing (Column)
@@ -65,15 +65,15 @@ type alias Config =
     , filters : List Filter
     , filterPolarity : Polarity
     , filterScope : Scope
+    , name : String
     , showColumnTags : Bool
     , showFilteredTags : Bool
-    , title : String
     }
 
 
 type alias LocalColumnConfig =
     { tag : String
-    , displayTitle : String
+    , displayName : String
     }
 
 
@@ -91,9 +91,9 @@ default =
         , filters = []
         , filterPolarity = Filter.defaultPolarity
         , filterScope = Filter.defaultScope
+        , name = ""
         , showColumnTags = True
         , showFilteredTags = True
-        , title = ""
         }
 
 
@@ -131,9 +131,9 @@ showFilteredTags =
     .showFilteredTags << config
 
 
-title : BoardConfig -> String
-title =
-    .title << config
+name : BoardConfig -> String
+name =
+    .name << config
 
 
 
@@ -148,9 +148,9 @@ encoder =
             , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
             , TsEncode.required "filterPolarity" .filterPolarity Filter.polarityEncoder
             , TsEncode.required "filterScope" .filterScope Filter.scopeEncoder
+            , TsEncode.required "name" .name TsEncode.string
             , TsEncode.required "showColumnTags" .showColumnTags TsEncode.bool
             , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
-            , TsEncode.required "title" .title TsEncode.string
             ]
 
 
@@ -161,9 +161,9 @@ decoder_v_0_11_0 =
         |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
         |> TsDecode.required "filterPolarity" Filter.polarityDecoder
         |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "name" TsDecode.string
         |> TsDecode.required "showColumnTags" TsDecode.bool
         |> TsDecode.required "showFilteredTags" TsDecode.bool
-        |> TsDecode.required "title" TsDecode.string
     )
         |> TsDecode.map configureOtherTagsColumn
         |> TsDecode.map BoardConfig
@@ -217,8 +217,8 @@ toggleTagFilterScope (BoardConfig c) =
 
 
 updateColumnName : Int -> String -> BoardConfig -> BoardConfig
-updateColumnName index newTitle (BoardConfig c) =
-    BoardConfig { c | columns = Columns.updateColumnName index newTitle c.columns }
+updateColumnName index newName (BoardConfig c) =
+    BoardConfig { c | columns = Columns.updateColumnName index newName c.columns }
 
 
 updateCompletedColumnLimit : Int -> Maybe Int -> BoardConfig -> BoardConfig
@@ -281,9 +281,9 @@ updateFilters filters_ (BoardConfig c) =
     BoardConfig { c | filters = filters_ }
 
 
-updateTitle : String -> BoardConfig -> BoardConfig
-updateTitle title_ (BoardConfig c) =
-    BoardConfig { c | title = title_ }
+updateName : String -> BoardConfig -> BoardConfig
+updateName name_ (BoardConfig c) =
+    BoardConfig { c | name = name_ }
 
 
 
@@ -568,9 +568,9 @@ buildDateBoardFromPreV11 collapsedColumns completedCount_ filters_ filterPolarit
     , filters = filters_
     , filterPolarity = filterPolarity_
     , filterScope = filterScope_
+    , name = title_
     , showFilteredTags = showFilteredTags_
     , showColumnTags = False
-    , title = title_
     }
 
 
@@ -742,7 +742,7 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
 
         namedTagColumns =
             localColumnConfigs
-                |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
+                |> List.map (\c -> Column.namedTag c.displayName c.tag)
 
         otherTags =
             localColumnConfigs
@@ -768,7 +768,7 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
     , filterScope = filterScope_
     , showColumnTags = showColumnTags_
     , showFilteredTags = showFilteredTags_
-    , title = title_
+    , name = title_
     }
 
 

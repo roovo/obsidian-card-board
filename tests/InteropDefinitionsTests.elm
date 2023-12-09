@@ -45,14 +45,14 @@ flagsTests =
                     "showFilteredTags":true,
                     "showColumnTags":false,
                     "columns":[{"tag":"undated","data":{"collapsed":false,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],
-                    "title":"date board title"},
-                   {"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"title 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],
+                    "name":"date board name"},
+                   {"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"name 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],
                     "showColumnTags":false,
                     "filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],
                     "filterPolarity":"Allow",
                     "filterScope":"SubTasksOnly",
                     "showFilteredTags":false,
-                    "title":"tag board title"}]}}}"""
+                    "name":"tag board name"}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -75,13 +75,13 @@ flagsTests =
                                             , filterScope = Filter.TopLevelOnly
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board name"
                                             }
                                         , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
-                                                    , Column.namedTag "title 1" "tag1" |> Column.setCollapse True
+                                                    , Column.namedTag "name 1" "tag1" |> Column.setCollapse True
                                                     , Column.completed (CompletedColumn.init "Completed" 2 5)
                                                     ]
                                             , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
@@ -89,7 +89,7 @@ flagsTests =
                                             , filterScope = Filter.SubTasksOnly
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board name"
                                             }
                                         ]
                                 , globalSettings =
@@ -138,7 +138,7 @@ flagsTests =
                                             , filterScope = Filter.TopLevelOnly
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -152,7 +152,7 @@ flagsTests =
                                             , filterScope = Filter.SubTasksOnly
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -201,7 +201,7 @@ flagsTests =
                                             , filterScope = Filter.TopLevelOnly
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -215,7 +215,7 @@ flagsTests =
                                             , filterScope = Filter.SubTasksOnly
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -264,7 +264,7 @@ flagsTests =
                                             , filterScope = Filter.TopLevelOnly
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -278,7 +278,7 @@ flagsTests =
                                             , filterScope = Filter.SubTasksOnly
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -327,7 +327,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -341,7 +341,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -390,7 +390,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -404,7 +404,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -453,7 +453,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -467,7 +467,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -516,7 +516,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -530,7 +530,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = False
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -579,7 +579,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -593,7 +593,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = True
                                             , showFilteredTags = True
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -642,7 +642,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -656,7 +656,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = True
                                             , showFilteredTags = True
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =
@@ -705,7 +705,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = False
                                             , showFilteredTags = True
-                                            , title = "date board title"
+                                            , name = "date board title"
                                             }
                                         , BoardConfig
                                             { columns =
@@ -719,7 +719,7 @@ flagsTests =
                                             , filterScope = Filter.Both
                                             , showColumnTags = True
                                             , showFilteredTags = True
-                                            , title = "tag board title"
+                                            , name = "tag board title"
                                             }
                                         ]
                                 , globalSettings =

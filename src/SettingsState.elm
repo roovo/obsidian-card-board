@@ -136,7 +136,7 @@ confirmAddBoard : SettingsState -> SettingsState
 confirmAddBoard settingsState =
     case settingsState of
         AddingBoard c settings_ ->
-            EditingBoard <| Settings.cleanupTitles <| Settings.addBoard c settings_
+            EditingBoard <| Settings.cleanupNames <| Settings.addBoard c settings_
 
         _ ->
             settingsState
