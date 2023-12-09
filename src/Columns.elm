@@ -17,9 +17,6 @@ module Columns exposing
     , replaceNamedTagColumns
     , setNamesToDefault
     , toList
-    , toggleIncludeOtherTags
-    , toggleIncludeUndated
-    , toggleIncludeUntagged
     , updateColumnName
     , updateCompletedColumnLimit
     , updateCompletedCount
@@ -213,51 +210,6 @@ setNamesToDefault defaultColumnNames columns =
         |> toList
         |> List.map (Column.setNameToDefault defaultColumnNames)
         |> fromList
-
-
-toggleIncludeOtherTags : Columns -> Columns
-toggleIncludeOtherTags columns =
-    if includesOtherTags columns then
-        columns
-            |> toList
-            |> LE.filterNot Column.isOtherTags
-            |> fromList
-
-    else
-        columns
-            |> toList
-            |> List.append [ Column.otherTags "Other Tags" <| namedTagColumnTags columns ]
-            |> fromList
-
-
-toggleIncludeUndated : Columns -> Columns
-toggleIncludeUndated columns =
-    if includesUndated columns then
-        columns
-            |> toList
-            |> LE.filterNot Column.isUndated
-            |> fromList
-
-    else
-        columns
-            |> toList
-            |> List.append [ Column.undated "Undated" ]
-            |> fromList
-
-
-toggleIncludeUntagged : Columns -> Columns
-toggleIncludeUntagged columns =
-    if includesUntagged columns then
-        columns
-            |> toList
-            |> LE.filterNot Column.isUntagged
-            |> fromList
-
-    else
-        columns
-            |> toList
-            |> List.append [ Column.untagged "Untagged" ]
-            |> fromList
 
 
 updateColumnName : Int -> String -> Columns -> Columns

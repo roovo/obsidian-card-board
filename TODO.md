@@ -13,7 +13,6 @@
     - drag and drop to re-order columns (on settings page)
 - no more need for separate date and tag board types, they are just boards
     - add tag board column types to the add column options
-    - no more need for toggleUndated and similar....
     - make the column settings look nice
     - allow basic tag and date boards to be created (as well as blank boards)
     - ensure that there is a max of one of any of the special columns
