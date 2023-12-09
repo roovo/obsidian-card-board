@@ -130,7 +130,7 @@ type Msg
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleIgnoreFileNameDate
-    | ToggleIncludeOthers
+    | ToggleIncludeOtherTags
     | ToggleIncludeUndated
     | ToggleIncludeUntagged
     | ToggleShowColumnTags
@@ -325,8 +325,8 @@ update msg model =
                             model.settingsState
                 }
 
-        ToggleIncludeOthers ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
+        ToggleIncludeOtherTags ->
+            mapBoardBeingEdited BoardConfig.toggleIncludeOtherTags model
 
         ToggleIncludeUndated ->
             mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
@@ -868,16 +868,16 @@ columNamesForm defaultColumnNames =
     , Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Others" ]
+                [ Html.text "Other Tags" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Tasks with other tags (Tag boards)." ]
             ]
         , Html.div [ class "setting-item-control" ]
             [ Html.input
                 [ type_ "text"
-                , placeholder "Others"
-                , value (Maybe.withDefault "" defaultColumnNames.others)
-                , onInput (EnteredColumName "others")
+                , placeholder "Other Tags"
+                , value (Maybe.withDefault "" defaultColumnNames.otherTags)
+                , onInput (EnteredColumName "otherTags")
                 ]
                 []
             ]
@@ -1085,9 +1085,9 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     in
                     config.filterPolarity == Filter.Allow && hasAnyTagFilters
 
-                includeOthersStyle : String
-                includeOthersStyle =
-                    if TagBoardConfig.displayOthers config then
+                includeOtherTagsStyle : String
+                includeOtherTagsStyle =
+                    if TagBoardConfig.displayOtherTags config then
                         " is-enabled"
 
                     else
@@ -1294,14 +1294,14 @@ boardSettingsForm boardConfig boardIndex multiselect =
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Include others" ]
+                        [ Html.text "Include other tags" ]
                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
                     [ Html.div
-                        [ class <| "checkbox-container" ++ includeOthersStyle
-                        , onClick ToggleIncludeOthers
+                        [ class <| "checkbox-container" ++ includeOtherTagsStyle
+                        , onClick ToggleIncludeOtherTags
                         ]
                         []
                     ]

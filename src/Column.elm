@@ -31,7 +31,7 @@ module Column exposing
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
     , updateName
-    , updateOthers
+    , updateOtherTags
     )
 
 import Card exposing (Card)
@@ -493,8 +493,8 @@ updateName newName column =
             Untagged (UntaggedColumn.updateName newName untaggedColumn)
 
 
-updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column
-updateOthers fn column =
+updateOtherTags : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column
+updateOtherTags fn column =
     case column of
         OtherTags otherTagsColumn ->
             OtherTags <| fn otherTagsColumn

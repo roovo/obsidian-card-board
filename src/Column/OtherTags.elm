@@ -123,7 +123,7 @@ setOtherTags tags (OtherTagsColumn c ots tth tl) =
 
 setNameToDefault : DefaultColumnNames -> OtherTagsColumn -> OtherTagsColumn
 setNameToDefault defaultColumnNames (OtherTagsColumn c ots tth tl) =
-    OtherTagsColumn { c | name = DefaultColumnNames.nameFor "others" defaultColumnNames } ots tth tl
+    OtherTagsColumn { c | name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames } ots tth tl
 
 
 setTagsToHide : List String -> OtherTagsColumn -> OtherTagsColumn

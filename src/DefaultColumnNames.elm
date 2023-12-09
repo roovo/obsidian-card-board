@@ -1,10 +1,14 @@
 module DefaultColumnNames exposing
     ( DefaultColumnNames
-    , decoder
     , default
     , encoder
     , nameFor
     , updateColumnName
+    , v_0_10_0_decoder
+    , v_0_11_0_decoder
+    , v_0_7_0_decoder
+    , v_0_8_0_decoder
+    , v_0_9_0_decoder
     )
 
 import TsJson.Decode as TsDecode
@@ -20,7 +24,7 @@ type alias DefaultColumnNames =
     , tomorrow : Maybe String
     , future : Maybe String
     , undated : Maybe String
-    , others : Maybe String
+    , otherTags : Maybe String
     , untagged : Maybe String
     , completed : Maybe String
     }
@@ -32,7 +36,7 @@ default =
     , tomorrow = Nothing
     , future = Nothing
     , undated = Nothing
-    , others = Nothing
+    , otherTags = Nothing
     , untagged = Nothing
     , completed = Nothing
     }
@@ -57,8 +61,8 @@ nameFor column defaultColumnNames =
         "undated" ->
             Maybe.withDefault "Undated" defaultColumnNames.undated
 
-        "others" ->
-            Maybe.withDefault "Others" defaultColumnNames.others
+        "otherTags" ->
+            Maybe.withDefault "Other Tags" defaultColumnNames.otherTags
 
         "untagged" ->
             Maybe.withDefault "Untagged" defaultColumnNames.untagged
@@ -74,8 +78,35 @@ nameFor column defaultColumnNames =
 -- SERIALIZE
 
 
-decoder : TsDecode.Decoder DefaultColumnNames
-decoder =
+v_0_11_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_11_0_decoder =
+    TsDecode.succeed DefaultColumnNames
+        |> TsDecode.andMap (TsDecode.field "today" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "tomorrow" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "future" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "undated" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "otherTags" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "untagged" <| TsDecode.map toMaybe TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "completed" <| TsDecode.map toMaybe TsDecode.string)
+
+
+v_0_10_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_10_0_decoder =
+    v_0_9_0_decoder
+
+
+v_0_9_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_9_0_decoder =
+    v_0_8_0_decoder
+
+
+v_0_8_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_8_0_decoder =
+    v_0_7_0_decoder
+
+
+v_0_7_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_7_0_decoder =
     TsDecode.succeed DefaultColumnNames
         |> TsDecode.andMap (TsDecode.field "today" <| TsDecode.map toMaybe TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "tomorrow" <| TsDecode.map toMaybe TsDecode.string)
@@ -93,7 +124,7 @@ encoder =
         , TsEncode.required "tomorrow" (fromMaybe .tomorrow) TsEncode.string
         , TsEncode.required "future" (fromMaybe .future) TsEncode.string
         , TsEncode.required "undated" (fromMaybe .undated) TsEncode.string
-        , TsEncode.required "others" (fromMaybe .others) TsEncode.string
+        , TsEncode.required "otherTags" (fromMaybe .otherTags) TsEncode.string
         , TsEncode.required "untagged" (fromMaybe .untagged) TsEncode.string
         , TsEncode.required "completed" (fromMaybe .completed) TsEncode.string
         ]
@@ -118,8 +149,8 @@ updateColumnName column newName defaultColumnNames =
         "undated" ->
             { defaultColumnNames | undated = toMaybe newName }
 
-        "others" ->
-            { defaultColumnNames | others = toMaybe newName }
+        "otherTags" ->
+            { defaultColumnNames | otherTags = toMaybe newName }
 
         "untagged" ->
             { defaultColumnNames | untagged = toMaybe newName }

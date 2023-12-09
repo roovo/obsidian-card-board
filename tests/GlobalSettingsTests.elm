@@ -44,7 +44,7 @@ encodeDecode =
                     , tomorrow = Nothing
                     , future = Just "The Future"
                     , undated = Nothing
-                    , others = Just "The Others"
+                    , otherTags = Just "The Others"
                     , untagged = Nothing
                     , completed = Just "Done"
                     }
@@ -62,7 +62,7 @@ encodeDecode =
                                 , tomorrow = Nothing
                                 , future = Just "The Future"
                                 , undated = Nothing
-                                , others = Just "The Others"
+                                , otherTags = Just "The Others"
                                 , untagged = Nothing
                                 , completed = Just "Done"
                                 }
@@ -97,7 +97,7 @@ updateColumnName =
                         , tomorrow = Nothing
                         , future = Just "Back to the"
                         , undated = Nothing
-                        , others = Nothing
+                        , otherTags = Nothing
                         , untagged = Nothing
                         , completed = Nothing
                         }

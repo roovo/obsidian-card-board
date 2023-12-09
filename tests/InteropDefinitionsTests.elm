@@ -37,7 +37,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.11.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.11.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","others":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.11.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},
                 "boardConfigs":[{"tag":"dateBoardConfig","data":{"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,
                 "columns":[{"tag":"undated","data":{"collapsed":false,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],"title":"date board title"}},
                   {"tag":"tagBoardConfig","data":{"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"title 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],"showColumnTags":false,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"title":"tag board title"}}]}}}"""
@@ -86,7 +86,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
                                         , undated = Nothing
-                                        , others = Just "The Others"
+                                        , otherTags = Just "The Others"
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
@@ -148,7 +148,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
                                         , undated = Nothing
-                                        , others = Just "The Others"
+                                        , otherTags = Just "The Others"
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
@@ -210,7 +210,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
                                         , undated = Nothing
-                                        , others = Just "The Others"
+                                        , otherTags = Just "The Others"
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
@@ -272,7 +272,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
                                         , undated = Nothing
-                                        , others = Just "The Others"
+                                        , otherTags = Just "The Others"
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
@@ -334,7 +334,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Just "The Future"
                                         , undated = Nothing
-                                        , others = Just "The Others"
+                                        , otherTags = Just "The Others"
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
@@ -396,7 +396,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }
@@ -458,7 +458,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }
@@ -520,7 +520,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }
@@ -582,7 +582,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }
@@ -644,7 +644,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }
@@ -706,7 +706,7 @@ flagsTests =
                                         , tomorrow = Nothing
                                         , future = Nothing
                                         , undated = Nothing
-                                        , others = Nothing
+                                        , otherTags = Nothing
                                         , untagged = Nothing
                                         , completed = Nothing
                                         }

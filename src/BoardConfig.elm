@@ -25,7 +25,7 @@ module BoardConfig exposing
     , mapFilters
     , setNamesToDefault
     , title
-    , toggleIncludeOthers
+    , toggleIncludeOtherTags
     , toggleIncludeUndated
     , toggleIncludeUntagged
     , toggleShowColumnTags
@@ -363,14 +363,14 @@ setNamesToDefault defaultColumnNames boardConfig =
             TagBoardConfig <| TagBoardConfig.setNamesToDefault defaultColumnNames tagBoardConfig
 
 
-toggleIncludeOthers : BoardConfig -> BoardConfig
-toggleIncludeOthers config =
+toggleIncludeOtherTags : BoardConfig -> BoardConfig
+toggleIncludeOtherTags config =
     case config of
         DateBoardConfig _ ->
             config
 
         TagBoardConfig boardConfig ->
-            TagBoardConfig <| TagBoardConfig.toggleIncludeOthers boardConfig
+            TagBoardConfig <| TagBoardConfig.toggleIncludeOtherTags boardConfig
 
 
 toggleIncludeUndated : BoardConfig -> BoardConfig

@@ -16,7 +16,7 @@ module Columns exposing
     , replaceNamedTagColumns
     , setNamesToDefault
     , toList
-    , toggleIncludeOthers
+    , toggleIncludeOtherTags
     , toggleIncludeUndated
     , toggleIncludeUntagged
     , updateColumnName
@@ -25,7 +25,7 @@ module Columns exposing
     , updateDatedColumnRangeType
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
-    , updateOthers
+    , updateOtherTags
     )
 
 import Column exposing (Column)
@@ -72,16 +72,16 @@ fromList columns =
                 |> Maybe.map Column.asCompletedColumn
                 |> ME.join
 
-        others : List Column
-        others =
+        notCompleted : List Column
+        notCompleted =
             LE.filterNot Column.isCompleted columns
     in
     case completed of
         Nothing ->
-            WithoutCompleted others
+            WithoutCompleted notCompleted
 
         Just completedColumn ->
-            WithCompleted others completedColumn
+            WithCompleted notCompleted completedColumn
 
 
 legacyFromList : DefaultColumnNames -> List Column -> Int -> Columns
@@ -204,8 +204,8 @@ setNamesToDefault defaultColumnNames columns =
         |> fromList
 
 
-toggleIncludeOthers : Columns -> Columns
-toggleIncludeOthers columns =
+toggleIncludeOtherTags : Columns -> Columns
+toggleIncludeOtherTags columns =
     if includesOtherTags columns then
         columns
             |> toList
@@ -215,7 +215,7 @@ toggleIncludeOthers columns =
     else
         columns
             |> toList
-            |> List.append [ Column.otherTags "Others" <| namedTagColumnTags columns ]
+            |> List.append [ Column.otherTags "Other Tags" <| namedTagColumnTags columns ]
             |> fromList
 
 
@@ -307,11 +307,11 @@ updateDatedColumnRangeValueTo index newValue columns =
         |> fromList
 
 
-updateOthers : (OtherTagsColumn -> OtherTagsColumn) -> Columns -> Columns
-updateOthers fn columns =
+updateOtherTags : (OtherTagsColumn -> OtherTagsColumn) -> Columns -> Columns
+updateOtherTags fn columns =
     columns
         |> toList
-        |> List.map (Column.updateOthers fn)
+        |> List.map (Column.updateOtherTags fn)
         |> fromList
 
 

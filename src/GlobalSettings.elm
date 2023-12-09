@@ -83,7 +83,7 @@ v_0_11_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_11_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
-        |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.decoder)
+        |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_11_0_decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
 
 
@@ -91,25 +91,31 @@ v_0_10_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_10_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
-        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.decoder)
+        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_10_0_decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
 
 
 v_0_9_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_9_0_decoder =
-    v_0_8_0_decoder
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_9_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_8_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_8_0_decoder =
-    v_0_7_0_decoder
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_8_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_7_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_7_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
-        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.decoder)
+        |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_7_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 

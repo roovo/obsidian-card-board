@@ -374,8 +374,8 @@ updateCompletedCount =
 
 exampleColumnNames : DefaultColumnNames
 exampleColumnNames =
-    """{"today":"This Day","tomorrow":"The Morrow","future":"Way Out","undated":"No Date","others":"Other Tags","untagged":"No Tags","completed":"Is Done"}"""
-        |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
+    """{"today":"This Day","tomorrow":"The Morrow","future":"Way Out","undated":"No Date","otherTags":"Other Tags","untagged":"No Tags","completed":"Is Done"}"""
+        |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
         |> .decoded
         |> Result.withDefault DefaultColumnNames.default
 

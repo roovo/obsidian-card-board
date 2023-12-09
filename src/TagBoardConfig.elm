@@ -16,12 +16,12 @@ module TagBoardConfig exposing
     , decoder_v_0_8_0
     , decoder_v_0_9_0
     , default
-    , displayOthers
+    , displayOtherTags
     , displayUntagged
     , encoder
     , setNamesToDefault
     , tagsToHide
-    , toggleIncludeOthers
+    , toggleIncludeOtherTags
     , toggleIncludeUntagged
     , updateCompletedCount
     , updateTags
@@ -263,8 +263,8 @@ completedCount tagBoardConfig =
     Columns.completedCount tagBoardConfig.columns
 
 
-displayOthers : TagBoardConfig -> Bool
-displayOthers tagBoardConfig =
+displayOtherTags : TagBoardConfig -> Bool
+displayOtherTags tagBoardConfig =
     Columns.includesOtherTags tagBoardConfig.columns
 
 
@@ -310,9 +310,9 @@ collapseColumn columnIndex isCollapsed tagBoardConfig =
     { tagBoardConfig | columns = Columns.collapseColumn columnIndex isCollapsed tagBoardConfig.columns }
 
 
-toggleIncludeOthers : TagBoardConfig -> TagBoardConfig
-toggleIncludeOthers tagBoardConfig =
-    { tagBoardConfig | columns = Columns.toggleIncludeOthers tagBoardConfig.columns }
+toggleIncludeOtherTags : TagBoardConfig -> TagBoardConfig
+toggleIncludeOtherTags tagBoardConfig =
+    { tagBoardConfig | columns = Columns.toggleIncludeOtherTags tagBoardConfig.columns }
 
 
 toggleIncludeUntagged : TagBoardConfig -> TagBoardConfig
@@ -392,7 +392,7 @@ buildfromPreV11 localColumnConfigs collapsedColumns completedCount_ filters filt
 
         otherTagsColumn =
             if includeOthers then
-                [ Column.otherTags "Others" otherTags ]
+                [ Column.otherTags "Other Tags" otherTags ]
 
             else
                 []
@@ -476,7 +476,7 @@ configureOtherTagsColumn : TagBoardConfig -> TagBoardConfig
 configureOtherTagsColumn tagBoardConfig =
     { tagBoardConfig
         | columns =
-            Columns.updateOthers
+            Columns.updateOtherTags
                 (OtherTagsColumn.setOtherTags <| Columns.namedTagColumnTags tagBoardConfig.columns)
                 tagBoardConfig.columns
     }

@@ -37,7 +37,7 @@ suite =
         , setNameToDefault
         , toggleCollapse
         , typeString
-        , updateOthers
+        , updateOtherTags
         , updateName
         ]
 
@@ -801,43 +801,43 @@ typeString =
         ]
 
 
-updateOthers : Test
-updateOthers =
-    describe "updateOthers"
+updateOtherTags : Test
+updateOtherTags =
+    describe "updateOtherTags"
         [ test "does nothing if it is a CompletedColumn" <|
             \() ->
                 Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
         , test "does nothing if it is a DatedColumn" <|
             \() ->
                 Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
         , test "does nothing if it is a NamedTagColumn" <|
             \() ->
                 Column.namedTag "" "aTag"
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
         , test "applies the function if it is a OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal True
         , test "does nothing if it is a UndatedColumn" <|
             \() ->
                 Column.undated ""
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
         , test "does nothing if it is a UntaggedColumn" <|
             \() ->
                 Column.untagged ""
-                    |> Column.updateOthers OtherTagsColumn.toggleCollapse
+                    |> Column.updateOtherTags OtherTagsColumn.toggleCollapse
                     |> Column.isCollapsed
                     |> Expect.equal False
         ]
@@ -896,8 +896,8 @@ dueString offset =
 
 exampleColumnNames : DefaultColumnNames
 exampleColumnNames =
-    """{"today":"This Day","tomorrow":"The Morrow","future":"Way Out","undated":"No Date","others":"Other Tags","untagged":"No Tags","completed":"Is Done"}"""
-        |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
+    """{"today":"This Day","tomorrow":"The Morrow","future":"Way Out","undated":"No Date","otherTags":"Other Tags","untagged":"No Tags","completed":"Is Done"}"""
+        |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
         |> .decoded
         |> Result.withDefault DefaultColumnNames.default
 

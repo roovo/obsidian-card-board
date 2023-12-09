@@ -24,13 +24,13 @@ encodeDecode =
                 DefaultColumnNames.default
                     |> TsEncode.runExample DefaultColumnNames.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
                     |> .decoded
                     |> Expect.equal (Ok DefaultColumnNames.default)
         , test "can decode an encoded non default back to the original" <|
             \() ->
                 exampleColumnNames
-                    |> DecodeHelpers.runDecoder DefaultColumnNames.decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
                     |> .decoded
                     |> Result.withDefault DefaultColumnNames.default
                     |> TsEncode.runExample DefaultColumnNames.encoder
@@ -62,11 +62,11 @@ nameFor =
                 DefaultColumnNames.default
                     |> DefaultColumnNames.nameFor "undated"
                     |> Expect.equal "Undated"
-        , test "default for others is Others" <|
+        , test "default for otherTags is Other Tags" <|
             \() ->
                 DefaultColumnNames.default
-                    |> DefaultColumnNames.nameFor "others"
-                    |> Expect.equal "Others"
+                    |> DefaultColumnNames.nameFor "otherTags"
+                    |> Expect.equal "Other Tags"
         , test "default for untagged is Untagged" <|
             \() ->
                 DefaultColumnNames.default
@@ -97,10 +97,10 @@ nameFor =
                 { defaultNames | undated = Just "Foo" }
                     |> DefaultColumnNames.nameFor "undated"
                     |> Expect.equal "Foo"
-        , test "can set the value for others" <|
+        , test "can set the value for otherTags" <|
             \() ->
-                { defaultNames | others = Just "Foo" }
-                    |> DefaultColumnNames.nameFor "others"
+                { defaultNames | otherTags = Just "Foo" }
+                    |> DefaultColumnNames.nameFor "otherTags"
                     |> Expect.equal "Foo"
         , test "can set the value for untagged" <|
             \() ->
@@ -127,7 +127,7 @@ updateColumnName =
                         , tomorrow = Nothing
                         , future = Just "Back to the"
                         , undated = Nothing
-                        , others = Nothing
+                        , otherTags = Nothing
                         , untagged = Nothing
                         , completed = Nothing
                         }
@@ -137,7 +137,7 @@ updateColumnName =
                 , tomorrow = Nothing
                 , future = Just "Back to the"
                 , undated = Nothing
-                , others = Nothing
+                , otherTags = Nothing
                 , untagged = Nothing
                 , completed = Nothing
                 }
@@ -153,7 +153,7 @@ updateColumnName =
                         , tomorrow = Nothing
                         , future = Nothing
                         , undated = Nothing
-                        , others = Nothing
+                        , otherTags = Nothing
                         , untagged = Nothing
                         , completed = Nothing
                         }
@@ -171,4 +171,4 @@ defaultNames =
 
 exampleColumnNames : String
 exampleColumnNames =
-    """{"today":"col1","tomorrow":"col2","future":"col3","undated":"col4","others":"col4","untagged":"col6","completed":"col7"}"""
+    """{"today":"col1","tomorrow":"col2","future":"col3","undated":"col4","otherTags":"col4","untagged":"col6","completed":"col7"}"""
