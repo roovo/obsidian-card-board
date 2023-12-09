@@ -6,7 +6,6 @@ module Column.NamedTag exposing
     , encoder
     , init
     , isCollapsed
-    , isEnabled
     , name
     , setCollapse
     , setTagsToHide
@@ -82,11 +81,6 @@ asInputString (NamedTagColumn c _ _) =
 isCollapsed : NamedTagColumn -> Bool
 isCollapsed (NamedTagColumn c _ _) =
     c.collapsed
-
-
-isEnabled : NamedTagColumn -> Bool
-isEnabled _ =
-    True
 
 
 name : NamedTagColumn -> String

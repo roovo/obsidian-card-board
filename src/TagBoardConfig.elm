@@ -265,7 +265,7 @@ completedCount tagBoardConfig =
 
 displayOthers : TagBoardConfig -> Bool
 displayOthers tagBoardConfig =
-    Columns.includesOthers tagBoardConfig.columns
+    Columns.includesOtherTags tagBoardConfig.columns
 
 
 displayUntagged : TagBoardConfig -> Bool

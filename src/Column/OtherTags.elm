@@ -2,12 +2,9 @@ module Column.OtherTags exposing
     ( OtherTagsColumn
     , addTaskItem
     , decoder
-    , disable
-    , enable
     , encoder
     , init
     , isCollapsed
-    , isEnabled
     , name
     , setCollapse
     , setNameToDefault
@@ -39,7 +36,6 @@ type OtherTagsColumn
 
 type alias Config =
     { collapsed : Bool
-    , enabled : Bool
     , name : String
     }
 
@@ -50,7 +46,7 @@ type alias Config =
 
 init : String -> List String -> OtherTagsColumn
 init name_ otherTags_ =
-    OtherTagsColumn { collapsed = False, enabled = True, name = name_ } otherTags_ [] TaskList.empty
+    OtherTagsColumn { collapsed = False, name = name_ } otherTags_ [] TaskList.empty
 
 
 
@@ -61,7 +57,6 @@ decoder : TsDecode.Decoder OtherTagsColumn
 decoder =
     (TsDecode.succeed Config
         |> TsDecode.required "collapsed" TsDecode.bool
-        |> TsDecode.required "enabled" TsDecode.bool
         |> TsDecode.required "name" TsDecode.string
     )
         |> TsDecode.map (\c -> OtherTagsColumn c [] [] TaskList.empty)
@@ -79,11 +74,6 @@ encoder =
 isCollapsed : OtherTagsColumn -> Bool
 isCollapsed (OtherTagsColumn c _ _ _) =
     c.collapsed
-
-
-isEnabled : OtherTagsColumn -> Bool
-isEnabled (OtherTagsColumn c _ _ _) =
-    c.enabled
 
 
 name : OtherTagsColumn -> String
@@ -110,7 +100,7 @@ tagsToHide (OtherTagsColumn _ _ tth _) =
 
 addTaskItem : TaskItem -> OtherTagsColumn -> ( OtherTagsColumn, PlacementResult )
 addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
-    if isEnabled namedTagColumn && belongs ots taskItem then
+    if belongs ots taskItem then
         if isCompleted ots taskItem then
             ( namedTagColumn, PlacementResult.CompletedInThisColumn )
 
@@ -119,16 +109,6 @@ addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
 
     else
         ( namedTagColumn, PlacementResult.DoesNotBelong )
-
-
-disable : OtherTagsColumn -> OtherTagsColumn
-disable (OtherTagsColumn c ots tth tl) =
-    OtherTagsColumn { c | enabled = False } ots tth tl
-
-
-enable : OtherTagsColumn -> OtherTagsColumn
-enable (OtherTagsColumn c ots tth tl) =
-    OtherTagsColumn { c | enabled = True } ots tth tl
 
 
 setCollapse : Bool -> OtherTagsColumn -> OtherTagsColumn
@@ -179,7 +159,6 @@ configEncoder : TsEncode.Encoder Config
 configEncoder =
     TsEncode.object
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
-        , TsEncode.required "enabled" .enabled TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]
 

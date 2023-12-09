@@ -2,12 +2,9 @@ module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
     , decoder
-    , disable
-    , enable
     , encoder
     , init
     , isCollapsed
-    , isEnabled
     , name
     , setCollapse
     , setNameToDefault
@@ -38,7 +35,6 @@ type UntaggedColumn
 
 type alias Config =
     { collapsed : Bool
-    , enabled : Bool
     , name : String
     }
 
@@ -49,7 +45,7 @@ type alias Config =
 
 init : String -> UntaggedColumn
 init name_ =
-    UntaggedColumn { collapsed = False, enabled = True, name = name_ } [] TaskList.empty
+    UntaggedColumn { collapsed = False, name = name_ } [] TaskList.empty
 
 
 
@@ -60,7 +56,6 @@ decoder : TsDecode.Decoder UntaggedColumn
 decoder =
     (TsDecode.succeed Config
         |> TsDecode.required "collapsed" TsDecode.bool
-        |> TsDecode.required "enabled" TsDecode.bool
         |> TsDecode.required "name" TsDecode.string
     )
         |> TsDecode.map (\c -> UntaggedColumn c [] TaskList.empty)
@@ -93,11 +88,6 @@ isCollapsed =
     .collapsed << config
 
 
-isEnabled : UntaggedColumn -> Bool
-isEnabled =
-    .enabled << config
-
-
 tagsToHide : UntaggedColumn -> List String
 tagsToHide (UntaggedColumn _ tth _) =
     tth
@@ -109,7 +99,7 @@ tagsToHide (UntaggedColumn _ tth _) =
 
 addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, PlacementResult )
 addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
-    if isEnabled untaggedColumn && (not <| TaskItem.hasTags taskItem) then
+    if not <| TaskItem.hasTags taskItem then
         if TaskItem.isCompleted taskItem then
             ( untaggedColumn, PlacementResult.CompletedInThisColumn )
 
@@ -118,16 +108,6 @@ addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
 
     else
         ( untaggedColumn, PlacementResult.DoesNotBelong )
-
-
-disable : UntaggedColumn -> UntaggedColumn
-disable (UntaggedColumn c tth tl) =
-    UntaggedColumn { c | enabled = False } tth tl
-
-
-enable : UntaggedColumn -> UntaggedColumn
-enable (UntaggedColumn c tth tl) =
-    UntaggedColumn { c | enabled = True } tth tl
 
 
 setCollapse : Bool -> UntaggedColumn -> UntaggedColumn
@@ -168,6 +148,5 @@ configEncoder : TsEncode.Encoder Config
 configEncoder =
     TsEncode.object
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
-        , TsEncode.required "enabled" .enabled TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]

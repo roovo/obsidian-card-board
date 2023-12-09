@@ -6,7 +6,6 @@ module Column.Dated exposing
     , encoder
     , init
     , isCollapsed
-    , isEnabled
     , name
     , range
     , setCollapse
@@ -88,11 +87,6 @@ encoder =
 isCollapsed : DatedColumn -> Bool
 isCollapsed (DatedColumn c _ _) =
     c.collapsed
-
-
-isEnabled : DatedColumn -> Bool
-isEnabled _ =
-    True
 
 
 name : DatedColumn -> String

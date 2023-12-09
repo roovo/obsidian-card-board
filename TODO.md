@@ -10,8 +10,7 @@
     - add tag board column types to the add column options
     - make the column settings look nice
     - allow basic tag and date boards to be created (as well as blank boards)
-    - do I need to handle enabled/disabled columns - it would be simpler to just
-      delete and recreate them
+    - Others -> OtherTags
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
       - when using the settings pane

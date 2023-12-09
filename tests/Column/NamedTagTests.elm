@@ -228,11 +228,6 @@ init =
                 NamedTagColumn.init "" ""
                     |> NamedTagColumn.isCollapsed
                     |> Expect.equal False
-        , test "is enabled" <|
-            \() ->
-                NamedTagColumn.init "" ""
-                    |> NamedTagColumn.isEnabled
-                    |> Expect.equal True
         ]
 
 

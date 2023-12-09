@@ -48,7 +48,6 @@ columns ignoreFileNameDates today ((Board _ config taskList) as board) =
                 |> configureDueDates ignoreFileNameDates
                 |> Columns.addTaskList today (DateBoardConfig.tagsToHide dateBoardConfig) dateBoardConfig.columns
                 |> Columns.toList
-                |> List.filter Column.isEnabled
 
         BoardConfig.TagBoardConfig tagBoardConfig ->
             taskList
@@ -56,7 +55,6 @@ columns ignoreFileNameDates today ((Board _ config taskList) as board) =
                 |> configureDueDates ignoreFileNameDates
                 |> Columns.addTaskList today (TagBoardConfig.tagsToHide tagBoardConfig) tagBoardConfig.columns
                 |> Columns.toList
-                |> List.filter Column.isEnabled
 
 
 id : Board -> String

@@ -28,15 +28,10 @@ suite =
         , cardCount
         , cards
         , decoder
-        , disableOthers
-        , disableUndated
-        , disableUntagged
-        , enableOthers
-        , enableUndated
-        , enableUntagged
         , encoder
-        , isCompletedColumn
-        , isNamedTagColumn
+        , isCompleted
+        , isNamedTag
+        , isOtherTags
         , namedTagTag
         , setCollapse
         , setNameToDefault
@@ -292,232 +287,25 @@ decoder =
                     |> Expect.equal (Ok "a name")
         , test "decodes an OtherTagsColumn" <|
             \() ->
-                """{"tag":"otherTags","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                """{"tag":"otherTags","data":{"collapsed":true,"name":"a name"}}"""
                     |> DecodeHelpers.runDecoder Column.decoder
                     |> .decoded
                     |> Result.map Column.name
                     |> Expect.equal (Ok "a name")
         , test "decodes an UndatedColumn" <|
             \() ->
-                """{"tag":"undated","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                """{"tag":"undated","data":{"collapsed":true,"name":"a name"}}"""
                     |> DecodeHelpers.runDecoder Column.decoder
                     |> .decoded
                     |> Result.map Column.name
                     |> Expect.equal (Ok "a name")
         , test "decodes an UntaggedColumn" <|
             \() ->
-                """{"tag":"untagged","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                """{"tag":"untagged","data":{"collapsed":true,"name":"a name"}}"""
                     |> DecodeHelpers.runDecoder Column.decoder
                     |> .decoded
                     |> Result.map Column.name
                     |> Expect.equal (Ok "a name")
-        ]
-
-
-disableOthers : Test
-disableOthers =
-    describe "disableOthers"
-        [ test "DOES NOT disable a CompletedColumn" <|
-            \() ->
-                Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a DatedColumn" <|
-            \() ->
-                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a NamedTagColumn" <|
-            \() ->
-                Column.namedTag "foo" "aTag"
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "disables an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "DOES NOT disable an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        ]
-
-
-disableUndated : Test
-disableUndated =
-    describe "disableUndated"
-        [ test "DOES NOT disable a CompletedColumn" <|
-            \() ->
-                Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a DatedColumn" <|
-            \() ->
-                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a NamedTagColumn" <|
-            \() ->
-                Column.namedTag "foo" "aTag"
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "disables an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "DOES NOT disable an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        ]
-
-
-disableUntagged : Test
-disableUntagged =
-    describe "disableUntagged"
-        [ test "DOES NOT disable a CompletedColumn" <|
-            \() ->
-                Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a DatedColumn" <|
-            \() ->
-                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable a NamedTagColumn" <|
-            \() ->
-                Column.namedTag "foo" "aTag"
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT disable an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "disables an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        ]
-
-
-enableOthers : Test
-enableOthers =
-    describe "enableOthers"
-        [ test "enables an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableOthers
-                    |> Column.enableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT enable an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableUndated
-                    |> Column.enableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "DOES NOT enable an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableUntagged
-                    |> Column.enableOthers
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        ]
-
-
-enableUndated : Test
-enableUndated =
-    describe "enableUndated"
-        [ test "DOES NOT enable an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableOthers
-                    |> Column.enableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "enables an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableUndated
-                    |> Column.enableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "DOES NOT enable an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableUntagged
-                    |> Column.enableUndated
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        ]
-
-
-enableUntagged : Test
-enableUntagged =
-    describe "enableUntagged"
-        [ test "DOES NOT enable an OtherTagsColumn" <|
-            \() ->
-                Column.otherTags "" [ "aTag" ]
-                    |> Column.disableOthers
-                    |> Column.enableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "DOES NOT enable an UndatedColumn" <|
-            \() ->
-                Column.undated ""
-                    |> Column.disableUndated
-                    |> Column.enableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal False
-        , test "enables an UntaggedColumn" <|
-            \() ->
-                Column.untagged ""
-                    |> Column.disableUntagged
-                    |> Column.enableUntagged
-                    |> Column.isEnabled
-                    |> Expect.equal True
         ]
 
 
@@ -564,7 +352,7 @@ encoder =
             \() ->
                 let
                     encodedString =
-                        """{"tag":"otherTags","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                        """{"tag":"otherTags","data":{"collapsed":true,"name":"a name"}}"""
                 in
                 encodedString
                     |> DecodeHelpers.runDecoder Column.decoder
@@ -576,7 +364,7 @@ encoder =
             \() ->
                 let
                     encodedString =
-                        """{"tag":"undated","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                        """{"tag":"undated","data":{"collapsed":true,"name":"a name"}}"""
                 in
                 encodedString
                     |> DecodeHelpers.runDecoder Column.decoder
@@ -588,7 +376,7 @@ encoder =
             \() ->
                 let
                     encodedString =
-                        """{"tag":"untagged","data":{"collapsed":true,"enabled":false,"name":"a name"}}"""
+                        """{"tag":"untagged","data":{"collapsed":true,"name":"a name"}}"""
                 in
                 encodedString
                     |> DecodeHelpers.runDecoder Column.decoder
@@ -599,116 +387,110 @@ encoder =
         ]
 
 
-isEnabledOthers : Test
-isEnabledOthers =
-    describe "isEnabledOthers"
-        [ test "DOES NOT disable a CompletedColumn" <|
+isOtherTags : Test
+isOtherTags =
+    describe "isOtherTags"
+        [ test "returns False for a CompletedColumn" <|
             \() ->
                 Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal True
-        , test "DOES NOT disable a DatedColumn" <|
+                    |> Column.isOtherTags
+                    |> Expect.equal False
+        , test "returns False for a DatedColumn" <|
             \() ->
                 Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal True
-        , test "DOES NOT disable a NamedTagColumn" <|
+                    |> Column.isOtherTags
+                    |> Expect.equal False
+        , test "returns False for a NamedTagColumn" <|
             \() ->
                 Column.namedTag "foo" "aTag"
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal True
-        , test "disables an OtherTagsColumn" <|
+                    |> Column.isOtherTags
+                    |> Expect.equal False
+        , test "returns True for an OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal False
-        , test "DOES NOT disable an UndatedColumn" <|
+                    |> Column.isOtherTags
+                    |> Expect.equal True
+        , test "returns False for an UndatedColumn" <|
             \() ->
                 Column.undated ""
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal True
-        , test "DOES NOT disable an UntaggedColumn" <|
+                    |> Column.isOtherTags
+                    |> Expect.equal False
+        , test "returns False for an UntaggedColumn" <|
             \() ->
                 Column.untagged ""
-                    |> Column.disableOthers
-                    |> Column.isEnabledOthers
-                    |> Expect.equal True
+                    |> Column.isOtherTags
+                    |> Expect.equal False
         ]
 
 
-isCompletedColumn : Test
-isCompletedColumn =
-    describe "isCompletedColumn"
+isCompleted : Test
+isCompleted =
+    describe "isCompleted"
         [ test "returns True if it is one" <|
             \() ->
                 Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal True
         , test "returns False if it is a DatedColumn" <|
             \() ->
                 Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal False
         , test "returns False if it is a NamedTagColumn" <|
             \() ->
                 Column.namedTag "" "aTag"
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal False
         , test "returns False if it is a OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal False
         , test "returns False if it is a UndatedColumn" <|
             \() ->
                 Column.undated ""
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal False
         , test "returns False if it is a UntaggedColumn" <|
             \() ->
                 Column.untagged ""
-                    |> Column.isCompletedColumn
+                    |> Column.isCompleted
                     |> Expect.equal False
         ]
 
 
-isNamedTagColumn : Test
-isNamedTagColumn =
-    describe "isNamedTagColumn"
+isNamedTag : Test
+isNamedTag =
+    describe "isNamedTag"
         [ test "returns False if it is a CompletedColumn" <|
             \() ->
                 Column.completed (CompletedColumn.init "foo" 0 10)
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal False
         , test "returns False if it is a DatedColumn" <|
             \() ->
                 Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal False
         , test "returns True if it is a NamedTagColumn" <|
             \() ->
                 Column.namedTag "" "aTag"
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal True
         , test "returns False if it is a OtherTagsColumn" <|
             \() ->
                 Column.otherTags "" [ "aTag" ]
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal False
         , test "returns False if it is a UndatedColumn" <|
             \() ->
                 Column.undated ""
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal False
         , test "returns False if it is a UntaggedColumn" <|
             \() ->
                 Column.untagged ""
-                    |> Column.isNamedTagColumn
+                    |> Column.isNamedTag
                     |> Expect.equal False
         ]
 

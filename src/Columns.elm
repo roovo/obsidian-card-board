@@ -7,7 +7,7 @@ module Columns exposing
     , empty
     , encoder
     , fromList
-    , includesOthers
+    , includesOtherTags
     , includesUndated
     , includesUntagged
     , legacyFromList
@@ -68,13 +68,13 @@ fromList columns =
     let
         completed : Maybe CompletedColumn
         completed =
-            LE.find Column.isCompletedColumn columns
+            LE.find Column.isCompleted columns
                 |> Maybe.map Column.asCompletedColumn
                 |> ME.join
 
         others : List Column
         others =
-            LE.filterNot Column.isCompletedColumn columns
+            LE.filterNot Column.isCompleted columns
     in
     case completed of
         Nothing ->
@@ -128,25 +128,25 @@ completedCount columns =
             0
 
 
-includesOthers : Columns -> Bool
-includesOthers columns =
+includesOtherTags : Columns -> Bool
+includesOtherTags columns =
     columns
         |> toList
-        |> List.any Column.isEnabledOthers
+        |> List.any Column.isOtherTags
 
 
 includesUndated : Columns -> Bool
 includesUndated columns =
     columns
         |> toList
-        |> List.any Column.isEnabledUndated
+        |> List.any Column.isUndated
 
 
 includesUntagged : Columns -> Bool
 includesUntagged columns =
     columns
         |> toList
-        |> List.any Column.isEnabledUntagged
+        |> List.any Column.isUntagged
 
 
 namedTagColumns : Columns -> List NamedTagColumn
@@ -191,7 +191,7 @@ replaceNamedTagColumns newColumns existingColumns =
         withoutNamed =
             existingColumns
                 |> toList
-                |> LE.filterNot Column.isNamedTagColumn
+                |> LE.filterNot Column.isNamedTag
     in
     fromList (withoutNamed ++ newColumns)
 
@@ -206,16 +206,10 @@ setNamesToDefault defaultColumnNames columns =
 
 toggleIncludeOthers : Columns -> Columns
 toggleIncludeOthers columns =
-    if includesEnabledOthers columns then
+    if includesOtherTags columns then
         columns
             |> toList
-            |> List.map Column.disableOthers
-            |> fromList
-
-    else if includesDisabledOthers columns then
-        columns
-            |> toList
-            |> List.map Column.enableOthers
+            |> LE.filterNot Column.isOtherTags
             |> fromList
 
     else
@@ -227,16 +221,10 @@ toggleIncludeOthers columns =
 
 toggleIncludeUndated : Columns -> Columns
 toggleIncludeUndated columns =
-    if includesEnabledUndated columns then
+    if includesUndated columns then
         columns
             |> toList
-            |> List.map Column.disableUndated
-            |> fromList
-
-    else if includesDisabledUndated columns then
-        columns
-            |> toList
-            |> List.map Column.enableUndated
+            |> LE.filterNot Column.isUndated
             |> fromList
 
     else
@@ -248,16 +236,10 @@ toggleIncludeUndated columns =
 
 toggleIncludeUntagged : Columns -> Columns
 toggleIncludeUntagged columns =
-    if includesEnabledUntagged columns then
+    if includesUntagged columns then
         columns
             |> toList
-            |> List.map Column.disableUntagged
-            |> fromList
-
-    else if includesDisabledUntagged columns then
-        columns
-            |> toList
-            |> List.map Column.enableUntagged
+            |> LE.filterNot Column.isUntagged
             |> fromList
 
     else
@@ -381,48 +363,6 @@ addWithPlacement today taskItem initialConfigs =
                 |> Tuple.mapSecond (\r -> r :: placementResults)
     in
     List.foldr fn ( [], [] ) initialConfigs
-
-
-includesEnabledOthers : Columns -> Bool
-includesEnabledOthers columns =
-    columns
-        |> toList
-        |> List.any Column.isEnabledOthers
-
-
-includesEnabledUndated : Columns -> Bool
-includesEnabledUndated columns =
-    columns
-        |> toList
-        |> List.any Column.isEnabledUndated
-
-
-includesEnabledUntagged : Columns -> Bool
-includesEnabledUntagged columns =
-    columns
-        |> toList
-        |> List.any Column.isEnabledUntagged
-
-
-includesDisabledOthers : Columns -> Bool
-includesDisabledOthers columns =
-    columns
-        |> toList
-        |> List.any (not << Column.isEnabledOthers)
-
-
-includesDisabledUndated : Columns -> Bool
-includesDisabledUndated columns =
-    columns
-        |> toList
-        |> List.any (not << Column.isEnabledUndated)
-
-
-includesDisabledUntagged : Columns -> Bool
-includesDisabledUntagged columns =
-    columns
-        |> toList
-        |> List.any (not << Column.isEnabledUntagged)
 
 
 insert : Int -> a -> List a -> List a

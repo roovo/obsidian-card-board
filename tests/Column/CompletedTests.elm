@@ -196,11 +196,6 @@ init =
                 CompletedColumn.init "" 2 3
                     |> CompletedColumn.isCollapsed
                     |> Expect.equal False
-        , test "is enabled" <|
-            \() ->
-                CompletedColumn.init "" 2 3
-                    |> CompletedColumn.isEnabled
-                    |> Expect.equal True
         ]
 
 

@@ -8,20 +8,13 @@ module Column exposing
     , completed
     , dated
     , decoder
-    , disableOthers
-    , disableUndated
-    , disableUntagged
-    , enableOthers
-    , enableUndated
-    , enableUntagged
     , encoder
     , isCollapsed
-    , isCompletedColumn
-    , isEnabled
-    , isEnabledOthers
-    , isEnabledUndated
-    , isEnabledUntagged
-    , isNamedTagColumn
+    , isCompleted
+    , isNamedTag
+    , isOtherTags
+    , isUndated
+    , isUntagged
     , name
     , namedTag
     , namedTagTag
@@ -215,8 +208,8 @@ isCollapsed column =
             UntaggedColumn.isCollapsed untaggedColumn
 
 
-isCompletedColumn : Column -> Bool
-isCompletedColumn column =
+isCompleted : Column -> Bool
+isCompleted column =
     case column of
         Completed _ ->
             True
@@ -225,62 +218,40 @@ isCompletedColumn column =
             False
 
 
-isEnabled : Column -> Bool
-isEnabled column =
-    case column of
-        Completed completedColumn ->
-            CompletedColumn.isEnabled completedColumn
-
-        Dated datedColumn ->
-            DatedColumn.isEnabled datedColumn
-
-        NamedTag namedTagColumn ->
-            NamedTagColumn.isEnabled namedTagColumn
-
-        OtherTags otherTagsColumn ->
-            OtherTagsColumn.isEnabled otherTagsColumn
-
-        Undated undatedColumn ->
-            UndatedColumn.isEnabled undatedColumn
-
-        Untagged untaggedColumn ->
-            UntaggedColumn.isEnabled untaggedColumn
-
-
-isEnabledOthers : Column -> Bool
-isEnabledOthers column =
-    case column of
-        OtherTags otherTagsColumn ->
-            OtherTagsColumn.isEnabled otherTagsColumn
-
-        _ ->
-            False
-
-
-isEnabledUndated : Column -> Bool
-isEnabledUndated column =
-    case column of
-        Undated undatedColumn ->
-            UndatedColumn.isEnabled undatedColumn
-
-        _ ->
-            False
-
-
-isEnabledUntagged : Column -> Bool
-isEnabledUntagged column =
-    case column of
-        Untagged untaggedColumn ->
-            UntaggedColumn.isEnabled untaggedColumn
-
-        _ ->
-            False
-
-
-isNamedTagColumn : Column -> Bool
-isNamedTagColumn column =
+isNamedTag : Column -> Bool
+isNamedTag column =
     case column of
         NamedTag _ ->
+            True
+
+        _ ->
+            False
+
+
+isOtherTags : Column -> Bool
+isOtherTags column =
+    case column of
+        OtherTags _ ->
+            True
+
+        _ ->
+            False
+
+
+isUndated : Column -> Bool
+isUndated column =
+    case column of
+        Undated _ ->
+            True
+
+        _ ->
+            False
+
+
+isUntagged : Column -> Bool
+isUntagged column =
+    case column of
+        Untagged _ ->
             True
 
         _ ->
@@ -370,66 +341,6 @@ addTaskItem today taskItem column =
         Untagged untaggedColumn ->
             UntaggedColumn.addTaskItem taskItem untaggedColumn
                 |> Tuple.mapFirst Untagged
-
-
-disableOthers : Column -> Column
-disableOthers column =
-    case column of
-        OtherTags otherTagsColumn ->
-            OtherTags <| OtherTagsColumn.disable otherTagsColumn
-
-        _ ->
-            column
-
-
-disableUndated : Column -> Column
-disableUndated column =
-    case column of
-        Undated undatedColumn ->
-            Undated <| UndatedColumn.disable undatedColumn
-
-        _ ->
-            column
-
-
-disableUntagged : Column -> Column
-disableUntagged column =
-    case column of
-        Untagged untaggedColumn ->
-            Untagged <| UntaggedColumn.disable untaggedColumn
-
-        _ ->
-            column
-
-
-enableOthers : Column -> Column
-enableOthers column =
-    case column of
-        OtherTags otherTagsColumn ->
-            OtherTags <| OtherTagsColumn.enable otherTagsColumn
-
-        _ ->
-            column
-
-
-enableUndated : Column -> Column
-enableUndated column =
-    case column of
-        Undated undatedColumn ->
-            Undated <| UndatedColumn.enable undatedColumn
-
-        _ ->
-            column
-
-
-enableUntagged : Column -> Column
-enableUntagged column =
-    case column of
-        Untagged untaggedColumn ->
-            Untagged <| UntaggedColumn.enable untaggedColumn
-
-        _ ->
-            column
 
 
 setCollapse : Bool -> Column -> Column

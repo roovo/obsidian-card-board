@@ -19,8 +19,6 @@ suite =
     concat
         [ addTaskItem
         , decoder
-        , disable
-        , enable
         , encoder
         , init
         , setCollapse
@@ -55,13 +53,6 @@ addTaskItem =
                     |> Tuple.mapFirst UndatedColumn.toList
                     |> Tuple.mapFirst (List.map TaskItem.title)
                     |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
-        , test "DoesNotBelong an incomplete task item with no due date and no sub-tasks if the column is not enabled" <|
-            \() ->
-                UndatedColumn.init ""
-                    |> UndatedColumn.disable
-                    |> UndatedColumn.addTaskItem (taskItem "- [ ] foo")
-                    |> Tuple.mapFirst UndatedColumn.toList
-                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
         , test "DoesNotBelong an incomplete task item with a due date" <|
             \() ->
                 UndatedColumn.init ""
@@ -95,83 +86,32 @@ decoder =
     describe "decoder"
         [ test "decodes collapsed field" <|
             \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.isCollapsed
                     |> Expect.equal (Ok True)
-        , test "decodes enabled field" <|
-            \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
-                    |> DecodeHelpers.runDecoder UndatedColumn.decoder
-                    |> .decoded
-                    |> Result.map UndatedColumn.isEnabled
-                    |> Expect.equal (Ok False)
         , test "decodes name field" <|
             \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.name
                     |> Expect.equal (Ok "a name")
         , test "decode result has no taskItems" <|
             \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.toList
                     |> Expect.equal (Ok [])
         , test "decode result has no tagsToHide" <|
             \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.tagsToHide
                     |> Expect.equal (Ok [])
-        ]
-
-
-disable : Test
-disable =
-    describe "disable"
-        [ test "disables an enabled Column" <|
-            \() ->
-                """{"collapsed":true,"enabled":true,"name":"a name"}"""
-                    |> DecodeHelpers.runDecoder UndatedColumn.decoder
-                    |> .decoded
-                    |> Result.map UndatedColumn.disable
-                    |> Result.map UndatedColumn.isEnabled
-                    |> Expect.equal (Ok False)
-        , test "disables a disabled Column" <|
-            \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
-                    |> DecodeHelpers.runDecoder UndatedColumn.decoder
-                    |> .decoded
-                    |> Result.map UndatedColumn.disable
-                    |> Result.map UndatedColumn.isEnabled
-                    |> Expect.equal (Ok False)
-        ]
-
-
-enable : Test
-enable =
-    describe "enable"
-        [ test "enables an enabled Column" <|
-            \() ->
-                """{"collapsed":true,"enabled":true,"name":"a name"}"""
-                    |> DecodeHelpers.runDecoder UndatedColumn.decoder
-                    |> .decoded
-                    |> Result.map UndatedColumn.enable
-                    |> Result.map UndatedColumn.isEnabled
-                    |> Expect.equal (Ok True)
-        , test "enables a disabled Column" <|
-            \() ->
-                """{"collapsed":true,"enabled":false,"name":"a name"}"""
-                    |> DecodeHelpers.runDecoder UndatedColumn.decoder
-                    |> .decoded
-                    |> Result.map UndatedColumn.enable
-                    |> Result.map UndatedColumn.isEnabled
-                    |> Expect.equal (Ok True)
         ]
 
 
@@ -182,7 +122,7 @@ encoder =
             \() ->
                 let
                     encodedString =
-                        """{"collapsed":false,"enabled":true,"name":"a name"}"""
+                        """{"collapsed":false,"name":"a name"}"""
                 in
                 encodedString
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
@@ -217,11 +157,6 @@ init =
                 UndatedColumn.init ""
                     |> UndatedColumn.isCollapsed
                     |> Expect.equal False
-        , test "is enabled" <|
-            \() ->
-                UndatedColumn.init ""
-                    |> UndatedColumn.isEnabled
-                    |> Expect.equal True
         ]
 
 
@@ -230,7 +165,7 @@ setCollapse =
     describe "setCollapse"
         [ test "sets a collapsed column to be collapsed" <|
             \() ->
-                """{"collapsed":true,"enabled":true,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map (UndatedColumn.setCollapse True)
@@ -238,7 +173,7 @@ setCollapse =
                     |> Expect.equal (Ok True)
         , test "sets an uncollapsed column to be collapsed" <|
             \() ->
-                """{"collapsed":false,"enabled":true,"name":"a name"}"""
+                """{"collapsed":false,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map (UndatedColumn.setCollapse True)
@@ -246,7 +181,7 @@ setCollapse =
                     |> Expect.equal (Ok True)
         , test "sets a collapsed column to be uncollapsed" <|
             \() ->
-                """{"collapsed":true,"enabled":true,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map (UndatedColumn.setCollapse False)
@@ -254,7 +189,7 @@ setCollapse =
                     |> Expect.equal (Ok False)
         , test "sets an uncollapsed column to be uncollapsed" <|
             \() ->
-                """{"collapsed":false,"enabled":true,"name":"a name"}"""
+                """{"collapsed":false,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map (UndatedColumn.setCollapse False)
@@ -310,7 +245,7 @@ toggleCollapse =
     describe "toggleCollapse"
         [ test "toggles a collapsed column to be uncollapsed" <|
             \() ->
-                """{"collapsed":true,"enabled":true,"name":"a name"}"""
+                """{"collapsed":true,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.toggleCollapse
@@ -318,7 +253,7 @@ toggleCollapse =
                     |> Expect.equal (Ok False)
         , test "toggles an uncollapsed column to be collapsed" <|
             \() ->
-                """{"collapsed":false,"enabled":true,"name":"a name"}"""
+                """{"collapsed":false,"name":"a name"}"""
                     |> DecodeHelpers.runDecoder UndatedColumn.decoder
                     |> .decoded
                     |> Result.map UndatedColumn.toggleCollapse
