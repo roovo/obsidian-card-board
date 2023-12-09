@@ -2,7 +2,6 @@ module Column.UndatedTests exposing (suite)
 
 import Column
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
-import DateBoardConfig exposing (DateBoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers

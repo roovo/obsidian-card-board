@@ -1,3 +1,9 @@
+- BoardConfig.configureOtherTagsColumn
+- handle new board - either date, tag, or blank
+- what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
+- BoardConfig tests
+- BoardsTests
+
 - allow custom date boards to be specified
     - add column
         (restrict to dateboard types - specify column type and name)
@@ -16,6 +22,7 @@
       (completed, undated, untagged, undated)
       - when using the settings pane
       - when reading from config
+- any tests missed in deleting Tag & Date board configs (and columns)
 - ensure columns on a board have unique names
     - when entering and when reading from config
 - do I want to do something with input boxes for numbers as they are a bit

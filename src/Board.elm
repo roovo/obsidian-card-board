@@ -7,13 +7,10 @@ module Board exposing
 
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
 import Columns
 import Date exposing (Date)
-import DateBoardConfig
 import Filter exposing (Filter, Polarity, Scope)
-import TagBoardConfig
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 
@@ -41,20 +38,11 @@ init uniqueId config taskList =
 
 columns : Bool -> Date -> Board -> List Column
 columns ignoreFileNameDates today ((Board _ config taskList) as board) =
-    case config of
-        BoardConfig.DateBoardConfig dateBoardConfig ->
-            taskList
-                |> filterTaskList config
-                |> configureDueDates ignoreFileNameDates
-                |> Columns.addTaskList today (DateBoardConfig.tagsToHide dateBoardConfig) dateBoardConfig.columns
-                |> Columns.toList
-
-        BoardConfig.TagBoardConfig tagBoardConfig ->
-            taskList
-                |> filterTaskList config
-                |> configureDueDates ignoreFileNameDates
-                |> Columns.addTaskList today (TagBoardConfig.tagsToHide tagBoardConfig) tagBoardConfig.columns
-                |> Columns.toList
+    taskList
+        |> filterTaskList config
+        |> configureDueDates ignoreFileNameDates
+        |> Columns.addTaskList today (tagsToHide config) (BoardConfig.columns config)
+        |> Columns.toList
 
 
 id : Board -> String
@@ -64,6 +52,34 @@ id (Board uniqueId config _) =
 
 
 -- PRIVATE
+
+
+applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
+applyFilters taskList polarity scope filters =
+    let
+        operator : Bool -> Bool
+        operator =
+            case polarity of
+                Filter.Allow ->
+                    identity
+
+                Filter.Deny ->
+                    not
+
+        filterMode : (a -> Bool) -> List a -> Bool
+        filterMode =
+            case polarity of
+                Filter.Allow ->
+                    List.any
+
+                Filter.Deny ->
+                    List.all
+    in
+    if List.isEmpty filters then
+        taskList
+
+    else
+        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
 configureDueDates : Bool -> TaskList -> TaskList
@@ -107,29 +123,26 @@ filterByTag polarity scope filters taskList =
         |> applyFilters taskList polarity scope
 
 
-applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
-applyFilters taskList polarity scope filters =
+tagsToHide : BoardConfig -> List String
+tagsToHide boardConfig =
     let
-        operator : Bool -> Bool
-        operator =
-            case polarity of
-                Filter.Allow ->
-                    identity
+        columnTagsToHide : List String
+        columnTagsToHide =
+            if BoardConfig.showColumnTags boardConfig then
+                []
 
-                Filter.Deny ->
-                    not
+            else
+                Columns.namedTagColumnTags <| BoardConfig.columns boardConfig
 
-        filterMode : (a -> Bool) -> List a -> Bool
-        filterMode =
-            case polarity of
-                Filter.Allow ->
-                    List.any
+        filterTagsToHide : List String
+        filterTagsToHide =
+            if BoardConfig.showFilteredTags boardConfig then
+                []
 
-                Filter.Deny ->
-                    List.all
+            else
+                boardConfig
+                    |> BoardConfig.filters
+                    |> List.filter (\f -> Filter.filterType f == "Tags")
+                    |> List.map Filter.value
     in
-    if List.isEmpty filters then
-        taskList
-
-    else
-        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
+    columnTagsToHide ++ filterTagsToHide

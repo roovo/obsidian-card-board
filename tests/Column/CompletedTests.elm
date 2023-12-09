@@ -2,14 +2,12 @@ module Column.CompletedTests exposing (suite)
 
 import Column
 import Column.Completed as CompletedColumn
-import DateBoardConfig exposing (DateBoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import PlacementResult
-import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import TsJson.Encode as TsEncode

@@ -7,6 +7,7 @@ module Columns exposing
     , empty
     , encoder
     , fromList
+    , includesCompleted
     , includesOtherTags
     , includesUndated
     , includesUntagged
@@ -126,6 +127,16 @@ completedCount columns =
 
         WithoutCompleted _ ->
             0
+
+
+includesCompleted : Columns -> Bool
+includesCompleted columns =
+    case columns of
+        WithCompleted _ completedColumn ->
+            True
+
+        WithoutCompleted _ ->
+            False
 
 
 includesOtherTags : Columns -> Bool

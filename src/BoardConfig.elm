@@ -1,8 +1,7 @@
 module BoardConfig exposing
     ( BoardConfig(..)
     , collapseColumn
-    , collapsedColumns
-    , dateBoardConfig
+    , columns
     , decoder_v_0_10_0
     , decoder_v_0_11_0
     , decoder_v_0_1_0
@@ -19,19 +18,14 @@ module BoardConfig exposing
     , filterPolarity
     , filterScope
     , filters
-    , fromBoardType
-    , isForDateBoard
-    , isForTagBoard
     , mapFilters
     , setNamesToDefault
+    , showColumnTags
+    , showFilteredTags
     , title
-    , toggleIncludeOtherTags
-    , toggleIncludeUndated
-    , toggleIncludeUntagged
     , toggleShowColumnTags
     , toggleShowFilteredTags
     , toggleTagFilterScope
-    , updateBoardType
     , updateColumnName
     , updateCompletedColumnLimit
     , updateCompletedCount
@@ -39,19 +33,22 @@ module BoardConfig exposing
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
     , updateFilterPolarity
+    , updateFilterScope
     , updateFilters
-    , updateTags
     , updateTitle
     )
 
-import CollapsedColumns exposing (CollapsedColumns)
-import DateBoardConfig exposing (DateBoardConfig)
+import Column exposing (Column)
+import Column.Completed as CompletedColumn
+import Column.Dated as DatedColumn
+import Column.OtherTags as OtherTagsColumn
+import Columns exposing (Columns)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import Parser
-import TagBoardConfig exposing (TagBoardConfig)
 import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -60,8 +57,24 @@ import TsJson.Encode as TsEncode
 
 
 type BoardConfig
-    = DateBoardConfig DateBoardConfig
-    | TagBoardConfig TagBoardConfig
+    = BoardConfig Config
+
+
+type alias Config =
+    { columns : Columns
+    , filters : List Filter
+    , filterPolarity : Polarity
+    , filterScope : Scope
+    , showColumnTags : Bool
+    , showFilteredTags : Bool
+    , title : String
+    }
+
+
+type alias LocalColumnConfig =
+    { tag : String
+    , displayTitle : String
+    }
 
 
 
@@ -70,111 +83,57 @@ type BoardConfig
 
 default : BoardConfig
 default =
-    TagBoardConfig TagBoardConfig.default
-
-
-fromBoardType : String -> String -> BoardConfig
-fromBoardType boardType title_ =
-    case boardType of
-        "dateBoard" ->
-            let
-                newBoardConfig : DateBoardConfig
-                newBoardConfig =
-                    DateBoardConfig.default
-            in
-            DateBoardConfig { newBoardConfig | title = title_ }
-
-        _ ->
-            let
-                newBoardConfig : TagBoardConfig
-                newBoardConfig =
-                    TagBoardConfig.default
-            in
-            TagBoardConfig { newBoardConfig | title = title_ }
+    BoardConfig
+        { columns =
+            Columns.fromList
+                [ Column.completed <| CompletedColumn.init "Completed" 0 10
+                ]
+        , filters = []
+        , filterPolarity = Filter.defaultPolarity
+        , filterScope = Filter.defaultScope
+        , showColumnTags = True
+        , showFilteredTags = True
+        , title = ""
+        }
 
 
 
 -- UTILITIES
 
 
-collapsedColumns : BoardConfig -> CollapsedColumns
-collapsedColumns config =
-    -- case config of
-    --     DateBoardConfig c ->
-    --         c.collapsedColumns
-    --     TagBoardConfig c ->
-    --         c.collapsedColumns
-    CollapsedColumns.init
-
-
-dateBoardConfig : BoardConfig -> Maybe DateBoardConfig
-dateBoardConfig boardConfig =
-    case boardConfig of
-        DateBoardConfig c ->
-            Just c
-
-        TagBoardConfig c ->
-            Nothing
-
-
-isForDateBoard : BoardConfig -> Bool
-isForDateBoard config =
-    case config of
-        DateBoardConfig _ ->
-            True
-
-        _ ->
-            False
-
-
-isForTagBoard : BoardConfig -> Bool
-isForTagBoard config =
-    case config of
-        TagBoardConfig _ ->
-            True
-
-        _ ->
-            False
+columns : BoardConfig -> Columns
+columns =
+    .columns << config
 
 
 filters : BoardConfig -> List Filter
-filters config =
-    case config of
-        DateBoardConfig boardConfig ->
-            boardConfig.filters
-
-        TagBoardConfig boardConfig ->
-            boardConfig.filters
+filters =
+    .filters << config
 
 
 filterPolarity : BoardConfig -> Polarity
-filterPolarity config =
-    case config of
-        DateBoardConfig boardConfig ->
-            boardConfig.filterPolarity
-
-        TagBoardConfig boardConfig ->
-            boardConfig.filterPolarity
+filterPolarity =
+    .filterPolarity << config
 
 
 filterScope : BoardConfig -> Scope
-filterScope config =
-    case config of
-        DateBoardConfig boardConfig ->
-            boardConfig.filterScope
+filterScope =
+    .filterScope << config
 
-        TagBoardConfig boardConfig ->
-            boardConfig.filterScope
+
+showColumnTags : BoardConfig -> Bool
+showColumnTags =
+    .showColumnTags << config
+
+
+showFilteredTags : BoardConfig -> Bool
+showFilteredTags =
+    .showFilteredTags << config
 
 
 title : BoardConfig -> String
-title config =
-    case config of
-        DateBoardConfig boardConfig ->
-            boardConfig.title
-
-        TagBoardConfig boardConfig ->
-            boardConfig.title
+title =
+    .title << config
 
 
 
@@ -183,150 +142,31 @@ title config =
 
 encoder : TsEncode.Encoder BoardConfig
 encoder =
-    TsEncode.union
-        (\vDateBoardConfig vTagBoardConfig value ->
-            case value of
-                DateBoardConfig config ->
-                    vDateBoardConfig config
-
-                TagBoardConfig config ->
-                    vTagBoardConfig config
-        )
-        |> TsEncode.variantTagged "dateBoardConfig" DateBoardConfig.encoder
-        |> TsEncode.variantTagged "tagBoardConfig" TagBoardConfig.encoder
-        |> TsEncode.buildUnion
+    TsEncode.map config <|
+        TsEncode.object
+            [ TsEncode.required "columns" .columns Columns.encoder
+            , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
+            , TsEncode.required "filterPolarity" .filterPolarity Filter.polarityEncoder
+            , TsEncode.required "filterScope" .filterScope Filter.scopeEncoder
+            , TsEncode.required "showColumnTags" .showColumnTags TsEncode.bool
+            , TsEncode.required "showFilteredTags" .showFilteredTags TsEncode.bool
+            , TsEncode.required "title" .title TsEncode.string
+            ]
 
 
 decoder_v_0_11_0 : TsDecode.Decoder BoardConfig
 decoder_v_0_11_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_11_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_11_0
-        ]
-
-
-decoder_v_0_10_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_10_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_10_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_10_0
-        ]
-
-
-decoder_v_0_9_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_9_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_9_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_9_0
-        ]
-
-
-decoder_v_0_8_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_8_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_8_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_8_0
-        ]
-
-
-decoder_v_0_7_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_7_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_7_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_7_0
-        ]
-
-
-decoder_v_0_6_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_6_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_6_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_6_0
-        ]
-
-
-decoder_v_0_5_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_5_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_5_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_5_0
-        ]
-
-
-decoder_v_0_4_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_4_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_4_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_4_0
-        ]
-
-
-decoder_v_0_3_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_3_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_3_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_3_0
-        ]
-
-
-decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_2_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_2_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_2_0
-        ]
-
-
-decoder_v_0_1_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_1_0 =
-    TsDecode.oneOf
-        [ DecodeHelpers.toElmVariant "dateBoardConfig"
-            DateBoardConfig
-            DateBoardConfig.decoder_v_0_1_0
-        , DecodeHelpers.toElmVariant "tagBoardConfig"
-            TagBoardConfig
-            TagBoardConfig.decoder_v_0_1_0
-        ]
+    (TsDecode.succeed Config
+        |> TsDecode.required "columns" Columns.decoder
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
 
 
 
@@ -334,87 +174,32 @@ decoder_v_0_1_0 =
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig
-mapFilters fn config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | filters = List.map fn boardConfig.filters }
+mapFilters fn (BoardConfig c) =
+    BoardConfig { c | filters = List.map fn c.filters }
 
 
 collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
-collapseColumn columnIndex isCollapsed config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig <| DateBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig <| TagBoardConfig.collapseColumn columnIndex isCollapsed boardConfig
+collapseColumn columnIndex isCollapsed (BoardConfig c) =
+    BoardConfig { c | columns = Columns.collapseColumn columnIndex isCollapsed c.columns }
 
 
 setNamesToDefault : DefaultColumnNames -> BoardConfig -> BoardConfig
-setNamesToDefault defaultColumnNames boardConfig =
-    case boardConfig of
-        DateBoardConfig dateBoardConfig_ ->
-            DateBoardConfig <| DateBoardConfig.setNamesToDefault defaultColumnNames dateBoardConfig_
-
-        TagBoardConfig tagBoardConfig ->
-            TagBoardConfig <| TagBoardConfig.setNamesToDefault defaultColumnNames tagBoardConfig
-
-
-toggleIncludeOtherTags : BoardConfig -> BoardConfig
-toggleIncludeOtherTags config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig <| TagBoardConfig.toggleIncludeOtherTags boardConfig
-
-
-toggleIncludeUndated : BoardConfig -> BoardConfig
-toggleIncludeUndated config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig <| DateBoardConfig.toggleIncludeUndated boardConfig
-
-        TagBoardConfig _ ->
-            config
-
-
-toggleIncludeUntagged : BoardConfig -> BoardConfig
-toggleIncludeUntagged config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig <| TagBoardConfig.toggleIncludeUntagged boardConfig
+setNamesToDefault defaultColumnNames (BoardConfig c) =
+    BoardConfig { c | columns = Columns.setNamesToDefault defaultColumnNames c.columns }
 
 
 toggleShowColumnTags : BoardConfig -> BoardConfig
-toggleShowColumnTags config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | showColumnTags = not boardConfig.showColumnTags }
+toggleShowColumnTags (BoardConfig c) =
+    BoardConfig { c | showColumnTags = not c.showColumnTags }
 
 
 toggleShowFilteredTags : BoardConfig -> BoardConfig
-toggleShowFilteredTags config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | showFilteredTags = not boardConfig.showFilteredTags }
+toggleShowFilteredTags (BoardConfig c) =
+    BoardConfig { c | showFilteredTags = not c.showFilteredTags }
 
 
 toggleTagFilterScope : BoardConfig -> BoardConfig
-toggleTagFilterScope config =
+toggleTagFilterScope (BoardConfig c) =
     let
         cycleScope : Scope -> Scope
         cycleScope scope =
@@ -428,126 +213,586 @@ toggleTagFilterScope config =
                 Filter.Both ->
                     Filter.TopLevelOnly
     in
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | filterScope = cycleScope boardConfig.filterScope }
-
-
-updateBoardType : String -> BoardConfig -> BoardConfig
-updateBoardType boardType config =
-    fromBoardType boardType (title config)
+    BoardConfig { c | filterScope = cycleScope c.filterScope }
 
 
 updateColumnName : Int -> String -> BoardConfig -> BoardConfig
-updateColumnName index newTitle config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig <| DateBoardConfig.updateColumnName index newTitle boardConfig
-
-        TagBoardConfig boardConfig ->
-            config
+updateColumnName index newTitle (BoardConfig c) =
+    BoardConfig { c | columns = Columns.updateColumnName index newTitle c.columns }
 
 
 updateCompletedColumnLimit : Int -> Maybe Int -> BoardConfig -> BoardConfig
-updateCompletedColumnLimit index value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newLimit ) ->
-            DateBoardConfig <| DateBoardConfig.updateCompletedColumnLimit index newLimit boardConfig
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            config
+updateCompletedColumnLimit index value ((BoardConfig c) as boardConfig) =
+    case value of
+        Just newLimit ->
+            BoardConfig { c | columns = Columns.updateCompletedColumnLimit index newLimit c.columns }
 
         _ ->
-            config
+            boardConfig
 
 
 updateCompletedCount : Maybe Int -> BoardConfig -> BoardConfig
-updateCompletedCount value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newCount ) ->
-            DateBoardConfig <| DateBoardConfig.updateCompletedCount newCount boardConfig
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            TagBoardConfig <| TagBoardConfig.updateCompletedCount newCount boardConfig
+updateCompletedCount value ((BoardConfig c) as boardConfig) =
+    case value of
+        Just newCount ->
+            BoardConfig { c | columns = Columns.updateCompletedCount newCount c.columns }
 
         _ ->
-            config
+            boardConfig
 
 
 updateDatedColumnRangeType : Int -> String -> BoardConfig -> BoardConfig
-updateDatedColumnRangeType index rangeType config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeType index rangeType boardConfig
-
-        TagBoardConfig boardConfig ->
-            config
+updateDatedColumnRangeType index rangeType (BoardConfig c) =
+    BoardConfig { c | columns = Columns.updateDatedColumnRangeType index rangeType c.columns }
 
 
 updateDatedColumnRangeValueFrom : Int -> Maybe Int -> BoardConfig -> BoardConfig
-updateDatedColumnRangeValueFrom index value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newValue ) ->
-            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeValueFrom index newValue boardConfig
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            config
+updateDatedColumnRangeValueFrom index value ((BoardConfig c) as boardConfig) =
+    case value of
+        Just newValue ->
+            BoardConfig { c | columns = Columns.updateDatedColumnRangeValueFrom index newValue c.columns }
 
         _ ->
-            config
+            boardConfig
 
 
 updateDatedColumnRangeValueTo : Int -> Maybe Int -> BoardConfig -> BoardConfig
-updateDatedColumnRangeValueTo index value config =
-    case ( config, value ) of
-        ( DateBoardConfig boardConfig, Just newValue ) ->
-            DateBoardConfig <| DateBoardConfig.updateDatedColumnRangeValueTo index newValue boardConfig
-
-        ( TagBoardConfig boardConfig, Just newCount ) ->
-            config
+updateDatedColumnRangeValueTo index value ((BoardConfig c) as boardConfig) =
+    case value of
+        Just newValue ->
+            BoardConfig { c | columns = Columns.updateDatedColumnRangeValueTo index newValue c.columns }
 
         _ ->
-            config
+            boardConfig
 
 
 updateFilterPolarity : String -> BoardConfig -> BoardConfig
-updateFilterPolarity polarity config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
+updateFilterPolarity polarity (BoardConfig c) =
+    BoardConfig { c | filterPolarity = Filter.polarityFromString polarity }
 
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | filterPolarity = Filter.polarityFromString polarity }
+
+updateFilterScope : Filter.Scope -> BoardConfig -> BoardConfig
+updateFilterScope scope (BoardConfig c) =
+    BoardConfig { c | filterScope = scope }
 
 
 updateFilters : List Filter -> BoardConfig -> BoardConfig
-updateFilters filters_ config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | filters = filters_ }
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | filters = filters_ }
-
-
-updateTags : String -> BoardConfig -> BoardConfig
-updateTags tags config =
-    case config of
-        DateBoardConfig _ ->
-            config
-
-        TagBoardConfig boardConfig ->
-            TagBoardConfig <| TagBoardConfig.updateTags tags boardConfig
+updateFilters filters_ (BoardConfig c) =
+    BoardConfig { c | filters = filters_ }
 
 
 updateTitle : String -> BoardConfig -> BoardConfig
-updateTitle title_ config =
-    case config of
-        DateBoardConfig boardConfig ->
-            DateBoardConfig { boardConfig | title = title_ }
+updateTitle title_ (BoardConfig c) =
+    BoardConfig { c | title = title_ }
 
-        TagBoardConfig boardConfig ->
-            TagBoardConfig { boardConfig | title = title_ }
+
+
+-- LEGACY
+
+
+decoder_v_0_10_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_10_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_10_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_10_0
+        ]
+
+
+decoder_v_0_9_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_9_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_9_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_9_0
+        ]
+
+
+decoder_v_0_8_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_8_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_8_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_8_0
+        ]
+
+
+decoder_v_0_7_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_7_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_7_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_7_0
+        ]
+
+
+decoder_v_0_6_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_6_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_6_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_6_0
+        ]
+
+
+decoder_v_0_5_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_5_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_5_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_5_0
+        ]
+
+
+decoder_v_0_4_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_4_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_4_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_4_0
+        ]
+
+
+decoder_v_0_3_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_3_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_3_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_3_0
+        ]
+
+
+decoder_v_0_2_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_2_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_2_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_2_0
+        ]
+
+
+decoder_v_0_1_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_1_0 =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "dateBoardConfig"
+            identity
+            dateBoardConfigDecoder_v_0_1_0
+        , DecodeHelpers.toElmVariant "tagBoardConfig"
+            identity
+            tagBoardConfigDecoder_v_0_1_0
+        ]
+
+
+
+-- LEGACY DATE BOARD
+
+
+dateBoardConfigDecoder_v_0_10_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_10_0 =
+    dateBoardConfigDecoder_v_0_9_0
+
+
+dateBoardConfigDecoder_v_0_9_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_9_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.required "collapsedColumns" (TsDecode.list TsDecode.int)
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+dateBoardConfigDecoder_v_0_8_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_8_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+dateBoardConfigDecoder_v_0_7_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_7_0 =
+    dateBoardConfigDecoder_v_0_6_0
+
+
+dateBoardConfigDecoder_v_0_6_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_6_0 =
+    dateBoardConfigDecoder_v_0_5_0
+
+
+dateBoardConfigDecoder_v_0_5_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_5_0 =
+    dateBoardConfigDecoder_v_0_4_0
+
+
+dateBoardConfigDecoder_v_0_4_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_4_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+dateBoardConfigDecoder_v_0_3_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_3_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+dateBoardConfigDecoder_v_0_2_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_2_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.hardcoded Filter.Allow
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+dateBoardConfigDecoder_v_0_1_0 : TsDecode.Decoder BoardConfig
+dateBoardConfigDecoder_v_0_1_0 =
+    (TsDecode.succeed buildDateBoardFromPreV11
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.hardcoded []
+        |> TsDecode.hardcoded Filter.Allow
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeUndated" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map BoardConfig
+
+
+buildDateBoardFromPreV11 : List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> Config
+buildDateBoardFromPreV11 collapsedColumns completedCount_ filters_ filterPolarity_ filterScope_ includeUndated_ showFilteredTags_ title_ =
+    let
+        columns_ =
+            undatedColumn
+                ++ datedColumns
+                ++ completedColumn
+                |> List.indexedMap handleCollapse
+
+        completedColumn =
+            if completedCount_ > 0 then
+                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
+
+            else
+                []
+
+        completedColumnIndex =
+            List.length (undatedColumn ++ datedColumns)
+
+        datedColumns =
+            [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
+            , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
+            , Column.dated <| DatedColumn.init "Future" (DatedColumn.After 1)
+            ]
+
+        handleCollapse : Int -> Column -> Column
+        handleCollapse index column =
+            if List.member index collapsedColumns then
+                Column.toggleCollapse column
+
+            else
+                column
+
+        undatedColumn =
+            if includeUndated_ then
+                [ Column.undated "Undated" ]
+
+            else
+                []
+    in
+    { columns = Columns.fromList columns_
+    , filters = filters_
+    , filterPolarity = filterPolarity_
+    , filterScope = filterScope_
+    , showFilteredTags = showFilteredTags_
+    , showColumnTags = False
+    , title = title_
+    }
+
+
+
+-- LEGACY TAG BOARD
+
+
+tagBoardConfigDecoder_v_0_10_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_10_0 =
+    tagBoardConfigDecoder_v_0_9_0
+
+
+tagBoardConfigDecoder_v_0_9_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_9_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.required "collapsedColumns" (TsDecode.list TsDecode.int)
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+tagBoardConfigDecoder_v_0_8_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_8_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+tagBoardConfigDecoder_v_0_7_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_7_0 =
+    tagBoardConfigDecoder_v_0_6_0
+
+
+tagBoardConfigDecoder_v_0_6_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_6_0 =
+    tagBoardConfigDecoder_v_0_5_0
+
+
+tagBoardConfigDecoder_v_0_5_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_5_0 =
+    tagBoardConfigDecoder_v_0_4_0
+
+
+tagBoardConfigDecoder_v_0_4_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_4_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+tagBoardConfigDecoder_v_0_3_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_3_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+tagBoardConfigDecoder_v_0_2_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_2_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.hardcoded Filter.Allow
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+tagBoardConfigDecoder_v_0_1_0 : TsDecode.Decoder BoardConfig
+tagBoardConfigDecoder_v_0_1_0 =
+    (TsDecode.succeed buildTagBoardFromPreV11
+        |> TsDecode.required "columns" (TsDecode.list localColumnConfigDecoder)
+        |> TsDecode.hardcoded []
+        |> TsDecode.required "completedCount" TsDecode.int
+        |> TsDecode.hardcoded []
+        |> TsDecode.hardcoded Filter.Allow
+        |> TsDecode.hardcoded Filter.Both
+        |> TsDecode.required "includeOthers" TsDecode.bool
+        |> TsDecode.required "includeUntagged" TsDecode.bool
+        |> TsDecode.hardcoded True
+        |> TsDecode.hardcoded True
+        |> TsDecode.required "title" TsDecode.string
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
+
+
+buildTagBoardFromPreV11 : List LocalColumnConfig -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> Config
+buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filters_ filterPolarity_ filterScope_ includeOthers includeUntagged showColumnTags_ showFilteredTags_ title_ =
+    let
+        columns_ =
+            untaggedColumn
+                ++ otherTagsColumn
+                ++ namedTagColumns
+                ++ completedColumn
+                |> List.indexedMap handleCollapse
+
+        completedColumn =
+            if completedCount_ > 0 then
+                [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
+
+            else
+                []
+
+        completedColumnIndex =
+            List.length (untaggedColumn ++ otherTagsColumn ++ namedTagColumns)
+
+        handleCollapse : Int -> Column -> Column
+        handleCollapse index column =
+            if List.member index collapsedColumns then
+                Column.toggleCollapse column
+
+            else
+                column
+
+        namedTagColumns =
+            localColumnConfigs
+                |> List.map (\c -> Column.namedTag c.displayTitle c.tag)
+
+        otherTags =
+            localColumnConfigs
+                |> List.map .tag
+
+        otherTagsColumn =
+            if includeOthers then
+                [ Column.otherTags "Other Tags" otherTags ]
+
+            else
+                []
+
+        untaggedColumn =
+            if includeUntagged then
+                [ Column.untagged "Untagged" ]
+
+            else
+                []
+    in
+    { columns = Columns.fromList columns_
+    , filters = filters_
+    , filterPolarity = filterPolarity_
+    , filterScope = filterScope_
+    , showColumnTags = showColumnTags_
+    , showFilteredTags = showFilteredTags_
+    , title = title_
+    }
+
+
+localColumnConfigDecoder : TsDecode.Decoder LocalColumnConfig
+localColumnConfigDecoder =
+    TsDecode.succeed LocalColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
+
+
+
+-- PRIVATE
+
+
+config : BoardConfig -> Config
+config (BoardConfig c) =
+    c
+
+
+configureOtherTagsColumn : Config -> Config
+configureOtherTagsColumn config_ =
+    { config_
+        | columns =
+            Columns.updateOtherTags
+                (OtherTagsColumn.setOtherTags <| Columns.namedTagColumnTags config_.columns)
+                config_.columns
+    }

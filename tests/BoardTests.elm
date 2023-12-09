@@ -1,11 +1,9 @@
 module BoardTests exposing (suite)
 
 import Board
-import BoardConfig
+import BoardConfig exposing (BoardConfig)
 import Card
-import CollapsedColumns
 import Column
-import DateBoardConfig exposing (DateBoardConfig)
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -13,7 +11,6 @@ import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem
 import Test exposing (..)
 
@@ -21,294 +18,22 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ columnsDateBoard
-        , columnsTagBoard
+        [ columns
         ]
 
 
-columnsDateBoard : Test
-columnsDateBoard =
-    describe "columns - dateboard"
-        [ describe "filtering"
-            [ test "can filter tasks to be from a given file" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "gg/xx/yy.md" ]
-                                    , filterPolarity = Filter.Allow
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "an undated incomplete"
-                            , "an undated incomplete with subtask"
-                            , "incomplete with cTag"
-                            , "incomplete with subtask with cTag"
-                            , "untagged incomplete"
-                            ]
-            , test "can filter tasks to NOT be from a given file" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "gg/xx/yy.md"
-                                        , FilterHelpers.fileFilter "x"
-                                        , FilterHelpers.fileFilter "b"
-                                        , FilterHelpers.fileFilter "c"
-                                        , FilterHelpers.fileFilter "d"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Completed"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "future complete"
-                            , "yesterday complete"
-                            , "invalid date complete"
-                            ]
-            , test "can filter tasks to be from a given path" <|
-                \() ->
-                    TaskListHelpers.taskListFromFile "aa/bb/c.ext"
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters = [ FilterHelpers.pathFilter "aa/bb" ]
-                                    , filterPolarity = Filter.Allow
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal [ "c1" ]
-            , test "can filter tasks to NOT be from a given path" <|
-                \() ->
-                    TaskListHelpers.taskListFromFile "aa/bb/c.ext"
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters = [ FilterHelpers.pathFilter "aa/bb" ]
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal []
-            , test "can filter tasks to have a given tag checking both top level and sub tasks" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.Both
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal [ "invalid date incomplete", "invalid date incomplete with sub-task" ]
-            , test "can filter tasks to have a given tag checking just top level tasks" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.TopLevelOnly
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal [ "invalid date incomplete" ]
-            , test "can filter tasks to have a given tag checking just sub-tasks" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters = [ FilterHelpers.tagFilter "aTag" ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.SubTasksOnly
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal [ "invalid date incomplete with sub-task" ]
-            , test "can filter tasks to NOT have a given tag checking both the top level task and its sub-tasks" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "cTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , filterScope = Filter.Both
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "an undated incomplete"
-                            , "an undated incomplete with subtask"
-                            , "more undated incomplete"
-                            , "untagged incomplete"
-                            ]
-            , test "can filter tasks to NOT have a given tag checking just the top level task" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "cTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , filterScope = Filter.TopLevelOnly
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "an undated incomplete"
-                            , "an undated incomplete with subtask"
-                            , "incomplete with subtask with cTag"
-                            , "invalid date incomplete with sub-task"
-                            , "more undated incomplete"
-                            , "untagged incomplete"
-                            ]
-            , test "can filter tasks to NOT have a given tag checking just the sub tasks" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "cTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , filterScope = Filter.SubTasksOnly
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "an undated incomplete"
-                            , "an undated incomplete with subtask"
-                            , "incomplete with cTag"
-                            , "invalid date incomplete"
-                            , "more undated incomplete"
-                            , "more undated incomplete with cTag"
-                            , "untagged incomplete"
-                            ]
-            , test "filters tasks that are either in a file or path AND have one of the given tags" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "f"
-                                        , FilterHelpers.pathFilter "gg"
-                                        , FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "bTag"
-                                        ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.Both
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "an undated incomplete"
-                            , "an undated incomplete with subtask"
-                            , "invalid date incomplete"
-                            , "invalid date incomplete with sub-task"
-                            ]
-            , test "filters tasks that are NOT in the given files and paths AND DO NOT have one of the given tags" <|
-                \() ->
-                    TaskListHelpers.exampleDateBoardTaskList
-                        |> Board.init
-                            "d1"
-                            (BoardConfig.DateBoardConfig
-                                { exampleDateBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "f"
-                                        , FilterHelpers.pathFilter "gg"
-                                        , FilterHelpers.tagFilter "aTag"
-                                        , FilterHelpers.tagFilter "bTag"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                }
-                            )
-                        |> Board.columns False DateTimeHelpers.todayDate
-                        |> BoardHelpers.thingsInColumn "Undated"
-                        |> List.map Card.taskItem
-                        |> List.map TaskItem.title
-                        |> Expect.equal
-                            [ "more undated incomplete with cTag" ]
-            ]
-        ]
-
-
-columnsTagBoard : Test
-columnsTagBoard =
-    describe "columns - tagboard"
+columns : Test
+columns =
+    describe "columns"
         [ describe "filtering"
             [ test "can filter tasks to be from a given file" <|
                 \() ->
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.fileFilter "a" ]
-                                    , filterPolarity = Filter.Allow
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.fileFilter "a" ]
+                                |> BoardConfig.updateFilterPolarity "Allow"
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -324,11 +49,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.fileFilter "a" ]
-                                    , filterPolarity = Filter.Deny
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.fileFilter "a" ]
+                                |> BoardConfig.updateFilterPolarity "Deny"
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -347,11 +70,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.pathFilter "aa" ]
-                                    , filterPolarity = Filter.Allow
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.pathFilter "aa" ]
+                                |> BoardConfig.updateFilterPolarity "Allow"
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -367,11 +88,9 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.pathFilter "aa" ]
-                                    , filterPolarity = Filter.Deny
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.pathFilter "aa" ]
+                                |> BoardConfig.updateFilterPolarity "Deny"
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -390,12 +109,10 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.Both
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.tagFilter "tag1" ]
+                                |> BoardConfig.updateFilterPolarity "Allow"
+                                |> BoardConfig.updateFilterScope Filter.Both
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -411,12 +128,10 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
-                                    , filterPolarity = Filter.Deny
-                                    , filterScope = Filter.Both
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters [ FilterHelpers.tagFilter "tag1" ]
+                                |> BoardConfig.updateFilterPolarity "Deny"
+                                |> BoardConfig.updateFilterScope Filter.Both
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -435,17 +150,15 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "a"
-                                        , FilterHelpers.pathFilter "aa"
-                                        , FilterHelpers.tagFilter "tag1"
-                                        , FilterHelpers.tagFilter "tag2"
-                                        ]
-                                    , filterPolarity = Filter.Allow
-                                    , filterScope = Filter.Both
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters
+                                    [ FilterHelpers.fileFilter "a"
+                                    , FilterHelpers.pathFilter "aa"
+                                    , FilterHelpers.tagFilter "tag1"
+                                    , FilterHelpers.tagFilter "tag2"
+                                    ]
+                                |> BoardConfig.updateFilterPolarity "Allow"
+                                |> BoardConfig.updateFilterScope Filter.Both
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -462,17 +175,15 @@ columnsTagBoard =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (BoardConfig.TagBoardConfig
-                                { exampleTagBoardConfig
-                                    | filters =
-                                        [ FilterHelpers.fileFilter "a"
-                                        , FilterHelpers.pathFilter "aa"
-                                        , FilterHelpers.tagFilter "tag1"
-                                        , FilterHelpers.tagFilter "tag2"
-                                        ]
-                                    , filterPolarity = Filter.Deny
-                                    , filterScope = Filter.Both
-                                }
+                            (exampleTagBoardConfig
+                                |> BoardConfig.updateFilters
+                                    [ FilterHelpers.fileFilter "a"
+                                    , FilterHelpers.pathFilter "aa"
+                                    , FilterHelpers.tagFilter "tag1"
+                                    , FilterHelpers.tagFilter "tag2"
+                                    ]
+                                |> BoardConfig.updateFilterPolarity "Deny"
+                                |> BoardConfig.updateFilterScope Filter.Both
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -487,11 +198,11 @@ columnsTagBoard =
 -- HELPERS
 
 
-exampleDateBoardConfig : DateBoardConfig
+exampleDateBoardConfig : BoardConfig
 exampleDateBoardConfig =
     BoardConfigHelpers.exampleDateBoardConfig
 
 
-exampleTagBoardConfig : TagBoardConfig
+exampleTagBoardConfig : BoardConfig
 exampleTagBoardConfig =
     BoardConfigHelpers.exampleTagBoardConfig

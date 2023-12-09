@@ -79,13 +79,8 @@ length (Boards _ config _) =
 
 
 tabTitle : BoardConfig -> String
-tabTitle config =
-    case config of
-        BoardConfig.DateBoardConfig dateBoardConfig ->
-            dateBoardConfig.title
-
-        BoardConfig.TagBoardConfig tagBoardConfig ->
-            tagBoardConfig.title
+tabTitle =
+    BoardConfig.title
 
 
 board : String -> TaskList -> BoardConfig -> Board

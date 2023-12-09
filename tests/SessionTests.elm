@@ -324,4 +324,7 @@ updatePath =
 exampleSettings : Settings
 exampleSettings =
     Settings.default
-        |> Settings.updateBoardConfigs (SafeZipper.fromList [ BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig ])
+        |> Settings.updateBoardConfigs
+            (SafeZipper.fromList
+                [ BoardConfigHelpers.exampleDateBoardConfig ]
+            )

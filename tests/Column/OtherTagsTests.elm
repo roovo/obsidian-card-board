@@ -8,7 +8,6 @@ import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
 import PlacementResult
-import TagBoardConfig exposing (TagBoardConfig)
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import TsJson.Encode as TsEncode

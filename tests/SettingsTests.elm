@@ -1,6 +1,6 @@
 module SettingsTests exposing (suite)
 
-import BoardConfig
+import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
@@ -10,7 +10,6 @@ import Helpers.DecodeHelpers as DecodeHelpers
 import SafeZipper
 import Semver
 import Settings
-import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -255,8 +254,8 @@ exampleSettings : Settings.Settings
 exampleSettings =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
-            , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
+            [ BoardConfigHelpers.exampleTagBoardConfig
+            , BoardConfigHelpers.exampleDateBoardConfig
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -267,11 +266,11 @@ exampleSettingsWithConsecutiveNames : Settings.Settings
 exampleSettingsWithConsecutiveNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "0" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "1" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "2" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "3" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "4" }
+            [ exampleTagBoardConfig |> BoardConfig.updateTitle "0"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "1"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "2"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "3"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "4"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -282,10 +281,10 @@ exampleSettingsWithDuplicatgeBoardNames : Settings.Settings
 exampleSettingsWithDuplicatgeBoardNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            [ exampleTagBoardConfig |> BoardConfig.updateTitle "A title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "B title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "A title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "A title"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -296,10 +295,10 @@ exampleSettingsWithMissingBoardNames : Settings.Settings
 exampleSettingsWithMissingBoardNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = " " }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "   " }
+            [ exampleTagBoardConfig |> BoardConfig.updateTitle ""
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "B title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle " "
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "   "
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -310,16 +309,16 @@ exampleWithUnderscores : Settings.Settings
 exampleWithUnderscores =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A_title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            [ exampleTagBoardConfig |> BoardConfig.updateTitle "A title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "B title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "A_title"
+            , exampleTagBoardConfig |> BoardConfig.updateTitle "A title"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
     }
 
 
-exampleTagBoardConfig : TagBoardConfig
+exampleTagBoardConfig : BoardConfig
 exampleTagBoardConfig =
     BoardConfigHelpers.exampleTagBoardConfig

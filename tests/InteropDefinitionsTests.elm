@@ -1,6 +1,6 @@
 module InteropDefinitionsTests exposing (suite)
 
-import BoardConfig
+import BoardConfig exposing (BoardConfig(..))
 import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn
@@ -38,9 +38,21 @@ flagsTests =
         [ test "decodes valid flags for settings version 0.11.0" <|
             \() ->
                 """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.11.0","data":{"globalSettings":{"taskCompletionFormat":"ObsidianTasks","defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true},
-                "boardConfigs":[{"tag":"dateBoardConfig","data":{"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],"filterPolarity":"Deny","filterScope":"TopLevelOnly","showFilteredTags":true,
-                "columns":[{"tag":"undated","data":{"collapsed":false,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],"title":"date board title"}},
-                  {"tag":"tagBoardConfig","data":{"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"title 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],"showColumnTags":false,"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],"filterPolarity":"Allow","filterScope":"SubTasksOnly","showFilteredTags":false,"title":"tag board title"}}]}}}"""
+                "boardConfigs":[
+                   {"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],
+                    "filterPolarity":"Deny",
+                    "filterScope":"TopLevelOnly",
+                    "showFilteredTags":true,
+                    "showColumnTags":false,
+                    "columns":[{"tag":"undated","data":{"collapsed":false,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],
+                    "title":"date board title"},
+                   {"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"title 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],
+                    "showColumnTags":false,
+                    "filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],
+                    "filterPolarity":"Allow",
+                    "filterScope":"SubTasksOnly",
+                    "showFilteredTags":false,
+                    "title":"tag board title"}]}}}"""
                     |> DecodeHelpers.runDecoder interop.flags
                     |> .decoded
                     |> Expect.equal
@@ -49,7 +61,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -61,10 +73,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -111,7 +124,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -123,10 +136,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -173,7 +187,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -185,10 +199,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -235,7 +250,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -247,10 +262,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.TopLevelOnly
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -297,7 +313,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -309,10 +325,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -359,7 +376,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -371,10 +388,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -421,7 +439,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -433,10 +451,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -483,7 +502,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -495,10 +514,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -545,7 +565,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -557,10 +577,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Deny
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -607,7 +628,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -619,10 +640,11 @@ flagsTests =
                                             , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"
@@ -669,7 +691,7 @@ flagsTests =
                                 { version = Semver.version 0 11 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
-                                        [ BoardConfig.DateBoardConfig
+                                        [ BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.undated "Undated"
@@ -681,10 +703,11 @@ flagsTests =
                                             , filters = []
                                             , filterPolarity = Filter.Allow
                                             , filterScope = Filter.Both
+                                            , showColumnTags = False
                                             , showFilteredTags = True
                                             , title = "date board title"
                                             }
-                                        , BoardConfig.TagBoardConfig
+                                        , BoardConfig
                                             { columns =
                                                 Columns.fromList
                                                     [ Column.untagged "Untagged"

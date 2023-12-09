@@ -16,7 +16,6 @@ import Column.Dated as DatedColumn exposing (RelativeDateRange)
 import Column.NamedTag as NamedTagColumn
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
-import DateBoardConfig
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -42,7 +41,6 @@ import SettingsState exposing (SettingsState)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
-import TagBoardConfig
 
 
 
@@ -118,7 +116,6 @@ type Msg
     | EnteredNewBoardTitle String
     | EnteredNewColumnCompletedLimit Int String
     | EnteredNewColumnTitle Int String
-    | EnteredTags String
     | EnteredTitle String
     | FilterCandidatesReceived (List Filter)
     | GlobalSettingsClicked
@@ -130,9 +127,6 @@ type Msg
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleIgnoreFileNameDate
-    | ToggleIncludeOtherTags
-    | ToggleIncludeUndated
-    | ToggleIncludeUntagged
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
     | ToggleTagFilterScope
@@ -188,7 +182,8 @@ update msg model =
             )
 
         BoardTypeSelected boardType ->
-            mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+            -- mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+            ( model, Cmd.none, Session.NoOp )
 
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
@@ -242,9 +237,6 @@ update msg model =
 
         EnteredNewColumnTitle columnIndex title ->
             mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex title) model
-
-        EnteredTags tags ->
-            mapBoardBeingEdited (BoardConfig.updateTags tags) model
 
         EnteredTitle title ->
             mapBoardBeingEdited (BoardConfig.updateTitle title) model
@@ -324,15 +316,6 @@ update msg model =
                             GlobalSettings.toggleIgnoreFileNameDate
                             model.settingsState
                 }
-
-        ToggleIncludeOtherTags ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeOtherTags model
-
-        ToggleIncludeUndated ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
-
-        ToggleIncludeUntagged ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
 
         ToggleShowColumnTags ->
             mapBoardBeingEdited BoardConfig.toggleShowColumnTags model
@@ -524,12 +507,10 @@ modalAddBoard newConfig =
                             ]
                             [ Html.option
                                 [ value "dateBoard"
-                                , selected <| BoardConfig.isForDateBoard newConfig
                                 ]
                                 [ Html.text "Date board" ]
                             , Html.option
                                 [ value "tagBoard"
-                                , selected <| BoardConfig.isForTagBoard newConfig
                                 ]
                                 [ Html.text "Tag board" ]
                             ]
@@ -922,188 +903,11 @@ columNamesForm defaultColumnNames =
 boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
 boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
-        ( Just (BoardConfig.DateBoardConfig config), Just _ ) ->
+        ( Just config, Just index ) ->
             let
-                includeUndatedStyle : String
-                includeUndatedStyle =
-                    if DateBoardConfig.displayUndated config then
-                        " is-enabled"
-
-                    else
-                        ""
-
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
-                    if config.showFilteredTags then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                tagFilterScopeStyle : String
-                tagFilterScopeStyle =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            ""
-
-                        Filter.SubTasksOnly ->
-                            " is-mid-enabled"
-
-                        Filter.Both ->
-                            " is-enabled"
-
-                tagFilterScopeText : String
-                tagFilterScopeText =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            "Top level"
-
-                        Filter.SubTasksOnly ->
-                            "Sub-tasks"
-
-                        Filter.Both ->
-                            "Both"
-            in
-            [ Html.div [ class "setting-items-inner" ]
-                [ Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Title" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "The name of this board" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value config.title
-                            , onInput EnteredTitle
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item setting-item-heading" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Filters" ]
-                        , Html.div [ class "setting-item-description" ] []
-                        ]
-                    , Html.div [ class "setting-item-control" ] []
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Definitions" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Filter tasks by files, paths, and/or tags." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ MultiSelect.view multiselect
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Polarity" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Use the filters as an Allow or Deny list." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ polaritySelect config.filterPolarity ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Tag filter scope" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div []
-                            [ Html.text tagFilterScopeText ]
-                        , Html.div
-                            [ class <| "checkbox-container" ++ tagFilterScopeStyle
-                            , onClick ToggleTagFilterScope
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Show tag filters on cards" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                            , onClick ToggleShowFilteredTags
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item setting-item-heading" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Columns" ]
-                        , Html.div [ class "setting-item-description" ] []
-                        ]
-                    , Html.div [ class "setting-item-control" ] []
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "cardboard-settings-columns-list" ]
-                        (config.columns
-                            |> Columns.toList
-                            |> List.indexedMap settingsColumnView
-                        )
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.button []
-                        [ Html.text "Add Column" ]
-                    ]
-                , Html.div [ class "setting-item dialog-buttons" ]
-                    [ Html.button
-                        [ class "mod-warning"
-                        , onClick <| DeleteBoardRequested
-                        ]
-                        [ Html.text "Delete this board"
-                        ]
-                    ]
-                ]
-            ]
-
-        ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
-            let
-                hasUntaggedWarning : Bool
-                hasUntaggedWarning =
-                    let
-                        hasAnyTagFilters : Bool
-                        hasAnyTagFilters =
-                            (Dict.values <| MultiSelect.selectedItems multiselect)
-                                |> Filter.ofType "tagFilter"
-                                |> (not << List.isEmpty)
-                    in
-                    config.filterPolarity == Filter.Allow && hasAnyTagFilters
-
-                includeOtherTagsStyle : String
-                includeOtherTagsStyle =
-                    if TagBoardConfig.displayOtherTags config then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                includeUntaggedStyle : String
-                includeUntaggedStyle =
-                    if TagBoardConfig.displayUntagged config then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                showFilteredTagsStyle : String
-                showFilteredTagsStyle =
-                    if config.showFilteredTags then
+                    if BoardConfig.showFilteredTags config then
                         " is-enabled"
 
                     else
@@ -1111,7 +915,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 showColumnTagsStyle : String
                 showColumnTagsStyle =
-                    if config.showColumnTags then
+                    if BoardConfig.showColumnTags config then
                         " is-enabled"
 
                     else
@@ -1119,7 +923,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagFilterScopeStyle : String
                 tagFilterScopeStyle =
-                    case config.filterScope of
+                    case BoardConfig.filterScope config of
                         Filter.TopLevelOnly ->
                             ""
 
@@ -1131,7 +935,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagFilterScopeText : String
                 tagFilterScopeText =
-                    case config.filterScope of
+                    case BoardConfig.filterScope config of
                         Filter.TopLevelOnly ->
                             "Top level"
 
@@ -1143,26 +947,10 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 tagText : String
                 tagText =
-                    config.columns
+                    BoardConfig.columns config
                         |> Columns.namedTagColumns
                         |> List.map NamedTagColumn.asInputString
                         |> String.join "\n"
-
-                untaggedWarningClass : String
-                untaggedWarningClass =
-                    if hasUntaggedWarning then
-                        " has-error"
-
-                    else
-                        ""
-
-                untaggedWarningText : List (Html Msg)
-                untaggedWarningText =
-                    if hasUntaggedWarning then
-                        [ Html.div [ class "has-error" ] [ Html.text "Will never contain any tasks as you have configured tag filters in Allow mode." ] ]
-
-                    else
-                        []
             in
             [ Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1174,7 +962,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 , Html.div [ class "setting-item-control" ]
                     [ Html.input
                         [ type_ "text"
-                        , value config.title
+                        , value <| BoardConfig.title config
                         , onInput EnteredTitle
                         ]
                         []
@@ -1207,7 +995,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         [ Html.text "Use the filters defined above as an Allow or Deny list." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ polaritySelect config.filterPolarity ]
+                    [ polaritySelect <| BoardConfig.filterPolarity config ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1250,31 +1038,15 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 , Html.div [ class "setting-item-control" ] []
                 ]
             , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Definitions" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.div []
-                            [ Html.text "The tags to use to define board columns." ]
-                        , Html.div []
-                            [ Html.text
-                                ("Each line should be a tag followed by the column heading.  "
-                                    ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                    ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                )
-                            ]
-                        ]
-                    ]
-                , Html.Keyed.node "div"
-                    [ class "setting-item-control" ]
-                    [ ( String.fromInt index
-                      , Html.textarea
-                            [ onInput EnteredTags
-                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                            ]
-                            [ Html.text tagText ]
-                      )
-                    ]
+                [ Html.div [ class "cardboard-settings-columns-list" ]
+                    (BoardConfig.columns config
+                        |> Columns.toList
+                        |> List.indexedMap settingsColumnView
+                    )
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.button []
+                    [ Html.text "Add Column" ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1287,54 +1059,6 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     [ Html.div
                         [ class <| "checkbox-container" ++ showColumnTagsStyle
                         , onClick ToggleShowColumnTags
-                        ]
-                        []
-                    ]
-                ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Include other tags" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.div
-                        [ class <| "checkbox-container" ++ includeOtherTagsStyle
-                        , onClick ToggleIncludeOtherTags
-                        ]
-                        []
-                    ]
-                ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    ([ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Include untagged" ]
-                     , Html.div [ class "setting-item-description" ]
-                        [ Html.text "Whether to include a column for tasks with no tags." ]
-                     ]
-                        ++ untaggedWarningText
-                    )
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.div
-                        [ class <| "checkbox-container" ++ includeUntaggedStyle ++ untaggedWarningClass
-                        , onClick ToggleIncludeUntagged
-                        ]
-                        []
-                    ]
-                ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Completed count" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.input
-                        [ type_ "text"
-                        , value <| String.fromInt (TagBoardConfig.completedCount config)
-                        , onInput EnteredCompletedCount
                         ]
                         []
                     ]

@@ -3,7 +3,6 @@ module Column.DatedTests exposing (suite)
 import Column
 import Column.Dated as DatedColumn exposing (DatedColumn)
 import Date exposing (Date)
-import DateBoardConfig exposing (DateBoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
