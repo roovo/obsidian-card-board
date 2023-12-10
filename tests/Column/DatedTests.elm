@@ -1,6 +1,5 @@
 module Column.DatedTests exposing (suite)
 
-import Column
 import Column.Dated as DatedColumn exposing (DatedColumn)
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
@@ -268,6 +267,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":true,"name":"a name","range":{"tag":"between","data":{"from":5,"to":7}}}"""
                 in

@@ -1,5 +1,6 @@
 module BoardConfig exposing
     ( BoardConfig(..)
+    , Config
     , collapseColumn
     , columns
     , decoder_v_0_10_0
@@ -46,7 +47,6 @@ import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import NewBoardConfig exposing (NewBoardConfig)
-import Parser
 import TsJson.Decode as TsDecode
 import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
@@ -294,7 +294,7 @@ updateFilterPolarity polarity (BoardConfig c) =
     BoardConfig { c | filterPolarity = Filter.polarityFromString polarity }
 
 
-updateFilterScope : Filter.Scope -> BoardConfig -> BoardConfig
+updateFilterScope : Scope -> BoardConfig -> BoardConfig
 updateFilterScope scope (BoardConfig c) =
     BoardConfig { c | filterScope = scope }
 
@@ -550,12 +550,14 @@ dateBoardConfigDecoder_v_0_1_0 =
 buildDateBoardFromPreV11 : List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> String -> Config
 buildDateBoardFromPreV11 collapsedColumns completedCount_ filters_ filterPolarity_ filterScope_ includeUndated_ showFilteredTags_ title_ =
     let
+        columns_ : List Column
         columns_ =
             undatedColumn
                 ++ datedColumns
                 ++ completedColumn
                 |> List.indexedMap handleCollapse
 
+        completedColumn : List Column
         completedColumn =
             if completedCount_ > 0 then
                 [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
@@ -563,9 +565,11 @@ buildDateBoardFromPreV11 collapsedColumns completedCount_ filters_ filterPolarit
             else
                 []
 
+        completedColumnIndex : Int
         completedColumnIndex =
             List.length (undatedColumn ++ datedColumns)
 
+        datedColumns : List Column
         datedColumns =
             [ Column.dated <| DatedColumn.init "Today" (DatedColumn.Before 1)
             , Column.dated <| DatedColumn.init "Tomorrow" (DatedColumn.Between { from = 1, to = 1 })
@@ -580,6 +584,7 @@ buildDateBoardFromPreV11 collapsedColumns completedCount_ filters_ filterPolarit
             else
                 column
 
+        undatedColumn : List Column
         undatedColumn =
             if includeUndated_ then
                 [ Column.undated "Undated" ]
@@ -738,6 +743,7 @@ tagBoardConfigDecoder_v_0_1_0 =
 buildTagBoardFromPreV11 : List LocalColumnConfig -> List Int -> Int -> List Filter -> Polarity -> Scope -> Bool -> Bool -> Bool -> Bool -> String -> Config
 buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filters_ filterPolarity_ filterScope_ includeOthers includeUntagged showColumnTags_ showFilteredTags_ title_ =
     let
+        columns_ : List Column
         columns_ =
             untaggedColumn
                 ++ otherTagsColumn
@@ -745,6 +751,7 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
                 ++ completedColumn
                 |> List.indexedMap handleCollapse
 
+        completedColumn : List Column
         completedColumn =
             if completedCount_ > 0 then
                 [ Column.completed <| CompletedColumn.init "Completed" completedColumnIndex completedCount_ ]
@@ -752,6 +759,7 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
             else
                 []
 
+        completedColumnIndex : Int
         completedColumnIndex =
             List.length (untaggedColumn ++ otherTagsColumn ++ namedTagColumns)
 
@@ -763,14 +771,17 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
             else
                 column
 
+        namedTagColumns : List Column
         namedTagColumns =
             localColumnConfigs
                 |> List.map (\c -> Column.namedTag c.displayName c.tag)
 
+        otherTags : List String
         otherTags =
             localColumnConfigs
                 |> List.map .tag
 
+        otherTagsColumn : List Column
         otherTagsColumn =
             if includeOthers then
                 [ Column.otherTags "Other Tags" otherTags ]
@@ -778,6 +789,7 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
             else
                 []
 
+        untaggedColumn : List Column
         untaggedColumn =
             if includeUntagged then
                 [ Column.untagged "Untagged" ]

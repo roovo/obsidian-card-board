@@ -10,7 +10,6 @@ module ParserHelper exposing
     , isSpaceOrTab
     , lineEndOrEnd
     , nonEmptyStringParser
-    , spaces
     , timeParser
     , wordParser
     )

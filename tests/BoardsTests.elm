@@ -1,7 +1,7 @@
 module BoardsTests exposing (suite)
 
 import Board
-import BoardConfig
+import BoardConfig exposing (BoardConfig)
 import Boards
 import DefaultColumnNames
 import Expect
@@ -35,6 +35,7 @@ boardZipper =
         , test "returns empty boards as a SafeZipper if there are some boards configured but the TaskList is empty" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
@@ -46,6 +47,7 @@ boardZipper =
         , test "returns boards (containing all TaskItems) as a SafeZipper if there are boards configured and ther are tasks" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
@@ -72,10 +74,12 @@ currentIndex =
         , test "returns 0 if there are boards and the current index of the configs is 0" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
+                    emptyBoard : BoardConfig
                     emptyBoard =
                         NewBoardConfig "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
@@ -88,10 +92,12 @@ currentIndex =
         , test "returns 1 if there are boards and the current index of the configs is 1" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
+                    emptyBoard : BoardConfig
                     emptyBoard =
                         NewBoardConfig "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
@@ -115,10 +121,12 @@ length =
         , test "returns 2 if there are 2 boards in the configs" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
+                    emptyBoard : BoardConfig
                     emptyBoard =
                         NewBoardConfig "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
@@ -137,10 +145,12 @@ names =
         [ test "returns the board names in a SafeZipper if there are some boards configured" <|
             \() ->
                 let
+                    dateBoard : BoardConfig
                     dateBoard =
                         NewBoardConfig "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
+                    emptyBoard : BoardConfig
                     emptyBoard =
                         NewBoardConfig "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default

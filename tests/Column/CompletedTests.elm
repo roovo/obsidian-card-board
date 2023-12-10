@@ -1,6 +1,5 @@
 module Column.CompletedTests exposing (suite)
 
-import Column
 import Column.Completed as CompletedColumn
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
@@ -149,6 +148,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":true,"index":7,"limit":5,"name":"a name"}"""
                 in

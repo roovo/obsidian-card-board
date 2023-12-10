@@ -6,7 +6,6 @@ module Session exposing
     , cards
     , dataviewTaskCompletion
     , default
-    , defaultColumnNames
     , deleteItemsFromFile
     , dragTracker
     , finishAdding
@@ -41,7 +40,6 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
-import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
@@ -136,11 +134,6 @@ cards ((Session config) as session) =
         |> taskList
         |> Boards.init config.uniqueId (Settings.boardConfigs config.settings)
         |> Boards.cards (ignoreFileNameDates session) (TimeWithZone.toDate config.timeWithZone)
-
-
-defaultColumnNames : Session -> DefaultColumnNames
-defaultColumnNames =
-    .defaultColumnNames << globalSettings
 
 
 dataviewTaskCompletion : Session -> DataviewTaskCompletion

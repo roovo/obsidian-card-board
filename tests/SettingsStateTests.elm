@@ -7,7 +7,6 @@ import DefaultColumnNames
 import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
-import Helpers.FilterHelpers as FilterHelpers
 import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper
 import Settings exposing (Settings)
@@ -539,19 +538,6 @@ exampleGlobalSettings =
     }
 
 
-noNameBoardConfig : BoardConfig
-noNameBoardConfig =
-    BoardConfig.BoardConfig
-        { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
-        , filters = []
-        , filterPolarity = Filter.Deny
-        , filterScope = Filter.SubTasksOnly
-        , showColumnTags = False
-        , showFilteredTags = True
-        , name = ""
-        }
-
-
 settingsFromBoardConfigs : List BoardConfig -> Settings
 settingsFromBoardConfigs boardConfigs_ =
     Settings.default
@@ -563,16 +549,3 @@ settingsFromBoardConfigsWithIndex index boardConfigs_ =
     Settings.default
         |> Settings.updateBoardConfigs
             (SafeZipper.atIndex index <| SafeZipper.fromList boardConfigs_)
-
-
-unnamedNameBoardConfigDateBoard : BoardConfig
-unnamedNameBoardConfigDateBoard =
-    BoardConfig.BoardConfig
-        { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
-        , filters = []
-        , filterPolarity = Filter.Deny
-        , filterScope = Filter.SubTasksOnly
-        , showColumnTags = False
-        , showFilteredTags = True
-        , name = "Unnamed"
-        }

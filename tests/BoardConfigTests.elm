@@ -1,6 +1,6 @@
 module BoardConfigTests exposing (suite)
 
-import BoardConfig exposing (BoardConfig)
+import BoardConfig
 import Column
 import Column.Dated as DatedColumn
 import Columns

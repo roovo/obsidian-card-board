@@ -47,7 +47,6 @@ import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -304,22 +303,22 @@ namedTagTag column =
 typeString : Column -> String
 typeString column =
     case column of
-        Completed completedColumn ->
+        Completed _ ->
             "Completed"
 
-        Dated datedColumn ->
+        Dated _ ->
             "Dated"
 
-        NamedTag namedTagColumn ->
+        NamedTag _ ->
             "Tagged"
 
-        OtherTags otherTagsColumn ->
+        OtherTags _ ->
             "Other Tags"
 
-        Undated undatedColumn ->
+        Undated _ ->
             "Undated"
 
-        Untagged untaggedColumn ->
+        Untagged _ ->
             "Untagged"
 
 
@@ -330,7 +329,7 @@ typeString column =
 addTaskItem : Date -> TaskItem -> Column -> ( Column, PlacementResult )
 addTaskItem today taskItem column =
     case column of
-        Completed completedColumn ->
+        Completed _ ->
             ( column, PlacementResult.DoesNotBelong )
 
         Dated datedColumn ->
@@ -385,7 +384,7 @@ setNameToDefault defaultColumnNames column =
         Dated datedColumn ->
             Dated (DatedColumn.setNameToDefault defaultColumnNames datedColumn)
 
-        NamedTag namedTagColumn ->
+        NamedTag _ ->
             column
 
         OtherTags otherTagsColumn ->
@@ -516,19 +515,6 @@ updateOtherTags fn column =
 
 
 -- PRIVATE
-
-
-placeTask : PlacementResult -> TaskItem -> TaskList -> TaskList
-placeTask pr item list =
-    case pr of
-        PlacementResult.CompletedInThisColumn ->
-            list
-
-        PlacementResult.DoesNotBelong ->
-            list
-
-        PlacementResult.Placed ->
-            list
 
 
 tagsToHide : Column -> List String

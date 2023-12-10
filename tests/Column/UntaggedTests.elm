@@ -1,6 +1,5 @@
 module Column.UntaggedTests exposing (suite)
 
-import Column
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
@@ -138,6 +137,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":false,"name":"a name"}"""
                 in

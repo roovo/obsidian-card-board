@@ -15,7 +15,6 @@ module Column.Untagged exposing
     , updateName
     )
 
-import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)

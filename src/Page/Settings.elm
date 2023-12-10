@@ -13,7 +13,6 @@ import BoardConfig exposing (BoardConfig)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn exposing (RelativeDateRange)
-import Column.NamedTag as NamedTagColumn
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DefaultColumnNames exposing (DefaultColumnNames)
@@ -29,7 +28,6 @@ import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
-import Html.Keyed
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
@@ -909,7 +907,7 @@ columNamesForm defaultColumnNames =
 boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
 boardSettingsForm boardConfig boardIndex multiselect =
     case ( boardConfig, boardIndex ) of
-        ( Just config, Just index ) ->
+        ( Just config, Just _ ) ->
             let
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
@@ -950,13 +948,6 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                         Filter.Both ->
                             "Both"
-
-                tagText : String
-                tagText =
-                    BoardConfig.columns config
-                        |> Columns.namedTagColumns
-                        |> List.map NamedTagColumn.asInputString
-                        |> String.join "\n"
             in
             [ Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]

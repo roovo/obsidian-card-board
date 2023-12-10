@@ -3,7 +3,7 @@ module ColumnTests exposing (suite)
 import Card
 import Column
 import Column.Completed as CompletedColumn
-import Column.Dated as DatedColumn exposing (DatedColumn)
+import Column.Dated as DatedColumn
 import Column.NamedTag as NamedTagColumn
 import Column.OtherTags as OtherTagsColumn
 import Date exposing (Date)
@@ -355,6 +355,7 @@ encoder =
         [ test "encodes a decoded CompletedColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"completed","data":{"collapsed":true,"index":7,"limit":5,"name":"a name"}}"""
                 in
@@ -367,6 +368,7 @@ encoder =
         , test "encodes a decoded DatedColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"dated","data":{"collapsed":true,"name":"a name","range":{"tag":"between","data":{"from":5,"to":7}}}}"""
                 in
@@ -379,6 +381,7 @@ encoder =
         , test "encodes a decoded NamedTagColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"namedTag","data":{"collapsed":true,"name":"a name","tag":"aTag"}}"""
                 in
@@ -391,6 +394,7 @@ encoder =
         , test "encodes a decoded OtherTagsColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"otherTags","data":{"collapsed":true,"name":"a name"}}"""
                 in
@@ -403,6 +407,7 @@ encoder =
         , test "encodes a decoded UndatedColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"undated","data":{"collapsed":true,"name":"a name"}}"""
                 in
@@ -415,6 +420,7 @@ encoder =
         , test "encodes a decoded UntaggedColumn" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"tag":"untagged","data":{"collapsed":true,"name":"a name"}}"""
                 in

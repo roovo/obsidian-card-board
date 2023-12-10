@@ -1,6 +1,5 @@
 module Column.UndatedTests exposing (suite)
 
-import Column
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
@@ -121,6 +120,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":false,"name":"a name"}"""
                 in

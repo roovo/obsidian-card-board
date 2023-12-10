@@ -142,6 +142,7 @@ setCollapse isCollapsed_ (DatedColumn c tth tl) =
 setNameToDefault : DefaultColumnNames -> DatedColumn -> DatedColumn
 setNameToDefault defaultColumnNames (DatedColumn c tth tl) =
     let
+        newName : String
         newName =
             case c.name of
                 "Today" ->
@@ -200,12 +201,12 @@ updateRangeType rangeType ((DatedColumn c tth tl) as datedColumn) =
 
 
 updateRangeValueFrom : Int -> DatedColumn -> DatedColumn
-updateRangeValueFrom newValue ((DatedColumn c tth tl) as datedColumn) =
+updateRangeValueFrom newValue (DatedColumn c tth tl) =
     case c.range of
         Before value ->
             DatedColumn { c | range = Before value } tth tl
 
-        After value ->
+        After _ ->
             DatedColumn { c | range = After newValue } tth tl
 
         Between fromTo ->
@@ -213,9 +214,9 @@ updateRangeValueFrom newValue ((DatedColumn c tth tl) as datedColumn) =
 
 
 updateRangeValueTo : Int -> DatedColumn -> DatedColumn
-updateRangeValueTo newValue ((DatedColumn c tth tl) as datedColumn) =
+updateRangeValueTo newValue (DatedColumn c tth tl) =
     case c.range of
-        Before value ->
+        Before _ ->
             DatedColumn { c | range = Before newValue } tth tl
 
         After value ->

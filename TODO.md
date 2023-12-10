@@ -1,5 +1,7 @@
 - allow custom boards to be specified
-    - add column (ensure added to a sensible place)
+    - add column
+        - ensure added to a sensible place
+        - ensure defautl names are used where applicable
     - delete column (with confirmation)
     - drag and drop to re-order columns (on settings page)
     - make the column settings look nice

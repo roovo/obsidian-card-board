@@ -16,7 +16,6 @@ module Column.OtherTags exposing
     , updateName
     )
 
-import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
@@ -117,7 +116,7 @@ setCollapse isCollapsed_ (OtherTagsColumn c ots tth tl) =
 
 
 setOtherTags : List String -> OtherTagsColumn -> OtherTagsColumn
-setOtherTags tags (OtherTagsColumn c ots tth tl) =
+setOtherTags tags (OtherTagsColumn c _ tth tl) =
     OtherTagsColumn c tags tth tl
 
 

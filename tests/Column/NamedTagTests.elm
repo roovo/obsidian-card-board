@@ -1,6 +1,5 @@
 module Column.NamedTagTests exposing (suite)
 
-import Column
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -188,6 +187,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":true,"name":"a name","tag":"aTag"}"""
                 in

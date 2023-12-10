@@ -1,6 +1,5 @@
 module Column.OtherTagsTests exposing (suite)
 
-import Column
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
@@ -111,6 +110,7 @@ encoder =
         [ test "encodes a decoded column" <|
             \() ->
                 let
+                    encodedString : String
                     encodedString =
                         """{"collapsed":false,"name":"a name"}"""
                 in

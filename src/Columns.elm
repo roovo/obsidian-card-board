@@ -7,19 +7,11 @@ module Columns exposing
     , empty
     , encoder
     , fromList
-    , includesCompleted
-    , includesOtherTags
-    , includesUndated
-    , includesUntagged
-    , legacyFromList
     , namedTagColumnTags
-    , namedTagColumns
-    , replaceNamedTagColumns
     , setNamesToDefault
     , toList
     , updateColumnName
     , updateCompletedColumnLimit
-    , updateCompletedCount
     , updateDatedColumnRangeType
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
@@ -28,10 +20,7 @@ module Columns exposing
 
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
-import Column.Dated as DatedColumn exposing (DatedColumn)
-import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
-import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
-import Column.Undated as UndatedColumn exposing (UndatedColumn)
+import Column.OtherTags exposing (OtherTagsColumn)
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import List.Extra as LE
@@ -82,21 +71,6 @@ fromList columns =
             WithCompleted notCompleted completedColumn
 
 
-legacyFromList : DefaultColumnNames -> List Column -> Int -> Columns
-legacyFromList defaultColumnNames columns completedCount_ =
-    if completedCount_ > 0 then
-        WithCompleted
-            columns
-            (CompletedColumn.init
-                (DefaultColumnNames.nameFor "completed" defaultColumnNames)
-                (List.length columns)
-                completedCount_
-            )
-
-    else
-        WithoutCompleted columns
-
-
 
 -- DECODE / ENCODE
 
@@ -126,45 +100,6 @@ completedLimit columns =
             0
 
 
-includesCompleted : Columns -> Bool
-includesCompleted columns =
-    case columns of
-        WithCompleted _ completedColumn ->
-            True
-
-        WithoutCompleted _ ->
-            False
-
-
-includesOtherTags : Columns -> Bool
-includesOtherTags columns =
-    columns
-        |> toList
-        |> List.any Column.isOtherTags
-
-
-includesUndated : Columns -> Bool
-includesUndated columns =
-    columns
-        |> toList
-        |> List.any Column.isUndated
-
-
-includesUntagged : Columns -> Bool
-includesUntagged columns =
-    columns
-        |> toList
-        |> List.any Column.isUntagged
-
-
-namedTagColumns : Columns -> List NamedTagColumn
-namedTagColumns columns =
-    columns
-        |> toList
-        |> List.map Column.asNamedTagColumn
-        |> ME.values
-
-
 namedTagColumnTags : Columns -> List String
 namedTagColumnTags columns =
     columns
@@ -192,18 +127,6 @@ collapseColumn columnIndex isCollapsed columns =
         |> fromList
 
 
-replaceNamedTagColumns : List Column -> Columns -> Columns
-replaceNamedTagColumns newColumns existingColumns =
-    let
-        withoutNamed : List Column
-        withoutNamed =
-            existingColumns
-                |> toList
-                |> LE.filterNot Column.isNamedTag
-    in
-    fromList (withoutNamed ++ newColumns)
-
-
 setNamesToDefault : DefaultColumnNames -> Columns -> Columns
 setNamesToDefault defaultColumnNames columns =
     columns
@@ -226,24 +149,6 @@ updateCompletedColumnLimit index newLimit columns =
         |> toList
         |> LE.updateAt index (Column.updateCompletedColumnLimit newLimit)
         |> fromList
-
-
-updateCompletedCount : Int -> Columns -> Columns
-updateCompletedCount newCount columns =
-    case columns of
-        WithCompleted nonCompletedConfigs completedConfig ->
-            WithCompleted
-                nonCompletedConfigs
-                (CompletedColumn.updateCompletedCount newCount completedConfig)
-
-        WithoutCompleted nonCompletedConfigs ->
-            WithCompleted
-                nonCompletedConfigs
-                (CompletedColumn.init
-                    "Completed"
-                    (List.length nonCompletedConfigs)
-                    newCount
-                )
 
 
 updateDatedColumnRangeType : Int -> String -> Columns -> Columns
@@ -310,7 +215,7 @@ addTaskItem today taskItem columns =
 
         WithoutCompleted nonCompletedConfigs ->
             let
-                ( newConfigs, allPlacementResults ) =
+                ( newConfigs, _ ) =
                     addWithPlacement today taskItem nonCompletedConfigs
             in
             WithoutCompleted newConfigs

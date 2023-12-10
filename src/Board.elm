@@ -6,12 +6,11 @@ module Board exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Card exposing (Card)
 import Column exposing (Column)
 import Columns
 import Date exposing (Date)
 import Filter exposing (Filter, Polarity, Scope)
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList exposing (TaskList)
 
 
@@ -37,7 +36,7 @@ init uniqueId config taskList =
 
 
 columns : Bool -> Date -> Board -> List Column
-columns ignoreFileNameDates today ((Board _ config taskList) as board) =
+columns ignoreFileNameDates today (Board _ config taskList) =
     taskList
         |> filterTaskList config
         |> configureDueDates ignoreFileNameDates

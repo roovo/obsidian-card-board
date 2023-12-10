@@ -3,7 +3,6 @@ module BoardTests exposing (suite)
 import Board
 import BoardConfig exposing (BoardConfig)
 import Card
-import Column
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers

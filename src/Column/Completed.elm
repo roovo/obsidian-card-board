@@ -18,7 +18,6 @@ module Column.Completed exposing
     , updateName
     )
 
-import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
@@ -149,7 +148,7 @@ setNameToDefault defaultColumnNames (CompletedColumn c tth tl) =
 
 
 setTagsToHide : List String -> CompletedColumn -> CompletedColumn
-setTagsToHide tags (CompletedColumn c tth tl) =
+setTagsToHide tags (CompletedColumn c _ tl) =
     CompletedColumn c tags tl
 
 

@@ -11,7 +11,6 @@ import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn
 import Columns
-import DefaultColumnNames
 import Filter
 import Helpers.FilterHelpers as FilterHelpers
 
