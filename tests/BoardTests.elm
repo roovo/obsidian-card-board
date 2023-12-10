@@ -12,6 +12,7 @@ import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import TaskItem
+import TaskList
 import Test exposing (..)
 
 
@@ -19,6 +20,7 @@ suite : Test
 suite =
     concat
         [ columns
+        , id
         ]
 
 
@@ -194,13 +196,19 @@ columns =
         ]
 
 
+id : Test
+id =
+    describe "id"
+        [ test "is made up from the prefix and the board name" <|
+            \() ->
+                Board.init "d1" exampleTagBoardConfig TaskList.empty
+                    |> Board.id
+                    |> Expect.equal "d1:Tag_Board_Name"
+        ]
+
+
 
 -- HELPERS
-
-
-exampleDateBoardConfig : BoardConfig
-exampleDateBoardConfig =
-    BoardConfigHelpers.exampleDateBoardConfig
 
 
 exampleTagBoardConfig : BoardConfig
