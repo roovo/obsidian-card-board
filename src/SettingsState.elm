@@ -5,6 +5,7 @@ module SettingsState exposing
     , boardConfigs
     , cancelCurrentState
     , confirmAddBoard
+    , confirmAddColumn
     , confirmDeleteBoard
     , deleteBoardRequested
     , editBoardAt
@@ -176,9 +177,20 @@ confirmAddBoard : DefaultColumnNames -> SettingsState -> SettingsState
 confirmAddBoard defaultColumnNames settingsState =
     case settingsState of
         AddingBoard c settings_ ->
-            EditingBoard <|
-                Settings.cleanupNames <|
-                    Settings.addBoard defaultColumnNames c settings_
+            Settings.addBoard defaultColumnNames c settings_
+                |> Settings.cleanupNames
+                |> EditingBoard
+
+        _ ->
+            settingsState
+
+
+confirmAddColumn : DefaultColumnNames -> SettingsState -> SettingsState
+confirmAddColumn defaultColumnNames settingsState =
+    case settingsState of
+        AddingColumn c settings_ ->
+            Settings.addColumn defaultColumnNames c settings_
+                |> EditingBoard
 
         _ ->
             settingsState

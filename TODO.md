@@ -1,14 +1,15 @@
 - allow custom boards to be specified
     - add column
         - ensure added to a sensible place
-        - ensure defautl names are used where applicable
+        - ensure default names are used where applicable
+        - NewColumnConfig does not have the initial columnType set
+            so if you add a new column without using the select to choose
+            the type nothing happens
     - delete column (with confirmation)
     - drag and drop to re-order columns (on settings page)
     - make the column settings look nice
-    - allow basic tag and date boards to be created (as well as blank boards)
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
-      - when using the settings pane
       - when reading from config
     - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - ensure columns on a board have unique names

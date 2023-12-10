@@ -1,5 +1,7 @@
 module Columns exposing
     ( Columns
+    , OptionsForSelect
+    , addColumn
     , addTaskList
     , collapseColumn
     , completedLimit
@@ -8,6 +10,7 @@ module Columns exposing
     , encoder
     , fromList
     , namedTagColumnTags
+    , optionsForSelect
     , setNamesToDefault
     , toList
     , updateColumnName
@@ -25,6 +28,7 @@ import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import List.Extra as LE
 import Maybe.Extra as ME
+import NewColumnConfig exposing (NewColumnConfig)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -39,6 +43,13 @@ import TsJson.Encode as TsEncode
 type Columns
     = WithCompleted (List Column) CompletedColumn
     | WithoutCompleted (List Column)
+
+
+type alias OptionsForSelect =
+    { isSelected : Bool
+    , text : String
+    , value : String
+    }
 
 
 
@@ -108,8 +119,117 @@ namedTagColumnTags columns =
         |> ME.values
 
 
+optionsForSelect : Columns -> NewColumnConfig -> List OptionsForSelect
+optionsForSelect columns newColumnConfig =
+    let
+        alreadyHasCompleted : Bool
+        alreadyHasCompleted =
+            columns
+                |> toList
+                |> List.any Column.isCompleted
+
+        alreadyHasOtherTags : Bool
+        alreadyHasOtherTags =
+            columns
+                |> toList
+                |> List.any Column.isOtherTags
+
+        alreadyHasUndated : Bool
+        alreadyHasUndated =
+            columns
+                |> toList
+                |> List.any Column.isUndated
+
+        alreadyHasUntagged : Bool
+        alreadyHasUntagged =
+            columns
+                |> toList
+                |> List.any Column.isUntagged
+
+        completed : List OptionsForSelect
+        completed =
+            if alreadyHasCompleted then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "completed"
+                  , text = "Completed"
+                  , value = "completed"
+                  }
+                ]
+
+        otherTags : List OptionsForSelect
+        otherTags =
+            if alreadyHasOtherTags then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "otherTags"
+                  , text = "Other Tags"
+                  , value = "otherTags"
+                  }
+                ]
+
+        undated : List OptionsForSelect
+        undated =
+            if alreadyHasUndated then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "undated"
+                  , text = "Undated"
+                  , value = "undated"
+                  }
+                ]
+
+        untagged : List OptionsForSelect
+        untagged =
+            if alreadyHasUntagged then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "untagged"
+                  , text = "Untagged"
+                  , value = "untagged"
+                  }
+                ]
+
+        allColumns =
+            completed
+                ++ [ { isSelected = newColumnConfig.columnType == "dated"
+                     , text = "Dated"
+                     , value = "dated"
+                     }
+                   ]
+                ++ otherTags
+                ++ [ { isSelected = newColumnConfig.columnType == "namedTag"
+                     , text = "Tagged"
+                     , value = "namedTag"
+                     }
+                   ]
+                ++ undated
+                ++ untagged
+    in
+    if List.any .isSelected allColumns then
+        allColumns
+
+    else
+        allColumns
+            |> LE.updateAt 0 (\ofs -> { ofs | isSelected = True })
+
+
 
 -- MODIFICATION
+
+
+addColumn : DefaultColumnNames -> NewColumnConfig -> Columns -> Columns
+addColumn defaultColumnNames newColumnConfig columns =
+    toList columns
+        ++ (Column.fromColumnConfig defaultColumnNames newColumnConfig
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+           )
+        |> fromList
 
 
 addTaskList : Date -> List String -> Columns -> TaskList -> Columns

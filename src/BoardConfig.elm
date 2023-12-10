@@ -1,6 +1,7 @@
 module BoardConfig exposing
     ( BoardConfig(..)
     , Config
+    , addColumn
     , collapseColumn
     , columns
     , decoder_v_0_10_0
@@ -47,6 +48,7 @@ import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import TsJson.Decode as TsDecode
 import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
@@ -204,6 +206,11 @@ decoder_v_0_11_0 =
 
 
 -- TRANSFORM
+
+
+addColumn : DefaultColumnNames -> NewColumnConfig -> BoardConfig -> BoardConfig
+addColumn defaultColumnNames newColumnConfig (BoardConfig c) =
+    BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfig c.columns }
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig

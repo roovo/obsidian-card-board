@@ -12,6 +12,8 @@ import Expect
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
+import Maybe.Extra as ME
+import NewColumnConfig exposing (NewColumnConfig)
 import Parser
 import PlacementResult
 import TaskItem exposing (TaskItem)
@@ -30,6 +32,7 @@ suite =
         , cards
         , decoder
         , encoder
+        , fromColumnConfig
         , isCompleted
         , isNamedTag
         , isOtherTags
@@ -538,6 +541,36 @@ isUntagged =
                 Column.untagged ""
                     |> Column.isUntagged
                     |> Expect.equal True
+        ]
+
+
+fromColumnConfig : Test
+fromColumnConfig =
+    describe "fromColumnConfig"
+        [ describe "CompletedColumn"
+            [ test "can build a CompletedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "completed")
+                        |> Maybe.map Column.isCompleted
+                        |> Expect.equal (Just True)
+            , test "names the CompletedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "completed")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "uses the default name if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "completed")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "Completed")
+            , test "gives the CompletedColumn a limit of 10" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "completed")
+                        |> Maybe.map Column.asCompletedColumn
+                        |> ME.join
+                        |> Maybe.map CompletedColumn.limit
+                        |> Expect.equal (Just 10)
+            ]
         ]
 
 

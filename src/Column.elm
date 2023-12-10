@@ -10,6 +10,7 @@ module Column exposing
     , dated
     , decoder
     , encoder
+    , fromColumnConfig
     , isCollapsed
     , isCompleted
     , isNamedTag
@@ -45,6 +46,7 @@ import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import Date exposing (Date)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
+import NewColumnConfig exposing (NewColumnConfig)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
@@ -76,6 +78,24 @@ completed =
 dated : DatedColumn -> Column
 dated =
     Dated
+
+
+fromColumnConfig : DefaultColumnNames -> NewColumnConfig -> Maybe Column
+fromColumnConfig defaultColumnNames newColumnConfig =
+    let
+        newName =
+            if String.isEmpty (String.trim newColumnConfig.name) then
+                DefaultColumnNames.nameFor newColumnConfig.columnType defaultColumnNames
+
+            else
+                newColumnConfig.name
+    in
+    case newColumnConfig.columnType of
+        "completed" ->
+            Just (Completed <| CompletedColumn.init newName 0 10)
+
+        _ ->
+            Nothing
 
 
 namedTag : String -> String -> Column

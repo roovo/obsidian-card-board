@@ -1,6 +1,7 @@
 module Settings exposing
     ( Settings
     , addBoard
+    , addColumn
     , boardConfigs
     , cleanupNames
     , currentVersion
@@ -25,6 +26,7 @@ import Filter
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -101,6 +103,17 @@ addBoard defaultColumnNames configToAdd settings =
                 SafeZipper.add
                     (BoardConfig.fromNewBoardConfig defaultColumnNames configToAdd)
                     settings.boardConfigs
+    }
+
+
+addColumn : DefaultColumnNames -> NewColumnConfig -> Settings -> Settings
+addColumn defaultColumnNames configToAdd settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfig.addColumn defaultColumnNames configToAdd)
+                identity
+                settings.boardConfigs
     }
 
 

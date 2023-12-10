@@ -1,6 +1,8 @@
 module SettingsTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import Column
+import Columns
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
@@ -8,6 +10,7 @@ import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper
 import Semver
 import Settings
@@ -19,12 +22,44 @@ suite : Test
 suite =
     concat
         [ addBoard
+        , addColumn
         , blankBoardNames
         , cleanupNames
         , currentVersion
         , encodeDecode
         , moveBoard
         , uniqueBoardNames
+        ]
+
+
+addColumn : Test
+addColumn =
+    describe "addColumn"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                Settings.default
+                    |> Settings.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "foo" "completed")
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        , test "adds a column to a single board with no existing columns" <|
+            \() ->
+                Settings.default
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "foo" "emptyBoard")
+                    |> Settings.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "bar" "completed")
+                    |> .boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "bar" ]
         ]
 
 

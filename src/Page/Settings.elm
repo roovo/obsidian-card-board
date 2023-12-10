@@ -101,8 +101,9 @@ multiSelectConfig =
 
 type Msg
     = AddBoardClicked
-    | AddColumnClicked
     | AddBoardConfirmed
+    | AddColumnClicked
+    | AddColumnConfirmed
     | BackspacePressed
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
@@ -168,9 +169,6 @@ update msg model =
         AddBoardClicked ->
             mapSettingsState SettingsState.addBoardRequested model
 
-        AddColumnClicked ->
-            mapSettingsState SettingsState.addColumnRequested model
-
         AddBoardConfirmed ->
             let
                 defaultColumnNames : DefaultColumnNames
@@ -181,7 +179,28 @@ update msg model =
                         |> Settings.globalSettings
                         |> .defaultColumnNames
             in
-            wrap <| switchSettingsState (SettingsState.confirmAddBoard defaultColumnNames) model
+            wrap <|
+                switchSettingsState
+                    (SettingsState.confirmAddBoard defaultColumnNames)
+                    model
+
+        AddColumnClicked ->
+            mapSettingsState SettingsState.addColumnRequested model
+
+        AddColumnConfirmed ->
+            let
+                defaultColumnNames : DefaultColumnNames
+                defaultColumnNames =
+                    model
+                        |> toSession
+                        |> Session.settings
+                        |> Settings.globalSettings
+                        |> .defaultColumnNames
+            in
+            wrap <|
+                switchSettingsState
+                    (SettingsState.confirmAddColumn defaultColumnNames)
+                    model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
@@ -595,7 +614,7 @@ modalAddColumn newColumnConfig settings =
                             [ class "dropdown"
                             , onInput NewColumnTypeSelected
                             ]
-                            (NewColumnConfig.optionsForSelect
+                            (Columns.optionsForSelect
                                 (settings
                                     |> Settings.boardConfigs
                                     |> SafeZipper.current
@@ -622,6 +641,7 @@ modalAddColumn newColumnConfig settings =
                         ]
                     , Html.button
                         [ class "mod-cta"
+                        , onClick <| AddColumnConfirmed
                         ]
                         [ Html.text "Add"
                         ]
