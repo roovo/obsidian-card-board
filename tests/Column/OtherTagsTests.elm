@@ -19,6 +19,7 @@ suite =
         , decoder
         , encoder
         , init
+        , otherTags
         , setCollapse
         , setNameToDefault
         , setOtherTags
@@ -147,6 +148,17 @@ init =
                 OtherTagsColumn.init "A Column Name" []
                     |> OtherTagsColumn.isCollapsed
                     |> Expect.equal False
+        ]
+
+
+otherTags : Test
+otherTags =
+    describe "otherTags"
+        [ test "returns the other tags" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.otherTags
+                    |> Expect.equal [ "aTag" ]
         ]
 
 

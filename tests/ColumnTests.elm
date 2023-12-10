@@ -28,12 +28,14 @@ suite =
         , asCompletedColumn
         , asDatedColumn
         , asNamedTagColumn
+        , asOtherTagsColumn
         , cardCount
         , cards
         , decoder
         , encoder
         , fromColumnConfig
         , isCompleted
+        , isDated
         , isNamedTag
         , isOtherTags
         , isUndated
@@ -247,6 +249,43 @@ asNamedTagColumn =
             \() ->
                 Column.untagged ""
                     |> Column.asNamedTagColumn
+                    |> Expect.equal Nothing
+        ]
+
+
+asOtherTagsColumn : Test
+asOtherTagsColumn =
+    describe "asOtherTagsColumn"
+        [ test "returns Nothing if it is a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.asOtherTagsColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.asOtherTagsColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "" "aTag"
+                    |> Column.asOtherTagsColumn
+                    |> Expect.equal Nothing
+        , test "returns Just the OtherTagsColumn if it is a OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "foo" [ "aTag" ]
+                    |> Column.asOtherTagsColumn
+                    |> Maybe.map OtherTagsColumn.name
+                    |> Expect.equal (Just "foo")
+        , test "returns Nothing if it is a UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.asOtherTagsColumn
+                    |> Expect.equal Nothing
+        , test "returns Nothing if it is a UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.asOtherTagsColumn
                     |> Expect.equal Nothing
         ]
 
@@ -571,6 +610,112 @@ fromColumnConfig =
                         |> Maybe.map CompletedColumn.limit
                         |> Expect.equal (Just 10)
             ]
+        , describe "DatedColumn"
+            [ test "can build a DatedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "dated")
+                        |> Maybe.map Column.isDated
+                        |> Expect.equal (Just True)
+            , test "names the DatedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "dated")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "uses the default name for Today if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "dated")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "Today")
+            , test "gives the DatedColumn a range of Between 0 0" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "dated")
+                        |> Maybe.map Column.asDatedColumn
+                        |> ME.join
+                        |> Maybe.map DatedColumn.range
+                        |> Expect.equal (Just <| DatedColumn.Before 1)
+            ]
+        , describe "NamedTagColumn"
+            [ test "can build a NamedTagColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "namedTag")
+                        |> Maybe.map Column.isNamedTag
+                        |> Expect.equal (Just True)
+            , test "names the NamedTagColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "namedTag")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "leaves the name empty if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "namedTag")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "")
+            , test "gives the NamedTagColumn an empty tag" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "namedTag")
+                        |> Maybe.map Column.asNamedTagColumn
+                        |> ME.join
+                        |> Maybe.map NamedTagColumn.tag
+                        |> Expect.equal (Just "")
+            ]
+        , describe "OtherTagsColumn"
+            [ test "can build a OtherTagsColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "otherTags")
+                        |> Maybe.map Column.isOtherTags
+                        |> Expect.equal (Just True)
+            , test "names the OtherTagsColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "otherTags")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "uses the default name if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "otherTags")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "Other Tags")
+            , test "gives the OtherTagsColumn an empty otherTags" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "otherTags")
+                        |> Maybe.map Column.asOtherTagsColumn
+                        |> ME.join
+                        |> Maybe.map OtherTagsColumn.otherTags
+                        |> Expect.equal (Just [])
+            ]
+        , describe "UndatedColumn"
+            [ test "can build a UndatedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "undated")
+                        |> Maybe.map Column.isUndated
+                        |> Expect.equal (Just True)
+            , test "names the UndatedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "undated")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "uses the default name if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "undated")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "Undated")
+            ]
+        , describe "UntaggedColumn"
+            [ test "can build a UntaggedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "untagged")
+                        |> Maybe.map Column.isUntagged
+                        |> Expect.equal (Just True)
+            , test "names the UntaggedColumn" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "untagged")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "foo")
+            , test "uses the default name if no name has been given" <|
+                \() ->
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "untagged")
+                        |> Maybe.map Column.name
+                        |> Expect.equal (Just "Untagged")
+            ]
         ]
 
 
@@ -606,6 +751,42 @@ isCompleted =
             \() ->
                 Column.untagged ""
                     |> Column.isCompleted
+                    |> Expect.equal False
+        ]
+
+
+isDated : Test
+isDated =
+    describe "isDated"
+        [ test "returns False if it is a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.isDated
+                    |> Expect.equal False
+        , test "returns True if it is a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.isDated
+                    |> Expect.equal True
+        , test "returns False if it is a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "" "aTag"
+                    |> Column.isDated
+                    |> Expect.equal False
+        , test "returns False if it is a OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.isDated
+                    |> Expect.equal False
+        , test "returns False if it is a UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.isDated
+                    |> Expect.equal False
+        , test "returns False if it is a UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.isDated
                     |> Expect.equal False
         ]
 

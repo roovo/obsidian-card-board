@@ -4,6 +4,7 @@ module Column exposing
     , asCompletedColumn
     , asDatedColumn
     , asNamedTagColumn
+    , asOtherTagsColumn
     , cardCount
     , cards
     , completed
@@ -13,6 +14,7 @@ module Column exposing
     , fromColumnConfig
     , isCollapsed
     , isCompleted
+    , isDated
     , isNamedTag
     , isOtherTags
     , isUndated
@@ -93,6 +95,29 @@ fromColumnConfig defaultColumnNames newColumnConfig =
     case newColumnConfig.columnType of
         "completed" ->
             Just (Completed <| CompletedColumn.init newName 0 10)
+
+        "dated" ->
+            let
+                todayName =
+                    if String.isEmpty (String.trim newColumnConfig.name) then
+                        DefaultColumnNames.nameFor "today" defaultColumnNames
+
+                    else
+                        newColumnConfig.name
+            in
+            Just (Dated <| DatedColumn.init todayName (DatedColumn.Before 1))
+
+        "namedTag" ->
+            Just (namedTag newColumnConfig.name "")
+
+        "otherTags" ->
+            Just (otherTags newName [])
+
+        "undated" ->
+            Just (undated newName)
+
+        "untagged" ->
+            Just (untagged newName)
 
         _ ->
             Nothing
@@ -200,6 +225,16 @@ asNamedTagColumn column =
             Nothing
 
 
+asOtherTagsColumn : Column -> Maybe OtherTagsColumn
+asOtherTagsColumn column =
+    case column of
+        OtherTags otherTagsColumn ->
+            Just otherTagsColumn
+
+        _ ->
+            Nothing
+
+
 cardCount : Column -> Int
 cardCount column =
     List.length (toList column)
@@ -242,6 +277,16 @@ isCompleted : Column -> Bool
 isCompleted column =
     case column of
         Completed _ ->
+            True
+
+        _ ->
+            False
+
+
+isDated : Column -> Bool
+isDated column =
+    case column of
+        Dated _ ->
             True
 
         _ ->

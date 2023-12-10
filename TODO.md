@@ -5,6 +5,7 @@
         - NewColumnConfig does not have the initial columnType set
             so if you add a new column without using the select to choose
             the type nothing happens
+        - when finished adding, need to populate OtherTagsColumn.otherTags
     - delete column (with confirmation)
     - drag and drop to re-order columns (on settings page)
     - make the column settings look nice

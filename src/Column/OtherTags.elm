@@ -6,6 +6,7 @@ module Column.OtherTags exposing
     , init
     , isCollapsed
     , name
+    , otherTags
     , setCollapse
     , setNameToDefault
     , setOtherTags
@@ -78,6 +79,11 @@ isCollapsed (OtherTagsColumn c _ _ _) =
 name : OtherTagsColumn -> String
 name (OtherTagsColumn c _ _ _) =
     c.name
+
+
+otherTags : OtherTagsColumn -> List String
+otherTags (OtherTagsColumn _ ots _ _) =
+    ots
 
 
 toList : OtherTagsColumn -> List TaskItem
