@@ -1,5 +1,9 @@
 module NewColumnConfigTests exposing (suite)
 
+import Column
+import Column.Completed as CompletedColumn
+import Columns
+import DefaultColumnNames
 import Expect
 import NewColumnConfig exposing (NewColumnConfig)
 import Test exposing (..)
@@ -9,8 +13,8 @@ suite : Test
 suite =
     concat
         [ default
+        , optionsForSelect
 
-        -- , optionsForSelect
         -- , updateBoardType
         , updateName
         ]
@@ -32,92 +36,198 @@ default =
         ]
 
 
+optionsForSelect : Test
+optionsForSelect =
+    describe "optionsForSelect"
+        [ test "returns all options if there are no columns" <|
+            \() ->
+                NewColumnConfig.optionsForSelect Columns.empty (NewColumnConfig "" "completed")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "selects the first item if the selection isn't valid" <|
+            \() ->
+                NewColumnConfig.optionsForSelect Columns.empty (NewColumnConfig "" "xxx")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except Completed if there is a completed column" <|
+            \() ->
+                let
+                    columns =
+                        Columns.fromList
+                            [ Column.completed <| CompletedColumn.init "" 0 10 ]
+                in
+                NewColumnConfig.optionsForSelect columns (NewColumnConfig "" "dated")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except otherTags if there is an otherTags column" <|
+            \() ->
+                let
+                    columns =
+                        Columns.fromList
+                            [ Column.otherTags "" [] ]
+                in
+                NewColumnConfig.optionsForSelect columns (NewColumnConfig "" "dated")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = True
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except undated if there is an undated column" <|
+            \() ->
+                let
+                    columns =
+                        Columns.fromList
+                            [ Column.undated "" ]
+                in
+                NewColumnConfig.optionsForSelect columns (NewColumnConfig "" "otherTags")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = True
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except untagged if there is an untagged column" <|
+            \() ->
+                let
+                    columns =
+                        Columns.fromList
+                            [ Column.untagged "" ]
+                in
+                NewColumnConfig.optionsForSelect columns (NewColumnConfig "" "undated")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = True
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        ]
 
--- optionsForSelect : Test
--- optionsForSelect =
---     describe "optionsForSelect"
---         [ test "can return the information with the emptyBoard columnType selected" <|
---             \() ->
---                 NewColumnConfig.optionsForSelect (NewColumnConfig "" "emptyBoard")
---                     |> Expect.equal
---                         [ { isSelected = False
---                           , text = "Date Board"
---                           , value = "dateBoard"
---                           }
---                         , { isSelected = True
---                           , text = "Empty Board"
---                           , value = "emptyBoard"
---                           }
---                         , { isSelected = False
---                           , text = "Tag Board"
---                           , value = "tagBoard"
---                           }
---                         ]
---         , test "returns the information with the emptyBoard columnType selected for an unrecognised board type" <|
---             \() ->
---                 NewColumnConfig.optionsForSelect (NewColumnConfig "" "xxxBoard")
---                     |> Expect.equal
---                         [ { isSelected = False
---                           , text = "Date Board"
---                           , value = "dateBoard"
---                           }
---                         , { isSelected = True
---                           , text = "Empty Board"
---                           , value = "emptyBoard"
---                           }
---                         , { isSelected = False
---                           , text = "Tag Board"
---                           , value = "tagBoard"
---                           }
---                         ]
---         , test "can return the information with the dateBoard columnType selected" <|
---             \() ->
---                 NewColumnConfig.optionsForSelect (NewColumnConfig "" "dateBoard")
---                     |> Expect.equal
---                         [ { isSelected = True
---                           , text = "Date Board"
---                           , value = "dateBoard"
---                           }
---                         , { isSelected = False
---                           , text = "Empty Board"
---                           , value = "emptyBoard"
---                           }
---                         , { isSelected = False
---                           , text = "Tag Board"
---                           , value = "tagBoard"
---                           }
---                         ]
---         , test "can return the information with the tagBoard columnType selected" <|
---             \() ->
---                 NewColumnConfig.optionsForSelect (NewColumnConfig "" "tagBoard")
---                     |> Expect.equal
---                         [ { isSelected = False
---                           , text = "Date Board"
---                           , value = "dateBoard"
---                           }
---                         , { isSelected = False
---                           , text = "Empty Board"
---                           , value = "emptyBoard"
---                           }
---                         , { isSelected = True
---                           , text = "Tag Board"
---                           , value = "tagBoard"
---                           }
---                         ]
---         ]
---
---
--- updateBoardType : Test
--- updateBoardType =
---     describe "updateBoardType"
---         [ test "updates the board name" <|
---             \() ->
---                 NewColumnConfig.default
---                     |> NewColumnConfig.updateBoardType "foo"
---                     |> .columnType
---                     |> Expect.equal "foo"
---         ]
---
+        -- updateBoardType : Test
+        -- updateBoardType =
+        --     describe "updateBoardType"
+        --         [ test "updates the board name" <|
+        --             \() ->
+        --                 NewColumnConfig.default
+        --                     |> NewColumnConfig.updateBoardType "foo"
+        --                     |> .columnType
+        --                     |> Expect.equal "foo"
+        ]
 
 
 updateName : Test

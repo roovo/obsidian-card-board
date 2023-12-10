@@ -559,7 +559,7 @@ modalAddBoard newBoardConfig =
 
 
 modalAddColumn : NewColumnConfig -> Settings -> Html Msg
-modalAddColumn newConfig settings =
+modalAddColumn newColumnConfig settings =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -577,7 +577,7 @@ modalAddColumn newConfig settings =
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| newConfig.name
+                            , value <| newColumnConfig.name
                             , onInput EnteredNewColumnName
                             ]
                             []
@@ -590,7 +590,23 @@ modalAddColumn newConfig settings =
                         [ Html.select
                             [ class "dropdown"
                             ]
-                            []
+                            (NewColumnConfig.optionsForSelect
+                                (settings
+                                    |> Settings.boardConfigs
+                                    |> SafeZipper.current
+                                    |> Maybe.map BoardConfig.columns
+                                    |> Maybe.withDefault Columns.empty
+                                )
+                                newColumnConfig
+                                |> List.map
+                                    (\c ->
+                                        Html.option
+                                            [ value c.value
+                                            , selected c.isSelected
+                                            ]
+                                            [ Html.text c.text ]
+                                    )
+                            )
                         ]
                     ]
                 , Html.div [ class "dialog-buttons" ]

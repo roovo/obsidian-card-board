@@ -2,10 +2,16 @@ module NewColumnConfig exposing
     ( NewColumnConfig
     , OptionsForSelect
     , default
-      -- , optionsForSelect
+    , optionsForSelect
       -- , updateBoardType
     , updateName
     )
+
+import Column
+import Columns exposing (Columns)
+import List.Extra as LE
+
+
 
 -- TYPES
 
@@ -38,23 +44,103 @@ default =
 -- INFO
 
 
-optionsForSelect : NewColumnConfig -> List OptionsForSelect
-optionsForSelect newColumnConfig =
-    [ { isSelected = newColumnConfig.columnType == "dateBoard"
-      , text = "Date Board"
-      , value = "dateBoard"
-      }
-    , { isSelected =
-            (newColumnConfig.columnType /= "dateBoard")
-                && (newColumnConfig.columnType /= "tagBoard")
-      , text = "Empty Board"
-      , value = "emptyBoard"
-      }
-    , { isSelected = newColumnConfig.columnType == "tagBoard"
-      , text = "Tag Board"
-      , value = "tagBoard"
-      }
-    ]
+optionsForSelect : Columns -> NewColumnConfig -> List OptionsForSelect
+optionsForSelect columns newColumnConfig =
+    let
+        alreadyHasCompleted : Bool
+        alreadyHasCompleted =
+            columns
+                |> Columns.toList
+                |> List.any Column.isCompleted
+
+        alreadyHasOtherTags : Bool
+        alreadyHasOtherTags =
+            columns
+                |> Columns.toList
+                |> List.any Column.isOtherTags
+
+        alreadyHasUndated : Bool
+        alreadyHasUndated =
+            columns
+                |> Columns.toList
+                |> List.any Column.isUndated
+
+        alreadyHasUntagged : Bool
+        alreadyHasUntagged =
+            columns
+                |> Columns.toList
+                |> List.any Column.isUntagged
+
+        completed : List OptionsForSelect
+        completed =
+            if alreadyHasCompleted then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "completed"
+                  , text = "Completed"
+                  , value = "completed"
+                  }
+                ]
+
+        otherTags : List OptionsForSelect
+        otherTags =
+            if alreadyHasOtherTags then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "otherTags"
+                  , text = "Other Tags"
+                  , value = "otherTags"
+                  }
+                ]
+
+        undated : List OptionsForSelect
+        undated =
+            if alreadyHasUndated then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "undated"
+                  , text = "Undated"
+                  , value = "undated"
+                  }
+                ]
+
+        untagged : List OptionsForSelect
+        untagged =
+            if alreadyHasUntagged then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "untagged"
+                  , text = "Untagged"
+                  , value = "untagged"
+                  }
+                ]
+
+        allColumns =
+            completed
+                ++ [ { isSelected = newColumnConfig.columnType == "dated"
+                     , text = "Dated"
+                     , value = "dated"
+                     }
+                   ]
+                ++ otherTags
+                ++ [ { isSelected = newColumnConfig.columnType == "namedTag"
+                     , text = "Tagged"
+                     , value = "namedTag"
+                     }
+                   ]
+                ++ undated
+                ++ untagged
+    in
+    if List.any .isSelected allColumns then
+        allColumns
+
+    else
+        allColumns
+            |> LE.updateAt 0 (\ofs -> { ofs | isSelected = True })
 
 
 
