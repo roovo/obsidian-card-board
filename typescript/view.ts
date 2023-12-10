@@ -14,7 +14,7 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-import { CardBoardPluginSettings } from './main';
+import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './main';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
@@ -104,9 +104,9 @@ export class CardBoardView extends ItemView {
         case "trackDraggable":
           that.handleTrackDraggable(fromElm.data);
           break;
-        // case "updateSettings":
-        //   that.handleUpdateSettings(fromElm.data);
-        //   break;
+        case "updateSettings":
+          that.handleUpdateSettings(fromElm.data);
+          break;
         case "updateTasks":
           that.handleUpdateTasks(fromElm.data);
           break;
@@ -442,7 +442,7 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleUpdateSettings(data : CardBoardPluginSettings) {
+  async handleUpdateSettings(data : CardBoardPluginSettingsPostV11) {
     await this.plugin.saveSettings(data);
 
     this.elm.ports.interopToElm.send({

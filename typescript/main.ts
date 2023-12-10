@@ -83,7 +83,7 @@ export default class CardBoardPlugin extends Plugin {
     this.settings = await this.loadData();
   }
 
-  async saveSettings( newSettings: CardBoardPluginSettings) {
+  async saveSettings( newSettings: CardBoardPluginSettingsPostV11) {
     await this.backupOldVersion(this.settings?.version, newSettings.version);
 
     this.removeCommands();
@@ -105,7 +105,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 }
 
-type CardBoardPluginSettingsPostV11 = {
+export type CardBoardPluginSettingsPostV11 = {
   data : {
     boardConfigs : ({
       columns : ({
@@ -169,7 +169,7 @@ type CardBoardPluginSettingsPostV11 = {
     })[];
     globalSettings : {
       taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
-      columnNames : {
+      defaultColumnNames : {
         today : string;
         tomorrow : string;
         future : string;
@@ -183,7 +183,7 @@ type CardBoardPluginSettingsPostV11 = {
   };
   version : string
 }
- 
+
 type CardBoardPluginSettingsPreV11 = {
   data : {
     boardConfigs : (
