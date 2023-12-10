@@ -3,7 +3,7 @@ module NewColumnConfig exposing
     , OptionsForSelect
     , default
     , optionsForSelect
-      -- , updateBoardType
+    , updateColumnType
     , updateName
     )
 
@@ -147,8 +147,8 @@ optionsForSelect columns newColumnConfig =
 -- MODIFICATION
 
 
-updateBoardType : String -> NewColumnConfig -> NewColumnConfig
-updateBoardType newType newColumnConfig =
+updateColumnType : String -> NewColumnConfig -> NewColumnConfig
+updateColumnType newType newColumnConfig =
     { newColumnConfig | columnType = newType }
 
 

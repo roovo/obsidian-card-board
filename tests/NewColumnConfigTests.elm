@@ -14,8 +14,7 @@ suite =
     concat
         [ default
         , optionsForSelect
-
-        -- , updateBoardType
+        , updateColumnType
         , updateName
         ]
 
@@ -217,16 +216,18 @@ optionsForSelect =
                           , value = "undated"
                           }
                         ]
+        ]
 
-        -- updateBoardType : Test
-        -- updateBoardType =
-        --     describe "updateBoardType"
-        --         [ test "updates the board name" <|
-        --             \() ->
-        --                 NewColumnConfig.default
-        --                     |> NewColumnConfig.updateBoardType "foo"
-        --                     |> .columnType
-        --                     |> Expect.equal "foo"
+
+updateColumnType : Test
+updateColumnType =
+    describe "updateColumnType"
+        [ test "updates the column type" <|
+            \() ->
+                NewColumnConfig.default
+                    |> NewColumnConfig.updateColumnType "foo"
+                    |> .columnType
+                    |> Expect.equal "foo"
         ]
 
 

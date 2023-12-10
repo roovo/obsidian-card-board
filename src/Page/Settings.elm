@@ -106,7 +106,6 @@ type Msg
     | BackspacePressed
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
-    | BoardTypeSelected String
     | DeleteBoardRequested
     | DeleteBoardConfirmed
     | ElementDragged DragData
@@ -123,6 +122,8 @@ type Msg
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
+    | NewBoardTypeSelected String
+    | NewColumnTypeSelected String
     | PathsRequested Int String
     | PolaritySelected String
     | SelectedDatedColumnRangeType Int String
@@ -193,9 +194,6 @@ update msg model =
             , InteropPorts.trackDraggable dragType clientData.clientPos domId
             , Session.NoOp
             )
-
-        BoardTypeSelected boardType ->
-            mapBoardBeingAdded (NewBoardConfig.updateBoardType boardType) model
 
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
@@ -285,6 +283,12 @@ update msg model =
 
         ModalCloseClicked ->
             handleClose model
+
+        NewBoardTypeSelected boardType ->
+            mapBoardBeingAdded (NewBoardConfig.updateBoardType boardType) model
+
+        NewColumnTypeSelected columnType ->
+            mapColumnBeingAdded (NewColumnConfig.updateColumnType columnType) model
 
         PathsRequested _ _ ->
             let
@@ -526,7 +530,7 @@ modalAddBoard newBoardConfig =
                     , Html.div [ class "form-item-control" ]
                         [ Html.select
                             [ class "dropdown"
-                            , onInput BoardTypeSelected
+                            , onInput NewBoardTypeSelected
                             ]
                             (NewBoardConfig.optionsForSelect newBoardConfig
                                 |> List.map
@@ -589,6 +593,7 @@ modalAddColumn newColumnConfig settings =
                     , Html.div [ class "form-item-control" ]
                         [ Html.select
                             [ class "dropdown"
+                            , onInput NewColumnTypeSelected
                             ]
                             (NewColumnConfig.optionsForSelect
                                 (settings
