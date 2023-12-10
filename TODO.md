@@ -1,14 +1,11 @@
 - no more need for separate date and tag board types, they are just boards
-    - BoardsTests
-    - Settings.addBoard
-    - BoardConfig.configureOtherTagsColumn
-    - SettingsStateTests.confirmAddBoard
-    - handle new board - either date, tag, or blank
     - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
+    - adding new date or tag board has blank cards
+    - adding new board isn't being saved
     - any tests missed in deleting Tag & Date board configs (and columns)
 
 - allow custom boards to be specified
-    - add column
+    - add column (ensure added to a sensible place)
     - delete column (with confirmation)
     - drag and drop to re-order columns (on settings page)
     - make the column settings look nice

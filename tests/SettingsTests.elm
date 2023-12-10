@@ -7,6 +7,7 @@ import Expect
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
+import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper
 import Semver
 import Settings
@@ -17,12 +18,54 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ blankBoardNames
+        [ addBoard
+        , blankBoardNames
         , cleanupNames
         , currentVersion
         , encodeDecode
         , moveBoard
         , uniqueBoardNames
+        ]
+
+
+addBoard : Test
+addBoard =
+    describe "addBoard"
+        [ test "can add an emptyBoard" <|
+            \() ->
+                Settings.default
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "foo" "emptyBoard")
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "foo" ]
+        , test "adds new boards on to the end of the list" <|
+            \() ->
+                Settings.default
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "foo" "emptyBoard")
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "bar" "emptyBoard")
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "is focussed on the newly added board" <|
+            \() ->
+                Settings.default
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "foo" "emptyBoard")
+                    |> Settings.addBoard
+                        DefaultColumnNames.default
+                        (NewBoardConfig "bar" "emptyBoard")
+                    |> .boardConfigs
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 1)
         ]
 
 

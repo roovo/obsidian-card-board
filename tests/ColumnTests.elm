@@ -33,6 +33,8 @@ suite =
         , isCompleted
         , isNamedTag
         , isOtherTags
+        , isUndated
+        , isUntagged
         , namedTagTag
         , setCollapse
         , setNameToDefault
@@ -458,6 +460,78 @@ isOtherTags =
                 Column.untagged ""
                     |> Column.isOtherTags
                     |> Expect.equal False
+        ]
+
+
+isUndated : Test
+isUndated =
+    describe "isUndated"
+        [ test "returns False for a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.isUndated
+                    |> Expect.equal False
+        , test "returns False for a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.isUndated
+                    |> Expect.equal False
+        , test "returns False for a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "foo" "aTag"
+                    |> Column.isUndated
+                    |> Expect.equal False
+        , test "returns False for an OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.isUndated
+                    |> Expect.equal False
+        , test "returns True for an UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.isUndated
+                    |> Expect.equal True
+        , test "returns False for an UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.isUndated
+                    |> Expect.equal False
+        ]
+
+
+isUntagged : Test
+isUntagged =
+    describe "isUntagged"
+        [ test "returns False for a CompletedColumn" <|
+            \() ->
+                Column.completed (CompletedColumn.init "foo" 0 10)
+                    |> Column.isUntagged
+                    |> Expect.equal False
+        , test "returns False for a DatedColumn" <|
+            \() ->
+                Column.dated (DatedColumn.init "" (DatedColumn.Between { from = 0, to = 0 }))
+                    |> Column.isUntagged
+                    |> Expect.equal False
+        , test "returns False for a NamedTagColumn" <|
+            \() ->
+                Column.namedTag "foo" "aTag"
+                    |> Column.isUntagged
+                    |> Expect.equal False
+        , test "returns False for an OtherTagsColumn" <|
+            \() ->
+                Column.otherTags "" [ "aTag" ]
+                    |> Column.isUntagged
+                    |> Expect.equal False
+        , test "returns False for an UndatedColumn" <|
+            \() ->
+                Column.undated ""
+                    |> Column.isUntagged
+                    |> Expect.equal False
+        , test "returns True for an UntaggedColumn" <|
+            \() ->
+                Column.untagged ""
+                    |> Column.isUntagged
+                    |> Expect.equal True
         ]
 
 
