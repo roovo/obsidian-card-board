@@ -4,7 +4,7 @@ module NewColumnConfig exposing
     , default
       -- , optionsForSelect
       -- , updateBoardType
-      -- , updateName
+    , updateName
     )
 
 -- TYPES

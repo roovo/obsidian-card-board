@@ -12,6 +12,7 @@ module SettingsState exposing
     , init
     , mapBoardBeingAdded
     , mapBoardBeingEdited
+    , mapColumnBeingAdded
     , mapGlobalSettings
     , moveBoard
     , settings
@@ -292,6 +293,16 @@ mapBoardBeingEdited fn settingsState =
     case settingsState of
         EditingBoard settings_ ->
             EditingBoard <| Settings.updateCurrentBoard fn settings_
+
+        _ ->
+            settingsState
+
+
+mapColumnBeingAdded : (NewColumnConfig -> NewColumnConfig) -> SettingsState -> SettingsState
+mapColumnBeingAdded fn settingsState =
+    case settingsState of
+        AddingColumn c settings_ ->
+            AddingColumn (fn c) settings_
 
         _ ->
             settingsState

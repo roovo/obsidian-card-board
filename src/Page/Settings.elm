@@ -110,12 +110,13 @@ type Msg
     | DeleteBoardRequested
     | DeleteBoardConfirmed
     | ElementDragged DragData
-    | EnteredColumName String String
+    | EnteredColumnName Int String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
+    | EnteredDefaultColumnName String String
     | EnteredNewBoardName String
+    | EnteredNewColumnName String
     | EnteredNewColumnCompletedLimit Int String
-    | EnteredNewColumnName Int String
     | EnteredName String
     | FilterCandidatesReceived (List Filter)
     | GlobalSettingsClicked
@@ -222,7 +223,16 @@ update msg model =
                     , Session.NoOp
                     )
 
-        EnteredColumName column name ->
+        EnteredColumnName columnIndex name ->
+            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex name) model
+
+        EnteredDatedColumnRangeValueFrom index value ->
+            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model
+
+        EnteredDatedColumnRangeValueTo index value ->
+            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
+
+        EnteredDefaultColumnName column name ->
             wrap
                 { model
                     | settingsState =
@@ -231,20 +241,14 @@ update msg model =
                             model.settingsState
                 }
 
-        EnteredDatedColumnRangeValueFrom index value ->
-            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model
-
-        EnteredDatedColumnRangeValueTo index value ->
-            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
-
         EnteredNewBoardName name ->
             mapBoardBeingAdded (NewBoardConfig.updateName name) model
 
+        EnteredNewColumnName name ->
+            mapColumnBeingAdded (NewColumnConfig.updateName name) model
+
         EnteredNewColumnCompletedLimit columnIndex limit ->
             mapBoardBeingEdited (BoardConfig.updateCompletedColumnLimit columnIndex (String.toInt limit)) model
-
-        EnteredNewColumnName columnIndex name ->
-            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex name) model
 
         EnteredName name ->
             mapBoardBeingEdited (BoardConfig.updateName name) model
@@ -408,6 +412,11 @@ mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
 
+mapColumnBeingAdded : (NewColumnConfig -> NewColumnConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapColumnBeingAdded fn model =
+    wrap { model | settingsState = SettingsState.mapColumnBeingAdded fn model.settingsState }
+
+
 mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
@@ -569,6 +578,7 @@ modalAddColumn newConfig settings =
                         [ Html.input
                             [ type_ "text"
                             , value <| newConfig.name
+                            , onInput EnteredNewColumnName
                             ]
                             []
                         ]
@@ -856,7 +866,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Today"
                 , value (Maybe.withDefault "" defaultColumnNames.today)
-                , onInput (EnteredColumName "today")
+                , onInput (EnteredDefaultColumnName "today")
                 ]
                 []
             ]
@@ -873,7 +883,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Tomorrow"
                 , value (Maybe.withDefault "" defaultColumnNames.tomorrow)
-                , onInput (EnteredColumName "tomorrow")
+                , onInput (EnteredDefaultColumnName "tomorrow")
                 ]
                 []
             ]
@@ -890,7 +900,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Future"
                 , value (Maybe.withDefault "" defaultColumnNames.future)
-                , onInput (EnteredColumName "future")
+                , onInput (EnteredDefaultColumnName "future")
                 ]
                 []
             ]
@@ -907,7 +917,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Undated"
                 , value (Maybe.withDefault "" defaultColumnNames.undated)
-                , onInput (EnteredColumName "undated")
+                , onInput (EnteredDefaultColumnName "undated")
                 ]
                 []
             ]
@@ -924,7 +934,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Other Tags"
                 , value (Maybe.withDefault "" defaultColumnNames.otherTags)
-                , onInput (EnteredColumName "otherTags")
+                , onInput (EnteredDefaultColumnName "otherTags")
                 ]
                 []
             ]
@@ -941,7 +951,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Untagged"
                 , value (Maybe.withDefault "" defaultColumnNames.untagged)
-                , onInput (EnteredColumName "untagged")
+                , onInput (EnteredDefaultColumnName "untagged")
                 ]
                 []
             ]
@@ -958,7 +968,7 @@ columNamesForm defaultColumnNames =
                 [ type_ "text"
                 , placeholder "Completed"
                 , value (Maybe.withDefault "" defaultColumnNames.completed)
-                , onInput (EnteredColumName "completed")
+                , onInput (EnteredDefaultColumnName "completed")
                 ]
                 []
             ]
@@ -1147,7 +1157,7 @@ settingsColumnView index column =
             [ Html.input
                 [ type_ "text"
                 , value <| Column.name column
-                , onInput <| EnteredNewColumnName index
+                , onInput <| EnteredColumnName index
                 ]
                 []
             ]

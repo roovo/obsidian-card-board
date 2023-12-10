@@ -30,6 +30,7 @@ suite =
         , init
         , mapBoardBeingAdded
         , mapBoardBeingEdited
+        , mapColumnBeingAdded
         , mapGlobalSettings
         ]
 
@@ -530,6 +531,47 @@ mapBoardBeingEdited =
         ]
 
 
+mapColumnBeingAdded : Test
+mapColumnBeingAdded =
+    describe "mapColumnBeingAdded"
+        [ test "does nothing if it is in the AddingBoard state" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardConfig.default Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default)
+        , test "maps the board being added if it is in the AddingColumn state" <|
+            \() ->
+                SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always <| NewColumnConfig "a" "b")
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "a" "b") Settings.default)
+        , test "does nothing if it is in the ClosingPlugin state" <|
+            \() ->
+                SettingsState.ClosingPlugin Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.ClosingPlugin Settings.default)
+        , test "does nothing if it is in the ClosingSettings state" <|
+            \() ->
+                SettingsState.ClosingSettings Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.ClosingSettings Settings.default)
+        , test "does nothing if it is in the DeletingBoard state" <|
+            \() ->
+                SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "does nothing if it is in the EditingBoard state" <|
+            \() ->
+                SettingsState.EditingBoard Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.EditingBoard Settings.default)
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default)
+        ]
+
+
 mapGlobalSettings : Test
 mapGlobalSettings =
     describe "mapGlobalSettings"
@@ -597,6 +639,11 @@ exampleNewBoardConfig =
 noNameNewBoardConfig : NewBoardConfig
 noNameNewBoardConfig =
     NewBoardConfig "" "emptyBoard"
+
+
+exampleNewColumnConfig : NewColumnConfig
+exampleNewColumnConfig =
+    NewColumnConfig "a name" "a type"
 
 
 unnamedNameNewBoardConfig : NewBoardConfig
