@@ -22,6 +22,7 @@
 - Call Column Names Default CNs on Global Setting dialog...
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
+- Baords.cards test - is this where I should test how cards are distributed at a high level?
 
 - npm run generate
 - ts types for settings

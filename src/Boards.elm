@@ -43,11 +43,6 @@ boardZipper (Boards uniqueId configs taskList) =
     SafeZipper.map (board uniqueId taskList) configs
 
 
-names : Boards -> SafeZipper String
-names (Boards _ configs _) =
-    SafeZipper.map tabName configs
-
-
 cards : Bool -> Date -> Boards -> List Card
 cards ignoreFileNameDates today boards_ =
     let
@@ -72,6 +67,11 @@ currentIndex (Boards _ config _) =
 length : Boards -> Int
 length (Boards _ config _) =
     SafeZipper.length config
+
+
+names : Boards -> SafeZipper String
+names (Boards _ configs _) =
+    SafeZipper.map tabName configs
 
 
 
