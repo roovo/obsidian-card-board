@@ -32,6 +32,7 @@ import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -100,6 +101,7 @@ multiSelectConfig =
 
 type Msg
     = AddBoardClicked
+    | AddColumnClicked
     | AddBoardConfirmed
     | BackspacePressed
     | BoardNameClicked Int
@@ -163,6 +165,9 @@ update msg model =
     case msg of
         AddBoardClicked ->
             mapSettingsState SettingsState.addBoardRequested model
+
+        AddColumnClicked ->
+            mapSettingsState SettingsState.addColumnRequested model
 
         AddBoardConfirmed ->
             let
@@ -454,6 +459,12 @@ view model =
                 , modalAddBoard newConfig
                 ]
 
+        SettingsState.AddingColumn newConfig settings ->
+            Html.div []
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                , modalAddColumn newConfig settings
+                ]
+
         SettingsState.ClosingPlugin _ ->
             Html.text ""
 
@@ -486,7 +497,7 @@ modalAddBoard newBoardConfig =
                 ]
                 []
             , Html.div [ class "modal-title" ]
-                [ Html.text "Add new board" ]
+                [ Html.text "Add board" ]
             , Html.div [ class "modal-form" ]
                 [ Html.div [ class "form-item" ]
                     [ Html.div [ class "form-item-name" ]
@@ -529,6 +540,57 @@ modalAddBoard newBoardConfig =
                     , Html.button
                         [ class "mod-cta"
                         , onClick <| AddBoardConfirmed
+                        ]
+                        [ Html.text "Add"
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+
+modalAddColumn : NewColumnConfig -> Settings -> Html Msg
+modalAddColumn newConfig settings =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Add column" ]
+            , Html.div [ class "modal-form" ]
+                [ Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Name" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| newConfig.name
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Type" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.select
+                            [ class "dropdown"
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "dialog-buttons" ]
+                    [ Html.button
+                        [ onClick <| ModalCancelClicked
+                        ]
+                        [ Html.text "Cancel"
+                        ]
+                    , Html.button
+                        [ class "mod-cta"
                         ]
                         [ Html.text "Add"
                         ]
@@ -1042,7 +1104,8 @@ boardSettingsForm boardConfig boardIndex multiselect =
                     )
                 ]
             , Html.div [ class "setting-item-control" ]
-                [ Html.button []
+                [ Html.button
+                    [ onClick AddColumnClicked ]
                     [ Html.text "Add Column" ]
                 ]
             , Html.div [ class "setting-item" ]
@@ -1063,7 +1126,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
             , Html.div [ class "setting-item dialog-buttons" ]
                 [ Html.button
                     [ class "mod-warning"
-                    , onClick <| DeleteBoardRequested
+                    , onClick DeleteBoardRequested
                     ]
                     [ Html.text "Delete this board"
                     ]

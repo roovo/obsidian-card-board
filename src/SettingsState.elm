@@ -1,6 +1,7 @@
 module SettingsState exposing
     ( SettingsState(..)
     , addBoardRequested
+    , addColumnRequested
     , boardConfigs
     , cancelCurrentState
     , confirmAddBoard
@@ -21,6 +22,7 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 
@@ -31,6 +33,7 @@ import Settings exposing (Settings)
 
 type SettingsState
     = AddingBoard NewBoardConfig Settings
+    | AddingColumn NewColumnConfig Settings
     | ClosingPlugin Settings
     | ClosingSettings Settings
     | DeletingBoard Settings
@@ -66,6 +69,9 @@ settings settingsState =
         AddingBoard _ settings_ ->
             settings_
 
+        AddingColumn _ settings_ ->
+            settings_
+
         ClosingPlugin settings_ ->
             settings_
 
@@ -92,6 +98,9 @@ addBoardRequested settingsState =
         AddingBoard _ _ ->
             settingsState
 
+        AddingColumn _ settings_ ->
+            AddingBoard NewBoardConfig.default settings_
+
         ClosingPlugin settings_ ->
             AddingBoard NewBoardConfig.default settings_
 
@@ -108,6 +117,31 @@ addBoardRequested settingsState =
             AddingBoard NewBoardConfig.default settings_
 
 
+addColumnRequested : SettingsState -> SettingsState
+addColumnRequested settingsState =
+    case settingsState of
+        AddingBoard _ settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        AddingColumn _ _ ->
+            settingsState
+
+        ClosingPlugin settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        ClosingSettings settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        DeletingBoard settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        EditingBoard settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        EditingGlobalSettings settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+
 cancelCurrentState : SettingsState -> SettingsState
 cancelCurrentState settingsState =
     case settingsState of
@@ -117,6 +151,9 @@ cancelCurrentState settingsState =
 
             else
                 ClosingPlugin settings_
+
+        AddingColumn _ settings_ ->
+            EditingBoard settings_
 
         ClosingPlugin settings_ ->
             ClosingPlugin settings_
@@ -162,6 +199,9 @@ deleteBoardRequested settingsState =
         AddingBoard _ settings_ ->
             DeletingBoard settings_
 
+        AddingColumn _ settings_ ->
+            DeletingBoard settings_
+
         ClosingPlugin settings_ ->
             DeletingBoard settings_
 
@@ -184,6 +224,9 @@ editBoardAt index settingsState =
         AddingBoard _ settings_ ->
             EditingBoard (Settings.switchToBoard index settings_)
 
+        AddingColumn _ settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
+
         ClosingPlugin settings_ ->
             EditingBoard (Settings.switchToBoard index settings_)
 
@@ -204,6 +247,9 @@ editGlobalSettings : SettingsState -> SettingsState
 editGlobalSettings settingsState =
     case settingsState of
         AddingBoard _ settings_ ->
+            EditingGlobalSettings settings_
+
+        AddingColumn _ settings_ ->
             EditingGlobalSettings settings_
 
         ClosingPlugin settings_ ->
@@ -270,6 +316,9 @@ mapSettings fn settingsState =
     case settingsState of
         AddingBoard config settings_ ->
             AddingBoard config (fn settings_)
+
+        AddingColumn config settings_ ->
+            AddingColumn config (fn settings_)
 
         ClosingPlugin settings_ ->
             ClosingPlugin (fn settings_)
