@@ -14,7 +14,7 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-
+import { CardBoardPluginSettings } from './main';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
@@ -104,9 +104,9 @@ export class CardBoardView extends ItemView {
         case "trackDraggable":
           that.handleTrackDraggable(fromElm.data);
           break;
-        case "updateSettings":
-          that.handleUpdateSettings(fromElm.data);
-          break;
+        // case "updateSettings":
+        //   that.handleUpdateSettings(fromElm.data);
+        //   break;
         case "updateTasks":
           that.handleUpdateTasks(fromElm.data);
           break;
@@ -442,49 +442,7 @@ export class CardBoardView extends ItemView {
     }
   }
 
-  async handleUpdateSettings(
-    data: {
-      data : {
-        boardConfigs : (
-          { data : {
-              columns : { displayTitle : string; tag : string }[];
-              showColumnTags : boolean;
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeOthers : boolean;
-              includeUntagged : boolean;
-              title : string
-            };
-            tag : "tagBoardConfig" }
-          | { data : {
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeUndated : boolean;
-              title : string
-            };
-            tag : "dateBoardConfig"
-          }
-        )[];
-        globalSettings : {
-          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
-          columnNames : {
-            today : string;
-            tomorrow : string;
-            future : string;
-            undated : string;
-            others : string;
-            untagged : string
-            completed : string;
-          }
-          ignoreFileNameDates : boolean;
-        }
-      };
-      version : string
-  }) {
+  async handleUpdateSettings(data : CardBoardPluginSettings) {
     await this.plugin.saveSettings(data);
 
     this.elm.ports.interopToElm.send({

@@ -1,5 +1,4 @@
 - no more need for separate date and tag board types, they are just boards
-    - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
     - adding new date or tag board has blank cards
     - adding new board isn't being saved
     - any tests missed in deleting Tag & Date board configs (and columns)
@@ -14,6 +13,7 @@
       (completed, undated, untagged, undated)
       - when using the settings pane
       - when reading from config
+    - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - ensure columns on a board have unique names
     - when entering and when reading from config
 - Call Column Names Default CNs on Global Setting dialog...
@@ -23,6 +23,7 @@
 
 - npm run generate
 - ts types for settings
+    - fix main.ts.addCommands()
 
 - add ColumnsTests after I have changed the way boards are set up on the settings page
     - as this will change what functions are in there

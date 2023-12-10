@@ -1,50 +1,11 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 
+export type CardBoardPluginSettings = CardBoardPluginSettingsPreV11 | CardBoardPluginSettingsPostV11;
+
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
-  settings: {
-      data : {
-        boardConfigs : (
-          { data : {
-              columns : { displayTitle : string; tag : string }[];
-              showColumnTags : boolean;
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeOthers : boolean;
-              includeUntagged : boolean;
-              title : string
-            };
-            tag : "tagBoardConfig" }
-          | { data : {
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeUndated : boolean;
-              title : string
-            };
-            tag : "dateBoardConfig"
-          }
-        )[];
-        globalSettings : {
-          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
-          columnNames : {
-            today : string;
-            tomorrow : string;
-            future : string;
-            undated : string;
-            others : string;
-            untagged : string
-            completed : string;
-          }
-          ignoreFileNameDates : boolean;
-        }
-      };
-      version : string
-  };
+  settings: CardBoardPluginSettings;
 
   async onload() {
     console.log('loading CardBoard plugin');
@@ -75,17 +36,17 @@ export default class CardBoardPlugin extends Plugin {
 
 
   addCommands() {
-    this.settings?.data?.boardConfigs?.forEach((boardConfig, index) => {
-      const command = this.addCommand({
-        id: "open-card-board-plugin-" + index,
-        name: "Open " + boardConfig.data.title,
-        callback: async () => {
-          this.activateView(index);
-        },
-      });
+    // this.settings?.data?.boardConfigs?.forEach((boardConfig, index) => {
+    //   const command = this.addCommand({
+    //     id: "open-card-board-plugin-" + index,
+    //     name: "Open " + boardConfig.data.title,
+    //     callback: async () => {
+    //       this.activateView(index);
+    //     },
+    //   });
 
-      this.commandIds.push(command.id);
-    });
+    //   this.commandIds.push(command.id);
+    // });
   }
 
 
@@ -122,50 +83,7 @@ export default class CardBoardPlugin extends Plugin {
     this.settings = await this.loadData();
   }
 
-  async saveSettings(
-    newSettings: {
-      data : {
-        boardConfigs : (
-          { data : {
-              columns : { displayTitle : string; tag : string }[];
-              showColumnTags : boolean;
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeOthers : boolean;
-              includeUntagged : boolean;
-              title : string
-            };
-            tag : "tagBoardConfig" }
-          | { data : {
-              completedCount : number;
-              filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
-              filterPolarity : "Allow" | "Deny";
-              showFilteredTags : boolean;
-              includeUndated : boolean;
-              title : string
-            };
-            tag : "dateBoardConfig"
-          }
-        )[];
-        globalSettings : {
-          taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
-          columnNames : {
-            today : string;
-            tomorrow : string;
-            future : string;
-            undated : string;
-            others : string;
-            untagged : string
-            completed : string;
-          }
-          ignoreFileNameDates : boolean;
-        }
-      };
-      version : string
-    }
-  ) {
+  async saveSettings( newSettings: CardBoardPluginSettings) {
     await this.backupOldVersion(this.settings?.version, newSettings.version);
 
     this.removeCommands();
@@ -185,4 +103,126 @@ export default class CardBoardPlugin extends Plugin {
       this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
     }
   }
+}
+
+type CardBoardPluginSettingsPostV11 = {
+  data : {
+    boardConfigs : ({
+      columns : ({
+        tag : "completed"
+        data : {
+          collapsed : boolean;
+          name : string;
+          index : number;
+          limit : number;
+        }
+      } | {
+        tag : "dated"
+        data : {
+          collapsed : boolean;
+          name : string;
+          range : ({
+            tag : "after"
+            data : number
+          } | {
+            tag : "before"
+            data : number
+          } | {
+            tag : "between"
+            data : {
+              from : number
+              to : number
+            }
+          })
+        }
+      } | {
+        tag : "namedTag"
+        data : {
+          collapsed : boolean;
+          name : string;
+          tag : string;
+        }
+      } | {
+        tag : "otherTags"
+        data : {
+          collapsed : boolean;
+          name : string;
+        }
+      } | {
+        tag : "undated"
+        data : {
+          collapsed : boolean;
+          name : string;
+        }
+      } | {
+        tag : "untagged"
+        data : {
+          collapsed : boolean;
+          name : string;
+        }
+      })[];
+      filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+      filterPolarity : "Allow" | "Deny";
+      showColumnTags : boolean;
+      showFilteredTags : boolean;
+      name : string
+    })[];
+    globalSettings : {
+      taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
+      columnNames : {
+        today : string;
+        tomorrow : string;
+        future : string;
+        undated : string;
+        otherTags : string;
+        untagged : string
+        completed : string;
+      }
+      ignoreFileNameDates : boolean;
+    }
+  };
+  version : string
+}
+ 
+type CardBoardPluginSettingsPreV11 = {
+  data : {
+    boardConfigs : (
+      { data : {
+          columns : { displayTitle : string; tag : string }[];
+          showColumnTags : boolean;
+          completedCount : number;
+          filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          filterPolarity : "Allow" | "Deny";
+          showFilteredTags : boolean;
+          includeOthers : boolean;
+          includeUntagged : boolean;
+          title : string
+        };
+        tag : "tagBoardConfig" }
+      | { data : {
+          completedCount : number;
+          filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          filterPolarity : "Allow" | "Deny";
+          showFilteredTags : boolean;
+          includeUndated : boolean;
+          title : string
+        };
+        tag : "dateBoardConfig"
+      }
+    )[];
+    globalSettings : {
+      taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
+      columnNames : {
+        today : string;
+        tomorrow : string;
+        future : string;
+        undated : string;
+        others : string;
+        untagged : string
+        completed : string;
+      }
+      ignoreFileNameDates : boolean;
+    }
+  };
+  version : string
 }
