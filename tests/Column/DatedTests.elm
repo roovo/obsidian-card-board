@@ -27,6 +27,7 @@ suite =
         , setTagsToHide
         , toList
         , toggleCollapse
+        , updateName
         , updateRangeType
         , updateRangeValueFrom
         , updateRangeValueTo
@@ -417,6 +418,18 @@ toggleCollapse =
                     |> Result.map DatedColumn.toggleCollapse
                     |> Result.map DatedColumn.isCollapsed
                     |> Expect.equal (Ok True)
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name" <|
+            \() ->
+                DatedColumn.init "A Column Name" (DatedColumn.Before 1)
+                    |> DatedColumn.updateName "new name"
+                    |> DatedColumn.name
+                    |> Expect.equal "new name"
         ]
 
 

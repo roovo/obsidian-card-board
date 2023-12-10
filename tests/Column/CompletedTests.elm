@@ -26,6 +26,7 @@ suite =
         , toList
         , toggleCollapse
         , updateCompletedCount
+        , updateName
         ]
 
 
@@ -363,6 +364,18 @@ updateCompletedCount =
                     |> CompletedColumn.toList
                     |> List.map TaskItem.title
                     |> Expect.equal [ "a", "B", "c" ]
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name" <|
+            \() ->
+                CompletedColumn.init "A Column Name" 2 3
+                    |> CompletedColumn.updateName "new name"
+                    |> CompletedColumn.name
+                    |> Expect.equal "new name"
         ]
 
 

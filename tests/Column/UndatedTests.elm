@@ -25,6 +25,7 @@ suite =
         , setTagsToHide
         , toList
         , toggleCollapse
+        , updateName
         ]
 
 
@@ -258,6 +259,18 @@ toggleCollapse =
                     |> Result.map UndatedColumn.toggleCollapse
                     |> Result.map UndatedColumn.isCollapsed
                     |> Expect.equal (Ok True)
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name" <|
+            \() ->
+                UndatedColumn.init "A Column Name"
+                    |> UndatedColumn.updateName "new name"
+                    |> UndatedColumn.name
+                    |> Expect.equal "new name"
         ]
 
 

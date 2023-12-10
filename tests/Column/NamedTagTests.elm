@@ -22,8 +22,10 @@ suite =
         , init
         , setCollapse
         , setTagsToHide
+        , tag
         , toList
         , toggleCollapse
+        , updateName
         ]
 
 
@@ -280,6 +282,17 @@ setTagsToHide =
         ]
 
 
+tag : Test
+tag =
+    describe "tag"
+        [ test "returns the column's tag" <|
+            \() ->
+                NamedTagColumn.init "" "aTag"
+                    |> NamedTagColumn.tag
+                    |> Expect.equal "aTag"
+        ]
+
+
 toList : Test
 toList =
     describe "toList"
@@ -317,6 +330,18 @@ toggleCollapse =
                     |> Result.map NamedTagColumn.toggleCollapse
                     |> Result.map NamedTagColumn.isCollapsed
                     |> Expect.equal (Ok True)
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name" <|
+            \() ->
+                NamedTagColumn.init "A Column Name" "atag"
+                    |> NamedTagColumn.updateName "new name"
+                    |> NamedTagColumn.name
+                    |> Expect.equal "new name"
         ]
 
 
