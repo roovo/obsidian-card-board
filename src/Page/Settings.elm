@@ -138,8 +138,8 @@ type Msg
     | ToggleTagFilterScope
 
 
-dragType : String
-dragType =
+boardNameDragType : String
+boardNameDragType =
     "card-board-settings-board-name"
 
 
@@ -213,7 +213,7 @@ update msg model =
 
         BoardNameMouseDown ( domId, clientData ) ->
             ( { model | session = Session.waitForDrag clientData model.session }
-            , InteropPorts.trackDraggable dragType clientData.clientPos domId
+            , InteropPorts.trackDraggable boardNameDragType clientData.clientPos domId
             , Session.NoOp
             )
 
@@ -229,7 +229,7 @@ update msg model =
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    if dragData.dragType == dragType then
+                    if dragData.dragType == boardNameDragType then
                         ( model
                             |> updateBoardOrder (Session.dragTracker model.session) dragData
                             |> (\m -> { m | session = Session.moveDragable dragData m.session })
@@ -718,7 +718,7 @@ settingsSurroundView currentSection configs dragTracker formContents =
 
         isDragging : Bool
         isDragging =
-            DragTracker.isDragging dragTracker && draggedType == Just dragType
+            DragTracker.isDragging dragTracker && draggedType == Just boardNameDragType
 
         draggedType : Maybe String
         draggedType =
@@ -1439,7 +1439,7 @@ settingNameView index boardConfig =
             BoardConfig.name boardConfig
     in
     Html.div []
-        [ beacon (BeaconPosition.Before name)
+        [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
             , class "vertical-tab-nav-item"
@@ -1456,7 +1456,7 @@ settingNameView index boardConfig =
                 )
             ]
             [ Html.text name ]
-        , beacon (BeaconPosition.After name)
+        , boardNameBeacon (BeaconPosition.After name)
         ]
 
 
@@ -1472,7 +1472,7 @@ settingNameSelectedView isDragging index boardConfig =
             BoardConfig.name boardConfig
     in
     Html.div []
-        [ beacon (BeaconPosition.Before name)
+        [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
             , class "vertical-tab-nav-item is-active"
@@ -1490,7 +1490,7 @@ settingNameSelectedView isDragging index boardConfig =
                 )
             ]
             [ Html.text name ]
-        , beacon (BeaconPosition.After name)
+        , boardNameBeacon (BeaconPosition.After name)
         ]
 
 
@@ -1525,15 +1525,15 @@ settingNameDraggedView isDragging boardConfig dragTracker =
             Html.text ""
 
 
-beaconType : String
-beaconType =
-    "data-" ++ dragType ++ "-beacon"
+boardNameBeaconType : String
+boardNameBeaconType =
+    "data-" ++ boardNameDragType ++ "-beacon"
 
 
-beacon : BeaconPosition -> Html Msg
-beacon beaconPosition =
+boardNameBeacon : BeaconPosition -> Html Msg
+boardNameBeacon beaconPosition =
     Html.span
-        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        [ attribute boardNameBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
         , style "font-size" "0"
         ]
         []
