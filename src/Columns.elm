@@ -19,6 +19,7 @@ module Columns exposing
     , updateDatedColumnRangeType
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
+    , updateNamedTagTag
     , updateOtherTags
     )
 
@@ -330,6 +331,14 @@ updateDatedColumnRangeValueTo index newValue columns =
     columns
         |> toList
         |> LE.updateAt index (Column.updateDatedColumnRangeValueTo newValue)
+        |> fromList
+
+
+updateNamedTagTag : Int -> String -> Columns -> Columns
+updateNamedTagTag index newTag columns =
+    columns
+        |> toList
+        |> LE.updateAt index (Column.updateNamedTagTag newTag)
         |> fromList
 
 

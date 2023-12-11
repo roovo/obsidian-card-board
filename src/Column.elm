@@ -35,6 +35,7 @@ module Column exposing
     , updateDatedColumnRangeValueFrom
     , updateDatedColumnRangeValueTo
     , updateName
+    , updateNamedTagTag
     , updateOtherTags
     )
 
@@ -566,6 +567,16 @@ updateName newName column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.updateName newName untaggedColumn)
+
+
+updateNamedTagTag : String -> Column -> Column
+updateNamedTagTag newTag column =
+    case column of
+        NamedTag namedTagColumn ->
+            NamedTag (NamedTagColumn.updateTag newTag namedTagColumn)
+
+        _ ->
+            column
 
 
 updateOtherTags : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column

@@ -14,6 +14,7 @@ module Column.NamedTag exposing
     , toList
     , toggleCollapse
     , updateName
+    , updateTag
     )
 
 import PlacementResult exposing (PlacementResult)
@@ -139,6 +140,11 @@ toggleCollapse (NamedTagColumn c tth tl) =
 updateName : String -> NamedTagColumn -> NamedTagColumn
 updateName newName (NamedTagColumn c tth tl) =
     NamedTagColumn { c | name = newName } tth tl
+
+
+updateTag : String -> NamedTagColumn -> NamedTagColumn
+updateTag newTag (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | tag = newTag } tth tl
 
 
 

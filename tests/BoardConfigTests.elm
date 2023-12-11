@@ -40,6 +40,7 @@ suite =
         , updateFilterScope
         , updateFilters
         , updateName
+        , updateNamedTagTag
         ]
 
 
@@ -651,6 +652,36 @@ updateName =
                     |> BoardConfig.updateName "new title"
                     |> BoardConfig.name
                     |> Expect.equal "new title"
+        ]
+
+
+updateNamedTagTag : Test
+updateNamedTagTag =
+    describe "updateNamedTagTag"
+        [ test "updates the limit" <|
+            \() ->
+                NewBoardConfig "foo" "tagBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Tagged" "namedTag")
+                    |> BoardConfig.updateNamedTagTag 2 "newTag"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.namedTagTag
+                    |> Expect.equal [ Nothing, Nothing, Just "newTag", Nothing ]
+        , test "does nothing if given the wrong index" <|
+            \() ->
+                NewBoardConfig "foo" "tagBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Tagged" "namedTag")
+                    |> BoardConfig.updateNamedTagTag 3 "newTag"
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.namedTagTag
+                    |> Expect.equal [ Nothing, Nothing, Just "", Nothing ]
         ]
 
 

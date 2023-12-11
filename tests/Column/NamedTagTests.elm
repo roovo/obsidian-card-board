@@ -25,6 +25,7 @@ suite =
         , toList
         , toggleCollapse
         , updateName
+        , updateTag
         ]
 
 
@@ -342,6 +343,18 @@ updateName =
                     |> NamedTagColumn.updateName "new name"
                     |> NamedTagColumn.name
                     |> Expect.equal "new name"
+        ]
+
+
+updateTag : Test
+updateTag =
+    describe "updateTag"
+        [ test "updates the name" <|
+            \() ->
+                NamedTagColumn.init "A Column Name" "atag"
+                    |> NamedTagColumn.updateTag "newTag"
+                    |> NamedTagColumn.tag
+                    |> Expect.equal "newTag"
         ]
 
 

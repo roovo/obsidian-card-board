@@ -113,6 +113,7 @@ type Msg
     | DeleteConfirmed
     | ElementDragged DragData
     | EnteredColumnName Int String
+    | EnteredColumnNamedTagTag Int String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
     | EnteredDefaultColumnName String String
@@ -247,6 +248,9 @@ update msg model =
 
         EnteredColumnName columnIndex name ->
             mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex name) model
+
+        EnteredColumnNamedTagTag columnIndex tag ->
+            mapBoardBeingEdited (BoardConfig.updateNamedTagTag columnIndex tag) model
 
         EnteredDatedColumnRangeValueFrom index value ->
             mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model
@@ -1253,9 +1257,7 @@ settingsColumnControlView index column =
                 , Html.input
                     [ type_ "text"
                     , value <| NamedTagColumn.tag namedTagColumn
-                    , attribute "size" "3"
-
-                    -- , onInput <| EnteredNewColumnCompletedLimit index
+                    , onInput <| EnteredColumnNamedTagTag index
                     ]
                     []
                 ]

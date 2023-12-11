@@ -38,6 +38,7 @@ module BoardConfig exposing
     , updateFilterScope
     , updateFilters
     , updateName
+    , updateNamedTagTag
     )
 
 import Column exposing (Column)
@@ -320,6 +321,11 @@ updateFilters filters_ (BoardConfig c) =
 updateName : String -> BoardConfig -> BoardConfig
 updateName name_ (BoardConfig c) =
     BoardConfig { c | name = name_ }
+
+
+updateNamedTagTag : Int -> String -> BoardConfig -> BoardConfig
+updateNamedTagTag index newTag ((BoardConfig c) as boardConfig) =
+    BoardConfig { c | columns = Columns.updateNamedTagTag index newTag c.columns }
 
 
 
