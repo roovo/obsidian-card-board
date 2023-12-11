@@ -9,6 +9,7 @@ module Column.Completed exposing
     , limit
     , name
     , setCollapse
+    , setIndex
     , setNameToDefault
     , setTagsToHide
     , tagsToHide
@@ -140,6 +141,11 @@ addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedCo
 setCollapse : Bool -> CompletedColumn -> CompletedColumn
 setCollapse isCollapsed_ (CompletedColumn c tth tl) =
     CompletedColumn { c | collapsed = isCollapsed_ } tth tl
+
+
+setIndex : Int -> CompletedColumn -> CompletedColumn
+setIndex newIndex (CompletedColumn c tth tl) =
+    CompletedColumn { c | index = newIndex } tth tl
 
 
 setNameToDefault : DefaultColumnNames -> CompletedColumn -> CompletedColumn

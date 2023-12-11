@@ -70,16 +70,20 @@ fromList columns =
                 |> Maybe.map Column.asCompletedColumn
                 |> ME.join
 
+        completedIndex : Maybe Int
+        completedIndex =
+            LE.findIndex Column.isCompleted columns
+
         notCompleted : List Column
         notCompleted =
             LE.filterNot Column.isCompleted columns
     in
-    case completed of
-        Nothing ->
-            WithoutCompleted notCompleted
+    case ( completed, completedIndex ) of
+        ( Just completedColumn, Just index ) ->
+            WithCompleted notCompleted (CompletedColumn.setIndex index completedColumn)
 
-        Just completedColumn ->
-            WithCompleted notCompleted completedColumn
+        _ ->
+            WithoutCompleted notCompleted
 
 
 
@@ -224,11 +228,36 @@ optionsForSelect columns newColumnConfig =
 
 addColumn : DefaultColumnNames -> NewColumnConfig -> Columns -> Columns
 addColumn defaultColumnNames newColumnConfig columns =
-    toList columns
-        ++ (Column.fromColumnConfig defaultColumnNames newColumnConfig
+    let
+        allColumns : List Column
+        allColumns =
+            toList columns
+
+        completedPosition : Maybe Int
+        completedPosition =
+            LE.findIndex Column.isCompleted allColumns
+
+        newColumn : List Column
+        newColumn =
+            Column.fromColumnConfig defaultColumnNames newColumnConfig
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
-           )
+    in
+    (case completedPosition of
+        Just position ->
+            let
+                ( preCompleted, completedPlus ) =
+                    LE.splitAt position allColumns
+            in
+            if List.length completedPlus == 1 then
+                preCompleted ++ newColumn ++ completedPlus
+
+            else
+                allColumns ++ newColumn
+
+        Nothing ->
+            allColumns ++ newColumn
+    )
         |> fromList
 
 

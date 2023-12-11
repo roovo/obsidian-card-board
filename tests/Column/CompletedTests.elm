@@ -20,6 +20,7 @@ suite =
         , encoder
         , init
         , setCollapse
+        , setIndex
         , setNameToDefault
         , setTagsToHide
         , toList
@@ -233,6 +234,18 @@ setCollapse =
                     |> Result.map (CompletedColumn.setCollapse False)
                     |> Result.map CompletedColumn.isCollapsed
                     |> Expect.equal (Ok False)
+        ]
+
+
+setIndex : Test
+setIndex =
+    describe "setIndex"
+        [ test "does not add a task item if there are no PlacementResults" <|
+            \() ->
+                CompletedColumn.init "" 0 10
+                    |> CompletedColumn.setIndex 7
+                    |> CompletedColumn.index
+                    |> Expect.equal 7
         ]
 
 

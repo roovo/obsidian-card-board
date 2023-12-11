@@ -2,6 +2,7 @@ module ColumnsTests exposing (suite)
 
 import Column
 import Column.Completed as CompletedColumn
+import Column.Dated as DatedColumn
 import Columns
 import DefaultColumnNames
 import Expect
@@ -12,7 +13,40 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ optionsForSelect
+        [ fromList
+        , optionsForSelect
+        ]
+
+
+fromList : Test
+fromList =
+    describe "fromList"
+        [ test "works with an empty list" <|
+            \() ->
+                []
+                    |> Columns.fromList
+                    |> Columns.toList
+                    |> Expect.equal []
+        , test "works with a list containing a single column" <|
+            \() ->
+                [ Column.otherTags "others" [] ]
+                    |> Columns.fromList
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "others" ]
+        , test "preserves columns order" <|
+            \() ->
+                [ Column.otherTags "others" []
+                , Column.undated "undated"
+                , Column.dated <| DatedColumn.init "today" (DatedColumn.Before 1)
+                , Column.untagged "untagged"
+                , Column.completed <| CompletedColumn.init "completed" 1 10
+                , Column.namedTag "tagged" "aTag"
+                ]
+                    |> Columns.fromList
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "others", "undated", "today", "untagged", "completed", "tagged" ]
         ]
 
 

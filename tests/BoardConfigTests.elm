@@ -13,6 +13,7 @@ import Helpers.FilterHelpers as FilterHelpers
 import List.Extra as LE
 import Maybe.Extra as ME
 import NewBoardConfig exposing (NewBoardConfig)
+import NewColumnConfig exposing (NewColumnConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -20,7 +21,8 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ collapseColumn
+        [ addColumn
+        , collapseColumn
         , encodeDecode
         , fromNewBoardConfig
         , mapFilters
@@ -37,6 +39,54 @@ suite =
         , updateFilterScope
         , updateFilters
         , updateName
+        ]
+
+
+addColumn : Test
+addColumn =
+    describe "addColumn"
+        [ test "adds an Undated columnn to an empty board" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Undated" "undated")
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Undated" ]
+        , test "adds an Undated  columnn after an existing Untagged column" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Untagged" "untagged")
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Undated" "undated")
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Untagged", "Undated" ]
+        , test "adds a non-Completed columnn before the completed column" <|
+            \() ->
+                NewBoardConfig "foo" "emptyBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Untagged" "untagged")
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Completed" "completed")
+                    |> BoardConfig.addColumn
+                        DefaultColumnNames.default
+                        (NewColumnConfig "Undated" "undated")
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Untagged", "Undated", "Completed" ]
         ]
 
 
