@@ -7,6 +7,7 @@ module Settings exposing
     , currentVersion
     , decoder
     , default
+    , deleteColumn
     , deleteCurrentBoard
     , encoder
     , globalSettings
@@ -112,6 +113,17 @@ addColumn defaultColumnNames configToAdd settings =
         | boardConfigs =
             SafeZipper.mapSelectedAndRest
                 (BoardConfig.addColumn defaultColumnNames configToAdd)
+                identity
+                settings.boardConfigs
+    }
+
+
+deleteColumn : Int -> Settings -> Settings
+deleteColumn index settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfig.deleteColumn index)
                 identity
                 settings.boardConfigs
     }

@@ -23,6 +23,7 @@ suite =
     concat
         [ addColumn
         , collapseColumn
+        , deleteColumn
         , encodeDecode
         , fromNewBoardConfig
         , mapFilters
@@ -112,6 +113,30 @@ collapseColumn =
                     |> Columns.toList
                     |> List.map Column.isCollapsed
                     |> Expect.equal [ False, False, False, False, False ]
+        ]
+
+
+deleteColumn : Test
+deleteColumn =
+    describe "deleteColumn"
+        [ test "deletes the column at the given index" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.deleteColumn 1
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Undated", "Tomorrow", "Future", "Completed" ]
+        , test "does nothing if there is no column at the given index" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.deleteColumn 10
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
         ]
 
 

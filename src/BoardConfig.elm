@@ -15,6 +15,7 @@ module BoardConfig exposing
     , decoder_v_0_7_0
     , decoder_v_0_8_0
     , decoder_v_0_9_0
+    , deleteColumn
     , encoder
     , filterPolarity
     , filterScope
@@ -211,6 +212,11 @@ decoder_v_0_11_0 =
 addColumn : DefaultColumnNames -> NewColumnConfig -> BoardConfig -> BoardConfig
 addColumn defaultColumnNames newColumnConfig (BoardConfig c) =
     BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfig c.columns }
+
+
+deleteColumn : Int -> BoardConfig -> BoardConfig
+deleteColumn index (BoardConfig c) =
+    BoardConfig { c | columns = Columns.deleteColumn index c.columns }
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig

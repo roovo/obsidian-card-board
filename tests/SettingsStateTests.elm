@@ -24,8 +24,9 @@ suite =
         , cancelCurrentState
         , confirmAddBoard
         , confirmAddColumn
-        , confirmDeleteBoard
+        , confirmDelete
         , deleteBoardRequested
+        , deleteColumnRequested
         , editBoardAt
         , editGlobalSettings
         , init
@@ -62,6 +63,11 @@ addBoardRequested =
         , test "DeletingBoard -> AddingBoard" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.addBoardRequested
+                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default)
+        , test "DeletingColumn -> AddingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
                     |> SettingsState.addBoardRequested
                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default)
         , test "EditingBoard -> AddingBoard" <|
@@ -105,6 +111,11 @@ addColumnRequested =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.addColumnRequested
                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+        , test "DeletingColumn -> AddingColumn" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.addColumnRequested
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
         , test "EditingBoard -> AddingColumn" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -144,6 +155,11 @@ boardConfigs =
         , test "returns the configs if in DeletingBoard state" <|
             \() ->
                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ])
+                    |> SettingsState.boardConfigs
+                    |> Expect.equal (SafeZipper.fromList [ exampleBoardConfig ])
+        , test "returns the configs if in DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfig ])
                     |> SettingsState.boardConfigs
                     |> Expect.equal (SafeZipper.fromList [ exampleBoardConfig ])
         , test "returns the configs if in EditingBoard state" <|
@@ -190,6 +206,11 @@ cancelCurrentState =
         , test "DeletingBoard -> EditingBoard" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.EditingBoard Settings.default)
+        , test "DeletingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
                     |> SettingsState.cancelCurrentState
                     |> Expect.equal (SettingsState.EditingBoard Settings.default)
         , test "EditingBoard -> ClosingSettings" <|
@@ -254,6 +275,11 @@ confirmAddBoard =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.confirmAddBoard DefaultColumnNames.default
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "does nothing if DeletingColumn" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.confirmAddBoard DefaultColumnNames.default
+                    |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default)
         , test "does nothing if EditingBoard" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -295,6 +321,11 @@ confirmAddColumn =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.confirmAddColumn DefaultColumnNames.default
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "does nothing if DeletingColumn" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.confirmAddColumn DefaultColumnNames.default
+                    |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default)
         , test "does nothing if EditingBoard" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -308,48 +339,53 @@ confirmAddColumn =
         ]
 
 
-confirmDeleteBoard : Test
-confirmDeleteBoard =
-    describe "confirmDeleteBoard"
+confirmDelete : Test
+confirmDelete =
+    describe "confirmDelete"
         [ test "does nothing if AddingBoard" <|
             \() ->
                 SettingsState.AddingBoard NewBoardConfig.default Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default)
         , test "does nothing if AddingColumn" <|
             \() ->
                 SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
         , test "does nothing if ClosingPlugin" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default)
         , test "does nothing if ClosingSettings" <|
             \() ->
                 SettingsState.ClosingSettings Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.ClosingSettings Settings.default)
         , test "deletes the current board and -> Adding if DeletingBoard and there is ONLY one board" <|
             \() ->
                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ])
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default)
         , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
             \() ->
                 SettingsState.DeletingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig, exampleBoardConfigNoColumns ])
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfigNoColumns ]))
+        , test "deletes the current column and -> EditingBoard if DeletingColumn" <|
+            \() ->
+                SettingsState.DeletingColumn 0 (settingsFromBoardConfigs [ exampleBoardConfig ])
+                    |> SettingsState.confirmDelete
+                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns ]))
         , test "does nothing if EditingBoard" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.EditingBoard Settings.default)
         , test "does nothing if EditingGlobalSettings" <|
             \() ->
                 SettingsState.EditingGlobalSettings Settings.default
-                    |> SettingsState.confirmDeleteBoard
+                    |> SettingsState.confirmDelete
                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default)
         ]
 
@@ -382,6 +418,11 @@ deleteBoardRequested =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.deleteBoardRequested
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "DeletingColumn -> DeletingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.deleteBoardRequested
+                    |> Expect.equal (SettingsState.DeletingBoard Settings.default)
         , test "EditingBoard -> DeletingBoard" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -392,6 +433,52 @@ deleteBoardRequested =
                 SettingsState.EditingGlobalSettings Settings.default
                     |> SettingsState.deleteBoardRequested
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        ]
+
+
+deleteColumnRequested : Test
+deleteColumnRequested =
+    describe "deleteColumnRequested"
+        [ test "AddingBoard -> DeletingColumn" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardConfig.default Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "AddingColumn -> DeletingColumn" <|
+            \() ->
+                SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "ClosingPlugin -> DeletingColumn" <|
+            \() ->
+                SettingsState.ClosingPlugin Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "ClosingSettings -> DeletingColumn" <|
+            \() ->
+                SettingsState.ClosingSettings Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "DeletingBoard -> DeletingColumn" <|
+            \() ->
+                SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "ensure deleting the given column if already in DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 2 Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "EditingBoard -> DeletingColumn" <|
+            \() ->
+                SettingsState.EditingBoard Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
+        , test "EditingGlobalSettings -> DeletingColumn" <|
+            \() ->
+                SettingsState.EditingGlobalSettings Settings.default
+                    |> SettingsState.deleteColumnRequested 3
+                    |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default)
         ]
 
 
@@ -421,6 +508,11 @@ editBoardAt =
         , test "DeletingBoard -> EditingBoard" <|
             \() ->
                 SettingsState.DeletingBoard (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]))
+        , test "DeletingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 1 (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
                     |> SettingsState.editBoardAt 1
                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]))
         , test "EditingBoard -> EditingBoard (switched)" <|
@@ -462,6 +554,11 @@ editGlobalSettings =
         , test "DeletingBoard -> EditingGlobalSettings" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default)
+        , test "DeletingColumn -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
                     |> SettingsState.editGlobalSettings
                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default)
         , test "EditingBoard -> EditingGlobalSettings" <|
@@ -519,6 +616,11 @@ mapBoardBeingAdded =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+                    |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default)
         , test "does nothing if it is in the EditingBoard state" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -560,6 +662,11 @@ mapBoardBeingEdited =
                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ])
                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
                     |> Expect.equal (SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]))
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
+                    |> Expect.equal (SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]))
         , test "updates the current board if it is in the EditingBoard state" <|
             \() ->
                 SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ])
@@ -601,6 +708,11 @@ mapColumnBeingAdded =
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
                     |> Expect.equal (SettingsState.DeletingBoard Settings.default)
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
+                    |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+                    |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default)
         , test "does nothing if it is in the EditingBoard state" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
@@ -648,6 +760,13 @@ mapGlobalSettings =
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
+                    |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
+                    |> SettingsState.settings
+                    |> Settings.globalSettings
+                    |> Expect.equal GlobalSettings.default
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 1 Settings.default
                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
                     |> SettingsState.settings
                     |> Settings.globalSettings
@@ -715,7 +834,7 @@ exampleBoardConfigNoColumns =
         , filterScope = Filter.SubTasksOnly
         , showColumnTags = False
         , showFilteredTags = True
-        , name = "No Columns Board Name"
+        , name = "Board Name"
         }
 
 

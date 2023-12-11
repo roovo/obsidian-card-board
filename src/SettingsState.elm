@@ -6,8 +6,9 @@ module SettingsState exposing
     , cancelCurrentState
     , confirmAddBoard
     , confirmAddColumn
-    , confirmDeleteBoard
+    , confirmDelete
     , deleteBoardRequested
+    , deleteColumnRequested
     , editBoardAt
     , editGlobalSettings
     , init
@@ -39,6 +40,7 @@ type SettingsState
     | ClosingPlugin Settings
     | ClosingSettings Settings
     | DeletingBoard Settings
+    | DeletingColumn Int Settings
     | EditingBoard Settings
     | EditingGlobalSettings Settings
 
@@ -83,6 +85,9 @@ settings settingsState =
         DeletingBoard settings_ ->
             settings_
 
+        DeletingColumn _ settings_ ->
+            settings_
+
         EditingBoard settings_ ->
             settings_
 
@@ -112,6 +117,9 @@ addBoardRequested settingsState =
         DeletingBoard settings_ ->
             AddingBoard NewBoardConfig.default settings_
 
+        DeletingColumn _ settings_ ->
+            AddingBoard NewBoardConfig.default settings_
+
         EditingBoard settings_ ->
             AddingBoard NewBoardConfig.default settings_
 
@@ -135,6 +143,9 @@ addColumnRequested settingsState =
             AddingColumn (NewColumnConfig "" "") settings_
 
         DeletingBoard settings_ ->
+            AddingColumn (NewColumnConfig "" "") settings_
+
+        DeletingColumn _ settings_ ->
             AddingColumn (NewColumnConfig "" "") settings_
 
         EditingBoard settings_ ->
@@ -164,6 +175,9 @@ cancelCurrentState settingsState =
             ClosingSettings settings_
 
         DeletingBoard settings_ ->
+            EditingBoard settings_
+
+        DeletingColumn _ settings_ ->
             EditingBoard settings_
 
         EditingBoard settings_ ->
@@ -196,11 +210,14 @@ confirmAddColumn defaultColumnNames settingsState =
             settingsState
 
 
-confirmDeleteBoard : SettingsState -> SettingsState
-confirmDeleteBoard settingsState =
+confirmDelete : SettingsState -> SettingsState
+confirmDelete settingsState =
     case settingsState of
         DeletingBoard settings_ ->
             init (Settings.deleteCurrentBoard settings_)
+
+        DeletingColumn index settings_ ->
+            EditingBoard (Settings.deleteColumn index settings_)
 
         _ ->
             settingsState
@@ -224,11 +241,42 @@ deleteBoardRequested settingsState =
         DeletingBoard _ ->
             settingsState
 
+        DeletingColumn _ settings_ ->
+            DeletingBoard settings_
+
         EditingBoard settings_ ->
             DeletingBoard settings_
 
         EditingGlobalSettings settings_ ->
             DeletingBoard settings_
+
+
+deleteColumnRequested : Int -> SettingsState -> SettingsState
+deleteColumnRequested index settingsState =
+    case settingsState of
+        AddingBoard _ settings_ ->
+            DeletingColumn index settings_
+
+        AddingColumn _ settings_ ->
+            DeletingColumn index settings_
+
+        ClosingPlugin settings_ ->
+            DeletingColumn index settings_
+
+        ClosingSettings settings_ ->
+            DeletingColumn index settings_
+
+        DeletingBoard settings_ ->
+            DeletingColumn index settings_
+
+        DeletingColumn _ settings_ ->
+            DeletingColumn index settings_
+
+        EditingBoard settings_ ->
+            DeletingColumn index settings_
+
+        EditingGlobalSettings settings_ ->
+            DeletingColumn index settings_
 
 
 editBoardAt : Int -> SettingsState -> SettingsState
@@ -247,6 +295,9 @@ editBoardAt index settingsState =
             EditingBoard (Settings.switchToBoard index settings_)
 
         DeletingBoard settings_ ->
+            EditingBoard (Settings.switchToBoard index settings_)
+
+        DeletingColumn _ settings_ ->
             EditingBoard (Settings.switchToBoard index settings_)
 
         EditingBoard settings_ ->
@@ -272,6 +323,9 @@ editGlobalSettings settingsState =
             EditingGlobalSettings settings_
 
         DeletingBoard settings_ ->
+            EditingGlobalSettings settings_
+
+        DeletingColumn _ settings_ ->
             EditingGlobalSettings settings_
 
         EditingBoard settings_ ->
@@ -351,6 +405,9 @@ mapSettings fn settingsState =
 
         DeletingBoard settings_ ->
             DeletingBoard (fn settings_)
+
+        DeletingColumn index settings_ ->
+            DeletingColumn index (fn settings_)
 
         EditingBoard settings_ ->
             EditingBoard (fn settings_)

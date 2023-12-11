@@ -6,6 +6,7 @@ module Columns exposing
     , collapseColumn
     , completedLimit
     , decoder
+    , deleteColumn
     , empty
     , encoder
     , fromList
@@ -273,6 +274,14 @@ collapseColumn columnIndex isCollapsed columns =
     columns
         |> toList
         |> LE.updateAt columnIndex (Column.setCollapse isCollapsed)
+        |> fromList
+
+
+deleteColumn : Int -> Columns -> Columns
+deleteColumn index columns =
+    columns
+        |> toList
+        |> LE.removeAt index
         |> fromList
 
 

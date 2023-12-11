@@ -107,8 +107,9 @@ type Msg
     | BackspacePressed
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
+    | ColumnDeleteClicked Int
     | DeleteBoardRequested
-    | DeleteBoardConfirmed
+    | DeleteConfirmed
     | ElementDragged DragData
     | EnteredColumnName Int String
     | EnteredDatedColumnRangeValueFrom Int String
@@ -214,11 +215,14 @@ update msg model =
             , Session.NoOp
             )
 
+        ColumnDeleteClicked index ->
+            mapSettingsState (SettingsState.deleteColumnRequested index) model
+
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
 
-        DeleteBoardConfirmed ->
-            wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
+        DeleteConfirmed ->
+            wrap <| switchSettingsState SettingsState.confirmDelete model
 
         ElementDragged dragData ->
             case dragData.dragAction of
@@ -509,6 +513,12 @@ view model =
                 , modalConfirmDelete
                 ]
 
+        SettingsState.DeletingColumn index settings ->
+            Html.div []
+                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                , modalConfirmDelete
+                ]
+
         SettingsState.EditingBoard settings ->
             boardSettingsView (Settings.boardConfigs settings)
                 model.multiSelect
@@ -671,7 +681,7 @@ modalConfirmDelete =
                     ]
                 , Html.button
                     [ class "mod-warning"
-                    , onClick <| DeleteBoardConfirmed
+                    , onClick <| DeleteConfirmed
                     ]
                     [ Html.text "Go ahead"
                     ]
@@ -1203,6 +1213,15 @@ settingsColumnView index column =
                 []
             ]
         , settingsColumnControlView index column
+        , Html.div
+            [ class "card-board-card-action-area-button"
+            , onClick <| ColumnDeleteClicked index
+            ]
+            [ FeatherIcons.trash
+                |> FeatherIcons.withSize 1
+                |> FeatherIcons.withSizeUnit "em"
+                |> FeatherIcons.toHtml []
+            ]
         ]
 
 

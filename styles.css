@@ -383,7 +383,7 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .cardboard-settings-column-item {
   display: grid;
-  grid-template-columns: 3em 8em 1fr 1fr;
+  grid-template-columns: 3em 8em 1fr 1fr 2em;
   border: var(--border-width) solid var(--background-modifier-border);
   border-radius: 4px;
   background-color: var(--background-secondary);
