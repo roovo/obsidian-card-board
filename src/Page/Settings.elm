@@ -13,6 +13,7 @@ import BoardConfig exposing (BoardConfig)
 import Column exposing (Column)
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn exposing (RelativeDateRange)
+import Column.NamedTag as NamedTagColumn
 import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DefaultColumnNames exposing (DefaultColumnNames)
@@ -1244,6 +1245,19 @@ settingsColumnControlView index column =
             Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ rangeSelectView index (DatedColumn.range datedColumn)
                 , rangeInputsView index (DatedColumn.range datedColumn)
+                ]
+
+        Column.NamedTag namedTagColumn ->
+            Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ Html.text <| "Tag: "
+                , Html.input
+                    [ type_ "text"
+                    , value <| NamedTagColumn.tag namedTagColumn
+                    , attribute "size" "3"
+
+                    -- , onInput <| EnteredNewColumnCompletedLimit index
+                    ]
+                    []
                 ]
 
         _ ->
