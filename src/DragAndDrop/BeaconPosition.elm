@@ -2,10 +2,12 @@ module DragAndDrop.BeaconPosition exposing
     ( BeaconPosition(..)
     , decoder
     , encoder
+    , performMove
     , uniqueId
     )
 
 import Json.Encode as JE
+import List.Extra as LE
 import TsJson.Decode as TsDecode
 
 
@@ -49,6 +51,46 @@ encoder beaconPosition =
 
 
 -- UTILS
+
+
+performMove : String -> BeaconPosition -> (a -> String) -> List a -> List a
+performMove itemId beaconPosition idFunction items =
+    let
+        afterRemoving : List a
+        afterRemoving =
+            List.filter (\i -> idFunction i /= itemId) items
+
+        insertItem : a -> Result String (List a)
+        insertItem item =
+            case LE.findIndex (\i -> idFunction i == uniqueId beaconPosition) afterRemoving of
+                Nothing ->
+                    Err ""
+
+                Just beaconIndex ->
+                    case beaconPosition of
+                        After _ ->
+                            Ok
+                                (List.concat
+                                    [ List.take (beaconIndex + 1) afterRemoving
+                                    , [ item ]
+                                    , List.drop (beaconIndex + 1) afterRemoving
+                                    ]
+                                )
+
+                        Before _ ->
+                            Ok
+                                (List.concat
+                                    [ List.take beaconIndex afterRemoving
+                                    , [ item ]
+                                    , List.drop beaconIndex afterRemoving
+                                    ]
+                                )
+    in
+    items
+        |> LE.find (\i -> idFunction i == itemId)
+        |> Maybe.map insertItem
+        |> Maybe.map (Result.withDefault items)
+        |> Maybe.withDefault items
 
 
 uniqueId : BeaconPosition -> String

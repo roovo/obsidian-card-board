@@ -17,6 +17,7 @@ module SettingsState exposing
     , mapColumnBeingAdded
     , mapGlobalSettings
     , moveBoard
+    , moveColumn
     , settings
     )
 
@@ -338,6 +339,11 @@ editGlobalSettings settingsState =
 moveBoard : String -> BeaconPosition -> SettingsState -> SettingsState
 moveBoard draggedId beaconPosition settingsState =
     mapSettings (Settings.moveBoard draggedId beaconPosition) settingsState
+
+
+moveColumn : String -> BeaconPosition -> SettingsState -> SettingsState
+moveColumn draggedId beaconPosition settingsState =
+    mapSettings (Settings.moveColumn draggedId beaconPosition) settingsState
 
 
 

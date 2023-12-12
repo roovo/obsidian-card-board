@@ -1,10 +1,10 @@
 - allow custom boards to be specified
+    - drag and drop to re-order columns (on settings page)
     - add column
         - NewColumnConfig does not have the initial columnType set
             so if you add a new column without using the select to choose
             the type nothing happens
         - when finished adding, need to populate OtherTagsColumn.otherTags
-    - drag and drop to re-order columns (on settings page)
     - make the column settings look nice
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
@@ -12,6 +12,7 @@
     - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - ensure columns on a board have unique names
     - when entering and when reading from config
+- use BeaconPosition.performMove when moving boards
 - Call Column Names Default CNs on Global Setting dialog...
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..

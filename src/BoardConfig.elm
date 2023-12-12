@@ -21,6 +21,7 @@ module BoardConfig exposing
     , filterScope
     , filters
     , fromNewBoardConfig
+    , mapColumns
     , mapFilters
     , name
     , setNamesToDefault
@@ -218,6 +219,11 @@ addColumn defaultColumnNames newColumnConfig (BoardConfig c) =
 deleteColumn : Int -> BoardConfig -> BoardConfig
 deleteColumn index (BoardConfig c) =
     BoardConfig { c | columns = Columns.deleteColumn index c.columns }
+
+
+mapColumns : (Columns -> Columns) -> BoardConfig -> BoardConfig
+mapColumns fn (BoardConfig c) =
+    BoardConfig { c | columns = fn c.columns }
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig

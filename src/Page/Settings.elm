@@ -249,6 +249,14 @@ update msg model =
                         , Session.NoOp
                         )
 
+                    else if dragData.dragType == columnSettingsDragType then
+                        ( model
+                            |> updateColumnOrder (Session.dragTracker model.session) dragData
+                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
                     else
                         ( model, Cmd.none, Session.NoOp )
 
@@ -478,6 +486,24 @@ updateBoardOrder dragTracker { cursor, beacons } model =
                     { model
                         | settingsState =
                             SettingsState.moveBoard clientData.uniqueId position model.settingsState
+                    }
+
+        _ ->
+            model
+
+
+updateColumnOrder : DragTracker -> DragData -> Model -> Model
+updateColumnOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    { model
+                        | settingsState =
+                            SettingsState.moveColumn clientData.uniqueId position model.settingsState
                     }
 
         _ ->

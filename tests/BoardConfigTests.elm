@@ -26,6 +26,7 @@ suite =
         , deleteColumn
         , encodeDecode
         , fromNewBoardConfig
+        , mapColumns
         , mapFilters
         , setNamesToDefault
         , toggleShowColumnTags
@@ -310,6 +311,20 @@ fromNewBoardConfig =
                         |> BoardConfig.showFilteredTags
                         |> Expect.equal True
             ]
+        ]
+
+
+mapColumns : Test
+mapColumns =
+    describe "mapColumns"
+        [ test "updates the columns" <|
+            \() ->
+                NewBoardConfig "foo" "dateBoard"
+                    |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
+                    |> BoardConfig.mapColumns (always Columns.empty)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> Expect.equal []
         ]
 
 
