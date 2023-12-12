@@ -109,6 +109,7 @@ type Msg
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
     | ColumnDeleteClicked Int
+    | ColumnSettingsMouseDown ( String, DragTracker.ClientData )
     | DeleteBoardRequested
     | DeleteConfirmed
     | ElementDragged DragData
@@ -141,6 +142,11 @@ type Msg
 boardNameDragType : String
 boardNameDragType =
     "card-board-settings-board-name"
+
+
+columnSettingsDragType : String
+columnSettingsDragType =
+    "card-board-settings-column-settings"
 
 
 switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
@@ -219,6 +225,12 @@ update msg model =
 
         ColumnDeleteClicked index ->
             mapSettingsState (SettingsState.deleteColumnRequested index) model
+
+        ColumnSettingsMouseDown ( domId, clientData ) ->
+            ( { model | session = Session.waitForDrag clientData model.session }
+            , InteropPorts.trackDraggable columnSettingsDragType clientData.clientPos domId
+            , Session.NoOp
+            )
 
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
@@ -1205,14 +1217,35 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
 settingsColumnView : Int -> Column -> Html Msg
 settingsColumnView index column =
-    Html.div [ class "cardboard-settings-column-item" ]
+    let
+        domId : String
+        domId =
+            "card-board-setting-column-settings:" ++ String.fromInt index
+
+        name : String
+        name =
+            Column.name column
+    in
+    Html.div
+        [ class "cardboard-settings-column-item"
+        , onDown
+            (\e ->
+                ColumnSettingsMouseDown <|
+                    ( domId
+                    , { uniqueId = name
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
+                    )
+            )
+        ]
         [ FeatherIcons.toHtml [] dragIcon
         , Html.div [ class "cardboard-settings-column-item-detail" ]
             [ Html.text <| Column.typeString column ]
         , Html.div [ class "cardboard-settings-column-item-detail" ]
             [ Html.input
                 [ type_ "text"
-                , value <| Column.name column
+                , value name
                 , onInput <| EnteredColumnName index
                 ]
                 []
@@ -1525,6 +1558,19 @@ settingNameDraggedView isDragging boardConfig dragTracker =
             Html.text ""
 
 
+
+-- HELPERS
+
+
+attributeIf : Bool -> Attribute msg -> Attribute msg
+attributeIf condition attribute =
+    if condition then
+        attribute
+
+    else
+        class ""
+
+
 boardNameBeaconType : String
 boardNameBeaconType =
     "data-" ++ boardNameDragType ++ "-beacon"
@@ -1539,19 +1585,6 @@ boardNameBeacon beaconPosition =
         []
 
 
-
--- HELPERS
-
-
-attributeIf : Bool -> Attribute msg -> Attribute msg
-attributeIf condition attribute =
-    if condition then
-        attribute
-
-    else
-        class ""
-
-
 dragIcon : Icon
 dragIcon =
     [ Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "6", Svg.width "4", Svg.height "4" ] []
@@ -1564,7 +1597,3 @@ dragIcon =
         |> FeatherIcons.customIcon
         |> FeatherIcons.withSize 32
         |> FeatherIcons.withViewBox "0 0 32 32"
-
-
-
--- |> FeatherIcons.toHtml []
