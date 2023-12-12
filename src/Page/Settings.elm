@@ -1229,7 +1229,8 @@ settingsColumnView index column =
     Html.div []
         [ columnSettingsBeacon (BeaconPosition.Before name)
         , Html.div
-            [ class "cardboard-settings-column-item"
+            [ id domId
+            , class "cardboard-settings-column-item"
             , onDown
                 (\e ->
                     ColumnSettingsMouseDown <|
