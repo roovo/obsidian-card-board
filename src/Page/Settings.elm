@@ -1226,40 +1226,44 @@ settingsColumnView index column =
         name =
             Column.name column
     in
-    Html.div
-        [ class "cardboard-settings-column-item"
-        , onDown
-            (\e ->
-                ColumnSettingsMouseDown <|
-                    ( domId
-                    , { uniqueId = name
-                      , clientPos = Coords.fromFloatTuple e.clientPos
-                      , offsetPos = Coords.fromFloatTuple e.offsetPos
-                      }
-                    )
-            )
-        ]
-        [ FeatherIcons.toHtml [] dragIcon
-        , Html.div [ class "cardboard-settings-column-item-detail" ]
-            [ Html.text <| Column.typeString column ]
-        , Html.div [ class "cardboard-settings-column-item-detail" ]
-            [ Html.input
-                [ type_ "text"
-                , value name
-                , onInput <| EnteredColumnName index
-                ]
-                []
-            ]
-        , settingsColumnControlView index column
+    Html.div []
+        [ columnSettingsBeacon (BeaconPosition.Before name)
         , Html.div
-            [ class "card-board-card-action-area-button"
-            , onClick <| ColumnDeleteClicked index
+            [ class "cardboard-settings-column-item"
+            , onDown
+                (\e ->
+                    ColumnSettingsMouseDown <|
+                        ( domId
+                        , { uniqueId = name
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
+                )
             ]
-            [ FeatherIcons.trash
-                |> FeatherIcons.withSize 1
-                |> FeatherIcons.withSizeUnit "em"
-                |> FeatherIcons.toHtml []
+            [ FeatherIcons.toHtml [] dragIcon
+            , Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ Html.text <| Column.typeString column ]
+            , Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ Html.input
+                    [ type_ "text"
+                    , value name
+                    , onInput <| EnteredColumnName index
+                    ]
+                    []
+                ]
+            , settingsColumnControlView index column
+            , Html.div
+                [ class "card-board-card-action-area-button"
+                , onClick <| ColumnDeleteClicked index
+                ]
+                [ FeatherIcons.trash
+                    |> FeatherIcons.withSize 1
+                    |> FeatherIcons.withSizeUnit "em"
+                    |> FeatherIcons.toHtml []
+                ]
             ]
+        , columnSettingsBeacon (BeaconPosition.After name)
         ]
 
 
@@ -1580,6 +1584,20 @@ boardNameBeacon : BeaconPosition -> Html Msg
 boardNameBeacon beaconPosition =
     Html.span
         [ attribute boardNameBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
+
+
+columnSettingsBeaconType : String
+columnSettingsBeaconType =
+    "data-" ++ columnSettingsDragType ++ "-beacon"
+
+
+columnSettingsBeacon : BeaconPosition -> Html Msg
+columnSettingsBeacon beaconPosition =
+    Html.span
+        [ attribute columnSettingsBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
         , style "font-size" "0"
         ]
         []
