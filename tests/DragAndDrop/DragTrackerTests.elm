@@ -14,6 +14,7 @@ suite =
         , isDragging
         , moveDragable
         , stopTracking
+        , uniqueId
         , waitForDrag
         ]
 
@@ -195,6 +196,39 @@ stopTracking =
             \() ->
                 DragTracker.stopTracking
                     |> Expect.equal DragTracker.NotDragging
+        ]
+
+
+uniqueId : Test
+uniqueId =
+    describe "uniqueId"
+        [ test "is Nothing if in NotDragging state" <|
+            \() ->
+                DragTracker.init
+                    |> DragTracker.uniqueId
+                    |> Expect.equal Nothing
+        , test "returns Just the uniqueId if it was Waiting" <|
+            \() ->
+                DragTracker.waitForDrag
+                    { uniqueId = "an id"
+                    , clientPos = { x = 0, y = 1 }
+                    , offsetPos = { x = 1, y = 2 }
+                    }
+                    |> DragTracker.uniqueId
+                    |> Expect.equal (Just "an id")
+        , test "returns Just the uniqueId if Dragging" <|
+            \() ->
+                DragTracker.Dragging
+                    { uniqueId = "an id"
+                    , clientPos = { x = 0, y = 0 }
+                    , offsetPos = { x = 1, y = 2 }
+                    }
+                    { offset = { x = 0, y = 0 }
+                    , draggedNodeStartRect = { x = 0, y = 0, width = 0, height = 0 }
+                    , dragType = "aDragType"
+                    }
+                    |> DragTracker.uniqueId
+                    |> Expect.equal (Just "an id")
         ]
 
 

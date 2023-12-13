@@ -1,5 +1,6 @@
 - allow custom boards to be specified
     - drag and drop to re-order columns (on settings page)
+        - drag is preventing the column data from being updated
     - add column
         - NewColumnConfig does not have the initial columnType set
             so if you add a new column without using the select to choose

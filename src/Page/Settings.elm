@@ -827,7 +827,11 @@ settingsSurroundView currentSection configs dragTracker formContents =
 
 boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
 boardSettingsView boardConfigs multiselect dragTracker =
-    boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
+    boardSettingsForm
+        (SafeZipper.current boardConfigs)
+        (SafeZipper.currentIndex boardConfigs)
+        multiselect
+        dragTracker
         |> settingsSurroundView Boards boardConfigs dragTracker
 
 
@@ -1070,11 +1074,30 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex multiselect =
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfig boardIndex multiselect dragTracker =
     case ( boardConfig, boardIndex ) of
         ( Just config, Just _ ) ->
             let
+                draggedColumn : Maybe Column
+                draggedColumn =
+                    config
+                        |> BoardConfig.columns
+                        |> Columns.toList
+                        |> LE.find (\c -> Just (Column.name c) == draggedUniqueId)
+
+                draggedType : Maybe String
+                draggedType =
+                    DragTracker.dragType dragTracker
+
+                draggedUniqueId : Maybe String
+                draggedUniqueId =
+                    DragTracker.uniqueId dragTracker
+
+                isDragging : Bool
+                isDragging =
+                    DragTracker.isDragging dragTracker && draggedType == Just columnSettingsDragType
+
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
                     if BoardConfig.showFilteredTags config then
@@ -1202,9 +1225,14 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
-                    (BoardConfig.columns config
+                    ((BoardConfig.columns config
                         |> Columns.toList
                         |> List.indexedMap settingsColumnView
+                     )
+                        |> (\hs ->
+                                List.append hs
+                                    [ settingsColumnDraggedView isDragging draggedColumn dragTracker ]
+                           )
                     )
                 ]
             , Html.div [ class "setting-item-control" ]
@@ -1292,6 +1320,54 @@ settingsColumnView index column =
             ]
         , columnSettingsBeacon (BeaconPosition.After name)
         ]
+
+
+settingsColumnDraggedView : Bool -> Maybe Column -> DragTracker -> Html Msg
+settingsColumnDraggedView isDragging column dragTracker =
+    case ( isDragging, column, dragTracker ) of
+        ( True, Just draggedColumn, DragTracker.Dragging clientData domData ) ->
+            Html.div []
+                [ Html.div
+                    [ class "cardboard-settings-column-item"
+                    , style "position" "fixed"
+                    , style "top"
+                        (String.fromFloat
+                            (clientData.clientPos.y - domData.offset.y - clientData.offsetPos.y)
+                            ++ "px"
+                        )
+                    , style "left"
+                        (String.fromFloat
+                            (domData.draggedNodeStartRect.x - domData.offset.x)
+                            ++ "px"
+                        )
+                    , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                    , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
+                    , style "cursor" "grabbing"
+                    , style "opacity" "0.85"
+                    ]
+                    [ FeatherIcons.toHtml [] dragIcon
+                    , Html.div [ class "cardboard-settings-column-item-detail" ]
+                        [ Html.text <| Column.typeString draggedColumn ]
+                    , Html.div [ class "cardboard-settings-column-item-detail" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| Column.name draggedColumn
+                            ]
+                            []
+                        ]
+                    , settingsColumnControlView 0 draggedColumn
+                    , Html.div
+                        [ class "card-board-card-action-area-button" ]
+                        [ FeatherIcons.trash
+                            |> FeatherIcons.withSize 1
+                            |> FeatherIcons.withSizeUnit "em"
+                            |> FeatherIcons.toHtml []
+                        ]
+                    ]
+                ]
+
+        _ ->
+            Html.text ""
 
 
 settingsColumnControlView : Int -> Column -> Html Msg
