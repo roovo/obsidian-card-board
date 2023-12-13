@@ -1142,7 +1142,10 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
                         Filter.Both ->
                             "Both"
             in
-            [ Html.div [ class "setting-item" ]
+            [ Html.div
+                [ class "setting-item"
+                , attributeIf isDragging (style "cursor" "grabbing")
+                ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
                         [ Html.text "Name" ]

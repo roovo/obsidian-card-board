@@ -14,6 +14,8 @@
 - ensure columns on a board have unique names
     - when entering and when reading from config
 - use BeaconPosition.performMove when moving boards
+- don't show the dragable cursor when hovering over Global Settings in
+  settings pane
 - Call Column Names Default CNs on Global Setting dialog...
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
