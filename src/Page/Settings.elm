@@ -1092,7 +1092,11 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
 
                 draggedUniqueId : Maybe String
                 draggedUniqueId =
-                    DragTracker.uniqueId dragTracker
+                    if isDragging then
+                        DragTracker.uniqueId dragTracker
+
+                    else
+                        Nothing
 
                 isDragging : Bool
                 isDragging =
@@ -1227,7 +1231,7 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
                 [ Html.div [ class "cardboard-settings-columns-list" ]
                     ((BoardConfig.columns config
                         |> Columns.toList
-                        |> List.indexedMap settingsColumnView
+                        |> List.indexedMap (settingsColumnView draggedUniqueId)
                      )
                         |> (\hs ->
                                 List.append hs
@@ -1269,12 +1273,16 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
             [ Html.text "" ]
 
 
-settingsColumnView : Int -> Column -> Html Msg
-settingsColumnView index column =
+settingsColumnView : Maybe String -> Int -> Column -> Html Msg
+settingsColumnView uniqueId index column =
     let
         domId : String
         domId =
             "card-board-setting-column-settings:" ++ String.fromInt index
+
+        isBeingDragged : Bool
+        isBeingDragged =
+            uniqueId == Just name
 
         name : String
         name =
@@ -1285,6 +1293,7 @@ settingsColumnView index column =
         , Html.div
             [ id domId
             , class "cardboard-settings-column-item"
+            , attributeIf isBeingDragged (style "opacity" "0.0")
             , onDown
                 (\e ->
                     ColumnSettingsMouseDown <|
