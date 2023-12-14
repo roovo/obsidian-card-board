@@ -22,9 +22,11 @@ module SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import Columns exposing (Columns, OptionsForSelect)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import GlobalSettings exposing (GlobalSettings)
+import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
@@ -130,30 +132,51 @@ addBoardRequested settingsState =
 
 addColumnRequested : SettingsState -> SettingsState
 addColumnRequested settingsState =
+    let
+        columns : Columns
+        columns =
+            settingsState
+                |> settings
+                |> Settings.boardConfigs
+                |> SafeZipper.current
+                |> Maybe.map BoardConfig.columns
+                |> Maybe.withDefault Columns.empty
+
+        optionsForSelect : List OptionsForSelect
+        optionsForSelect =
+            Columns.optionsForSelect columns (NewColumnConfig "" "")
+
+        selectedOption : String
+        selectedOption =
+            optionsForSelect
+                |> LE.find .isSelected
+                |> Maybe.map .value
+                |> Maybe.withDefault "dated"
+    in
     case settingsState of
         AddingBoard _ settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         AddingColumn _ _ ->
             settingsState
 
         ClosingPlugin settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         ClosingSettings settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         DeletingBoard settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         DeletingColumn _ settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         EditingBoard settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
         EditingGlobalSettings settings_ ->
-            AddingColumn (NewColumnConfig "" "") settings_
+            AddingColumn (NewColumnConfig "" selectedOption) settings_
 
 
 cancelCurrentState : SettingsState -> SettingsState

@@ -1,8 +1,5 @@
 - allow custom boards to be specified
     - add column
-        - NewColumnConfig does not have the initial columnType set
-            so if you add a new column without using the select to choose
-            the type nothing happens
         - when finished adding, need to populate OtherTagsColumn.otherTags
     - make the column settings look nice
     - ensure that there is a max of one of any of the special columns
@@ -22,12 +19,6 @@
 - npm run generate
 - ts types for settings
     - fix main.ts.addCommands()
-
-- add ColumnsTests after I have changed the way boards are set up on the settings page
-    - as this will change what functions are in there
-    - when editing the TagBoard columns use tests to drive the desired behavior re: completed column staying at the end
-    - when toggling standard boards, their names are hardcoded and don't use those in global settings
-    - do the same with the commented out BoardConfig tests
 
 - only re-allocate cards to boards when something has changed
 

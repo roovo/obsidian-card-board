@@ -11,7 +11,7 @@ import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper
 import Settings exposing (Settings)
-import SettingsState
+import SettingsState exposing (SettingsState)
 import Test exposing (..)
 
 
@@ -90,42 +90,49 @@ addColumnRequested =
             \() ->
                 SettingsState.AddingBoard NewBoardConfig.default Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
+        , test "the NewColumnConfig defaults to the first dropdown item" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardConfig.default Settings.default
+                    |> SettingsState.addColumnRequested
+                    |> newColumnConfig
+                    |> Maybe.map .columnType
+                    |> Expect.equal (Just "completed")
         , test "does nothing if already in AddingColumn state" <|
             \() ->
                 SettingsState.AddingBoard NewBoardConfig.default Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "ClosingPlugin -> AddingColumn" <|
             \() ->
                 SettingsState.ClosingPlugin Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "ClosingSettings -> AddingColumn" <|
             \() ->
                 SettingsState.ClosingSettings Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "DeletingBoard -> AddingColumn" <|
             \() ->
                 SettingsState.DeletingBoard Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "DeletingColumn -> AddingColumn" <|
             \() ->
                 SettingsState.DeletingColumn 1 Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "EditingBoard -> AddingColumn" <|
             \() ->
                 SettingsState.EditingBoard Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         , test "EditingGlobalSettings -> AddingColumn" <|
             \() ->
                 SettingsState.EditingGlobalSettings Settings.default
                     |> SettingsState.addColumnRequested
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default)
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "completed") Settings.default)
         ]
 
 
@@ -844,6 +851,16 @@ exampleGlobalSettings =
     , defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
     }
+
+
+newColumnConfig : SettingsState -> Maybe NewColumnConfig
+newColumnConfig settingsState =
+    case settingsState of
+        SettingsState.AddingColumn ncc _ ->
+            Just ncc
+
+        _ ->
+            Nothing
 
 
 settingsFromBoardConfigs : List BoardConfig -> Settings
