@@ -1297,18 +1297,24 @@ settingsColumnView uniqueId index column =
             [ id domId
             , class "cardboard-settings-column-item"
             , attributeIf isBeingDragged (style "opacity" "0.0")
-            , onDown
-                (\e ->
-                    ColumnSettingsMouseDown <|
-                        ( domId
-                        , { uniqueId = name
-                          , clientPos = Coords.fromFloatTuple e.clientPos
-                          , offsetPos = Coords.fromFloatTuple e.offsetPos
-                          }
-                        )
-                )
             ]
-            [ FeatherIcons.toHtml [] dragIcon
+            [ Html.div
+                [ class "cardboard-dragable"
+                , onDown
+                    (\e ->
+                        ColumnSettingsMouseDown <|
+                            ( domId
+                            , { uniqueId = name
+                              , clientPos = Coords.fromFloatTuple e.clientPos
+                              , offsetPos = Coords.fromFloatTuple e.offsetPos
+                              }
+                            )
+                    )
+                ]
+                [ FeatherIcons.toHtml
+                    []
+                    dragIcon
+                ]
             , Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.text <| Column.typeString column ]
             , Html.div [ class "cardboard-settings-column-item-detail" ]

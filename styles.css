@@ -402,6 +402,10 @@ ul.card-board-column-list > li.card-board-card::before {
   width: 80%;
 }
 
+.cardboard-dragable {
+  cursor: grab;
+}
+
 .card-board-view .vertical-tab-nav-item {
   padding-right: 1.5em;
   cursor: grab;
