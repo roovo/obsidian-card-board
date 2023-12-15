@@ -6,6 +6,7 @@ module SafeZipper exposing
     , currentIndex
     , deleteCurrent
     , empty
+    , findIndex
     , first
     , fromList
     , indexedFoldl
@@ -83,6 +84,13 @@ currentIndex zipper =
 
         SafeZipper ls _ _ ->
             Just <| List.length ls
+
+
+findIndex : (a -> Bool) -> SafeZipper a -> Maybe Int
+findIndex fn zipper =
+    zipper
+        |> toList
+        |> LE.findIndex fn
 
 
 toList : SafeZipper a -> List a

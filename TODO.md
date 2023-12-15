@@ -1,14 +1,11 @@
 - allow custom boards to be specified
-    - add column
-        - when finished adding, need to populate OtherTagsColumn.otherTags
-    - make the column settings look nice
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
       - when reading from config
+    - ensure columns on a board have unique names
+        - when entering and when reading from config
+    - make the column settings look nice
     - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
-- ensure columns on a board have unique names
-    - when entering and when reading from config
-- use BeaconPosition.performMove when moving boards
 - don't show the dragable cursor when hovering over Global Settings in
   settings pane
 - Call Column Names Default CNs on Global Setting dialog...
@@ -21,6 +18,10 @@
     - fix main.ts.addCommands()
 
 - only re-allocate cards to boards when something has changed
+
+- bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
+  as expected!  However, if I also have an other tags column, this card appears here too
+  - not expected
 
 - why isn't grab cursor working over "draggables"?
 - tidy typescript

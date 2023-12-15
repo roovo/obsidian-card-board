@@ -15,6 +15,7 @@ suite =
         , currentIndex
         , deleteCurrent
         , empty
+        , findIndex
         , first
         , fromList
         , indexedMapSelectedAndRest
@@ -201,6 +202,35 @@ empty =
                 SafeZipper.empty
                     |> SafeZipper.toList
                     |> Expect.equal []
+        ]
+
+
+findIndex : Test
+findIndex =
+    describe "findIndex"
+        [ test "returns Nothing for an empty zipper" <|
+            \() ->
+                SafeZipper.empty
+                    |> SafeZipper.findIndex (always True)
+                    |> Expect.equal Nothing
+        , test "returns Nothing for a single item zipper where the first item is not found" <|
+            \() ->
+                [ "one" ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.findIndex (always False)
+                    |> Expect.equal Nothing
+        , test "returns Just 0 for a single item zipper where the first item is found" <|
+            \() ->
+                [ "one" ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.findIndex (always True)
+                    |> Expect.equal (Just 0)
+        , test "returns Just the index for a multiple item zipper where there is a match" <|
+            \() ->
+                [ "one", "two", "three", "four", "five" ]
+                    |> SafeZipper.fromList
+                    |> SafeZipper.findIndex (\s -> String.length s == 4)
+                    |> Expect.equal (Just 3)
         ]
 
 
