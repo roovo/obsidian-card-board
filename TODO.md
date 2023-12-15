@@ -1,21 +1,18 @@
 - allow custom boards to be specified
+    - ensure columns on a board have unique names
+        - when entering and when reading from config
     - ensure that there is a max of one of any of the special columns
       (completed, undated, untagged, undated)
       - when reading from config
-    - ensure columns on a board have unique names
-        - when entering and when reading from config
     - make the column settings look nice
     - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
 - don't show the dragable cursor when hovering over Global Settings in
   settings pane
-- Call Column Names Default CNs on Global Setting dialog...
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
 - Baords.cards test - is this where I should test how cards are distributed at a high level?
 
-- npm run generate
-- ts types for settings
-    - fix main.ts.addCommands()
+- fix main.ts.addCommands()
 
 - only re-allocate cards to boards when something has changed
 

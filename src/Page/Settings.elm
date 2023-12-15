@@ -946,7 +946,7 @@ columNamesForm defaultColumnNames =
     [ Html.div [ class "setting-item setting-item-heading" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Column Names" ]
+                [ Html.text "Default Column Names" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Customise names used for auto-generated columns." ]
             ]
