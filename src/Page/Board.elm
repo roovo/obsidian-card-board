@@ -71,7 +71,7 @@ update msg session =
 
                 DragData.Stop ->
                     ( Session.stopTrackingDragable session
-                    , Cmd.none
+                    , InteropPorts.updateSettings <| Session.settings session
                     , Session.NoOp
                     )
 
