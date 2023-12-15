@@ -1,9 +1,5 @@
 - allow custom boards to be specified
     - make the column settings look nice
-    - what about the untagged column warning (see Page.Settings.hasUntaggedWarning)
-- check behaviour of NamedTag column with no tag
-- don't show the dragable cursor when hovering over Global Settings in
-  settings pane
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
 - Baords.cards test - is this where I should test how cards are distributed at a high level?

@@ -1301,7 +1301,7 @@ settingsColumnView uniqueId index column =
             , attributeIf isBeingDragged (style "opacity" "0.0")
             ]
             [ Html.div
-                [ class "cardboard-dragable"
+                [ class "card-board-dragable"
                 , onDown
                     (\e ->
                         ColumnSettingsMouseDown <|
@@ -1602,7 +1602,7 @@ settingNameView index boardConfig =
         [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
-            , class "vertical-tab-nav-item"
+            , class "vertical-tab-nav-item card-board-dragable"
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
@@ -1635,7 +1635,7 @@ settingNameSelectedView isDragging index boardConfig =
         [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
-            , class "vertical-tab-nav-item is-active"
+            , class "vertical-tab-nav-item card-board-dragable is-active"
             , attributeIf isDragging (style "opacity" "0.0")
             , onClick <| BoardNameClicked index
             , onDown
