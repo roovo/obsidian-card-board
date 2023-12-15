@@ -72,12 +72,18 @@ cleanupNames settings =
             settings
                 |> replaceMissingBoardNames
                 |> enforceUniqueBoardNames
+                |> cleanupColumnNames (defaultColumnNames settings)
                 |> boardConfigs
                 |> SafeZipper.atIndex index
                 |> (\cs -> { settings | boardConfigs = cs })
 
         Nothing ->
             settings
+
+
+defaultColumnNames : Settings -> DefaultColumnNames
+defaultColumnNames =
+    .defaultColumnNames << globalSettings
 
 
 currentVersion : Semver.Version
@@ -100,22 +106,22 @@ hasAnyBordsConfigured settings =
 
 
 addBoard : DefaultColumnNames -> NewBoardConfig -> Settings -> Settings
-addBoard defaultColumnNames configToAdd settings =
+addBoard defaultColumnNames_ configToAdd settings =
     { settings
         | boardConfigs =
             SafeZipper.last <|
                 SafeZipper.add
-                    (BoardConfig.fromNewBoardConfig defaultColumnNames configToAdd)
+                    (BoardConfig.fromNewBoardConfig defaultColumnNames_ configToAdd)
                     settings.boardConfigs
     }
 
 
 addColumn : DefaultColumnNames -> NewColumnConfig -> Settings -> Settings
-addColumn defaultColumnNames configToAdd settings =
+addColumn defaultColumnNames_ configToAdd settings =
     { settings
         | boardConfigs =
             SafeZipper.mapSelectedAndRest
-                (BoardConfig.addColumn defaultColumnNames configToAdd)
+                (BoardConfig.addColumn defaultColumnNames_ configToAdd)
                 identity
                 settings.boardConfigs
     }
@@ -144,74 +150,6 @@ mapGlobalSettings fn settings =
 
 moveBoard : String -> BeaconPosition -> Settings -> Settings
 moveBoard draggedId beaconPosition settings =
-    -- if BeaconPosition.uniqueId beaconPosition == draggedId then
-    --     let
-    --         boardList : List BoardConfig
-    --         boardList =
-    --             boardConfigs settings
-    --                 |> SafeZipper.toList
-    --     in
-    --     case LE.findIndex (\c -> BoardConfig.name c == BeaconPosition.uniqueId beaconPosition) boardList of
-    --         Nothing ->
-    --             settings
-    --         Just boardIndex ->
-    --             { settings
-    --                 | boardConfigs =
-    --                     SafeZipper.fromList boardList
-    --                         |> SafeZipper.atIndex boardIndex
-    --             }
-    -- else
-    --     let
-    --         boardList : List BoardConfig
-    --         boardList =
-    --             boardConfigs settings
-    --                 |> SafeZipper.toList
-    --         found : Maybe BoardConfig
-    --         found =
-    --             List.filter (\c -> BoardConfig.name c == draggedId) boardList
-    --                 |> List.head
-    --         afterRemoving : List BoardConfig
-    --         afterRemoving =
-    --             List.filter (\c -> BoardConfig.name c /= draggedId) boardList
-    --         insertConfig : BoardConfig -> Result String ( List BoardConfig, Int )
-    --         insertConfig foundConfig =
-    --             case LE.findIndex (\c -> BoardConfig.name c == BeaconPosition.uniqueId beaconPosition) afterRemoving of
-    --                 Nothing ->
-    --                     Err ""
-    --                 Just beaconIndex ->
-    --                     case beaconPosition of
-    --                         BeaconPosition.After _ ->
-    --                             Ok
-    --                                 ( List.concat
-    --                                     [ List.take (beaconIndex + 1) afterRemoving
-    --                                     , [ foundConfig ]
-    --                                     , List.drop (beaconIndex + 1) afterRemoving
-    --                                     ]
-    --                                 , beaconIndex + 1
-    --                                 )
-    --                         BeaconPosition.Before _ ->
-    --                             Ok
-    --                                 ( List.concat
-    --                                     [ List.take beaconIndex afterRemoving
-    --                                     , [ foundConfig ]
-    --                                     , List.drop beaconIndex afterRemoving
-    --                                     ]
-    --                                 , beaconIndex
-    --                                 )
-    --     in
-    --     case found of
-    --         Nothing ->
-    --             settings
-    --         Just foundConfig ->
-    --             case insertConfig foundConfig of
-    --                 Err _ ->
-    --                     settings
-    --                 Ok ( newList, movedBoardIndex ) ->
-    --                     { settings
-    --                         | boardConfigs =
-    --                             SafeZipper.fromList newList
-    --                                 |> SafeZipper.atIndex movedBoardIndex
-    --                     }
     let
         movedBoardConfigs : SafeZipper BoardConfig
         movedBoardConfigs =
@@ -349,6 +287,20 @@ replaceMissingBoardNames settings =
                 config
     in
     { settings | boardConfigs = SafeZipper.map withNoMissingNames settings.boardConfigs }
+
+
+cleanupColumnNames : DefaultColumnNames -> Settings -> Settings
+cleanupColumnNames defaultColumnNames_ settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.map
+                (BoardConfig.cleanupColumnNames defaultColumnNames_)
+                settings.boardConfigs
+    }
+
+
+
+-- settings
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

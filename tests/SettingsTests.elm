@@ -24,6 +24,7 @@ suite =
         [ addBoard
         , addColumn
         , blankBoardNames
+        , blankColumnNames
         , cleanupNames
         , currentVersion
         , encodeDecode
@@ -120,6 +121,28 @@ blankBoardNames =
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
                     |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
+        ]
+
+
+blankColumnNames : Test
+blankColumnNames =
+    describe "handling columns with no names"
+        [ test "gives columns with no names the name Unnamed" <|
+            \() ->
+                exampleSettingsWithMissingColumnNames
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.head
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "Unnamed", "with a name", "Unnamed.2" ]
         ]
 
 
@@ -463,6 +486,20 @@ exampleSettingsWithMissingBoardNames =
             , exampleTagBoardConfig |> BoardConfig.updateName "B name"
             , exampleTagBoardConfig |> BoardConfig.updateName " "
             , exampleTagBoardConfig |> BoardConfig.updateName "   "
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithMissingColumnNames : Settings.Settings
+exampleSettingsWithMissingColumnNames =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "with a name" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "  " "namedTag")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion

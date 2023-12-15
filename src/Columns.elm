@@ -3,6 +3,7 @@ module Columns exposing
     , OptionsForSelect
     , addColumn
     , addTaskList
+    , cleanupNames
     , collapseColumn
     , completedLimit
     , decoder
@@ -268,6 +269,55 @@ addTaskList today tagsToHide columns taskList =
     taskList
         |> TaskList.foldl (addTaskItem today) columns
         |> setTagsToHide tagsToHide
+
+
+cleanupNames : DefaultColumnNames -> Columns -> Columns
+cleanupNames defaultColumnNames columns =
+    let
+        defaultNameIfBlank : Column -> Column
+        defaultNameIfBlank column =
+            if String.isEmpty (String.trim <| Column.name column) then
+                Column.setNameToDefault defaultColumnNames column
+
+            else
+                column
+
+        fillBlankName : Column -> Column
+        fillBlankName column =
+            if String.isEmpty (String.trim <| Column.name column) then
+                Column.updateName "Unnamed" column
+
+            else
+                column
+
+        uniqueNameHelper : Int -> Column -> ( List String, List Column ) -> ( List String, List Column )
+        uniqueNameHelper index column ( namesAcc, columnsAcc ) =
+            let
+                nextNamesAcc : List String
+                nextNamesAcc =
+                    String.replace " " "_" uniqueName :: namesAcc
+
+                renamedColumn : Column
+                renamedColumn =
+                    Column.updateName uniqueName column
+
+                uniqueName : String
+                uniqueName =
+                    if List.member (String.replace " " "_" <| Column.name column) namesAcc then
+                        Column.name column ++ "." ++ String.fromInt index
+
+                    else
+                        Column.name column
+            in
+            ( nextNamesAcc, List.append columnsAcc [ renamedColumn ] )
+    in
+    columns
+        |> toList
+        |> List.map defaultNameIfBlank
+        |> List.map fillBlankName
+        |> LE.indexedFoldl uniqueNameHelper ( [], [] )
+        |> Tuple.second
+        |> fromList
 
 
 collapseColumn : Int -> Bool -> Columns -> Columns

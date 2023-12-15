@@ -2,6 +2,7 @@ module BoardConfig exposing
     ( BoardConfig(..)
     , Config
     , addColumn
+    , cleanupColumnNames
     , collapseColumn
     , columns
     , decoder_v_0_10_0
@@ -214,6 +215,11 @@ decoder_v_0_11_0 =
 addColumn : DefaultColumnNames -> NewColumnConfig -> BoardConfig -> BoardConfig
 addColumn defaultColumnNames newColumnConfig (BoardConfig c) =
     BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfig c.columns }
+
+
+cleanupColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig
+cleanupColumnNames defaultColumnNames (BoardConfig c) =
+    BoardConfig { c | columns = Columns.cleanupNames defaultColumnNames c.columns }
 
 
 deleteColumn : Int -> BoardConfig -> BoardConfig

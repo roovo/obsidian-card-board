@@ -13,8 +13,59 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ fromList
+        [ cleanupNames
+        , fromList
         , optionsForSelect
+        ]
+
+
+cleanupNames : Test
+cleanupNames =
+    describe "cleanupNames"
+        [ test "does nothing if there are no Columns" <|
+            \() ->
+                Columns.empty
+                    |> Columns.cleanupNames DefaultColumnNames.default
+                    |> Columns.toList
+                    |> Expect.equal []
+        , test "replaces an empty standard named columns with their default names" <|
+            \() ->
+                [ Column.completed <| CompletedColumn.init "" 1 10
+                , Column.otherTags "" []
+                , Column.undated ""
+                , Column.untagged ""
+                ]
+                    |> Columns.fromList
+                    |> Columns.cleanupNames DefaultColumnNames.default
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Completed", "Other Tags", "Undated", "Untagged" ]
+        , test "replaces an empty date and tag columns with Unnamed" <|
+            \() ->
+                [ Column.dated <| DatedColumn.init "  " (DatedColumn.Before 1)
+                , Column.namedTag " " "aTag"
+                , Column.dated <| DatedColumn.init "" (DatedColumn.After 1)
+                , Column.namedTag "" "bTag"
+                ]
+                    |> Columns.fromList
+                    |> Columns.cleanupNames DefaultColumnNames.default
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "Unnamed", "Unnamed.1", "Unnamed.2", "Unnamed.3" ]
+        , test "appends the index to re-used named" <|
+            \() ->
+                [ Column.completed <| CompletedColumn.init "eek" 1 10
+                , Column.otherTags "" []
+                , Column.undated "eek"
+                , Column.untagged "eek"
+                , Column.namedTag "eek" "aTag"
+                , Column.dated <| DatedColumn.init "eek" (DatedColumn.After 1)
+                ]
+                    |> Columns.fromList
+                    |> Columns.cleanupNames DefaultColumnNames.default
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "eek", "Other Tags", "eek.2", "eek.3", "eek.4", "eek.5" ]
         ]
 
 

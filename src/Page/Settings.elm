@@ -433,6 +433,7 @@ handleClose model =
         newSettings : Settings
         newSettings =
             SettingsState.settings newModel.settingsState
+                |> Settings.cleanupNames
     in
     case newModel.settingsState of
         SettingsState.ClosingPlugin _ ->
