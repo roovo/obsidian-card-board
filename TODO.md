@@ -1,20 +1,15 @@
 - allow custom boards to be specified
     - make the column settings look nice
+
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
-- Baords.cards test - is this where I should test how cards are distributed at a high level?
-
-- fix main.ts.addCommands()
-
-- only re-allocate cards to boards when something has changed
 
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
 
-- why isn't grab cursor working over "draggables"?
-- tidy typescript
 - can I animate tab moving so it isn't instantaneous? (look at settings page checkboxes)
+
 - touch events - iPad ??
 
 # Cleanups

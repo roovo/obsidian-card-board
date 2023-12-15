@@ -36,17 +36,26 @@ export default class CardBoardPlugin extends Plugin {
 
 
   addCommands() {
-    // this.settings?.data?.boardConfigs?.forEach((boardConfig, index) => {
-    //   const command = this.addCommand({
-    //     id: "open-card-board-plugin-" + index,
-    //     name: "Open " + boardConfig.data.title,
-    //     callback: async () => {
-    //       this.activateView(index);
-    //     },
-    //   });
+    this.settings?.data?.boardConfigs?.forEach((boardConfig, index) => {
+      const config : any = boardConfig;
+      var boardName : string;
 
-    //   this.commandIds.push(command.id);
-    // });
+      if (config.hasOwnProperty('data')) {
+        boardName = config.data.title;
+      } else {
+        boardName = config.name;
+      }
+
+      const command = this.addCommand({
+        id: "open-card-board-plugin-" + index,
+        name: "Open " + boardName,
+        callback: async () => {
+          this.activateView(index);
+        },
+      });
+
+      this.commandIds.push(command.id);
+    });
   }
 
 
