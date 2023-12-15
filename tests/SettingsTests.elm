@@ -30,6 +30,7 @@ suite =
         , encodeDecode
         , moveBoard
         , moveColumn
+        , restrictSpecialColumns
         , uniqueBoardNames
         ]
 
@@ -151,7 +152,7 @@ cleanupNames =
     describe "cleanupNames"
         [ test "appends the index number of the board onto the end of a non-unique name" <|
             \() ->
-                exampleSettingsWithDuplicatgeBoardNames
+                exampleSettingsWithDuplicateBoardNames
                     |> Settings.cleanupNames
                     |> .boardConfigs
                     |> SafeZipper.toList
@@ -159,7 +160,7 @@ cleanupNames =
                     |> Expect.equal [ "A name", "B name", "A name.2", "A name.3" ]
         , test "maintians the current index when unique-ing" <|
             \() ->
-                exampleSettingsWithDuplicatgeBoardNames
+                exampleSettingsWithDuplicateBoardNames
                     |> Settings.switchToBoard 2
                     |> Settings.cleanupNames
                     |> .boardConfigs
@@ -173,6 +174,24 @@ cleanupNames =
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
                     |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
+        ]
+
+
+restrictSpecialColumns : Test
+restrictSpecialColumns =
+    describe "restrictSpecialColumns"
+        [ test "removes duplicate special columns" <|
+            \() ->
+                exampleSettingsWithDuplicateSpecialColumns
+                    |> Settings.restrictSpecialColumns
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.head
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "1", "4", "6", "8", "3" ]
         ]
 
 
@@ -359,7 +378,7 @@ uniqueBoardNames =
     describe "ensuring that board names are unique after decoding"
         [ test "appends the index number of the board onto the end of a non-unique name" <|
             \() ->
-                exampleSettingsWithDuplicatgeBoardNames
+                exampleSettingsWithDuplicateBoardNames
                     |> TsEncode.runExample Settings.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder Settings.decoder
@@ -464,8 +483,8 @@ exampleSettingsWithConsecutiveNames =
     }
 
 
-exampleSettingsWithDuplicatgeBoardNames : Settings.Settings
-exampleSettingsWithDuplicatgeBoardNames =
+exampleSettingsWithDuplicateBoardNames : Settings.Settings
+exampleSettingsWithDuplicateBoardNames =
     { boardConfigs =
         SafeZipper.fromList
             [ exampleTagBoardConfig |> BoardConfig.updateName "A name"
@@ -486,6 +505,26 @@ exampleSettingsWithMissingBoardNames =
             , exampleTagBoardConfig |> BoardConfig.updateName "B name"
             , exampleTagBoardConfig |> BoardConfig.updateName " "
             , exampleTagBoardConfig |> BoardConfig.updateName "   "
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithDuplicateSpecialColumns : Settings.Settings
+exampleSettingsWithDuplicateSpecialColumns =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "1" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "2" "completed")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "3" "completed")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "4" "otherTags")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "5" "otherTags")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "6" "undated")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "7" "undated")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "8" "untagged")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "9" "untagged")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion

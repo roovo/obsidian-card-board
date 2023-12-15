@@ -15,6 +15,7 @@ module Settings exposing
     , mapGlobalSettings
     , moveBoard
     , moveColumn
+    , restrictSpecialColumns
     , switchToBoard
     , updateBoardConfigs
     , updateCurrentBoard
@@ -228,6 +229,7 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
+        |> TsDecode.map restrictSpecialColumns
         |> TsDecode.map cleanupNames
 
 
@@ -299,8 +301,14 @@ cleanupColumnNames defaultColumnNames_ settings =
     }
 
 
-
--- settings
+restrictSpecialColumns : Settings -> Settings
+restrictSpecialColumns settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.map
+                BoardConfig.restrictSpecialColumns
+                settings.boardConfigs
+    }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version

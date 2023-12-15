@@ -16,6 +16,7 @@ suite =
         [ cleanupNames
         , fromList
         , optionsForSelect
+        , restrictSpecialColumns
         ]
 
 
@@ -282,4 +283,44 @@ optionsForSelect =
                           , value = "undated"
                           }
                         ]
+        ]
+
+
+restrictSpecialColumns : Test
+restrictSpecialColumns =
+    describe "restrictSpecialColumns"
+        [ test "does nothing if there are no Columns" <|
+            \() ->
+                Columns.empty
+                    |> Columns.restrictSpecialColumns
+                    |> Columns.toList
+                    |> Expect.equal []
+        , test "does nothing if there are multiple date and tag columns" <|
+            \() ->
+                [ Column.namedTag "one" "aTag"
+                , Column.namedTag "two" "bTag"
+                , Column.dated <| DatedColumn.init "three" (DatedColumn.After 1)
+                , Column.dated <| DatedColumn.init "four" (DatedColumn.After 1)
+                ]
+                    |> Columns.fromList
+                    |> Columns.restrictSpecialColumns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "one", "two", "three", "four" ]
+        , test "keeps the first if there are multiple special columns" <|
+            \() ->
+                [ Column.completed <| CompletedColumn.init "1" 1 10
+                , Column.completed <| CompletedColumn.init "2" 1 10
+                , Column.otherTags "3" []
+                , Column.otherTags "4" []
+                , Column.undated "5"
+                , Column.undated "6"
+                , Column.untagged "7"
+                , Column.untagged "8"
+                ]
+                    |> Columns.fromList
+                    |> Columns.restrictSpecialColumns
+                    |> Columns.toList
+                    |> List.map Column.name
+                    |> Expect.equal [ "1", "3", "5", "7" ]
         ]

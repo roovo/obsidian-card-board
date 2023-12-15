@@ -13,6 +13,7 @@ module Columns exposing
     , fromList
     , namedTagColumnTags
     , optionsForSelect
+    , restrictSpecialColumns
     , setNamesToDefault
     , toList
     , updateColumnName
@@ -33,6 +34,7 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import NewColumnConfig exposing (NewColumnConfig)
 import PlacementResult exposing (PlacementResult)
+import Set exposing (Set)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
@@ -333,6 +335,45 @@ deleteColumn index columns =
     columns
         |> toList
         |> LE.removeAt index
+        |> fromList
+
+
+restrictSpecialColumns : Columns -> Columns
+restrictSpecialColumns columns =
+    let
+        restrictHelper : Column -> ( Set String, List Column ) -> ( Set String, List Column )
+        restrictHelper column ( typesAcc, columnsAcc ) =
+            let
+                specialTypes : Set String
+                specialTypes =
+                    Set.fromList [ "Other Tags", "Undated", "Untagged" ]
+
+                nextTypesAcc : Set String
+                nextTypesAcc =
+                    Set.insert thisTypeString typesAcc
+
+                thisTypeString : String
+                thisTypeString =
+                    Column.typeString column
+
+                nextColumnsAcc : List Column
+                nextColumnsAcc =
+                    if
+                        Set.member thisTypeString typesAcc
+                            && Set.member thisTypeString specialTypes
+                    then
+                        columnsAcc
+
+                    else
+                        column :: columnsAcc
+            in
+            ( nextTypesAcc, nextColumnsAcc )
+    in
+    columns
+        |> toList
+        |> List.foldl restrictHelper ( Set.empty, [] )
+        |> Tuple.second
+        |> List.reverse
         |> fromList
 
 

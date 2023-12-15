@@ -25,6 +25,7 @@ module BoardConfig exposing
     , mapColumns
     , mapFilters
     , name
+    , restrictSpecialColumns
     , setNamesToDefault
     , showColumnTags
     , showFilteredTags
@@ -240,6 +241,11 @@ mapFilters fn (BoardConfig c) =
 collapseColumn : Int -> Bool -> BoardConfig -> BoardConfig
 collapseColumn columnIndex isCollapsed (BoardConfig c) =
     BoardConfig { c | columns = Columns.collapseColumn columnIndex isCollapsed c.columns }
+
+
+restrictSpecialColumns : BoardConfig -> BoardConfig
+restrictSpecialColumns (BoardConfig c) =
+    BoardConfig { c | columns = Columns.restrictSpecialColumns c.columns }
 
 
 setNamesToDefault : DefaultColumnNames -> BoardConfig -> BoardConfig
