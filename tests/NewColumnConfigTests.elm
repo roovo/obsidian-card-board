@@ -1,11 +1,7 @@
 module NewColumnConfigTests exposing (suite)
 
-import Column
-import Column.Completed as CompletedColumn
-import Columns
-import DefaultColumnNames
 import Expect
-import NewColumnConfig exposing (NewColumnConfig)
+import NewColumnConfig
 import Test exposing (..)
 
 

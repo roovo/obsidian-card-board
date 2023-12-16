@@ -3,7 +3,7 @@ module ColumnsTests exposing (suite)
 import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn
-import Columns
+import Columns exposing (Columns)
 import DefaultColumnNames
 import Expect
 import NewColumnConfig exposing (NewColumnConfig)
@@ -166,6 +166,7 @@ optionsForSelect =
         , test "returns all options except Completed if there is a completed column" <|
             \() ->
                 let
+                    columns : Columns
                     columns =
                         Columns.fromList
                             [ Column.completed <| CompletedColumn.init "" 0 10 ]
@@ -196,6 +197,7 @@ optionsForSelect =
         , test "returns all options except otherTags if there is an otherTags column" <|
             \() ->
                 let
+                    columns : Columns
                     columns =
                         Columns.fromList
                             [ Column.otherTags "" [] ]
@@ -226,6 +228,7 @@ optionsForSelect =
         , test "returns all options except undated if there is an undated column" <|
             \() ->
                 let
+                    columns : Columns
                     columns =
                         Columns.fromList
                             [ Column.undated "" ]
@@ -256,6 +259,7 @@ optionsForSelect =
         , test "returns all options except untagged if there is an untagged column" <|
             \() ->
                 let
+                    columns : Columns
                     columns =
                         Columns.fromList
                             [ Column.untagged "" ]

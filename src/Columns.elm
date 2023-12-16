@@ -203,6 +203,7 @@ optionsForSelect columns newColumnConfig =
                   }
                 ]
 
+        allColumns : List OptionsForSelect
         allColumns =
             completed
                 ++ [ { isSelected = newColumnConfig.columnType == "dated"

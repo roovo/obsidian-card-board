@@ -342,7 +342,7 @@ updateName name_ (BoardConfig c) =
 
 
 updateNamedTagTag : Int -> String -> BoardConfig -> BoardConfig
-updateNamedTagTag index newTag ((BoardConfig c) as boardConfig) =
+updateNamedTagTag index newTag (BoardConfig c) =
     BoardConfig { c | columns = Columns.updateNamedTagTag index newTag c.columns }
 
 

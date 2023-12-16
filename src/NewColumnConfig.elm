@@ -5,10 +5,6 @@ module NewColumnConfig exposing
     , updateName
     )
 
-import List.Extra as LE
-
-
-
 -- TYPES
 
 

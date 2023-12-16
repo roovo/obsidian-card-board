@@ -86,6 +86,7 @@ dated =
 fromColumnConfig : DefaultColumnNames -> NewColumnConfig -> Maybe Column
 fromColumnConfig defaultColumnNames newColumnConfig =
     let
+        newName : String
         newName =
             if String.isEmpty (String.trim newColumnConfig.name) then
                 DefaultColumnNames.nameFor newColumnConfig.columnType defaultColumnNames
@@ -99,6 +100,7 @@ fromColumnConfig defaultColumnNames newColumnConfig =
 
         "dated" ->
             let
+                todayName : String
                 todayName =
                     if String.isEmpty (String.trim newColumnConfig.name) then
                         DefaultColumnNames.nameFor "today" defaultColumnNames

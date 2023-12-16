@@ -558,7 +558,7 @@ view model =
                 , modalConfirmDelete
                 ]
 
-        SettingsState.DeletingColumn index settings ->
+        SettingsState.DeletingColumn _ settings ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalConfirmDelete
