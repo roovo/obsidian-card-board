@@ -417,6 +417,10 @@ ul.card-board-column-list > li.card-board-card::before {
   gap: var(--size-4-2);
 }
 
+.cardboard-settings-columns-button {
+  padding-bottom: 0.75em;
+}
+
 .vertical-tab-header-group-title-icon {
   justify-self: end;
   cursor: pointer;

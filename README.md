@@ -10,16 +10,17 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 - Uses regular tasks/subtasks wherever they are in your vault.
 - Shows them on kanban style boards.
-- Two board types supported:
+- Two column types supported:
   - Date based (with daily/periodic notes support).
-  - Tag based (uses `#tags` to define your boards).
+  - Tag based (uses `#tags` to define columns).
 
 ## New
+- Boards can have a mixture of date and tag based columns.
+- Columns can be re-ordered by dragging them on the settings pane.
+- More flexible date based columns based on relative dates.
 - Ability to use css snippets to
-  [set card hightlight color](#customising-card-highlight-color) based on tags
-- Board reordering
-  - drag and drop tab headers or board names in the settings dialog
-- Improved styling of tab headers (consistent with obsidian)
+  [set card hightlight color](#customising-card-highlight-color) based on tags.
+- Board reordering; drag and drop tab headers or board names in the settings dialog.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -35,13 +36,15 @@ When installed, you can launch the plugin:
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
 If you have no boards defined, you should get a dialog asking you to add a new
-board.  There are 2 types of board:
+board.  You can choose between 3 board start types:
 
 - **Date based**: looks like the main screenshot above.
 - **Tag based**: uses tags to define the columns (you need to include tags on
   your tasks or in front matter for this to work).
+- **Empty board**: has no pre-defined columns.
 
-Name and configure your boards and you are good to go.
+You can add/delete/edit/re-order columns in the settings pane, and can place
+whatever columns you wish on any board.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
@@ -121,11 +124,9 @@ The current behaviour for the different columns is:
 
 - **Completed**: has the most recently completed at the top (assuming they were
   marked as complete using the checkbox on the board).
-- **Future**, **Today**, **Tags**: these are sorted by due date and then
+- **Date** & **Tag** columns are sorted by due date and then
   alphabetically within this.
 - other columns are sorted alphabetically.
-
-I am not convinced that this is the best strategy so this may well change in a future release.
 
 ### Customising Tags
 I have to recommend using the wonderful
@@ -186,19 +187,20 @@ which you have set different colors for, the last one read from your snippets wi
 priority.  Tag based colors will be applied for tags even if they are [hidden](#hiding-tags).
 
 ## Boards
-Two board types supported:
-  - Date based (with daily/periodic notes support).
-  - Tag based (uses `#tags` to define your boards).
+Boards are simply a collection of columns, which are defined either by:
+  - Dates (with daily/periodic notes support).
+  - Tags (uses `#tags` to define the column).
 
 ### Reordering boards
-Boards can be reordered by dragging their tabs on the main view.
+Boards can be reordered by dragging their tabs on the main view or dragging their
+name in the list on the settings pane.
 
-### Date boards
+### Date columns
 You will get the best out of these if you are using the (core) Daily Notes
 or the (community) Periodic Notes plugins, as any tasks you place on a daily
 note will be assigned to the day of the note.  If you do not want this behaviour
 you can turn it off in the Global Settings pane, then tasks on daily notes
-pages will not have a due date unless specifically specified.
+pages will not have a due date unless one is specified on the line of the task.
 
 ![filters](/images/ignoreFileNameDatesSetting.png?raw=true)
 
@@ -224,27 +226,37 @@ You can turn off the due date for a specific task on a daily note page:
 - [ ] My task @due(none)
 ```
 
+
 #### Overdue tasks
-These will appear in the `Today` column above any  any tasks that are actually
-due today.
+In the default Date Board, these will appear in the `Today` column above any
+any tasks that are actually due today.
 
 The idea being that it will get steadily more annoying to see what you were planning
 to do today if you have a lot of incomplete tasks from previous days, (hopefully)
 encouraging you to do something about them; like do them or move them to a future
 date if you want to schedule them later.
 
+If you prefer to have overdue tasks in their own column you can configure this in the
+settings:
 
-#### Completed tasks
-If you choose to show completed tasks on your date board, you will only see
-completed tasks which have a due date unless the Undated column is enabled.
+![date board column settings](/images/dateBoardColumnsSettings.png?raw=true)
 
+This shows the 3 types of date based columns you can use: `Before`, `Between`, and `After`.
+Each of these use relative dates, where 0 means today, so:
 
-### Tag boards
-If you give your tasks tags, you can use these to set up a tag-board.  So if you
+- `Between 0 and 0` means today
+- `Between 1 and 1` means tomorrow
+- `Before 0` means before today (overdue)
+- `After 1` means after tomorrow
+
+### Tag columns
+If you give your tasks tags, you can use these to set up tag columns.  So if you
 have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
 you can define a board that shows tasks tagged with these in separate columns:
 
-![tag board settingx](/images/tagBoardSettings.png?raw=true)
+![tag board settings](/images/tagBoardSettings.png?raw=true)
+
+Note that you should not inclue the `#` character at the start of the tag in the settings.
 
 
 #### Sub-tasks
@@ -274,21 +286,22 @@ this will hide all the tags used in the settings wherever cards are on the board
 Only tags that exactly match those used in the settings will be hidden.
 
 #### Completed tasks
-When a task is shown in a column due to tags on sub-tasks it will only show in that
-column if those subtasks are incomplete.  So the following
-task is shown only in the Barney column as the Wilma sub-task is complete:
+If you choose to show completed tasks on your board, you will only see
+completed tasks that would have appeared in one of the other columns had it not been
+completed, so it only contains tasks that *belong* on the board.
+
+If you have columns based on tags and a task is shown in a column due to tags on
+sub-tasks it will only show in that column if those subtasks are incomplete.
+So the following task is shown only in the Barney column as the Wilma sub-task
+is complete:
 
 ![wilma_barney](/images/wilma_barney.png?raw=true)
 
-This does mean that a card can appear in the completed column of a tag board even if
+This does mean that a card can appear in the completed column even if
 the top level task is not complete, e.g for the above example if the barney task is
 marked as complete the card will move to the Completed column:
 
 ![wilma_barney_completed](/images/wilma_barney_completed.png?raw=true)
-
-The board config defines which tasks will appear on a Tag board, and this is true for
-the completed column too; only tasks which would appear on the board if all tasks and
-subtasks were marked as incomplete can ever be in the Completed column.
 
 
 ### Board Filters
@@ -313,8 +326,9 @@ above the board to the left of the tabs.  You can:
 
 - Create new boards (using the + icon next to _BOARDS_).
 - Configure your boards.
-- Customize the names of the built-in columns.
-- Delete any boards you no longer need.
+- Customize the default names of the built-in columns.
+- Add/remove/edit/reorder columns.
+- Delete boards.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
 - Choose to not use the date of daily notes files as the due date for tasks.
 

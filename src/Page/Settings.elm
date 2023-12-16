@@ -600,7 +600,7 @@ modalAddBoard newBoardConfig =
                     ]
                 , Html.div [ class "form-item" ]
                     [ Html.div [ class "form-item-name" ]
-                        [ Html.text "Type" ]
+                        [ Html.text "Start type" ]
                     , Html.div [ class "form-item-control" ]
                         [ Html.select
                             [ class "dropdown"
@@ -1244,10 +1244,12 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
                            )
                     )
                 ]
-            , Html.div [ class "setting-item-control" ]
-                [ Html.button
-                    [ onClick AddColumnClicked ]
-                    [ Html.text "Add Column" ]
+            , Html.div [ class "cardboard-settings-columns-button" ]
+                [ Html.div [ class "setting-item-control" ]
+                    [ Html.button
+                        [ onClick AddColumnClicked ]
+                        [ Html.text "Add Column" ]
+                    ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
