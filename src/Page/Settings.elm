@@ -1301,7 +1301,7 @@ settingsColumnView uniqueId index column =
             , attributeIf isBeingDragged (style "opacity" "0.0")
             ]
             [ Html.div
-                [ class "card-board-dragable"
+                [ class "cardboard-settings-column-item-detail card-board-dragable"
                 , onDown
                     (\e ->
                         ColumnSettingsMouseDown <|
@@ -1317,7 +1317,7 @@ settingsColumnView uniqueId index column =
                     []
                     dragIcon
                 ]
-            , Html.div [ class "cardboard-settings-column-item-detail" ]
+            , Html.div [ class "cardboard-settings-column-item-type" ]
                 [ Html.text <| Column.typeString column ]
             , Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.input
@@ -1329,10 +1329,10 @@ settingsColumnView uniqueId index column =
                 ]
             , settingsColumnControlView index column
             , Html.div
-                [ class "card-board-card-action-area-button"
+                [ class "cardboard-settings-column-item-button"
                 , onClick <| ColumnDeleteClicked index
                 ]
-                [ FeatherIcons.trash
+                [ FeatherIcons.xCircle
                     |> FeatherIcons.withSize 1
                     |> FeatherIcons.withSizeUnit "em"
                     |> FeatherIcons.toHtml []
@@ -1366,7 +1366,7 @@ settingsColumnDraggedView isDragging column dragTracker =
                     , style "opacity" "0.85"
                     ]
                     [ FeatherIcons.toHtml [] dragIcon
-                    , Html.div [ class "cardboard-settings-column-item-detail" ]
+                    , Html.div [ class "cardboard-settings-column-item-type" ]
                         [ Html.text <| Column.typeString draggedColumn ]
                     , Html.div [ class "cardboard-settings-column-item-detail" ]
                         [ Html.input
@@ -1377,8 +1377,8 @@ settingsColumnDraggedView isDragging column dragTracker =
                         ]
                     , settingsColumnControlView 0 draggedColumn
                     , Html.div
-                        [ class "card-board-card-action-area-button" ]
-                        [ FeatherIcons.trash
+                        [ class "cardboard-settings-column-item-button" ]
+                        [ FeatherIcons.xCircle
                             |> FeatherIcons.withSize 1
                             |> FeatherIcons.withSizeUnit "em"
                             |> FeatherIcons.toHtml []
@@ -1394,7 +1394,7 @@ settingsColumnControlView : Int -> Column -> Html Msg
 settingsColumnControlView index column =
     case column of
         Column.Completed completedColumn ->
-            Html.div [ class "cardboard-settings-column-item-detail" ]
+            Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Limit: "
                 , Html.input
                     [ type_ "text"
@@ -1406,13 +1406,13 @@ settingsColumnControlView index column =
                 ]
 
         Column.Dated datedColumn ->
-            Html.div [ class "cardboard-settings-column-item-detail" ]
-                [ rangeSelectView index (DatedColumn.range datedColumn)
-                , rangeInputsView index (DatedColumn.range datedColumn)
-                ]
+            Html.div [ class "cardboard-settings-column-item-controls" ]
+                ([ rangeSelectView index (DatedColumn.range datedColumn) ]
+                    ++ rangeInputsView index (DatedColumn.range datedColumn)
+                )
 
         Column.NamedTag namedTagColumn ->
-            Html.div [ class "cardboard-settings-column-item-detail" ]
+            Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Tag: "
                 , Html.input
                     [ type_ "text"
@@ -1423,7 +1423,7 @@ settingsColumnControlView index column =
                 ]
 
         _ ->
-            Html.div [ class "cardboard-settings-column-item-detail" ]
+            Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text "" ]
 
 
@@ -1470,45 +1470,46 @@ rangeSelectView index range =
                 ]
 
 
-rangeInputsView : Int -> RelativeDateRange -> Html Msg
+rangeInputsView : Int -> RelativeDateRange -> List (Html Msg)
 rangeInputsView index range =
     case range of
         DatedColumn.Before to ->
-            Html.input
+            [ Html.input
                 [ type_ "text"
                 , value <| String.fromInt to
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueTo index
                 ]
                 []
+            ]
 
         DatedColumn.After from ->
-            Html.input
+            [ Html.input
                 [ type_ "text"
                 , value <| String.fromInt from
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueFrom index
                 ]
                 []
+            ]
 
         DatedColumn.Between fromTo ->
-            Html.div []
-                [ Html.input
-                    [ type_ "text"
-                    , value <| String.fromInt fromTo.from
-                    , attribute "size" "3"
-                    , onInput <| EnteredDatedColumnRangeValueFrom index
-                    ]
-                    []
-                , Html.span [] [ Html.text "and" ]
-                , Html.input
-                    [ type_ "text"
-                    , value <| String.fromInt fromTo.to
-                    , attribute "size" "3"
-                    , onInput <| EnteredDatedColumnRangeValueTo index
-                    ]
-                    []
+            [ Html.input
+                [ type_ "text"
+                , value <| String.fromInt fromTo.from
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueFrom index
                 ]
+                []
+            , Html.span [] [ Html.text "and" ]
+            , Html.input
+                [ type_ "text"
+                , value <| String.fromInt fromTo.to
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueTo index
+                ]
+                []
+            ]
 
 
 taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
@@ -1736,5 +1737,5 @@ dragIcon =
     , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "22", Svg.width "4", Svg.height "4" ] []
     ]
         |> FeatherIcons.customIcon
-        |> FeatherIcons.withSize 32
+        |> FeatherIcons.withSize 22
         |> FeatherIcons.withViewBox "0 0 32 32"

@@ -1,6 +1,3 @@
-- allow custom boards to be specified
-    - make the column settings look nice
-
 - do I want to do something with input boxes for numbers as they are a bit
   odd due to the fact that they cannot be empty..
 
