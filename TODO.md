@@ -1,5 +1,18 @@
-- do I want to do something with input boxes for numbers as they are a bit
-  odd due to the fact that they cannot be empty..
+- improve input boxes for numbers as they are a bit odd due to the fact that
+  they cannot be empty..
+  - dated -> must be integers
+  - completed -> must be +ve integer
+  - tagged -> must be valid tag string
+  - perhaps try
+    https://package.elm-lang.org/packages/arowM/elm-form-decoder/latest/Form-Decoder
+    https://sakurachan.info/posts/2019/form-decoding/
+    https://arowm.github.io/elm-form-decoder/#goat-registerForm
+    https://github.com/arowM/elm-form-decoder/
+- allow tags in column definitions to optionaly start with the # character
+- delete confirm dialog (board and column)
+    - actually say what is being deleted
+    - add space between buttons
+- readme: explain each column type in turn
 
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
