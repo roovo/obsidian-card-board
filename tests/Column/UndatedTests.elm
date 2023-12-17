@@ -3,6 +3,7 @@ module Column.UndatedTests exposing (suite)
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
@@ -18,6 +19,7 @@ suite =
         [ addTaskItem
         , decoder
         , encoder
+        , formDecoder
         , init
         , setCollapse
         , setNameToDefault
@@ -130,6 +132,22 @@ encoder =
                     |> Result.map (TsEncode.runExample UndatedColumn.encoder)
                     |> Result.map .output
                     |> Expect.equal (Ok encodedString)
+        ]
+
+
+formDecoder : Test
+formDecoder =
+    describe "formDecoder"
+        [ test "decodes a valid input" <|
+            \() ->
+                { name = "foo" }
+                    |> FD.run UndatedColumn.formDecoder
+                    |> Expect.equal (Ok <| UndatedColumn.init "foo")
+        , test "errors with an empty name" <|
+            \() ->
+                { name = "" }
+                    |> FD.errors UndatedColumn.formDecoder
+                    |> Expect.equal [ UndatedColumn.NameRequired ]
         ]
 
 

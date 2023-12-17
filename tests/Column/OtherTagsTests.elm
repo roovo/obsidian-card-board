@@ -3,6 +3,7 @@ module Column.OtherTagsTests exposing (suite)
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
@@ -18,6 +19,7 @@ suite =
         [ addTaskItem
         , decoder
         , encoder
+        , formDecoder
         , init
         , otherTags
         , setCollapse
@@ -121,6 +123,22 @@ encoder =
                     |> Result.map (TsEncode.runExample OtherTagsColumn.encoder)
                     |> Result.map .output
                     |> Expect.equal (Ok encodedString)
+        ]
+
+
+formDecoder : Test
+formDecoder =
+    describe "formDecoder"
+        [ test "decodes a valid input" <|
+            \() ->
+                { name = "foo" }
+                    |> FD.run OtherTagsColumn.formDecoder
+                    |> Expect.equal (Ok <| OtherTagsColumn.init "foo" [])
+        , test "errors with an empty name" <|
+            \() ->
+                { name = "" }
+                    |> FD.errors OtherTagsColumn.formDecoder
+                    |> Expect.equal [ OtherTagsColumn.NameRequired ]
         ]
 
 

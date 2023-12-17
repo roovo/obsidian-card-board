@@ -1,9 +1,13 @@
 module Column.Dated exposing
     ( DatedColumn
+    , FormError(..)
+    , RangeTypeError(..)
+    , RangeValueError(..)
     , RelativeDateRange(..)
     , addTaskItem
     , decoder
     , encoder
+    , formDecoder
     , init
     , isCollapsed
     , name
@@ -23,6 +27,7 @@ module Column.Dated exposing
 import Date exposing (Date)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
+import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -46,10 +51,48 @@ type alias Config =
     }
 
 
+type alias Form =
+    { from : String
+    , name : String
+    , rangeType : String
+    , to : String
+    }
+
+
+type alias Range =
+    { from : Int
+    , to : Int
+    }
+
+
 type RelativeDateRange
     = After Int
     | Before Int
-    | Between { from : Int, to : Int }
+    | Between Range
+
+
+type FormError
+    = NameRequired
+    | RangeTypeRequired
+    | RangeFromValueRequired
+    | RangeToValueRequired
+    | RangeTypeError RangeTypeError
+    | RangeValueFromError RangeValueError
+    | RangeValueToError RangeValueError
+
+
+type RangeTypeError
+    = Invalid
+
+
+type RangeValueError
+    = InvalidInt
+
+
+type RangeType
+    = AfterType
+    | BeforeType
+    | BetweenType
 
 
 
@@ -78,6 +121,13 @@ decoder =
 encoder : TsEncode.Encoder DatedColumn
 encoder =
     TsEncode.map config configEncoder
+
+
+formDecoder : FD.Decoder Form FormError DatedColumn
+formDecoder =
+    FD.map2 init
+        formDecoderName
+        formRangeDecoder
 
 
 
@@ -260,6 +310,91 @@ configEncoder =
         ]
 
 
+formDecoderName : FD.Decoder Form FormError String
+formDecoderName =
+    FD.identity
+        |> required NameRequired
+        |> FD.lift .name
+
+
+formRangeDecoder : FD.Decoder Form FormError RelativeDateRange
+formRangeDecoder =
+    formRangeTypeDecoder
+        |> FD.mapError RangeTypeError
+        |> required RangeTypeRequired
+        |> FD.lift .rangeType
+        |> FD.andThen formRangeDecoder_
+
+
+formRangeDecoder_ : RangeType -> FD.Decoder Form FormError RelativeDateRange
+formRangeDecoder_ rangeType =
+    case rangeType of
+        AfterType ->
+            FD.map After formRangeAfterValueDecoder
+
+        BeforeType ->
+            FD.map Before formRangeBeforeValueDecoder
+
+        BetweenType ->
+            FD.map Between formRangeBetweenValueDecoder
+
+
+formRangeTypeDecoder : FD.Decoder String RangeTypeError RangeType
+formRangeTypeDecoder =
+    FD.custom <|
+        \str ->
+            case str of
+                "After" ->
+                    Ok AfterType
+
+                "Before" ->
+                    Ok BeforeType
+
+                "Between" ->
+                    Ok BetweenType
+
+                _ ->
+                    Err [ Invalid ]
+
+
+formRangeAfterValueDecoder : FD.Decoder Form FormError Int
+formRangeAfterValueDecoder =
+    FD.int InvalidInt
+        |> FD.mapError RangeValueToError
+        |> required RangeToValueRequired
+        |> FD.lift .to
+
+
+formRangeBeforeValueDecoder : FD.Decoder Form FormError Int
+formRangeBeforeValueDecoder =
+    FD.int InvalidInt
+        |> FD.mapError RangeValueFromError
+        |> required RangeFromValueRequired
+        |> FD.lift .from
+
+
+formRangeBetweenValueDecoder : FD.Decoder Form FormError Range
+formRangeBetweenValueDecoder =
+    FD.map2 Range
+        formRangeBeforeValueDecoder
+        formRangeAfterValueDecoder
+
+
+rangeDecoder : TsDecode.Decoder { from : Int, to : Int }
+rangeDecoder =
+    TsDecode.succeed (\f -> \t -> { from = f, to = t })
+        |> TsDecode.required "from" TsDecode.int
+        |> TsDecode.required "to" TsDecode.int
+
+
+rangeEncoder : TsEncode.Encoder { from : Int, to : Int }
+rangeEncoder =
+    TsEncode.object
+        [ TsEncode.required "from" .from TsEncode.int
+        , TsEncode.required "to" .to TsEncode.int
+        ]
+
+
 relativeDateRangeDecoder : TsDecode.Decoder RelativeDateRange
 relativeDateRangeDecoder =
     TsDecode.oneOf
@@ -289,16 +424,13 @@ relativeDateRangeEncoder =
         |> TsEncode.buildUnion
 
 
-rangeDecoder : TsDecode.Decoder { from : Int, to : Int }
-rangeDecoder =
-    TsDecode.succeed (\f -> \t -> { from = f, to = t })
-        |> TsDecode.required "from" TsDecode.int
-        |> TsDecode.required "to" TsDecode.int
+required : err -> FD.Decoder String err a -> FD.Decoder String err a
+required error d =
+    FD.with <|
+        \a ->
+            case a of
+                "" ->
+                    FD.fail error
 
-
-rangeEncoder : TsEncode.Encoder { from : Int, to : Int }
-rangeEncoder =
-    TsEncode.object
-        [ TsEncode.required "from" .from TsEncode.int
-        , TsEncode.required "to" .to TsEncode.int
-        ]
+                _ ->
+                    FD.lift identity d

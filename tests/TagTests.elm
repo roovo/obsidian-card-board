@@ -12,10 +12,37 @@ import Unicode
 suite : Test
 suite =
     concat
-        [ equals
+        [ containsInvalidCharacters
+        , equals
         , parser
         , startsWith
         , toString
+        ]
+
+
+containsInvalidCharacters : Test
+containsInvalidCharacters =
+    describe "containsInvalidCharacters"
+        [ test "returns False for 'foo-bar'" <|
+            \() ->
+                "foo-bar"
+                    |> Tag.containsInvalidCharacters
+                    |> Expect.equal False
+        , fuzz validTagContentFuzzer "returns True for valid tags" <|
+            \fuzzedTag ->
+                fuzzedTag
+                    |> Tag.containsInvalidCharacters
+                    |> Expect.equal False
+        , fuzz invalidSymbolFuzzer "returns True if there is an invalid character" <|
+            \fuzzedSymbol ->
+                ("as" ++ fuzzedSymbol ++ "r")
+                    |> Tag.containsInvalidCharacters
+                    |> Expect.equal True
+        , fuzz UnicodeHelpers.whitespaceFuzzer "returns True if there is any whitespace" <|
+            \fuzzedWhitespace ->
+                ("as" ++ String.fromChar fuzzedWhitespace ++ "r")
+                    |> Tag.containsInvalidCharacters
+                    |> Expect.equal True
         ]
 
 

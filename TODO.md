@@ -1,5 +1,6 @@
 - improve input boxes for numbers as they are a bit odd due to the fact that
   they cannot be empty..
+  - should I trim strings before checking them?
   - dated -> must be integers
   - completed -> must be +ve integer
   - tagged -> must be valid tag string

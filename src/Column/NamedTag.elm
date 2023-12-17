@@ -1,9 +1,11 @@
 module Column.NamedTag exposing
-    ( NamedTagColumn
+    ( FormError(..)
+    , NamedTagColumn
     , addTaskItem
     , asInputString
     , decoder
     , encoder
+    , formDecoder
     , init
     , isCollapsed
     , name
@@ -17,7 +19,9 @@ module Column.NamedTag exposing
     , updateTag
     )
 
+import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
+import Tag
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
@@ -38,6 +42,18 @@ type alias Config =
     , name : String
     , tag : String
     }
+
+
+type alias Form =
+    { name : String
+    , tag : String
+    }
+
+
+type FormError
+    = NameRequired
+    | TagRequired
+    | InvalidTagCharacters
 
 
 
@@ -66,6 +82,13 @@ decoder =
 encoder : TsEncode.Encoder NamedTagColumn
 encoder =
     TsEncode.map config configEncoder
+
+
+formDecoder : FD.Decoder Form FormError NamedTagColumn
+formDecoder =
+    FD.map2 init
+        formNameDecoder
+        formTagDecoder
 
 
 
@@ -168,6 +191,44 @@ configEncoder =
         , TsEncode.required "name" .name TsEncode.string
         , TsEncode.required "tag" .tag TsEncode.string
         ]
+
+
+formTagDecoder : FD.Decoder Form FormError String
+formTagDecoder =
+    FD.identity
+        |> required TagRequired
+        |> isValidTag InvalidTagCharacters
+        |> FD.lift .tag
+
+
+isValidTag : err -> FD.Decoder String err a -> FD.Decoder String err a
+isValidTag error d =
+    FD.with <|
+        \a ->
+            if Tag.containsInvalidCharacters a then
+                FD.fail error
+
+            else
+                d
+
+
+formNameDecoder : FD.Decoder Form FormError String
+formNameDecoder =
+    FD.identity
+        |> required NameRequired
+        |> FD.lift .name
+
+
+required : err -> FD.Decoder String err a -> FD.Decoder String err a
+required error d =
+    FD.with <|
+        \a ->
+            case a of
+                "" ->
+                    FD.fail error
+
+                _ ->
+                    FD.lift identity d
 
 
 isCompleted : String -> TaskItem -> Bool

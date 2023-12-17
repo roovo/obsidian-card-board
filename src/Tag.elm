@@ -1,5 +1,6 @@
 module Tag exposing
     ( Tag
+    , containsInvalidCharacters
     , equals
     , parser
     , startsWith
@@ -35,6 +36,11 @@ parser =
 
 
 -- UTILITIES
+
+
+containsInvalidCharacters : String -> Bool
+containsInvalidCharacters tagString =
+    not <| String.all isValidTagCharacter tagString
 
 
 equals : String -> Tag -> Bool

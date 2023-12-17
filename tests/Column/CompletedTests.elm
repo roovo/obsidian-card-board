@@ -3,6 +3,7 @@ module Column.CompletedTests exposing (suite)
 import Column.Completed as CompletedColumn
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
@@ -18,6 +19,7 @@ suite =
         [ addTaskItem
         , decoder
         , encoder
+        , formDecoder
         , init
         , setCollapse
         , setIndex
@@ -159,6 +161,47 @@ encoder =
                     |> Result.map (TsEncode.runExample CompletedColumn.encoder)
                     |> Result.map .output
                     |> Expect.equal (Ok encodedString)
+        ]
+
+
+formDecoder : Test
+formDecoder =
+    describe "formDecoder"
+        [ test "decodes a valid input" <|
+            \() ->
+                { name = "foo", limit = "7" }
+                    |> FD.run CompletedColumn.formDecoder
+                    |> Expect.equal (Ok <| CompletedColumn.init "foo" 0 7)
+        , test "has no errors if the input is valid" <|
+            \() ->
+                { name = "foo", limit = "0" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal []
+        , test "errors with a 'x' as the limit" <|
+            \() ->
+                { name = "foo", limit = "x" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal [ CompletedColumn.LimitError CompletedColumn.InvalidInt ]
+        , test "errors with a decimal limit" <|
+            \() ->
+                { name = "foo", limit = "1.1" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal [ CompletedColumn.LimitError CompletedColumn.InvalidInt ]
+        , test "errors with a negative limit" <|
+            \() ->
+                { name = "foo", limit = "-1" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal [ CompletedColumn.LimitError CompletedColumn.Negative ]
+        , test "errors with an empty limit" <|
+            \() ->
+                { name = "foo", limit = "" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal [ CompletedColumn.LimitRequired ]
+        , test "errors with an empty name" <|
+            \() ->
+                { name = "", limit = "1" }
+                    |> FD.errors CompletedColumn.formDecoder
+                    |> Expect.equal [ CompletedColumn.NameRequired ]
         ]
 
 

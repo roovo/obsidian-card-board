@@ -1,8 +1,10 @@
 module Column.Undated exposing
-    ( UndatedColumn
+    ( FormError(..)
+    , UndatedColumn
     , addTaskItem
     , decoder
     , encoder
+    , formDecoder
     , init
     , isCollapsed
     , name
@@ -16,6 +18,7 @@ module Column.Undated exposing
     )
 
 import DefaultColumnNames exposing (DefaultColumnNames)
+import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -36,6 +39,15 @@ type alias Config =
     { collapsed : Bool
     , name : String
     }
+
+
+type alias Form =
+    { name : String
+    }
+
+
+type FormError
+    = NameRequired
 
 
 
@@ -63,6 +75,11 @@ decoder =
 encoder : TsEncode.Encoder UndatedColumn
 encoder =
     TsEncode.map config configEncoder
+
+
+formDecoder : FD.Decoder Form FormError UndatedColumn
+formDecoder =
+    FD.map init formNameDecoder
 
 
 
@@ -148,3 +165,22 @@ configEncoder =
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]
+
+
+formNameDecoder : FD.Decoder Form FormError String
+formNameDecoder =
+    FD.identity
+        |> required NameRequired
+        |> FD.lift .name
+
+
+required : err -> FD.Decoder String err a -> FD.Decoder String err a
+required error d =
+    FD.with <|
+        \a ->
+            case a of
+                "" ->
+                    FD.fail error
+
+                _ ->
+                    FD.lift identity d

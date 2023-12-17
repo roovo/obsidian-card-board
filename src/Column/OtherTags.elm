@@ -1,8 +1,10 @@
 module Column.OtherTags exposing
-    ( OtherTagsColumn
+    ( FormError(..)
+    , OtherTagsColumn
     , addTaskItem
     , decoder
     , encoder
+    , formDecoder
     , init
     , isCollapsed
     , name
@@ -18,6 +20,7 @@ module Column.OtherTags exposing
     )
 
 import DefaultColumnNames exposing (DefaultColumnNames)
+import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -38,6 +41,15 @@ type alias Config =
     { collapsed : Bool
     , name : String
     }
+
+
+type alias Form =
+    { name : String
+    }
+
+
+type FormError
+    = NameRequired
 
 
 
@@ -65,6 +77,13 @@ decoder =
 encoder : TsEncode.Encoder OtherTagsColumn
 encoder =
     TsEncode.map config configEncoder
+
+
+formDecoder : FD.Decoder Form FormError OtherTagsColumn
+formDecoder =
+    FD.map2 init
+        formNameDecoder
+        (FD.always [])
 
 
 
@@ -104,16 +123,16 @@ tagsToHide (OtherTagsColumn _ _ tth _) =
 
 
 addTaskItem : TaskItem -> OtherTagsColumn -> ( OtherTagsColumn, PlacementResult )
-addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as namedTagColumn) =
+addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as otherTagsColumn) =
     if belongs ots taskItem then
         if isCompleted ots taskItem then
-            ( namedTagColumn, PlacementResult.CompletedInThisColumn )
+            ( otherTagsColumn, PlacementResult.CompletedInThisColumn )
 
         else
             ( OtherTagsColumn c ots tth (TaskList.add taskItem tl), PlacementResult.Placed )
 
     else
-        ( namedTagColumn, PlacementResult.DoesNotBelong )
+        ( otherTagsColumn, PlacementResult.DoesNotBelong )
 
 
 setCollapse : Bool -> OtherTagsColumn -> OtherTagsColumn
@@ -166,6 +185,25 @@ configEncoder =
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]
+
+
+formNameDecoder : FD.Decoder Form FormError String
+formNameDecoder =
+    FD.identity
+        |> required NameRequired
+        |> FD.lift .name
+
+
+required : err -> FD.Decoder String err a -> FD.Decoder String err a
+required error d =
+    FD.with <|
+        \a ->
+            case a of
+                "" ->
+                    FD.fail error
+
+                _ ->
+                    FD.lift identity d
 
 
 isCompleted : List String -> TaskItem -> Bool

@@ -3,6 +3,7 @@ module Column.UntaggedTests exposing (suite)
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
@@ -18,6 +19,7 @@ suite =
         [ addTaskItem
         , decoder
         , encoder
+        , formDecoder
         , init
         , setCollapse
         , setNameToDefault
@@ -147,6 +149,22 @@ encoder =
                     |> Result.map (TsEncode.runExample UntaggedColumn.encoder)
                     |> Result.map .output
                     |> Expect.equal (Ok encodedString)
+        ]
+
+
+formDecoder : Test
+formDecoder =
+    describe "formDecoder"
+        [ test "decodes a valid input" <|
+            \() ->
+                { name = "foo" }
+                    |> FD.run UntaggedColumn.formDecoder
+                    |> Expect.equal (Ok <| UntaggedColumn.init "foo")
+        , test "errors with an empty name" <|
+            \() ->
+                { name = "" }
+                    |> FD.errors UntaggedColumn.formDecoder
+                    |> Expect.equal [ UntaggedColumn.NameRequired ]
         ]
 
 
