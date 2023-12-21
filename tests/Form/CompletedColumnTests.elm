@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ decoder
+        , init
         ]
 
 
@@ -52,4 +53,22 @@ decoder =
                 { name = "", limit = "1" }
                     |> FD.errors CompletedColumnForm.decoder
                     |> Expect.equal [ CompletedColumnForm.NameRequired ]
+        ]
+
+
+init : Test
+init =
+    describe "init"
+        [ test "initialises the name" <|
+            \() ->
+                CompletedColumn.init "foo" 0 7
+                    |> CompletedColumnForm.init
+                    |> .name
+                    |> Expect.equal "foo"
+        , test "initialises the limit" <|
+            \() ->
+                CompletedColumn.init "foo" 0 7
+                    |> CompletedColumnForm.init
+                    |> .limit
+                    |> Expect.equal "7"
         ]

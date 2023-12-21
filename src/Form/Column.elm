@@ -2,6 +2,7 @@ module Form.Column exposing
     ( Error(..)
     , Form(..)
     , decoder
+    , init
     )
 
 import Column exposing (Column)
@@ -34,6 +35,32 @@ type Error
     | OtherTagsColumnError OtherTagsColumnForm.Error
     | UndatedColumnError UndatedColumnForm.Error
     | UntaggedColumnError UntaggedColumnForm.Error
+
+
+
+-- CONSTRUCTION
+
+
+init : Column -> Form
+init column =
+    case column of
+        Column.Completed completedColumn ->
+            CompletedColumnForm <| CompletedColumnForm.init completedColumn
+
+        Column.Dated datedColumn ->
+            DatedColumnForm <| DatedColumnForm.init datedColumn
+
+        Column.NamedTag namedTagColumn ->
+            NamedTagColumnForm <| NamedTagColumnForm.init namedTagColumn
+
+        Column.OtherTags otherTagsColumn ->
+            OtherTagsColumnForm <| OtherTagsColumnForm.init otherTagsColumn
+
+        Column.Undated undatedColumn ->
+            UndatedColumnForm <| UndatedColumnForm.init undatedColumn
+
+        Column.Untagged untaggedColumn ->
+            UntaggedColumnForm <| UntaggedColumnForm.init untaggedColumn
 
 
 

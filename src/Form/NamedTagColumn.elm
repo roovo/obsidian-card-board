@@ -2,6 +2,7 @@ module Form.NamedTagColumn exposing
     ( Error(..)
     , Form
     , decoder
+    , init
     )
 
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
@@ -24,6 +25,17 @@ type Error
     = NameRequired
     | TagRequired
     | InvalidTagCharacters
+
+
+
+-- CONSTRUCTION
+
+
+init : NamedTagColumn -> Form
+init namedTagColumn =
+    { name = NamedTagColumn.name namedTagColumn
+    , tag = NamedTagColumn.tag namedTagColumn
+    }
 
 
 

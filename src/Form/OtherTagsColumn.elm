@@ -2,6 +2,7 @@ module Form.OtherTagsColumn exposing
     ( Error(..)
     , Form
     , decoder
+    , init
     )
 
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
@@ -20,6 +21,15 @@ type alias Form =
 
 type Error
     = NameRequired
+
+
+
+-- CONSTRUCTION
+
+
+init : OtherTagsColumn -> Form
+init otherTagsColumn =
+    { name = OtherTagsColumn.name otherTagsColumn }
 
 
 

@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ decoder
+        , init
         ]
 
 
@@ -149,5 +150,77 @@ decoder =
                     { name = "foo", rangeType = "xxxx", from = "0", to = "1" }
                         |> FD.errors DatedColumnForm.decoder
                         |> Expect.equal [ DatedColumnForm.RangeTypeError DatedColumnForm.Invalid ]
+            ]
+        ]
+
+
+init : Test
+init =
+    describe "init"
+        [ describe "After"
+            [ test "intialises the name" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.After 0)
+                        |> DatedColumnForm.init
+                        |> .name
+                        |> Expect.equal "foo"
+            , test "intialises the rangeType" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.After 0)
+                        |> DatedColumnForm.init
+                        |> .rangeType
+                        |> Expect.equal "After"
+            , test "intialises the from" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.After 3)
+                        |> DatedColumnForm.init
+                        |> .from
+                        |> Expect.equal "3"
+            ]
+        , describe "Before"
+            [ test "intialises the name" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Before 0)
+                        |> DatedColumnForm.init
+                        |> .name
+                        |> Expect.equal "foo"
+            , test "intialises the rangeType" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Before 0)
+                        |> DatedColumnForm.init
+                        |> .rangeType
+                        |> Expect.equal "Before"
+            , test "intialises the to" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Before 3)
+                        |> DatedColumnForm.init
+                        |> .to
+                        |> Expect.equal "3"
+            ]
+        , describe "Between"
+            [ test "intialises the name" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Between { from = 2, to = 4 })
+                        |> DatedColumnForm.init
+                        |> .name
+                        |> Expect.equal "foo"
+            , test "intialises the rangeType" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Between { from = 2, to = 4 })
+                        |> DatedColumnForm.init
+                        |> .rangeType
+                        |> Expect.equal "Between"
+            , test "intialises the from" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Between { from = 2, to = 4 })
+                        |> DatedColumnForm.init
+                        |> .from
+                        |> Expect.equal "2"
+            , test "intialises the to" <|
+                \() ->
+                    DatedColumn.init "foo" (DatedColumn.Between { from = 2, to = 4 })
+                        |> DatedColumnForm.init
+                        |> .to
+                        |> Expect.equal "4"
             ]
         ]

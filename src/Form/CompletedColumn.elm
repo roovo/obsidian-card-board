@@ -3,6 +3,7 @@ module Form.CompletedColumn exposing
     , Form
     , LimitError(..)
     , decoder
+    , init
     )
 
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
@@ -29,6 +30,17 @@ type Error
 type LimitError
     = InvalidInt
     | Negative
+
+
+
+-- CONSTRUCTION
+
+
+init : CompletedColumn -> Form
+init completedColumn =
+    { name = CompletedColumn.name completedColumn
+    , limit = String.fromInt <| CompletedColumn.limit completedColumn
+    }
 
 
 

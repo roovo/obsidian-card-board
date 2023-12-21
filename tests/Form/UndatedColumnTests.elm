@@ -11,6 +11,7 @@ suite : Test
 suite =
     concat
         [ decoder
+        , init
         ]
 
 
@@ -27,4 +28,16 @@ decoder =
                 { name = "" }
                     |> FD.errors UndatedColumnForm.decoder
                     |> Expect.equal [ UndatedColumnForm.NameRequired ]
+        ]
+
+
+init : Test
+init =
+    describe "init"
+        [ test "initialises the name" <|
+            \() ->
+                UndatedColumn.init "foo"
+                    |> UndatedColumnForm.init
+                    |> .name
+                    |> Expect.equal "foo"
         ]

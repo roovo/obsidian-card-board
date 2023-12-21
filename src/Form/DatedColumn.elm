@@ -4,6 +4,7 @@ module Form.DatedColumn exposing
     , RangeTypeError(..)
     , RangeValueError(..)
     , decoder
+    , init
     )
 
 import Column.Dated as DatedColumn exposing (DatedColumn, RelativeDateRange)
@@ -58,6 +59,53 @@ type RangeType
 type alias Range =
     { from : Int
     , to : Int
+    }
+
+
+
+-- CONSTRUCTION
+
+
+init : DatedColumn -> Form
+init datedColumn =
+    let
+        rangeType =
+            case DatedColumn.range datedColumn of
+                DatedColumn.After _ ->
+                    "After"
+
+                DatedColumn.Before _ ->
+                    "Before"
+
+                DatedColumn.Between _ ->
+                    "Between"
+
+        from =
+            case DatedColumn.range datedColumn of
+                DatedColumn.After from_ ->
+                    String.fromInt from_
+
+                DatedColumn.Before _ ->
+                    ""
+
+                DatedColumn.Between fromTo ->
+                    String.fromInt fromTo.from
+
+        to =
+            case DatedColumn.range datedColumn of
+                DatedColumn.After _ ->
+                    ""
+
+                DatedColumn.Before to_ ->
+                    String.fromInt to_
+
+                DatedColumn.Between fromTo ->
+                    String.fromInt fromTo.to
+    in
+    { from = from
+    , name = DatedColumn.name datedColumn
+    , rangeType = rangeType
+    , to = to
     }
 
 

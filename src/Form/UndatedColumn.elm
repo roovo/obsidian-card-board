@@ -2,6 +2,7 @@ module Form.UndatedColumn exposing
     ( Error(..)
     , Form
     , decoder
+    , init
     )
 
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
@@ -20,6 +21,15 @@ type alias Form =
 
 type Error
     = NameRequired
+
+
+
+-- CONSTRUCTION
+
+
+init : UndatedColumn -> Form
+init undatedColumn =
+    { name = UndatedColumn.name undatedColumn }
 
 
 

@@ -2,6 +2,7 @@ module Form.UntaggedColumn exposing
     ( Error(..)
     , Form
     , decoder
+    , init
     )
 
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
@@ -20,6 +21,15 @@ type alias Form =
 
 type Error
     = NameRequired
+
+
+
+-- CONSTRUCTION
+
+
+init : UntaggedColumn -> Form
+init untaggedColumn =
+    { name = UntaggedColumn.name untaggedColumn }
 
 
 
