@@ -1,11 +1,8 @@
 module Column.Completed exposing
     ( CompletedColumn
-    , FormError(..)
-    , LimitError(..)
     , addTaskItem
     , decoder
     , encoder
-    , formDecoder
     , index
     , init
     , isCollapsed
@@ -48,23 +45,6 @@ type alias Config =
     }
 
 
-type alias Form =
-    { name : String
-    , limit : String
-    }
-
-
-type FormError
-    = NameRequired
-    | LimitError LimitError
-    | LimitRequired
-
-
-type LimitError
-    = InvalidInt
-    | Negative
-
-
 
 -- CONSTRUCTION
 
@@ -92,13 +72,6 @@ decoder =
 encoder : TsEncode.Encoder CompletedColumn
 encoder =
     TsEncode.map config configEncoder
-
-
-formDecoder : FD.Decoder Form FormError CompletedColumn
-formDecoder =
-    FD.map2 fromForm
-        formDecoderName
-        formDecoderLimit
 
 
 
@@ -218,36 +191,3 @@ configEncoder =
         , TsEncode.required "limit" .limit TsEncode.int
         , TsEncode.required "name" .name TsEncode.string
         ]
-
-
-formDecoderLimit : FD.Decoder Form FormError Int
-formDecoderLimit =
-    FD.int InvalidInt
-        |> FD.assert (FD.minBound Negative 0)
-        |> FD.mapError LimitError
-        |> required LimitRequired
-        |> FD.lift .limit
-
-
-formDecoderName : FD.Decoder Form FormError String
-formDecoderName =
-    FD.identity
-        |> required NameRequired
-        |> FD.lift .name
-
-
-fromForm : String -> Int -> CompletedColumn
-fromForm name_ limit_ =
-    init name_ 0 limit_
-
-
-required : err -> FD.Decoder String err a -> FD.Decoder String err a
-required error d =
-    FD.with <|
-        \a ->
-            case a of
-                "" ->
-                    FD.fail error
-
-                _ ->
-                    FD.lift identity d

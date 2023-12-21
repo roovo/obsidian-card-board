@@ -19,7 +19,6 @@ suite =
         , asInputString
         , decoder
         , encoder
-        , formDecoder
         , init
         , setCollapse
         , setTagsToHide
@@ -200,37 +199,6 @@ encoder =
                     |> Result.map (TsEncode.runExample NamedTagColumn.encoder)
                     |> Result.map .output
                     |> Expect.equal (Ok encodedString)
-        ]
-
-
-formDecoder : Test
-formDecoder =
-    describe "formDecoder"
-        [ test "decodes a valid input" <|
-            \() ->
-                { name = "foo", tag = "aTag" }
-                    |> FD.run NamedTagColumn.formDecoder
-                    |> Expect.equal (Ok <| NamedTagColumn.init "foo" "aTag")
-        , test "errors with an empty tag" <|
-            \() ->
-                { name = "foo", tag = "" }
-                    |> FD.errors NamedTagColumn.formDecoder
-                    |> Expect.equal [ NamedTagColumn.TagRequired ]
-        , test "errors with tag containing invalid characters" <|
-            \() ->
-                { name = "foo", tag = "f$d" }
-                    |> FD.errors NamedTagColumn.formDecoder
-                    |> Expect.equal [ NamedTagColumn.InvalidTagCharacters ]
-        , test "errors with tag containing whitespace" <|
-            \() ->
-                { name = "foo", tag = "aTag bTag" }
-                    |> FD.errors NamedTagColumn.formDecoder
-                    |> Expect.equal [ NamedTagColumn.InvalidTagCharacters ]
-        , test "errors with an empty name" <|
-            \() ->
-                { name = "", tag = "aTag" }
-                    |> FD.errors NamedTagColumn.formDecoder
-                    |> Expect.equal [ NamedTagColumn.NameRequired ]
         ]
 
 

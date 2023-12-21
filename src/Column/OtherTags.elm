@@ -1,10 +1,8 @@
 module Column.OtherTags exposing
-    ( FormError(..)
-    , OtherTagsColumn
+    ( OtherTagsColumn
     , addTaskItem
     , decoder
     , encoder
-    , formDecoder
     , init
     , isCollapsed
     , name
@@ -43,15 +41,6 @@ type alias Config =
     }
 
 
-type alias Form =
-    { name : String
-    }
-
-
-type FormError
-    = NameRequired
-
-
 
 -- CONSTRUCTION
 
@@ -77,13 +66,6 @@ decoder =
 encoder : TsEncode.Encoder OtherTagsColumn
 encoder =
     TsEncode.map config configEncoder
-
-
-formDecoder : FD.Decoder Form FormError OtherTagsColumn
-formDecoder =
-    FD.map2 init
-        formNameDecoder
-        (FD.always [])
 
 
 
@@ -185,25 +167,6 @@ configEncoder =
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]
-
-
-formNameDecoder : FD.Decoder Form FormError String
-formNameDecoder =
-    FD.identity
-        |> required NameRequired
-        |> FD.lift .name
-
-
-required : err -> FD.Decoder String err a -> FD.Decoder String err a
-required error d =
-    FD.with <|
-        \a ->
-            case a of
-                "" ->
-                    FD.fail error
-
-                _ ->
-                    FD.lift identity d
 
 
 isCompleted : List String -> TaskItem -> Bool
