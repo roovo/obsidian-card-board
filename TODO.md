@@ -8,6 +8,7 @@
     https://sakurachan.info/posts/2019/form-decoding/
     https://arowm.github.io/elm-form-decoder/#goat-registerForm
     https://github.com/arowM/elm-form-decoder/
+- remove Column.typeString
 - allow tags in column definitions to optionaly start with the # character
 - delete confirm dialog (board and column)
     - actually say what is being deleted

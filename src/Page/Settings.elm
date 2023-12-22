@@ -24,6 +24,8 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons exposing (Icon)
 import Filter exposing (Filter, Polarity)
+import Form.Column as ColumnForm
+import Form.DatedColumn as DatedColumnForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
@@ -534,15 +536,15 @@ view model =
             Session.dragTracker model.session
     in
     case model.settingsState of
-        SettingsState.AddingBoard newConfig settings _ ->
+        SettingsState.AddingBoard newConfig settings columnForms ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.AddingColumn newConfig settings _ ->
+        SettingsState.AddingColumn newConfig settings columnForms ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
                 , modalAddColumn newConfig settings
                 ]
 
@@ -552,20 +554,22 @@ view model =
         SettingsState.ClosingSettings _ _ ->
             Html.text ""
 
-        SettingsState.DeletingBoard settings _ ->
+        SettingsState.DeletingBoard settings columnForms ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.DeletingColumn _ settings _ ->
+        SettingsState.DeletingColumn _ settings columnForms ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard settings _ ->
-            boardSettingsView (Settings.boardConfigs settings)
+        SettingsState.EditingBoard settings columnForms ->
+            boardSettingsView
+                (Settings.boardConfigs settings)
+                columnForms
                 model.multiSelect
                 dragTracker
 
@@ -827,11 +831,12 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView boardConfigs multiselect dragTracker =
+boardSettingsView : SafeZipper BoardConfig -> List ColumnForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView boardConfigs columnForms multiselect dragTracker =
     boardSettingsForm
         (SafeZipper.current boardConfigs)
         (SafeZipper.currentIndex boardConfigs)
+        columnForms
         multiselect
         dragTracker
         |> settingsSurroundView Boards boardConfigs dragTracker
@@ -1076,17 +1081,15 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex multiselect dragTracker =
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> List ColumnForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfig boardIndex columnForms multiselect dragTracker =
     case ( boardConfig, boardIndex ) of
         ( Just config, Just _ ) ->
             let
-                draggedColumn : Maybe Column
+                draggedColumn : Maybe ColumnForm.Form
                 draggedColumn =
-                    config
-                        |> BoardConfig.columns
-                        |> Columns.toList
-                        |> LE.find (\c -> Just (Column.name c) == draggedUniqueId)
+                    columnForms
+                        |> LE.find (\c -> Just (ColumnForm.name c) == draggedUniqueId)
 
                 draggedType : Maybe String
                 draggedType =
@@ -1234,8 +1237,7 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
-                    ((BoardConfig.columns config
-                        |> Columns.toList
+                    ((columnForms
                         |> List.indexedMap (settingsColumnView draggedUniqueId)
                      )
                         |> (\hs ->
@@ -1280,8 +1282,8 @@ boardSettingsForm boardConfig boardIndex multiselect dragTracker =
             [ Html.text "" ]
 
 
-settingsColumnView : Maybe String -> Int -> Column -> Html Msg
-settingsColumnView uniqueId index column =
+settingsColumnView : Maybe String -> Int -> ColumnForm.Form -> Html Msg
+settingsColumnView uniqueId index columnForm =
     let
         domId : String
         domId =
@@ -1293,7 +1295,7 @@ settingsColumnView uniqueId index column =
 
         name : String
         name =
-            Column.name column
+            ColumnForm.name columnForm
     in
     Html.div []
         [ columnSettingsBeacon (BeaconPosition.Before name)
@@ -1320,7 +1322,7 @@ settingsColumnView uniqueId index column =
                     dragIcon
                 ]
             , Html.div [ class "cardboard-settings-column-item-type" ]
-                [ Html.text <| Column.typeString column ]
+                [ Html.text <| ColumnForm.typeString columnForm ]
             , Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.input
                     [ type_ "text"
@@ -1329,7 +1331,7 @@ settingsColumnView uniqueId index column =
                     ]
                     []
                 ]
-            , settingsColumnControlView index column
+            , settingsColumnControlView index columnForm
             , Html.div
                 [ class "cardboard-settings-column-item-button"
                 , onClick <| ColumnDeleteClicked index
@@ -1344,10 +1346,10 @@ settingsColumnView uniqueId index column =
         ]
 
 
-settingsColumnDraggedView : Bool -> Maybe Column -> DragTracker -> Html Msg
-settingsColumnDraggedView isDragging column dragTracker =
-    case ( isDragging, column, dragTracker ) of
-        ( True, Just draggedColumn, DragTracker.Dragging clientData domData ) ->
+settingsColumnDraggedView : Bool -> Maybe ColumnForm.Form -> DragTracker -> Html Msg
+settingsColumnDraggedView isDragging columnForm dragTracker =
+    case ( isDragging, columnForm, dragTracker ) of
+        ( True, Just draggedColumnForm, DragTracker.Dragging clientData domData ) ->
             Html.div []
                 [ Html.div
                     [ class "cardboard-settings-column-item"
@@ -1369,15 +1371,15 @@ settingsColumnDraggedView isDragging column dragTracker =
                     ]
                     [ FeatherIcons.toHtml [] dragIcon
                     , Html.div [ class "cardboard-settings-column-item-type" ]
-                        [ Html.text <| Column.typeString draggedColumn ]
+                        [ Html.text <| ColumnForm.typeString draggedColumnForm ]
                     , Html.div [ class "cardboard-settings-column-item-detail" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| Column.name draggedColumn
+                            , value <| ColumnForm.name draggedColumnForm
                             ]
                             []
                         ]
-                    , settingsColumnControlView 0 draggedColumn
+                    , settingsColumnControlView 0 draggedColumnForm
                     , Html.div
                         [ class "cardboard-settings-column-item-button" ]
                         [ FeatherIcons.xCircle
@@ -1392,33 +1394,33 @@ settingsColumnDraggedView isDragging column dragTracker =
             Html.text ""
 
 
-settingsColumnControlView : Int -> Column -> Html Msg
-settingsColumnControlView index column =
-    case column of
-        Column.Completed completedColumn ->
+settingsColumnControlView : Int -> ColumnForm.Form -> Html Msg
+settingsColumnControlView index columnForm =
+    case columnForm of
+        ColumnForm.CompletedColumnForm completedForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Limit: "
                 , Html.input
                     [ type_ "text"
-                    , value <| String.fromInt (CompletedColumn.limit completedColumn)
+                    , value completedForm.limit
                     , attribute "size" "3"
                     , onInput <| EnteredNewColumnCompletedLimit index
                     ]
                     []
                 ]
 
-        Column.Dated datedColumn ->
+        ColumnForm.DatedColumnForm datedForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
-                ([ rangeSelectView index (DatedColumn.range datedColumn) ]
-                    ++ rangeInputsView index (DatedColumn.range datedColumn)
+                ([ rangeSelectView index datedForm ]
+                    ++ rangeInputsView index datedForm
                 )
 
-        Column.NamedTag namedTagColumn ->
+        ColumnForm.NamedTagColumnForm namedTagForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Tag: "
                 , Html.input
                     [ type_ "text"
-                    , value <| NamedTagColumn.tag namedTagColumn
+                    , value <| namedTagForm.tag
                     , onInput <| EnteredColumnNamedTagTag index
                     ]
                     []
@@ -1429,23 +1431,10 @@ settingsColumnControlView index column =
                 [ Html.text "" ]
 
 
-rangeSelectView : Int -> RelativeDateRange -> Html Msg
-rangeSelectView index range =
-    case range of
-        DatedColumn.Before _ ->
-            Html.select
-                [ class "dropdown"
-                , onInput <| SelectedDatedColumnRangeType index
-                ]
-                [ Html.option [ value "Before", selected True ]
-                    [ Html.text "Before" ]
-                , Html.option [ value "After" ]
-                    [ Html.text "After" ]
-                , Html.option [ value "Between" ]
-                    [ Html.text "Between" ]
-                ]
-
-        DatedColumn.After _ ->
+rangeSelectView : Int -> DatedColumnForm.Form -> Html Msg
+rangeSelectView index datedColumnForm =
+    case datedColumnForm.rangeType of
+        "After" ->
             Html.select
                 [ class "dropdown"
                 , onInput <| SelectedDatedColumnRangeType index
@@ -1458,7 +1447,7 @@ rangeSelectView index range =
                     [ Html.text "Between" ]
                 ]
 
-        DatedColumn.Between _ ->
+        "Between" ->
             Html.select
                 [ class "dropdown"
                 , onInput <| SelectedDatedColumnRangeType index
@@ -1471,34 +1460,37 @@ rangeSelectView index range =
                     [ Html.text "Between" ]
                 ]
 
-
-rangeInputsView : Int -> RelativeDateRange -> List (Html Msg)
-rangeInputsView index range =
-    case range of
-        DatedColumn.Before to ->
-            [ Html.input
-                [ type_ "text"
-                , value <| String.fromInt to
-                , attribute "size" "3"
-                , onInput <| EnteredDatedColumnRangeValueTo index
+        _ ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
                 ]
-                []
-            ]
+                [ Html.option [ value "Before", selected True ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
 
-        DatedColumn.After from ->
+
+rangeInputsView : Int -> DatedColumnForm.Form -> List (Html Msg)
+rangeInputsView index datedColumnForm =
+    case datedColumnForm.rangeType of
+        "After" ->
             [ Html.input
                 [ type_ "text"
-                , value <| String.fromInt from
+                , value datedColumnForm.from
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueFrom index
                 ]
                 []
             ]
 
-        DatedColumn.Between fromTo ->
+        "Between" ->
             [ Html.input
                 [ type_ "text"
-                , value <| String.fromInt fromTo.from
+                , value datedColumnForm.from
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueFrom index
                 ]
@@ -1506,7 +1498,17 @@ rangeInputsView index range =
             , Html.span [] [ Html.text "and" ]
             , Html.input
                 [ type_ "text"
-                , value <| String.fromInt fromTo.to
+                , value datedColumnForm.to
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueTo index
+                ]
+                []
+            ]
+
+        _ ->
+            [ Html.input
+                [ type_ "text"
+                , value datedColumnForm.to
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueTo index
                 ]

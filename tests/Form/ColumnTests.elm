@@ -24,6 +24,8 @@ suite =
     concat
         [ decoder
         , init
+        , name
+        , typeString
         ]
 
 
@@ -126,4 +128,88 @@ init =
                 (Column.Untagged <| UntaggedColumn.init "foo")
                     |> ColumnForm.init
                     |> Expect.equal (ColumnForm.UntaggedColumnForm { name = "foo" })
+        ]
+
+
+name : Test
+name =
+    describe "name"
+        [ test "returns the name of a Completed column" <|
+            \() ->
+                (Column.Completed <| CompletedColumn.init "foo" 0 7)
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        , test "returns the name of a Dated column" <|
+            \() ->
+                (Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7))
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        , test "returns the name of a NamedTag column" <|
+            \() ->
+                (Column.NamedTag <| NamedTagColumn.init "foo" "aTag")
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        , test "returns the name of an OtherTags column" <|
+            \() ->
+                (Column.OtherTags <| OtherTagsColumn.init "foo" [])
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        , test "returns the name of an Undated column" <|
+            \() ->
+                (Column.Undated <| UndatedColumn.init "foo")
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        , test "returns the name of an Untagged column" <|
+            \() ->
+                (Column.Untagged <| UntaggedColumn.init "foo")
+                    |> ColumnForm.init
+                    |> ColumnForm.name
+                    |> Expect.equal "foo"
+        ]
+
+
+typeString : Test
+typeString =
+    describe "typeString"
+        [ test "returns 'Completed' for a Completed column" <|
+            \() ->
+                (Column.Completed <| CompletedColumn.init "foo" 0 7)
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Completed"
+        , test "returns 'Dated' for a Dated column" <|
+            \() ->
+                (Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7))
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Dated"
+        , test "returns 'Tagged' for a NamedTag column" <|
+            \() ->
+                (Column.NamedTag <| NamedTagColumn.init "foo" "aTag")
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Tagged"
+        , test "returns 'Other Tags' for an OtherTags column" <|
+            \() ->
+                (Column.OtherTags <| OtherTagsColumn.init "foo" [])
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Other Tags"
+        , test "returns 'Undated' for an Undated column" <|
+            \() ->
+                (Column.Undated <| UndatedColumn.init "foo")
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Undated"
+        , test "returns 'Untagged' for an Untagged column" <|
+            \() ->
+                (Column.Untagged <| UntaggedColumn.init "foo")
+                    |> ColumnForm.init
+                    |> ColumnForm.typeString
+                    |> Expect.equal "Untagged"
         ]

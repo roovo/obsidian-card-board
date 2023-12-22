@@ -3,6 +3,8 @@ module Form.Column exposing
     , Form(..)
     , decoder
     , init
+    , name
+    , typeString
     )
 
 import Column exposing (Column)
@@ -110,3 +112,51 @@ decoder =
                         |> Result.map Column.Untagged
     in
     FD.custom subformDecoder
+
+
+
+-- INFO
+
+
+name : Form -> String
+name form =
+    case form of
+        CompletedColumnForm subform ->
+            subform.name
+
+        DatedColumnForm subform ->
+            subform.name
+
+        NamedTagColumnForm subform ->
+            subform.name
+
+        OtherTagsColumnForm subform ->
+            subform.name
+
+        UndatedColumnForm subform ->
+            subform.name
+
+        UntaggedColumnForm subform ->
+            subform.name
+
+
+typeString : Form -> String
+typeString form =
+    case form of
+        CompletedColumnForm subform ->
+            "Completed"
+
+        DatedColumnForm subform ->
+            "Dated"
+
+        NamedTagColumnForm subform ->
+            "Tagged"
+
+        OtherTagsColumnForm subform ->
+            "Other Tags"
+
+        UndatedColumnForm subform ->
+            "Undated"
+
+        UntaggedColumnForm subform ->
+            "Untagged"
