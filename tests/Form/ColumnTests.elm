@@ -44,12 +44,12 @@ decoder =
                     |> Expect.equal [ ColumnForm.CompletedColumnError CompletedColumnForm.NameRequired ]
         , test "decodes a valid Dated form" <|
             \() ->
-                ColumnForm.DatedColumnForm { name = "foo", rangeType = "After", from = "", to = "2" }
+                ColumnForm.DatedColumnForm { name = "foo", rangeType = "After", from = "2", to = "" }
                     |> FD.run ColumnForm.decoder
                     |> Expect.equal (Ok <| Column.dated (DatedColumn.init "foo" (DatedColumn.After 2)))
         , test "errors an invalid Dated form" <|
             \() ->
-                ColumnForm.DatedColumnForm { name = "", rangeType = "After", from = "", to = "2" }
+                ColumnForm.DatedColumnForm { name = "", rangeType = "After", from = "2", to = "" }
                     |> FD.errors ColumnForm.decoder
                     |> Expect.equal [ ColumnForm.DatedColumnError DatedColumnForm.NameRequired ]
         , test "decodes a valid NamedTag form" <|

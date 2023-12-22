@@ -145,10 +145,10 @@ rangeDecoder_ : RangeType -> FD.Decoder Form Error RelativeDateRange
 rangeDecoder_ rangeType =
     case rangeType of
         After ->
-            FD.map DatedColumn.After formRangeAfterValueDecoder
+            FD.map DatedColumn.After formRangeFromValueDecoder
 
         Before ->
-            FD.map DatedColumn.Before formRangeBeforeValueDecoder
+            FD.map DatedColumn.Before formRangeToValueDecoder
 
         Between ->
             FD.map DatedColumn.Between formRangeBetweenValueDecoder
@@ -172,8 +172,8 @@ rangeTypeDecoder =
                     Err [ Invalid ]
 
 
-formRangeAfterValueDecoder : FD.Decoder Form Error Int
-formRangeAfterValueDecoder =
+formRangeToValueDecoder : FD.Decoder Form Error Int
+formRangeToValueDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
         |> FD.mapError RangeValueToError
@@ -181,8 +181,8 @@ formRangeAfterValueDecoder =
         |> FD.lift .to
 
 
-formRangeBeforeValueDecoder : FD.Decoder Form Error Int
-formRangeBeforeValueDecoder =
+formRangeFromValueDecoder : FD.Decoder Form Error Int
+formRangeFromValueDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
         |> FD.mapError RangeValueFromError
@@ -193,5 +193,5 @@ formRangeBeforeValueDecoder =
 formRangeBetweenValueDecoder : FD.Decoder Form Error Range
 formRangeBetweenValueDecoder =
     FD.map2 Range
-        formRangeBeforeValueDecoder
-        formRangeAfterValueDecoder
+        formRangeFromValueDecoder
+        formRangeToValueDecoder

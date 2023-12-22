@@ -1,0 +1,68 @@
+module Form.BoardConfigs exposing
+    ( Form
+    , columnsForms
+    , decoder
+    , empty
+    , init
+    , switchToBoard
+    )
+
+import BoardConfig exposing (BoardConfig)
+import Columns exposing (Columns)
+import Form.Column as ColumnForm
+import Form.Columns as ColumnsForm
+import Form.Decoder as FD
+import SafeZipper exposing (SafeZipper)
+
+
+
+-- TYPES
+
+
+type alias Form =
+    { columnsForms : SafeZipper ColumnsForm.Form
+    }
+
+
+
+-- CONSTRUCTION
+
+
+init : SafeZipper BoardConfig -> Form
+init boardConfigs =
+    boardConfigs
+        |> SafeZipper.map (ColumnsForm.init << BoardConfig.columns)
+        |> Form
+
+
+empty : Form
+empty =
+    { columnsForms = SafeZipper.empty }
+
+
+
+-- DECODER
+
+
+decoder : FD.Decoder Form ( Int, ( Int, ColumnForm.Error ) ) (List Columns)
+decoder =
+    FD.listOf ColumnsForm.decoder
+        |> FD.lift (SafeZipper.toList << columnsForms)
+
+
+
+-- INFO
+
+
+columnsForms : Form -> SafeZipper ColumnsForm.Form
+columnsForms form =
+    form.columnsForms
+
+
+
+-- MODIFICATION
+
+
+switchToBoard : Int -> Form -> Form
+switchToBoard index form =
+    { form | columnsForms = SafeZipper.atIndex index form.columnsForms }

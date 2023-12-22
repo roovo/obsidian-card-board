@@ -24,7 +24,9 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons exposing (Icon)
 import Filter exposing (Filter, Polarity)
+import Form.BoardConfigs as BoardConfigsForm
 import Form.Column as ColumnForm
+import Form.Columns as ColumnsForm
 import Form.DatedColumn as DatedColumnForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
@@ -34,6 +36,7 @@ import Html.Events.Extra.Mouse exposing (onDown)
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
+import Maybe.Extra as ME
 import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 import Page.Helper.Multiselect as MultiSelect
@@ -536,15 +539,15 @@ view model =
             Session.dragTracker model.session
     in
     case model.settingsState of
-        SettingsState.AddingBoard newConfig settings columnForms ->
+        SettingsState.AddingBoard newConfig settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.AddingColumn newConfig settings columnForms ->
+        SettingsState.AddingColumn newConfig settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
                 , modalAddColumn newConfig settings
                 ]
 
@@ -554,22 +557,22 @@ view model =
         SettingsState.ClosingSettings _ _ ->
             Html.text ""
 
-        SettingsState.DeletingBoard settings columnForms ->
+        SettingsState.DeletingBoard settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.DeletingColumn _ settings columnForms ->
+        SettingsState.DeletingColumn _ settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) columnForms model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard settings columnForms ->
+        SettingsState.EditingBoard settings boardConfigsForm ->
             boardSettingsView
                 (Settings.boardConfigs settings)
-                columnForms
+                boardConfigsForm
                 model.multiSelect
                 dragTracker
 
@@ -831,12 +834,12 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> List ColumnForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView boardConfigs columnForms multiselect dragTracker =
+boardSettingsView : SafeZipper BoardConfig -> BoardConfigsForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView boardConfigs boardConfigsForm multiselect dragTracker =
     boardSettingsForm
         (SafeZipper.current boardConfigs)
         (SafeZipper.currentIndex boardConfigs)
-        columnForms
+        (SafeZipper.current (BoardConfigsForm.columnsForms boardConfigsForm))
         multiselect
         dragTracker
         |> settingsSurroundView Boards boardConfigs dragTracker
@@ -1081,15 +1084,14 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> List ColumnForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex columnForms multiselect dragTracker =
-    case ( boardConfig, boardIndex ) of
-        ( Just config, Just _ ) ->
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfig boardIndex columnsForm multiselect dragTracker =
+    case ( boardConfig, columnsForm, boardIndex ) of
+        ( Just config, Just form, Just _ ) ->
             let
                 draggedColumn : Maybe ColumnForm.Form
                 draggedColumn =
-                    columnForms
-                        |> LE.find (\c -> Just (ColumnForm.name c) == draggedUniqueId)
+                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) form
 
                 draggedType : Maybe String
                 draggedType =
@@ -1237,7 +1239,8 @@ boardSettingsForm boardConfig boardIndex columnForms multiselect dragTracker =
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
-                    ((columnForms
+                    ((form
+                        |> .columnForms
                         |> List.indexedMap (settingsColumnView draggedUniqueId)
                      )
                         |> (\hs ->
