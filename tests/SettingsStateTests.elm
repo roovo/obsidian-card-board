@@ -2,10 +2,12 @@ module SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import Column
+import Column.Completed as CompletedColumn
 import Columns
 import DefaultColumnNames
 import Expect
 import Filter
+import Form.Column as ColumnForm exposing (Form)
 import GlobalSettings exposing (GlobalSettings)
 import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
@@ -194,7 +196,13 @@ cancelCurrentState =
             \() ->
                 SettingsState.AddingBoard NewBoardConfig.default (settingsFromBoardConfigs [ exampleBoardConfig ]) []
                     |> SettingsState.cancelCurrentState
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigs
+                                [ exampleBoardConfig ]
+                            )
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "AddingColumn -> EditingBoard" <|
             \() ->
                 SettingsState.AddingColumn (NewColumnConfig "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) []
@@ -605,6 +613,22 @@ init =
                             (settingsFromBoardConfigs [ exampleBoardConfigNoColumns ])
                             []
                         )
+        , test "returns (List Form.Column) built from the currently selected board" <|
+            \() ->
+                let
+                    settings =
+                        settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfigMultiColumns, exampleBoardConfig ]
+                            |> Settings.switchToBoard 1
+                in
+                SettingsState.init settings
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            settings
+                            [ ColumnForm.NamedTagColumnForm { name = "named", tag = "aTag" }
+                            , ColumnForm.UntaggedColumnForm { name = "untagged" }
+                            , ColumnForm.CompletedColumnForm { name = "completed", limit = "5" }
+                            ]
+                        )
         ]
 
 
@@ -836,6 +860,24 @@ exampleBoardConfig : BoardConfig
 exampleBoardConfig =
     BoardConfig.BoardConfig
         { columns = Columns.fromList [ Column.namedTag "foo" "bar" ]
+        , filters = []
+        , filterPolarity = Filter.Deny
+        , filterScope = Filter.SubTasksOnly
+        , showColumnTags = False
+        , showFilteredTags = True
+        , name = "Board Name"
+        }
+
+
+exampleBoardConfigMultiColumns : BoardConfig
+exampleBoardConfigMultiColumns =
+    BoardConfig.BoardConfig
+        { columns =
+            Columns.fromList
+                [ Column.namedTag "named" "aTag"
+                , Column.untagged "untagged"
+                , Column.completed <| CompletedColumn.init "completed" 2 5
+                ]
         , filters = []
         , filterPolarity = Filter.Deny
         , filterScope = Filter.SubTasksOnly

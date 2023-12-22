@@ -56,10 +56,21 @@ type SettingsState
 init : Settings -> SettingsState
 init settings_ =
     if Settings.hasAnyBordsConfigured settings_ then
-        EditingBoard settings_ []
+        EditingBoard settings_ (formColumnsFromSettings settings_)
 
     else
         AddingBoard NewBoardConfig.default settings_ []
+
+
+formColumnsFromSettings : Settings -> List FormColumn.Form
+formColumnsFromSettings settings_ =
+    settings_
+        |> Settings.boardConfigs
+        |> SafeZipper.current
+        |> Maybe.map BoardConfig.columns
+        |> Maybe.map Columns.toList
+        |> Maybe.withDefault []
+        |> List.map FormColumn.init
 
 
 
