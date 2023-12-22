@@ -7,7 +7,7 @@ required : err -> FD.Decoder String err a -> FD.Decoder String err a
 required error d =
     FD.with <|
         \a ->
-            case a of
+            case String.trim a of
                 "" ->
                     FD.fail error
 

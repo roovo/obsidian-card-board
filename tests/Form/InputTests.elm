@@ -28,4 +28,10 @@ required =
                     |> FormInput.required "eek"
                     |> (\d -> FD.run d "")
                     |> Expect.equal (Err [ "eek" ])
+        , test "errors an input containing only whitespace" <|
+            \() ->
+                FD.identity
+                    |> FormInput.required "eek"
+                    |> (\d -> FD.run d "  ")
+                    |> Expect.equal (Err [ "eek" ])
         ]
