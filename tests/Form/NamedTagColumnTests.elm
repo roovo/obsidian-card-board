@@ -23,6 +23,11 @@ decoder =
                 { name = "foo", tag = "aTag" }
                     |> FD.run NamedTagColumnForm.decoder
                     |> Expect.equal (Ok <| NamedTagColumn.init "foo" "aTag")
+        , test "ignores leading and trailing whitespace when decoding a valid input" <|
+            \() ->
+                { name = " foo ", tag = " aTag " }
+                    |> FD.run NamedTagColumnForm.decoder
+                    |> Expect.equal (Ok <| NamedTagColumn.init "foo" "aTag")
         , test "errors with an empty tag" <|
             \() ->
                 { name = "foo", tag = "" }

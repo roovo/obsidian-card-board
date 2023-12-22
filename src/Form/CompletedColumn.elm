@@ -61,6 +61,7 @@ decoder =
 limitDecoder : FD.Decoder Form Error Int
 limitDecoder =
     FD.int InvalidInt
+        |> FD.lift String.trim
         |> FD.assert (FD.minBound Negative 0)
         |> FD.mapError LimitError
         |> Input.required LimitRequired
@@ -70,6 +71,7 @@ limitDecoder =
 nameDecoder : FD.Decoder Form Error String
 nameDecoder =
     FD.identity
+        |> FD.lift String.trim
         |> Input.required NameRequired
         |> FD.lift .name
 

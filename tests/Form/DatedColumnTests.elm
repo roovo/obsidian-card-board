@@ -24,6 +24,11 @@ decoder =
                     { name = "foo", rangeType = "After", from = "", to = "0" }
                         |> FD.run DatedColumnForm.decoder
                         |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.After 0))
+            , test "igmores leading and trailing whitespace when decoding a valid After input" <|
+                \() ->
+                    { name = " foo ", rangeType = " After ", from = "", to = " 0 " }
+                        |> FD.run DatedColumnForm.decoder
+                        |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.After 0))
             , test "has no errors if the input is valid" <|
                 \() ->
                     { name = "foo", rangeType = "After", from = "", to = "0" }
@@ -61,6 +66,11 @@ decoder =
                     { name = "foo", rangeType = "Before", from = "0", to = "" }
                         |> FD.run DatedColumnForm.decoder
                         |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.Before 0))
+            , test "ignores leading and trailing whitespace when decoding a valid Before input" <|
+                \() ->
+                    { name = " foo ", rangeType = " Before ", from = " 0 ", to = "" }
+                        |> FD.run DatedColumnForm.decoder
+                        |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.Before 0))
             , test "has no errors if the input is valid" <|
                 \() ->
                     { name = "foo", rangeType = "Before", from = "0", to = "" }
@@ -96,6 +106,11 @@ decoder =
             [ test "decodes a valid Between input" <|
                 \() ->
                     { name = "foo", rangeType = "Between", from = "0", to = "1" }
+                        |> FD.run DatedColumnForm.decoder
+                        |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.Between { from = 0, to = 1 }))
+            , test "ignores leading and trailing whitespacw when decoding a valid Between input" <|
+                \() ->
+                    { name = " foo ", rangeType = " Between ", from = " 0 ", to = " 1 " }
                         |> FD.run DatedColumnForm.decoder
                         |> Expect.equal (Ok <| DatedColumn.init "foo" (DatedColumn.Between { from = 0, to = 1 }))
             , test "has no errors if the input is valid" <|

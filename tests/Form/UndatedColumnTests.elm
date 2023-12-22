@@ -23,6 +23,11 @@ decoder =
                 { name = "foo" }
                     |> FD.run UndatedColumnForm.decoder
                     |> Expect.equal (Ok <| UndatedColumn.init "foo")
+        , test "ignores leading and trailing whitespacw when decoding a valid input" <|
+            \() ->
+                { name = " foo " }
+                    |> FD.run UndatedColumnForm.decoder
+                    |> Expect.equal (Ok <| UndatedColumn.init "foo")
         , test "errors with an empty name" <|
             \() ->
                 { name = "" }

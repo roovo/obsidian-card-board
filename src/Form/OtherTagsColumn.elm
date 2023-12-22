@@ -50,5 +50,6 @@ decoder =
 nameDecoder : FD.Decoder Form Error String
 nameDecoder =
     FD.identity
+        |> FD.lift String.trim
         |> Input.required NameRequired
         |> FD.lift .name

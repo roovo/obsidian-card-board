@@ -23,6 +23,11 @@ decoder =
                 { name = "foo", limit = "7" }
                     |> FD.run CompletedColumnForm.decoder
                     |> Expect.equal (Ok <| CompletedColumn.init "foo" 0 7)
+        , test "ignores leading and trailing whitespace when decoding a valid input" <|
+            \() ->
+                { name = "  foo  ", limit = " 7 " }
+                    |> FD.run CompletedColumnForm.decoder
+                    |> Expect.equal (Ok <| CompletedColumn.init "foo" 0 7)
         , test "has no errors if the input is valid" <|
             \() ->
                 { name = "foo", limit = "0" }

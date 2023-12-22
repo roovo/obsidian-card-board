@@ -127,6 +127,7 @@ decoder =
 nameDecoder : FD.Decoder Form Error String
 nameDecoder =
     FD.identity
+        |> FD.lift String.trim
         |> Input.required NameRequired
         |> FD.lift .name
 
@@ -157,7 +158,7 @@ rangeTypeDecoder : FD.Decoder String RangeTypeError RangeType
 rangeTypeDecoder =
     FD.custom <|
         \str ->
-            case str of
+            case String.trim str of
                 "After" ->
                     Ok After
 
@@ -174,6 +175,7 @@ rangeTypeDecoder =
 formRangeAfterValueDecoder : FD.Decoder Form Error Int
 formRangeAfterValueDecoder =
     FD.int InvalidInt
+        |> FD.lift String.trim
         |> FD.mapError RangeValueToError
         |> Input.required RangeToValueRequired
         |> FD.lift .to
@@ -182,6 +184,7 @@ formRangeAfterValueDecoder =
 formRangeBeforeValueDecoder : FD.Decoder Form Error Int
 formRangeBeforeValueDecoder =
     FD.int InvalidInt
+        |> FD.lift String.trim
         |> FD.mapError RangeValueFromError
         |> Input.required RangeFromValueRequired
         |> FD.lift .from
