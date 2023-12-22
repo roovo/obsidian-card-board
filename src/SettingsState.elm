@@ -25,6 +25,7 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns, OptionsForSelect)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
+import Form.Column as FormColumn
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
@@ -38,14 +39,14 @@ import Settings exposing (Settings)
 
 
 type SettingsState
-    = AddingBoard NewBoardConfig Settings
-    | AddingColumn NewColumnConfig Settings
-    | ClosingPlugin Settings
-    | ClosingSettings Settings
-    | DeletingBoard Settings
-    | DeletingColumn Int Settings
-    | EditingBoard Settings
-    | EditingGlobalSettings Settings
+    = AddingBoard NewBoardConfig Settings (List FormColumn.Form)
+    | AddingColumn NewColumnConfig Settings (List FormColumn.Form)
+    | ClosingPlugin Settings (List FormColumn.Form)
+    | ClosingSettings Settings (List FormColumn.Form)
+    | DeletingBoard Settings (List FormColumn.Form)
+    | DeletingColumn Int Settings (List FormColumn.Form)
+    | EditingBoard Settings (List FormColumn.Form)
+    | EditingGlobalSettings Settings (List FormColumn.Form)
 
 
 
@@ -55,10 +56,10 @@ type SettingsState
 init : Settings -> SettingsState
 init settings_ =
     if Settings.hasAnyBordsConfigured settings_ then
-        EditingBoard settings_
+        EditingBoard settings_ []
 
     else
-        AddingBoard NewBoardConfig.default settings_
+        AddingBoard NewBoardConfig.default settings_ []
 
 
 
@@ -73,28 +74,28 @@ boardConfigs settingsState =
 settings : SettingsState -> Settings
 settings settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
+        AddingBoard _ settings_ formColumns ->
             settings_
 
-        AddingColumn _ settings_ ->
+        AddingColumn _ settings_ formColumns ->
             settings_
 
-        ClosingPlugin settings_ ->
+        ClosingPlugin settings_ formColumns ->
             settings_
 
-        ClosingSettings settings_ ->
+        ClosingSettings settings_ formColumns ->
             settings_
 
-        DeletingBoard settings_ ->
+        DeletingBoard settings_ formColumns ->
             settings_
 
-        DeletingColumn _ settings_ ->
+        DeletingColumn _ settings_ formColumns ->
             settings_
 
-        EditingBoard settings_ ->
+        EditingBoard settings_ formColumns ->
             settings_
 
-        EditingGlobalSettings settings_ ->
+        EditingGlobalSettings settings_ formColumns ->
             settings_
 
 
@@ -105,29 +106,29 @@ settings settingsState =
 addBoardRequested : SettingsState -> SettingsState
 addBoardRequested settingsState =
     case settingsState of
-        AddingBoard _ _ ->
+        AddingBoard _ _ formColumns ->
             settingsState
 
-        AddingColumn _ settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        AddingColumn _ settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        ClosingPlugin settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        ClosingPlugin settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        ClosingSettings settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        ClosingSettings settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        DeletingBoard settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        DeletingBoard settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        DeletingColumn _ settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        DeletingColumn _ settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        EditingBoard settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        EditingBoard settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
-        EditingGlobalSettings settings_ ->
-            AddingBoard NewBoardConfig.default settings_
+        EditingGlobalSettings settings_ formColumns ->
+            AddingBoard NewBoardConfig.default settings_ formColumns
 
 
 addColumnRequested : SettingsState -> SettingsState
@@ -154,70 +155,70 @@ addColumnRequested settingsState =
                 |> Maybe.withDefault "dated"
     in
     case settingsState of
-        AddingBoard _ settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        AddingBoard _ settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        AddingColumn _ _ ->
+        AddingColumn _ _ formColumns ->
             settingsState
 
-        ClosingPlugin settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        ClosingPlugin settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        ClosingSettings settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        ClosingSettings settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        DeletingBoard settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        DeletingBoard settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        DeletingColumn _ settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        DeletingColumn _ settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        EditingBoard settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        EditingBoard settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
-        EditingGlobalSettings settings_ ->
-            AddingColumn (NewColumnConfig "" selectedOption) settings_
+        EditingGlobalSettings settings_ formColumns ->
+            AddingColumn (NewColumnConfig "" selectedOption) settings_ formColumns
 
 
 cancelCurrentState : SettingsState -> SettingsState
 cancelCurrentState settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
+        AddingBoard _ settings_ formColumns ->
             if Settings.hasAnyBordsConfigured settings_ then
                 init settings_
 
             else
-                ClosingPlugin settings_
+                ClosingPlugin settings_ formColumns
 
-        AddingColumn _ settings_ ->
-            EditingBoard settings_
+        AddingColumn _ settings_ formColumns ->
+            EditingBoard settings_ formColumns
 
-        ClosingPlugin settings_ ->
-            ClosingPlugin settings_
+        ClosingPlugin settings_ formColumns ->
+            ClosingPlugin settings_ formColumns
 
-        ClosingSettings settings_ ->
-            ClosingSettings settings_
+        ClosingSettings settings_ formColumns ->
+            ClosingSettings settings_ formColumns
 
-        DeletingBoard settings_ ->
-            EditingBoard settings_
+        DeletingBoard settings_ formColumns ->
+            EditingBoard settings_ formColumns
 
-        DeletingColumn _ settings_ ->
-            EditingBoard settings_
+        DeletingColumn _ settings_ formColumns ->
+            EditingBoard settings_ formColumns
 
-        EditingBoard settings_ ->
-            ClosingSettings settings_
+        EditingBoard settings_ formColumns ->
+            ClosingSettings settings_ formColumns
 
-        EditingGlobalSettings settings_ ->
-            ClosingSettings settings_
+        EditingGlobalSettings settings_ formColumns ->
+            ClosingSettings settings_ formColumns
 
 
 confirmAddBoard : DefaultColumnNames -> SettingsState -> SettingsState
 confirmAddBoard defaultColumnNames settingsState =
     case settingsState of
-        AddingBoard c settings_ ->
+        AddingBoard c settings_ formColumns ->
             Settings.addBoard defaultColumnNames c settings_
                 |> Settings.cleanupNames
-                |> EditingBoard
+                |> (\s -> EditingBoard s formColumns)
 
         _ ->
             settingsState
@@ -226,9 +227,9 @@ confirmAddBoard defaultColumnNames settingsState =
 confirmAddColumn : DefaultColumnNames -> SettingsState -> SettingsState
 confirmAddColumn defaultColumnNames settingsState =
     case settingsState of
-        AddingColumn c settings_ ->
+        AddingColumn c settings_ formColumns ->
             Settings.addColumn defaultColumnNames c settings_
-                |> EditingBoard
+                |> (\s -> EditingBoard s formColumns)
 
         _ ->
             settingsState
@@ -237,11 +238,11 @@ confirmAddColumn defaultColumnNames settingsState =
 confirmDelete : SettingsState -> SettingsState
 confirmDelete settingsState =
     case settingsState of
-        DeletingBoard settings_ ->
+        DeletingBoard settings_ formColumns ->
             init (Settings.deleteCurrentBoard settings_)
 
-        DeletingColumn index settings_ ->
-            EditingBoard (Settings.deleteColumn index settings_)
+        DeletingColumn index settings_ formColumns ->
+            EditingBoard (Settings.deleteColumn index settings_) formColumns
 
         _ ->
             settingsState
@@ -250,112 +251,112 @@ confirmDelete settingsState =
 deleteBoardRequested : SettingsState -> SettingsState
 deleteBoardRequested settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
-            DeletingBoard settings_
+        AddingBoard _ settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        AddingColumn _ settings_ ->
-            DeletingBoard settings_
+        AddingColumn _ settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        ClosingPlugin settings_ ->
-            DeletingBoard settings_
+        ClosingPlugin settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        ClosingSettings settings_ ->
-            DeletingBoard settings_
+        ClosingSettings settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        DeletingBoard _ ->
+        DeletingBoard _ formColumns ->
             settingsState
 
-        DeletingColumn _ settings_ ->
-            DeletingBoard settings_
+        DeletingColumn _ settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        EditingBoard settings_ ->
-            DeletingBoard settings_
+        EditingBoard settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
-        EditingGlobalSettings settings_ ->
-            DeletingBoard settings_
+        EditingGlobalSettings settings_ formColumns ->
+            DeletingBoard settings_ formColumns
 
 
 deleteColumnRequested : Int -> SettingsState -> SettingsState
 deleteColumnRequested index settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
-            DeletingColumn index settings_
+        AddingBoard _ settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        AddingColumn _ settings_ ->
-            DeletingColumn index settings_
+        AddingColumn _ settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        ClosingPlugin settings_ ->
-            DeletingColumn index settings_
+        ClosingPlugin settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        ClosingSettings settings_ ->
-            DeletingColumn index settings_
+        ClosingSettings settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        DeletingBoard settings_ ->
-            DeletingColumn index settings_
+        DeletingBoard settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        DeletingColumn _ settings_ ->
-            DeletingColumn index settings_
+        DeletingColumn _ settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        EditingBoard settings_ ->
-            DeletingColumn index settings_
+        EditingBoard settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
-        EditingGlobalSettings settings_ ->
-            DeletingColumn index settings_
+        EditingGlobalSettings settings_ formColumns ->
+            DeletingColumn index settings_ formColumns
 
 
 editBoardAt : Int -> SettingsState -> SettingsState
 editBoardAt index settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        AddingBoard _ settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        AddingColumn _ settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        AddingColumn _ settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        ClosingPlugin settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        ClosingPlugin settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        ClosingSettings settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        ClosingSettings settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        DeletingBoard settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        DeletingBoard settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        DeletingColumn _ settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        DeletingColumn _ settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        EditingBoard settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        EditingBoard settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
-        EditingGlobalSettings settings_ ->
-            EditingBoard (Settings.switchToBoard index settings_)
+        EditingGlobalSettings settings_ formColumns ->
+            EditingBoard (Settings.switchToBoard index settings_) formColumns
 
 
 editGlobalSettings : SettingsState -> SettingsState
 editGlobalSettings settingsState =
     case settingsState of
-        AddingBoard _ settings_ ->
-            EditingGlobalSettings settings_
+        AddingBoard _ settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        AddingColumn _ settings_ ->
-            EditingGlobalSettings settings_
+        AddingColumn _ settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        ClosingPlugin settings_ ->
-            EditingGlobalSettings settings_
+        ClosingPlugin settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        ClosingSettings settings_ ->
-            EditingGlobalSettings settings_
+        ClosingSettings settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        DeletingBoard settings_ ->
-            EditingGlobalSettings settings_
+        DeletingBoard settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        DeletingColumn _ settings_ ->
-            EditingGlobalSettings settings_
+        DeletingColumn _ settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        EditingBoard settings_ ->
-            EditingGlobalSettings settings_
+        EditingBoard settings_ formColumns ->
+            EditingGlobalSettings settings_ formColumns
 
-        EditingGlobalSettings _ ->
+        EditingGlobalSettings _ formColumns ->
             settingsState
 
 
@@ -376,8 +377,8 @@ moveColumn draggedId beaconPosition settingsState =
 mapBoardBeingAdded : (NewBoardConfig -> NewBoardConfig) -> SettingsState -> SettingsState
 mapBoardBeingAdded fn settingsState =
     case settingsState of
-        AddingBoard c settings_ ->
-            AddingBoard (fn c) settings_
+        AddingBoard c settings_ formColumns ->
+            AddingBoard (fn c) settings_ formColumns
 
         _ ->
             settingsState
@@ -386,8 +387,8 @@ mapBoardBeingAdded fn settingsState =
 mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
 mapBoardBeingEdited fn settingsState =
     case settingsState of
-        EditingBoard settings_ ->
-            EditingBoard <| Settings.updateCurrentBoard fn settings_
+        EditingBoard settings_ formColumns ->
+            EditingBoard (Settings.updateCurrentBoard fn settings_) formColumns
 
         _ ->
             settingsState
@@ -396,8 +397,8 @@ mapBoardBeingEdited fn settingsState =
 mapColumnBeingAdded : (NewColumnConfig -> NewColumnConfig) -> SettingsState -> SettingsState
 mapColumnBeingAdded fn settingsState =
     case settingsState of
-        AddingColumn c settings_ ->
-            AddingColumn (fn c) settings_
+        AddingColumn c settings_ formColumns ->
+            AddingColumn (fn c) settings_ formColumns
 
         _ ->
             settingsState
@@ -406,8 +407,8 @@ mapColumnBeingAdded fn settingsState =
 mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> SettingsState -> SettingsState
 mapGlobalSettings fn settingsState =
     case settingsState of
-        EditingGlobalSettings settings_ ->
-            EditingGlobalSettings (Settings.mapGlobalSettings fn settings_)
+        EditingGlobalSettings settings_ formColumns ->
+            EditingGlobalSettings (Settings.mapGlobalSettings fn settings_) formColumns
 
         _ ->
             settingsState
@@ -420,26 +421,26 @@ mapGlobalSettings fn settingsState =
 mapSettings : (Settings -> Settings) -> SettingsState -> SettingsState
 mapSettings fn settingsState =
     case settingsState of
-        AddingBoard config settings_ ->
-            AddingBoard config (fn settings_)
+        AddingBoard config settings_ formColumns ->
+            AddingBoard config (fn settings_) formColumns
 
-        AddingColumn config settings_ ->
-            AddingColumn config (fn settings_)
+        AddingColumn config settings_ formColumns ->
+            AddingColumn config (fn settings_) formColumns
 
-        ClosingPlugin settings_ ->
-            ClosingPlugin (fn settings_)
+        ClosingPlugin settings_ formColumns ->
+            ClosingPlugin (fn settings_) formColumns
 
-        ClosingSettings settings_ ->
-            ClosingSettings (fn settings_)
+        ClosingSettings settings_ formColumns ->
+            ClosingSettings (fn settings_) formColumns
 
-        DeletingBoard settings_ ->
-            DeletingBoard (fn settings_)
+        DeletingBoard settings_ formColumns ->
+            DeletingBoard (fn settings_) formColumns
 
-        DeletingColumn index settings_ ->
-            DeletingColumn index (fn settings_)
+        DeletingColumn index settings_ formColumns ->
+            DeletingColumn index (fn settings_) formColumns
 
-        EditingBoard settings_ ->
-            EditingBoard (fn settings_)
+        EditingBoard settings_ formColumns ->
+            EditingBoard (fn settings_) formColumns
 
-        EditingGlobalSettings settings_ ->
-            EditingGlobalSettings (fn settings_)
+        EditingGlobalSettings settings_ formColumns ->
+            EditingGlobalSettings (fn settings_) formColumns

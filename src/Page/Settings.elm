@@ -437,7 +437,7 @@ handleClose model =
                 |> Settings.cleanupNames
     in
     case newModel.settingsState of
-        SettingsState.ClosingPlugin _ ->
+        SettingsState.ClosingPlugin _ _ ->
             ( newModel
             , Cmd.batch
                 [ InteropPorts.updateSettings newSettings
@@ -446,7 +446,7 @@ handleClose model =
             , Session.SettingsClosed newSettings
             )
 
-        SettingsState.ClosingSettings _ ->
+        SettingsState.ClosingSettings _ _ ->
             ( newModel
             , InteropPorts.updateSettings newSettings
             , Session.SettingsClosed newSettings
@@ -534,42 +534,42 @@ view model =
             Session.dragTracker model.session
     in
     case model.settingsState of
-        SettingsState.AddingBoard newConfig settings ->
+        SettingsState.AddingBoard newConfig settings _ ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
-        SettingsState.AddingColumn newConfig settings ->
+        SettingsState.AddingColumn newConfig settings _ ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalAddColumn newConfig settings
                 ]
 
-        SettingsState.ClosingPlugin _ ->
+        SettingsState.ClosingPlugin _ _ ->
             Html.text ""
 
-        SettingsState.ClosingSettings _ ->
+        SettingsState.ClosingSettings _ _ ->
             Html.text ""
 
-        SettingsState.DeletingBoard settings ->
+        SettingsState.DeletingBoard settings _ ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.DeletingColumn _ settings ->
+        SettingsState.DeletingColumn _ settings _ ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
-        SettingsState.EditingBoard settings ->
+        SettingsState.EditingBoard settings _ ->
             boardSettingsView (Settings.boardConfigs settings)
                 model.multiSelect
                 dragTracker
 
-        SettingsState.EditingGlobalSettings settings ->
+        SettingsState.EditingGlobalSettings settings _ ->
             globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings dragTracker
 
 
