@@ -62,17 +62,6 @@ init settings_ =
         AddingBoard NewBoardConfig.default settings_ []
 
 
-formColumnsFromSettings : Settings -> List FormColumn.Form
-formColumnsFromSettings settings_ =
-    settings_
-        |> Settings.boardConfigs
-        |> SafeZipper.current
-        |> Maybe.map BoardConfig.columns
-        |> Maybe.map Columns.toList
-        |> Maybe.withDefault []
-        |> List.map FormColumn.init
-
-
 
 -- UTILITIES
 
@@ -317,30 +306,39 @@ deleteColumnRequested index settingsState =
 
 editBoardAt : Int -> SettingsState -> SettingsState
 editBoardAt index settingsState =
+    let
+        changeToEditingBoard : Settings -> SettingsState
+        changeToEditingBoard settings_ =
+            let
+                newSettings =
+                    Settings.switchToBoard index settings_
+            in
+            EditingBoard newSettings (formColumnsFromSettings newSettings)
+    in
     case settingsState of
         AddingBoard _ settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         AddingColumn _ settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         ClosingPlugin settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         ClosingSettings settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         DeletingBoard settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         DeletingColumn _ settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         EditingBoard settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
         EditingGlobalSettings settings_ formColumns ->
-            EditingBoard (Settings.switchToBoard index settings_) formColumns
+            changeToEditingBoard settings_
 
 
 editGlobalSettings : SettingsState -> SettingsState
@@ -427,6 +425,17 @@ mapGlobalSettings fn settingsState =
 
 
 -- PRIVATE
+
+
+formColumnsFromSettings : Settings -> List FormColumn.Form
+formColumnsFromSettings settings_ =
+    settings_
+        |> Settings.boardConfigs
+        |> SafeZipper.current
+        |> Maybe.map BoardConfig.columns
+        |> Maybe.map Columns.toList
+        |> Maybe.withDefault []
+        |> List.map FormColumn.init
 
 
 mapSettings : (Settings -> Settings) -> SettingsState -> SettingsState

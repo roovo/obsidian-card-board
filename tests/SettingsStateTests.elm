@@ -506,44 +506,95 @@ editBoardAt =
     describe "editBoardAt"
         [ test "AddingBoard -> EditingBoard" <|
             \() ->
-                SettingsState.AddingBoard NewBoardConfig.default (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.AddingBoard
+                    NewBoardConfig.default
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "AddingColumn -> EditingBoard" <|
             \() ->
-                SettingsState.AddingColumn (NewColumnConfig "" "") (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.AddingColumn
+                    (NewColumnConfig "" "")
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "ClosingPlugin -> EditingBoard" <|
             \() ->
-                SettingsState.ClosingPlugin (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.ClosingPlugin
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "ClosingSettings -> EditingBoard" <|
             \() ->
-                SettingsState.ClosingSettings (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.ClosingSettings
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "DeletingBoard -> EditingBoard" <|
             \() ->
-                SettingsState.DeletingBoard (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.DeletingBoard
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "DeletingColumn -> EditingBoard" <|
             \() ->
-                SettingsState.DeletingColumn 1 (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.DeletingColumn
+                    1
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "EditingBoard -> EditingBoard (switched)" <|
             \() ->
-                SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.EditingBoard
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         , test "EditingGlobalSettings -> EditingBoard" <|
             \() ->
-                SettingsState.EditingGlobalSettings (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) []
+                SettingsState.EditingGlobalSettings
+                    (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                    []
                     |> SettingsState.editBoardAt 1
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ]) [])
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
+                            [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ]
+                        )
         ]
 
 
