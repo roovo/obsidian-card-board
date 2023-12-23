@@ -205,18 +205,9 @@ update msg model =
             mapSettingsState SettingsState.addColumnRequested model
 
         AddColumnConfirmed ->
-            let
-                defaultColumnNames : DefaultColumnNames
-                defaultColumnNames =
-                    model
-                        |> toSession
-                        |> Session.settings
-                        |> Settings.globalSettings
-                        |> .defaultColumnNames
-            in
             wrap <|
                 switchSettingsState
-                    (SettingsState.addColumnConfirmed defaultColumnNames)
+                    SettingsState.addColumnConfirmed
                     model
 
         BackspacePressed ->
@@ -563,13 +554,13 @@ view model =
     case model.settingsState of
         SettingsState.AddingBoard newConfig settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm (Settings.defaultColumnNames settings) model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
         SettingsState.AddingColumn newConfig settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm (Settings.defaultColumnNames settings) model.multiSelect dragTracker
                 , modalAddColumn newConfig boardConfigsForm
                 ]
 
@@ -581,13 +572,13 @@ view model =
 
         SettingsState.DeletingBoard settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm (Settings.defaultColumnNames settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
         SettingsState.DeletingColumn _ settings boardConfigsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
+                [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm (Settings.defaultColumnNames settings) model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
@@ -595,6 +586,7 @@ view model =
             boardSettingsView
                 (Settings.boardConfigs settings)
                 boardConfigsForm
+                (Settings.defaultColumnNames settings)
                 model.multiSelect
                 dragTracker
 
@@ -855,12 +847,13 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> BoardConfigsForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView boardConfigs boardConfigsForm multiselect dragTracker =
+boardSettingsView : SafeZipper BoardConfig -> BoardConfigsForm.Form -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView boardConfigs boardConfigsForm defaultColumnNames multiselect dragTracker =
     boardSettingsForm
         (SafeZipper.current boardConfigs)
         (SafeZipper.currentIndex boardConfigs)
         (SafeZipper.current (BoardConfigsForm.columnsForms boardConfigsForm))
+        defaultColumnNames
         multiselect
         dragTracker
         |> settingsSurroundView Boards boardConfigs dragTracker
@@ -1105,8 +1098,8 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm.Form -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex columnsForm multiselect dragTracker =
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm.Form -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multiselect dragTracker =
     case ( boardConfig, columnsForm, boardIndex ) of
         ( Just config, Just form, Just _ ) ->
             let
@@ -1262,7 +1255,7 @@ boardSettingsForm boardConfig boardIndex columnsForm multiselect dragTracker =
                 [ Html.div [ class "cardboard-settings-columns-list" ]
                     ((form
                         |> .columnForms
-                        |> List.indexedMap (settingsColumnView draggedUniqueId)
+                        |> List.indexedMap (settingsColumnView draggedUniqueId defaultColumnNames)
                      )
                         |> (\hs ->
                                 List.append hs
@@ -1306,8 +1299,8 @@ boardSettingsForm boardConfig boardIndex columnsForm multiselect dragTracker =
             [ Html.text "" ]
 
 
-settingsColumnView : Maybe String -> Int -> ColumnForm.Form -> Html Msg
-settingsColumnView uniqueId index columnForm =
+settingsColumnView : Maybe String -> DefaultColumnNames -> Int -> ColumnForm.Form -> Html Msg
+settingsColumnView uniqueId defaultColumnNames index columnForm =
     let
         domId : String
         domId =
@@ -1320,6 +1313,10 @@ settingsColumnView uniqueId index columnForm =
         name : String
         name =
             ColumnForm.name columnForm
+
+        defaultName : String
+        defaultName =
+            ColumnForm.placeholder defaultColumnNames columnForm
     in
     Html.div []
         [ columnSettingsBeacon (BeaconPosition.Before name)
@@ -1350,6 +1347,7 @@ settingsColumnView uniqueId index columnForm =
             , Html.div [ class "cardboard-settings-column-item-detail" ]
                 [ Html.input
                     [ type_ "text"
+                    , placeholder defaultName
                     , value name
                     , onChange <| ColumnNameChanged index
                     , onInput <| EnteredColumnName index
@@ -1428,6 +1426,7 @@ settingsColumnControlView index columnForm =
                 [ Html.text <| "Limit: "
                 , Html.input
                     [ type_ "text"
+                    , placeholder "10"
                     , value completedForm.limit
                     , attribute "size" "3"
                     , onInput <| EnteredColumnCompletedLimit index
@@ -1506,6 +1505,7 @@ rangeInputsView index datedColumnForm =
         "After" ->
             [ Html.input
                 [ type_ "text"
+                , placeholder "0"
                 , value datedColumnForm.from
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueFrom index
@@ -1516,6 +1516,7 @@ rangeInputsView index datedColumnForm =
         "Between" ->
             [ Html.input
                 [ type_ "text"
+                , placeholder "0"
                 , value datedColumnForm.from
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueFrom index
@@ -1524,6 +1525,7 @@ rangeInputsView index datedColumnForm =
             , Html.span [] [ Html.text "and" ]
             , Html.input
                 [ type_ "text"
+                , placeholder "0"
                 , value datedColumnForm.to
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueTo index
@@ -1534,6 +1536,7 @@ rangeInputsView index datedColumnForm =
         _ ->
             [ Html.input
                 [ type_ "text"
+                , placeholder "0"
                 , value datedColumnForm.to
                 , attribute "size" "3"
                 , onInput <| EnteredDatedColumnRangeValueTo index

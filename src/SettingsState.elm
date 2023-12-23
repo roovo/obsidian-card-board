@@ -173,11 +173,11 @@ addBoardRequested settingsState =
             AddingBoard NewBoardConfig.default settings_ boardConfigsForm_
 
 
-addColumnConfirmed : DefaultColumnNames -> SettingsState -> SettingsState
-addColumnConfirmed defaultColumnNames settingsState =
+addColumnConfirmed : SettingsState -> SettingsState
+addColumnConfirmed settingsState =
     case settingsState of
         AddingColumn c settings_ boardConfigsForm_ ->
-            BoardConfigsForm.addColumn defaultColumnNames c boardConfigsForm_
+            BoardConfigsForm.addColumn c boardConfigsForm_
                 |> (\f -> EditingBoard settings_ f)
 
         _ ->

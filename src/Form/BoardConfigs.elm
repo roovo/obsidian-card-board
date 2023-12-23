@@ -67,12 +67,12 @@ columnsForms form =
 -- MODIFICATION
 
 
-addColumn : DefaultColumnNames -> NewColumnConfig -> Form -> Form
-addColumn defaultColumnNames_ configToAdd form =
+addColumn : NewColumnConfig -> Form -> Form
+addColumn configToAdd form =
     { form
         | columnsForms =
             SafeZipper.mapSelectedAndRest
-                (ColumnsForm.addColumn defaultColumnNames_ configToAdd)
+                (ColumnsForm.addColumn configToAdd)
                 identity
                 form.columnsForms
     }

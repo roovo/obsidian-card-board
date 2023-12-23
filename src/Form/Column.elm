@@ -9,6 +9,7 @@ module Form.Column exposing
     , isUndated
     , isUntagged
     , name
+    , placeholder
     , typeString
     , updateCompletedColumnLimit
     , updateDatedColumnRangeType
@@ -56,35 +57,26 @@ type Error
 -- CONSTRUCTION
 
 
-fromColumnConfig : DefaultColumnNames -> NewColumnConfig -> Maybe Form
-fromColumnConfig defaultColumnNames newColumnConfig =
-    let
-        newName : String
-        newName =
-            if String.isEmpty (String.trim newColumnConfig.name) then
-                DefaultColumnNames.nameFor newColumnConfig.columnType defaultColumnNames
-
-            else
-                newColumnConfig.name
-    in
+fromColumnConfig : NewColumnConfig -> Maybe Form
+fromColumnConfig newColumnConfig =
     case newColumnConfig.columnType of
         "completed" ->
-            Just (CompletedColumnForm { name = newName, limit = "10" })
+            Just (CompletedColumnForm { name = newColumnConfig.name, limit = "10" })
 
         "dated" ->
-            Just (DatedColumnForm { name = newColumnConfig.name, rangeType = "Before", from = "", to = "1" })
+            Just (DatedColumnForm { name = newColumnConfig.name, rangeType = "Before", from = "", to = "" })
 
         "namedTag" ->
             Just (NamedTagColumnForm { name = newColumnConfig.name, tag = "" })
 
         "otherTags" ->
-            Just (OtherTagsColumnForm { name = newName })
+            Just (OtherTagsColumnForm { name = newColumnConfig.name })
 
         "undated" ->
-            Just (UndatedColumnForm { name = newName })
+            Just (UndatedColumnForm { name = newColumnConfig.name })
 
         "untagged" ->
-            Just (UntaggedColumnForm { name = newName })
+            Just (UntaggedColumnForm { name = newColumnConfig.name })
 
         _ ->
             Nothing
@@ -225,6 +217,28 @@ name form =
 
         UntaggedColumnForm subform ->
             subform.name
+
+
+placeholder : DefaultColumnNames -> Form -> String
+placeholder defaultColumnNames form =
+    case form of
+        CompletedColumnForm subform ->
+            DefaultColumnNames.nameFor "completed" defaultColumnNames
+
+        DatedColumnForm subform ->
+            ""
+
+        NamedTagColumnForm subform ->
+            ""
+
+        OtherTagsColumnForm subform ->
+            DefaultColumnNames.nameFor "otherTags" defaultColumnNames
+
+        UndatedColumnForm subform ->
+            DefaultColumnNames.nameFor "undated" defaultColumnNames
+
+        UntaggedColumnForm subform ->
+            DefaultColumnNames.nameFor "untagged" defaultColumnNames
 
 
 typeString : Form -> String

@@ -16,7 +16,6 @@ module Form.Columns exposing
     )
 
 import Columns exposing (Columns)
-import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
 import List.Extra as LE
@@ -179,8 +178,8 @@ optionsForSelect form newColumnConfig =
 -- MODIFICATION
 
 
-addColumn : DefaultColumnNames -> NewColumnConfig -> Form -> Form
-addColumn defaultColumnNames newColumnConfig form =
+addColumn : NewColumnConfig -> Form -> Form
+addColumn newColumnConfig form =
     let
         allColumns : List ColumnForm.Form
         allColumns =
@@ -192,7 +191,7 @@ addColumn defaultColumnNames newColumnConfig form =
 
         newColumn : List ColumnForm.Form
         newColumn =
-            ColumnForm.fromColumnConfig defaultColumnNames newColumnConfig
+            ColumnForm.fromColumnConfig newColumnConfig
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in

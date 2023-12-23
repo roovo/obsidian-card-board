@@ -7,6 +7,7 @@ module Settings exposing
     , currentVersion
     , decoder
     , default
+    , defaultColumnNames
     , deleteColumn
     , deleteCurrentBoard
     , encoder

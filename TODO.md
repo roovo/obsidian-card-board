@@ -8,7 +8,6 @@
     https://sakurachan.info/posts/2019/form-decoding/
     https://arowm.github.io/elm-form-decoder/#goat-registerForm
     https://github.com/arowM/elm-form-decoder/
-- placeholders
 - delete column, re-order columns, re-order boards
 - save on settings exit
 - remove Column.typeString Columns.optionsForSelect Settings.addColumn Column.fromColumnConfig
