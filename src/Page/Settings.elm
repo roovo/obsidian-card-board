@@ -249,7 +249,7 @@ update msg model =
             mapSettingsState SettingsState.deleteBoardRequested model
 
         DeleteConfirmed ->
-            wrap <| switchSettingsState SettingsState.confirmDelete model
+            wrap <| switchSettingsState SettingsState.deleteConfirmed model
 
         ElementDragged dragData ->
             case dragData.dragAction of

@@ -3,6 +3,7 @@ module Form.Columns exposing
     , OptionsForSelect
     , addColumn
     , decoder
+    , deleteColumn
     , empty
     , find
     , init
@@ -211,6 +212,11 @@ addColumn newColumnConfig form =
             allColumns ++ newColumn
     )
         |> Form
+
+
+deleteColumn : Int -> Form -> Form
+deleteColumn index form =
+    { form | columnForms = LE.removeAt index form.columnForms }
 
 
 updateColumnName : Int -> String -> Form -> Form

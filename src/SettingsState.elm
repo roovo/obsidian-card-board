@@ -6,9 +6,9 @@ module SettingsState exposing
     , addColumnRequested
     , boardConfigs
     , cancelCurrentState
-    , confirmDelete
     , deleteBoardRequested
     , deleteColumnRequested
+    , deleteConfirmed
     , editBoardAt
     , editGlobalSettings
     , init
@@ -264,19 +264,6 @@ cancelCurrentState settingsState =
             ClosingSettings settings_ boardConfigsForm_
 
 
-confirmDelete : SettingsState -> SettingsState
-confirmDelete settingsState =
-    case settingsState of
-        DeletingBoard settings_ boardConfigsForm_ ->
-            init (Settings.deleteCurrentBoard settings_)
-
-        DeletingColumn index settings_ boardConfigsForm_ ->
-            EditingBoard (Settings.deleteColumn index settings_) boardConfigsForm_
-
-        _ ->
-            settingsState
-
-
 deleteBoardRequested : SettingsState -> SettingsState
 deleteBoardRequested settingsState =
     case settingsState of
@@ -331,6 +318,19 @@ deleteColumnRequested index settingsState =
 
         EditingGlobalSettings settings_ boardConfigsForm_ ->
             DeletingColumn index settings_ boardConfigsForm_
+
+
+deleteConfirmed : SettingsState -> SettingsState
+deleteConfirmed settingsState =
+    case settingsState of
+        DeletingBoard settings_ boardConfigsForm_ ->
+            init (Settings.deleteCurrentBoard settings_)
+
+        DeletingColumn index settings_ boardConfigsForm_ ->
+            EditingBoard settings_ (BoardConfigsForm.deleteColumn index boardConfigsForm_)
+
+        _ ->
+            settingsState
 
 
 editBoardAt : Int -> SettingsState -> SettingsState

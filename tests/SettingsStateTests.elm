@@ -28,7 +28,7 @@ suite =
         , addColumnRequested
         , boardConfigs
         , cancelCurrentState
-        , confirmDelete
+        , deleteConfirmed
         , deleteBoardRequested
         , deleteColumnRequested
         , editBoardAt
@@ -364,71 +364,6 @@ cancelCurrentState =
         ]
 
 
-confirmDelete : Test
-confirmDelete =
-    describe "confirmDelete"
-        [ test "does nothing if AddingBoard" <|
-            \() ->
-                SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty)
-        , test "does nothing if AddingColumn" <|
-            \() ->
-                SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default BoardConfigsForm.empty)
-        , test "does nothing if ClosingPlugin" <|
-            \() ->
-                SettingsState.ClosingPlugin Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.ClosingPlugin Settings.default BoardConfigsForm.empty)
-        , test "does nothing if ClosingSettings" <|
-            \() ->
-                SettingsState.ClosingSettings Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.ClosingSettings Settings.default BoardConfigsForm.empty)
-        , test "deletes the current board and -> Adding if DeletingBoard and there is ONLY one board" <|
-            \() ->
-                SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty)
-        , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
-            \() ->
-                SettingsState.DeletingBoard
-                    (settingsFromBoardConfigsWithIndex 1
-                        [ exampleBoardConfigNoColumns, exampleBoardConfig, exampleBoardConfigNoColumns ]
-                    )
-                    BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal
-                        (SettingsState.EditingBoard
-                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfigNoColumns ])
-                            { columnsForms =
-                                SafeZipper.fromList
-                                    [ { columnForms = [] }
-                                    , { columnForms = [] }
-                                    ]
-                                    |> SafeZipper.atIndex 1
-                            }
-                        )
-        , test "deletes the current column and -> EditingBoard if DeletingColumn" <|
-            \() ->
-                SettingsState.DeletingColumn 0 (settingsFromBoardConfigs [ exampleBoardConfig ]) BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns ]) BoardConfigsForm.empty)
-        , test "does nothing if EditingBoard" <|
-            \() ->
-                SettingsState.EditingBoard Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.EditingBoard Settings.default BoardConfigsForm.empty)
-        , test "does nothing if EditingGlobalSettings" <|
-            \() ->
-                SettingsState.EditingGlobalSettings Settings.default BoardConfigsForm.empty
-                    |> SettingsState.confirmDelete
-                    |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default BoardConfigsForm.empty)
-        ]
-
-
 deleteBoardRequested : Test
 deleteBoardRequested =
     describe "deleteBoardRequested"
@@ -518,6 +453,81 @@ deleteColumnRequested =
                 SettingsState.EditingGlobalSettings Settings.default BoardConfigsForm.empty
                     |> SettingsState.deleteColumnRequested 3
                     |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default BoardConfigsForm.empty)
+        ]
+
+
+deleteConfirmed : Test
+deleteConfirmed =
+    describe "deleteConfirmed"
+        [ test "does nothing if AddingBoard" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty)
+        , test "does nothing if AddingColumn" <|
+            \() ->
+                SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default BoardConfigsForm.empty)
+        , test "does nothing if ClosingPlugin" <|
+            \() ->
+                SettingsState.ClosingPlugin Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.ClosingPlugin Settings.default BoardConfigsForm.empty)
+        , test "does nothing if ClosingSettings" <|
+            \() ->
+                SettingsState.ClosingSettings Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.ClosingSettings Settings.default BoardConfigsForm.empty)
+        , test "deletes the current board and -> Adding if DeletingBoard and there is ONLY one board" <|
+            \() ->
+                SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty)
+        , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
+            \() ->
+                SettingsState.DeletingBoard
+                    (settingsFromBoardConfigsWithIndex 1
+                        [ exampleBoardConfigNoColumns, exampleBoardConfig, exampleBoardConfigNoColumns ]
+                    )
+                    BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfigNoColumns ])
+                            { columnsForms =
+                                SafeZipper.fromList
+                                    [ { columnForms = [] }
+                                    , { columnForms = [] }
+                                    ]
+                                    |> SafeZipper.atIndex 1
+                            }
+                        )
+        , test "deletes the current column and -> EditingBoard if DeletingColumn" <|
+            \() ->
+                let
+                    result =
+                        SafeZipper.fromList
+                            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
+                            , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "baz" "tagBoard")
+                                |> BoardConfig.deleteColumn 1
+                            ]
+                            |> SafeZipper.atIndex 1
+                            |> BoardConfigsForm.init
+                in
+                SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfig ]) exampleBoardConfigsForm
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) result)
+        , test "does nothing if EditingBoard" <|
+            \() ->
+                SettingsState.EditingBoard Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.EditingBoard Settings.default BoardConfigsForm.empty)
+        , test "does nothing if EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings Settings.default BoardConfigsForm.empty
+                    |> SettingsState.deleteConfirmed
+                    |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default BoardConfigsForm.empty)
         ]
 
 

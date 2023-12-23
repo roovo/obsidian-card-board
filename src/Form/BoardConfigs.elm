@@ -3,6 +3,7 @@ module Form.BoardConfigs exposing
     , addColumn
     , columnsForms
     , decoder
+    , deleteColumn
     , empty
     , init
     , switchToBoard
@@ -73,6 +74,17 @@ addColumn configToAdd form =
         | columnsForms =
             SafeZipper.mapSelectedAndRest
                 (ColumnsForm.addColumn configToAdd)
+                identity
+                form.columnsForms
+    }
+
+
+deleteColumn : Int -> Form -> Form
+deleteColumn index form =
+    { form
+        | columnsForms =
+            SafeZipper.mapSelectedAndRest
+                (ColumnsForm.deleteColumn index)
                 identity
                 form.columnsForms
     }
