@@ -6,6 +6,7 @@ module Form.BoardConfigs exposing
     , deleteColumn
     , empty
     , init
+    , moveColumn
     , switchToBoard
     , updateCurrentColumnsForm
     )
@@ -13,6 +14,7 @@ module Form.BoardConfigs exposing
 import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
@@ -85,6 +87,17 @@ deleteColumn index form =
         | columnsForms =
             SafeZipper.mapSelectedAndRest
                 (ColumnsForm.deleteColumn index)
+                identity
+                form.columnsForms
+    }
+
+
+moveColumn : String -> BeaconPosition -> Form -> Form
+moveColumn draggedId beaconPosition form =
+    { form
+        | columnsForms =
+            SafeZipper.mapSelectedAndRest
+                (ColumnsForm.moveColumn draggedId beaconPosition)
                 identity
                 form.columnsForms
     }

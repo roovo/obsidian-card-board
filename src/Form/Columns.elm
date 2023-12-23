@@ -7,6 +7,7 @@ module Form.Columns exposing
     , empty
     , find
     , init
+    , moveColumn
     , optionsForSelect
     , updateColumnName
     , updateCompletedColumnLimit
@@ -17,6 +18,7 @@ module Form.Columns exposing
     )
 
 import Columns exposing (Columns)
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
 import List.Extra as LE
@@ -217,6 +219,14 @@ addColumn newColumnConfig form =
 deleteColumn : Int -> Form -> Form
 deleteColumn index form =
     { form | columnForms = LE.removeAt index form.columnForms }
+
+
+moveColumn : String -> BeaconPosition -> Form -> Form
+moveColumn draggedId beaconPosition form =
+    form
+        |> .columnForms
+        |> BeaconPosition.performMove draggedId beaconPosition ColumnForm.name
+        |> Form
 
 
 updateColumnName : Int -> String -> Form -> Form

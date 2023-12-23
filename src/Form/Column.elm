@@ -222,22 +222,22 @@ name form =
 placeholder : DefaultColumnNames -> Form -> String
 placeholder defaultColumnNames form =
     case form of
-        CompletedColumnForm subform ->
+        CompletedColumnForm _ ->
             DefaultColumnNames.nameFor "completed" defaultColumnNames
 
-        DatedColumnForm subform ->
+        DatedColumnForm _ ->
             ""
 
-        NamedTagColumnForm subform ->
+        NamedTagColumnForm _ ->
             ""
 
-        OtherTagsColumnForm subform ->
+        OtherTagsColumnForm _ ->
             DefaultColumnNames.nameFor "otherTags" defaultColumnNames
 
-        UndatedColumnForm subform ->
+        UndatedColumnForm _ ->
             DefaultColumnNames.nameFor "undated" defaultColumnNames
 
-        UntaggedColumnForm subform ->
+        UntaggedColumnForm _ ->
             DefaultColumnNames.nameFor "untagged" defaultColumnNames
 
 

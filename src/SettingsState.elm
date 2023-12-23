@@ -412,7 +412,7 @@ moveBoard draggedId beaconPosition settingsState =
 
 moveColumn : String -> BeaconPosition -> SettingsState -> SettingsState
 moveColumn draggedId beaconPosition settingsState =
-    mapSettings (Settings.moveColumn draggedId beaconPosition) settingsState
+    mapBoardConfigsForm (BoardConfigsForm.moveColumn draggedId beaconPosition) settingsState
 
 
 
@@ -478,6 +478,34 @@ boardConfigsFormFromSettings settings_ =
     settings_
         |> Settings.boardConfigs
         |> BoardConfigsForm.init
+
+
+mapBoardConfigsForm : (BoardConfigsForm.Form -> BoardConfigsForm.Form) -> SettingsState -> SettingsState
+mapBoardConfigsForm fn settingsState =
+    case settingsState of
+        AddingBoard config settings_ boardConfigsForm_ ->
+            AddingBoard config settings_ (fn boardConfigsForm_)
+
+        AddingColumn config settings_ boardConfigsForm_ ->
+            AddingColumn config settings_ (fn boardConfigsForm_)
+
+        ClosingPlugin settings_ boardConfigsForm_ ->
+            ClosingPlugin settings_ (fn boardConfigsForm_)
+
+        ClosingSettings settings_ boardConfigsForm_ ->
+            ClosingSettings settings_ (fn boardConfigsForm_)
+
+        DeletingBoard settings_ boardConfigsForm_ ->
+            DeletingBoard settings_ (fn boardConfigsForm_)
+
+        DeletingColumn index settings_ boardConfigsForm_ ->
+            DeletingColumn index settings_ (fn boardConfigsForm_)
+
+        EditingBoard settings_ boardConfigsForm_ ->
+            EditingBoard settings_ (fn boardConfigsForm_)
+
+        EditingGlobalSettings settings_ boardConfigsForm_ ->
+            EditingGlobalSettings settings_ (fn boardConfigsForm_)
 
 
 mapSettings : (Settings -> Settings) -> SettingsState -> SettingsState
