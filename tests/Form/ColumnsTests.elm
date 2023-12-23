@@ -14,6 +14,7 @@ import Form.Columns as ColumnsForm
 import Form.CompletedColumn as CompletedColumnForm
 import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
+import List.Extra as LE
 import Test exposing (..)
 
 
@@ -25,6 +26,11 @@ suite =
         , find
         , init
         , updateColumnName
+        , updateCompletedColumnLimit
+        , updateDatedColumnRangeType
+        , updateDatedColumnRangeValueFrom
+        , updateDatedColumnRangeValueTo
+        , updateNamedTagTag
         ]
 
 
@@ -177,4 +183,174 @@ updateColumnName =
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo", "new name" ]
+        ]
+
+
+updateCompletedColumnLimit : Test
+updateCompletedColumnLimit =
+    describe "updateCompletedColumnLimit"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateCompletedColumnLimit 1 "newLimit"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateCompletedColumnLimit 7 "newLimit"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.NamedTag <| NamedTagColumn.init "bar" "baz"
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateCompletedColumnLimit 0 "newLimit"
+                    |> .columnForms
+                    |> LE.getAt 0
+                    |> Expect.equal (Just <| ColumnForm.CompletedColumnForm { name = "foo", limit = "newLimit" })
+        ]
+
+
+updateDatedColumnRangeType : Test
+updateDatedColumnRangeType =
+    describe "updateDatedColumnRangeType"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateDatedColumnRangeType 1 "newType"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.After 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeType 7 "newType"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.After 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeType 1 "newType"
+                    |> .columnForms
+                    |> LE.getAt 1
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "newType", from = "7", to = "" })
+        ]
+
+
+updateDatedColumnRangeValueFrom : Test
+updateDatedColumnRangeValueFrom =
+    describe "updateDatedColumnRangeValueFrom"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateDatedColumnRangeValueFrom 1 "newLimit"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.After 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeValueFrom 7 "newLimit"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.After 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeValueFrom 1 "newValue"
+                    |> .columnForms
+                    |> LE.getAt 1
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "After", from = "newValue", to = "" })
+        ]
+
+
+updateDatedColumnRangeValueTo : Test
+updateDatedColumnRangeValueTo =
+    describe "updateDatedColumnRangeValueTo"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateDatedColumnRangeValueTo 1 "newLimit"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeValueTo 7 "newLimit"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateDatedColumnRangeValueTo 1 "newValue"
+                    |> .columnForms
+                    |> LE.getAt 1
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "Before", from = "", to = "newValue" })
+        ]
+
+
+updateNamedTagTag : Test
+updateNamedTagTag =
+    describe "updateNamedTagTag"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateNamedTagTag 1 "newTagName"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateNamedTagTag 7 "newTagName"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.NamedTag <| NamedTagColumn.init "bar" "baz"
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateNamedTagTag 1 "newTagName"
+                    |> .columnForms
+                    |> LE.getAt 1
+                    |> Expect.equal (Just <| ColumnForm.NamedTagColumnForm { name = "bar", tag = "newTagName" })
         ]

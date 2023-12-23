@@ -5,7 +5,12 @@ module Form.Column exposing
     , init
     , name
     , typeString
+    , updateCompletedColumnLimit
+    , updateDatedColumnRangeType
+    , updateDatedColumnRangeValueFrom
+    , updateDatedColumnRangeValueTo
     , updateName
+    , updateNamedTagTag
     )
 
 import Column exposing (Column)
@@ -167,6 +172,46 @@ typeString form =
 -- MODIFICATION
 
 
+updateCompletedColumnLimit : String -> Form -> Form
+updateCompletedColumnLimit newLimit form =
+    case form of
+        CompletedColumnForm subform ->
+            CompletedColumnForm <| CompletedColumnForm.updateLimit newLimit subform
+
+        _ ->
+            form
+
+
+updateDatedColumnRangeType : String -> Form -> Form
+updateDatedColumnRangeType newType form =
+    case form of
+        DatedColumnForm subform ->
+            DatedColumnForm <| DatedColumnForm.updateRangeType newType subform
+
+        _ ->
+            form
+
+
+updateDatedColumnRangeValueFrom : String -> Form -> Form
+updateDatedColumnRangeValueFrom newValue form =
+    case form of
+        DatedColumnForm subform ->
+            DatedColumnForm <| DatedColumnForm.updateFrom newValue subform
+
+        _ ->
+            form
+
+
+updateDatedColumnRangeValueTo : String -> Form -> Form
+updateDatedColumnRangeValueTo newValue form =
+    case form of
+        DatedColumnForm subform ->
+            DatedColumnForm <| DatedColumnForm.updateTo newValue subform
+
+        _ ->
+            form
+
+
 updateName : String -> Form -> Form
 updateName newName form =
     case form of
@@ -187,3 +232,13 @@ updateName newName form =
 
         UntaggedColumnForm subform ->
             UntaggedColumnForm <| UntaggedColumnForm.updateName newName subform
+
+
+updateNamedTagTag : String -> Form -> Form
+updateNamedTagTag newName form =
+    case form of
+        NamedTagColumnForm subform ->
+            NamedTagColumnForm <| NamedTagColumnForm.updateTag newName subform
+
+        _ ->
+            form

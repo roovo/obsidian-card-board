@@ -4,6 +4,7 @@ module Form.NamedTagColumn exposing
     , decoder
     , init
     , updateName
+    , updateTag
     )
 
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
@@ -57,6 +58,11 @@ decoder =
 updateName : String -> Form -> Form
 updateName newName form =
     { form | name = newName }
+
+
+updateTag : String -> Form -> Form
+updateTag newName form =
+    { form | tag = newName }
 
 
 

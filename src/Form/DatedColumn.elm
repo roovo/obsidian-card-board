@@ -5,7 +5,10 @@ module Form.DatedColumn exposing
     , RangeValueError(..)
     , decoder
     , init
+    , updateFrom
     , updateName
+    , updateRangeType
+    , updateTo
     )
 
 import Column.Dated as DatedColumn exposing (DatedColumn, RelativeDateRange)
@@ -125,9 +128,24 @@ decoder =
 -- MODIFICATION
 
 
+updateFrom : String -> Form -> Form
+updateFrom newValue form =
+    { form | from = newValue }
+
+
 updateName : String -> Form -> Form
 updateName newName form =
     { form | name = newName }
+
+
+updateRangeType : String -> Form -> Form
+updateRangeType newType form =
+    { form | rangeType = newType }
+
+
+updateTo : String -> Form -> Form
+updateTo newValue form =
+    { form | to = newValue }
 
 
 

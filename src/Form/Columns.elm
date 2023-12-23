@@ -5,6 +5,11 @@ module Form.Columns exposing
     , find
     , init
     , updateColumnName
+    , updateCompletedColumnLimit
+    , updateDatedColumnRangeType
+    , updateDatedColumnRangeValueFrom
+    , updateDatedColumnRangeValueTo
+    , updateNamedTagTag
     )
 
 import Columns exposing (Columns)
@@ -65,3 +70,28 @@ find fn form =
 updateColumnName : Int -> String -> Form -> Form
 updateColumnName index newName form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateName newName) form.columnForms }
+
+
+updateCompletedColumnLimit : Int -> String -> Form -> Form
+updateCompletedColumnLimit index newLimit form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateCompletedColumnLimit newLimit) form.columnForms }
+
+
+updateDatedColumnRangeType : Int -> String -> Form -> Form
+updateDatedColumnRangeType index newType form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeType newType) form.columnForms }
+
+
+updateDatedColumnRangeValueFrom : Int -> String -> Form -> Form
+updateDatedColumnRangeValueFrom index newValue form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeValueFrom newValue) form.columnForms }
+
+
+updateDatedColumnRangeValueTo : Int -> String -> Form -> Form
+updateDatedColumnRangeValueTo index newValue form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeValueTo newValue) form.columnForms }
+
+
+updateNamedTagTag : Int -> String -> Form -> Form
+updateNamedTagTag index newName form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateNamedTagTag newName) form.columnForms }

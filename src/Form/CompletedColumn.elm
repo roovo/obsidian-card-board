@@ -4,6 +4,7 @@ module Form.CompletedColumn exposing
     , LimitError(..)
     , decoder
     , init
+    , updateLimit
     , updateName
     )
 
@@ -57,6 +58,11 @@ decoder =
 
 
 -- MODIFICATION
+
+
+updateLimit : String -> Form -> Form
+updateLimit newLimit form =
+    { form | limit = newLimit }
 
 
 updateName : String -> Form -> Form

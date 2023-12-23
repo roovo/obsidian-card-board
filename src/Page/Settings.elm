@@ -120,6 +120,7 @@ type Msg
     | DeleteBoardRequested
     | DeleteConfirmed
     | ElementDragged DragData
+    | EnteredColumnCompletedLimit Int String
     | EnteredColumnName Int String
     | BlurredColumnName Int
     | EnteredColumnNamedTagTag Int String
@@ -128,7 +129,6 @@ type Msg
     | EnteredDefaultColumnName String String
     | EnteredNewBoardName String
     | EnteredNewColumnName String
-    | EnteredNewColumnCompletedLimit Int String
     | EnteredName String
     | FilterCandidatesReceived (List Filter)
     | GlobalSettingsClicked
@@ -239,7 +239,6 @@ update msg model =
                 foo =
                     Debug.log "changed name" name
             in
-            -- mapColumnBeingEdited (BoardConfigsForm.updateColumnName columnIndex name) model
             ( model, Cmd.none, Session.NoOp )
 
         BlurredColumnName columnIndex ->
@@ -248,10 +247,6 @@ update msg model =
                     Debug.log "blurred name" columnIndex
             in
             ( model, Cmd.none, Session.NoOp )
-
-        EnteredColumnName columnIndex name ->
-            -- ( model, Cmd.none, Session.NoOp )
-            mapCurrentColumnsForm (ColumnsForm.updateColumnName columnIndex name) model
 
         ColumnSettingsMouseDown ( domId, clientData ) ->
             ( { model | session = Session.waitForDrag clientData model.session }
@@ -293,14 +288,20 @@ update msg model =
                     , Session.NoOp
                     )
 
+        EnteredColumnCompletedLimit columnIndex limit ->
+            mapCurrentColumnsForm (ColumnsForm.updateCompletedColumnLimit columnIndex limit) model
+
+        EnteredColumnName columnIndex name ->
+            mapCurrentColumnsForm (ColumnsForm.updateColumnName columnIndex name) model
+
         EnteredColumnNamedTagTag columnIndex tag ->
-            mapBoardBeingEdited (BoardConfig.updateNamedTagTag columnIndex tag) model
+            mapCurrentColumnsForm (ColumnsForm.updateNamedTagTag columnIndex tag) model
 
         EnteredDatedColumnRangeValueFrom index value ->
-            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueFrom index (String.toInt value)) model
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeValueFrom index value) model
 
         EnteredDatedColumnRangeValueTo index value ->
-            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeValueTo index (String.toInt value)) model
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeValueTo index value) model
 
         EnteredDefaultColumnName column name ->
             wrap
@@ -316,9 +317,6 @@ update msg model =
 
         EnteredNewColumnName name ->
             mapColumnBeingAdded (NewColumnConfig.updateName name) model
-
-        EnteredNewColumnCompletedLimit columnIndex limit ->
-            mapBoardBeingEdited (BoardConfig.updateCompletedColumnLimit columnIndex (String.toInt limit)) model
 
         EnteredName name ->
             mapBoardBeingEdited (BoardConfig.updateName name) model
@@ -385,7 +383,7 @@ update msg model =
             mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
 
         SelectedDatedColumnRangeType index rangeType ->
-            mapBoardBeingEdited (BoardConfig.updateDatedColumnRangeType index rangeType) model
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeType index rangeType) model
 
         TaskCompletionFormatSelected taskCompletionFormat ->
             wrap
@@ -1433,7 +1431,7 @@ settingsColumnControlView index columnForm =
                     [ type_ "text"
                     , value completedForm.limit
                     , attribute "size" "3"
-                    , onInput <| EnteredNewColumnCompletedLimit index
+                    , onInput <| EnteredColumnCompletedLimit index
                     ]
                     []
                 ]
