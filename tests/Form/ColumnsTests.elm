@@ -24,6 +24,7 @@ suite =
         , empty
         , find
         , init
+        , updateColumnName
         ]
 
 
@@ -142,4 +143,38 @@ init =
                         , ColumnForm.UndatedColumnForm { name = "foo" }
                         , ColumnForm.UntaggedColumnForm { name = "foo" }
                         ]
+        ]
+
+
+updateColumnName : Test
+updateColumnName =
+    describe "updateColumnName"
+        [ test "does nothing with an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.updateColumnName 1 "new name"
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "does nothing if given an index which is past the last one" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateColumnName 7 "new name"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "updates the name at the given index" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "foo" 0 5
+                    , Column.Dated <| DatedColumn.init "bar" (DatedColumn.Before 7)
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.updateColumnName 1 "new name"
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "new name" ]
         ]

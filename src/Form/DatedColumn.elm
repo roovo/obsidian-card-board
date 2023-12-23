@@ -5,6 +5,7 @@ module Form.DatedColumn exposing
     , RangeValueError(..)
     , decoder
     , init
+    , updateName
     )
 
 import Column.Dated as DatedColumn exposing (DatedColumn, RelativeDateRange)
@@ -118,6 +119,15 @@ decoder =
     FD.map2 DatedColumn.init
         nameDecoder
         rangeDecoder
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    { form | name = newName }
 
 
 

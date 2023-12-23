@@ -4,6 +4,7 @@ module Form.Columns exposing
     , empty
     , find
     , init
+    , updateColumnName
     )
 
 import Columns exposing (Columns)
@@ -55,3 +56,12 @@ decoder =
 find : (ColumnForm.Form -> Bool) -> Form -> Maybe ColumnForm.Form
 find fn form =
     LE.find fn form.columnForms
+
+
+
+-- MODIFICATION
+
+
+updateColumnName : Int -> String -> Form -> Form
+updateColumnName index newName form =
+    { form | columnForms = LE.updateAt index (ColumnForm.updateName newName) form.columnForms }

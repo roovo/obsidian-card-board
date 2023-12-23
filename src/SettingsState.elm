@@ -15,6 +15,7 @@ module SettingsState exposing
     , mapBoardBeingAdded
     , mapBoardBeingEdited
     , mapColumnBeingAdded
+    , mapCurrentColumnsForm
     , mapGlobalSettings
     , moveBoard
     , moveColumn
@@ -26,6 +27,7 @@ import Columns exposing (Columns, OptionsForSelect)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfigs as BoardConfigsForm
+import Form.Columns as ColumnsForm
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
@@ -415,6 +417,16 @@ mapColumnBeingAdded fn settingsState =
     case settingsState of
         AddingColumn c settings_ boardConfigsForm ->
             AddingColumn (fn c) settings_ boardConfigsForm
+
+        _ ->
+            settingsState
+
+
+mapCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> SettingsState -> SettingsState
+mapCurrentColumnsForm fn settingsState =
+    case settingsState of
+        EditingBoard settings_ boardConfigsForm ->
+            EditingBoard settings_ (BoardConfigsForm.updateCurrentColumnsForm fn boardConfigsForm)
 
         _ ->
             settingsState

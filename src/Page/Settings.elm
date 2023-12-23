@@ -31,7 +31,8 @@ import Form.DatedColumn as DatedColumnForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onBlur, onClick, onInput)
+import Html.Events.Extra exposing (onChange)
 import Html.Events.Extra.Mouse exposing (onDown)
 import InteropPorts
 import Json.Encode as JE
@@ -114,11 +115,13 @@ type Msg
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
     | ColumnDeleteClicked Int
+    | ColumnNameChanged Int String
     | ColumnSettingsMouseDown ( String, DragTracker.ClientData )
     | DeleteBoardRequested
     | DeleteConfirmed
     | ElementDragged DragData
     | EnteredColumnName Int String
+    | BlurredColumnName Int
     | EnteredColumnNamedTagTag Int String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
@@ -231,6 +234,25 @@ update msg model =
         ColumnDeleteClicked index ->
             mapSettingsState (SettingsState.deleteColumnRequested index) model
 
+        ColumnNameChanged columnIndex name ->
+            let
+                foo =
+                    Debug.log "changed name" name
+            in
+            -- mapColumnBeingEdited (BoardConfigsForm.updateColumnName columnIndex name) model
+            ( model, Cmd.none, Session.NoOp )
+
+        BlurredColumnName columnIndex ->
+            let
+                foo =
+                    Debug.log "blurred name" columnIndex
+            in
+            ( model, Cmd.none, Session.NoOp )
+
+        EnteredColumnName columnIndex name ->
+            -- ( model, Cmd.none, Session.NoOp )
+            mapCurrentColumnsForm (ColumnsForm.updateColumnName columnIndex name) model
+
         ColumnSettingsMouseDown ( domId, clientData ) ->
             ( { model | session = Session.waitForDrag clientData model.session }
             , InteropPorts.trackDraggable columnSettingsDragType clientData.clientPos domId
@@ -270,9 +292,6 @@ update msg model =
                     , Cmd.none
                     , Session.NoOp
                     )
-
-        EnteredColumnName columnIndex name ->
-            mapBoardBeingEdited (BoardConfig.updateColumnName columnIndex name) model
 
         EnteredColumnNamedTagTag columnIndex tag ->
             mapBoardBeingEdited (BoardConfig.updateNamedTagTag columnIndex tag) model
@@ -479,6 +498,11 @@ mapColumnBeingAdded fn model =
 mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
+
+
+mapCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapCurrentColumnsForm fn model =
+    wrap { model | settingsState = SettingsState.mapCurrentColumnsForm fn model.settingsState }
 
 
 updateBoardOrder : DragTracker -> DragData -> Model -> Model
@@ -1330,7 +1354,9 @@ settingsColumnView uniqueId index columnForm =
                 [ Html.input
                     [ type_ "text"
                     , value name
+                    , onChange <| ColumnNameChanged index
                     , onInput <| EnteredColumnName index
+                    , onBlur <| BlurredColumnName index
                     ]
                     []
                 ]

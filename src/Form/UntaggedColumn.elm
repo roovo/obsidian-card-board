@@ -3,6 +3,7 @@ module Form.UntaggedColumn exposing
     , Form
     , decoder
     , init
+    , updateName
     )
 
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
@@ -39,6 +40,15 @@ init untaggedColumn =
 decoder : FD.Decoder Form Error UntaggedColumn
 decoder =
     FD.map UntaggedColumn.init nameDecoder
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    { form | name = newName }
 
 
 

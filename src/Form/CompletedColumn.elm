@@ -4,6 +4,7 @@ module Form.CompletedColumn exposing
     , LimitError(..)
     , decoder
     , init
+    , updateName
     )
 
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
@@ -52,6 +53,15 @@ decoder =
     FD.map2 fromForm
         nameDecoder
         limitDecoder
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    { form | name = newName }
 
 
 

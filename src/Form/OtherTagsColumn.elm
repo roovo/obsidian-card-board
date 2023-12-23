@@ -3,6 +3,7 @@ module Form.OtherTagsColumn exposing
     , Form
     , decoder
     , init
+    , updateName
     )
 
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
@@ -41,6 +42,15 @@ decoder =
     FD.map2 OtherTagsColumn.init
         nameDecoder
         (FD.always [])
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    { form | name = newName }
 
 
 

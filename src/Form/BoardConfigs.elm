@@ -5,6 +5,7 @@ module Form.BoardConfigs exposing
     , empty
     , init
     , switchToBoard
+    , updateCurrentColumnsForm
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -66,3 +67,8 @@ columnsForms form =
 switchToBoard : Int -> Form -> Form
 switchToBoard index form =
     { form | columnsForms = SafeZipper.atIndex index form.columnsForms }
+
+
+updateCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> Form -> Form
+updateCurrentColumnsForm fn form =
+    { form | columnsForms = SafeZipper.mapSelectedAndRest fn identity form.columnsForms }

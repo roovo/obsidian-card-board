@@ -3,6 +3,7 @@ module Form.UndatedColumn exposing
     , Form
     , decoder
     , init
+    , updateName
     )
 
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
@@ -39,6 +40,15 @@ init undatedColumn =
 decoder : FD.Decoder Form Error UndatedColumn
 decoder =
     FD.map UndatedColumn.init nameDecoder
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    { form | name = newName }
 
 
 

@@ -5,6 +5,7 @@ module Form.Column exposing
     , init
     , name
     , typeString
+    , updateName
     )
 
 import Column exposing (Column)
@@ -160,3 +161,29 @@ typeString form =
 
         UntaggedColumnForm subform ->
             "Untagged"
+
+
+
+-- MODIFICATION
+
+
+updateName : String -> Form -> Form
+updateName newName form =
+    case form of
+        CompletedColumnForm subform ->
+            CompletedColumnForm <| CompletedColumnForm.updateName newName subform
+
+        DatedColumnForm subform ->
+            DatedColumnForm <| DatedColumnForm.updateName newName subform
+
+        NamedTagColumnForm subform ->
+            NamedTagColumnForm <| NamedTagColumnForm.updateName newName subform
+
+        OtherTagsColumnForm subform ->
+            OtherTagsColumnForm <| OtherTagsColumnForm.updateName newName subform
+
+        UndatedColumnForm subform ->
+            UndatedColumnForm <| UndatedColumnForm.updateName newName subform
+
+        UntaggedColumnForm subform ->
+            UntaggedColumnForm <| UntaggedColumnForm.updateName newName subform
