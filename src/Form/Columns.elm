@@ -1,9 +1,12 @@
 module Form.Columns exposing
     ( Form
+    , OptionsForSelect
+    , addColumn
     , decoder
     , empty
     , find
     , init
+    , optionsForSelect
     , updateColumnName
     , updateCompletedColumnLimit
     , updateDatedColumnRangeType
@@ -13,9 +16,11 @@ module Form.Columns exposing
     )
 
 import Columns exposing (Columns)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
 import List.Extra as LE
+import NewColumnConfig exposing (NewColumnConfig)
 
 
 
@@ -24,6 +29,13 @@ import List.Extra as LE
 
 type alias Form =
     { columnForms : List ColumnForm.Form }
+
+
+type alias OptionsForSelect =
+    { isSelected : Bool
+    , text : String
+    , value : String
+    }
 
 
 
@@ -63,8 +75,143 @@ find fn form =
     LE.find fn form.columnForms
 
 
+optionsForSelect : Form -> NewColumnConfig -> List OptionsForSelect
+optionsForSelect form newColumnConfig =
+    let
+        alreadyHasCompleted : Bool
+        alreadyHasCompleted =
+            form
+                |> .columnForms
+                |> List.any ColumnForm.isCompleted
+
+        alreadyHasOtherTags : Bool
+        alreadyHasOtherTags =
+            form
+                |> .columnForms
+                |> List.any ColumnForm.isOtherTags
+
+        alreadyHasUndated : Bool
+        alreadyHasUndated =
+            form
+                |> .columnForms
+                |> List.any ColumnForm.isUndated
+
+        alreadyHasUntagged : Bool
+        alreadyHasUntagged =
+            form
+                |> .columnForms
+                |> List.any ColumnForm.isUntagged
+
+        completed : List OptionsForSelect
+        completed =
+            if alreadyHasCompleted then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "completed"
+                  , text = "Completed"
+                  , value = "completed"
+                  }
+                ]
+
+        otherTags : List OptionsForSelect
+        otherTags =
+            if alreadyHasOtherTags then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "otherTags"
+                  , text = "Other Tags"
+                  , value = "otherTags"
+                  }
+                ]
+
+        undated : List OptionsForSelect
+        undated =
+            if alreadyHasUndated then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "undated"
+                  , text = "Undated"
+                  , value = "undated"
+                  }
+                ]
+
+        untagged : List OptionsForSelect
+        untagged =
+            if alreadyHasUntagged then
+                []
+
+            else
+                [ { isSelected = newColumnConfig.columnType == "untagged"
+                  , text = "Untagged"
+                  , value = "untagged"
+                  }
+                ]
+
+        allColumns : List OptionsForSelect
+        allColumns =
+            completed
+                ++ [ { isSelected = newColumnConfig.columnType == "dated"
+                     , text = "Dated"
+                     , value = "dated"
+                     }
+                   ]
+                ++ otherTags
+                ++ [ { isSelected = newColumnConfig.columnType == "namedTag"
+                     , text = "Tagged"
+                     , value = "namedTag"
+                     }
+                   ]
+                ++ undated
+                ++ untagged
+    in
+    if List.any .isSelected allColumns then
+        allColumns
+
+    else
+        allColumns
+            |> LE.updateAt 0 (\ofs -> { ofs | isSelected = True })
+
+
 
 -- MODIFICATION
+
+
+addColumn : DefaultColumnNames -> NewColumnConfig -> Form -> Form
+addColumn defaultColumnNames newColumnConfig form =
+    let
+        allColumns : List ColumnForm.Form
+        allColumns =
+            form.columnForms
+
+        completedPosition : Maybe Int
+        completedPosition =
+            LE.findIndex ColumnForm.isCompleted allColumns
+
+        newColumn : List ColumnForm.Form
+        newColumn =
+            ColumnForm.fromColumnConfig defaultColumnNames newColumnConfig
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    (case completedPosition of
+        Just position ->
+            let
+                ( preCompleted, completedPlus ) =
+                    LE.splitAt position allColumns
+            in
+            if List.length completedPlus == 1 then
+                preCompleted ++ newColumn ++ completedPlus
+
+            else
+                allColumns ++ newColumn
+
+        Nothing ->
+            allColumns ++ newColumn
+    )
+        |> Form
 
 
 updateColumnName : Int -> String -> Form -> Form

@@ -2,7 +2,12 @@ module Form.Column exposing
     ( Error(..)
     , Form(..)
     , decoder
+    , fromColumnConfig
     , init
+    , isCompleted
+    , isOtherTags
+    , isUndated
+    , isUntagged
     , name
     , typeString
     , updateCompletedColumnLimit
@@ -14,6 +19,7 @@ module Form.Column exposing
     )
 
 import Column exposing (Column)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.CompletedColumn as CompletedColumnForm
 import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
@@ -21,6 +27,7 @@ import Form.NamedTagColumn as NamedTagColumnForm
 import Form.OtherTagsColumn as OtherTagsColumnForm
 import Form.UndatedColumn as UndatedColumnForm
 import Form.UntaggedColumn as UntaggedColumnForm
+import NewColumnConfig exposing (NewColumnConfig)
 
 
 
@@ -47,6 +54,40 @@ type Error
 
 
 -- CONSTRUCTION
+
+
+fromColumnConfig : DefaultColumnNames -> NewColumnConfig -> Maybe Form
+fromColumnConfig defaultColumnNames newColumnConfig =
+    let
+        newName : String
+        newName =
+            if String.isEmpty (String.trim newColumnConfig.name) then
+                DefaultColumnNames.nameFor newColumnConfig.columnType defaultColumnNames
+
+            else
+                newColumnConfig.name
+    in
+    case newColumnConfig.columnType of
+        "completed" ->
+            Just (CompletedColumnForm { name = newName, limit = "10" })
+
+        "dated" ->
+            Just (DatedColumnForm { name = newColumnConfig.name, rangeType = "Before", from = "", to = "1" })
+
+        "namedTag" ->
+            Just (NamedTagColumnForm { name = newColumnConfig.name, tag = "" })
+
+        "otherTags" ->
+            Just (OtherTagsColumnForm { name = newName })
+
+        "undated" ->
+            Just (UndatedColumnForm { name = newName })
+
+        "untagged" ->
+            Just (UntaggedColumnForm { name = newName })
+
+        _ ->
+            Nothing
 
 
 init : Column -> Form
@@ -122,6 +163,46 @@ decoder =
 
 
 -- INFO
+
+
+isCompleted : Form -> Bool
+isCompleted form =
+    case form of
+        CompletedColumnForm _ ->
+            True
+
+        _ ->
+            False
+
+
+isOtherTags : Form -> Bool
+isOtherTags form =
+    case form of
+        OtherTagsColumnForm _ ->
+            True
+
+        _ ->
+            False
+
+
+isUndated : Form -> Bool
+isUndated form =
+    case form of
+        UndatedColumnForm _ ->
+            True
+
+        _ ->
+            False
+
+
+isUntagged : Form -> Bool
+isUntagged form =
+    case form of
+        UntaggedColumnForm _ ->
+            True
+
+        _ ->
+            False
 
 
 name : Form -> String

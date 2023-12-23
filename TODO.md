@@ -8,7 +8,10 @@
     https://sakurachan.info/posts/2019/form-decoding/
     https://arowm.github.io/elm-form-decoder/#goat-registerForm
     https://github.com/arowM/elm-form-decoder/
-- remove Column.typeString
+- derlete column, re-order columns, re-order boards
+- save on settings exit
+- remove Column.typeString Columns.optionsForSelect Settings.addColumn Column.fromColumnConfig
+- show errors on settings pane
 - allow tags in column definitions to optionaly start with the # character
 - delete confirm dialog (board and column)
     - actually say what is being deleted

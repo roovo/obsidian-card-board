@@ -198,7 +198,7 @@ update msg model =
             in
             wrap <|
                 switchSettingsState
-                    (SettingsState.confirmAddBoard defaultColumnNames)
+                    (SettingsState.addBoardConfirmed defaultColumnNames)
                     model
 
         AddColumnClicked ->
@@ -216,7 +216,7 @@ update msg model =
             in
             wrap <|
                 switchSettingsState
-                    (SettingsState.confirmAddColumn defaultColumnNames)
+                    (SettingsState.addColumnConfirmed defaultColumnNames)
                     model
 
         BackspacePressed ->
@@ -570,7 +570,7 @@ view model =
         SettingsState.AddingColumn newConfig settings boardConfigsForm ->
             Html.div []
                 [ boardSettingsView (Settings.boardConfigs settings) boardConfigsForm model.multiSelect dragTracker
-                , modalAddColumn newConfig settings
+                , modalAddColumn newConfig boardConfigsForm
                 ]
 
         SettingsState.ClosingPlugin _ _ ->
@@ -665,8 +665,8 @@ modalAddBoard newBoardConfig =
         ]
 
 
-modalAddColumn : NewColumnConfig -> Settings -> Html Msg
-modalAddColumn newColumnConfig settings =
+modalAddColumn : NewColumnConfig -> BoardConfigsForm.Form -> Html Msg
+modalAddColumn newColumnConfig boardConfigsForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -698,12 +698,11 @@ modalAddColumn newColumnConfig settings =
                             [ class "dropdown"
                             , onInput NewColumnTypeSelected
                             ]
-                            (Columns.optionsForSelect
-                                (settings
-                                    |> Settings.boardConfigs
+                            (ColumnsForm.optionsForSelect
+                                (boardConfigsForm
+                                    |> BoardConfigsForm.columnsForms
                                     |> SafeZipper.current
-                                    |> Maybe.map BoardConfig.columns
-                                    |> Maybe.withDefault Columns.empty
+                                    |> Maybe.withDefault ColumnsForm.empty
                                 )
                                 newColumnConfig
                                 |> List.map

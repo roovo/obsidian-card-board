@@ -1,6 +1,5 @@
 module Columns exposing
     ( Columns
-    , OptionsForSelect
     , addColumn
     , addTaskList
     , cleanupNames
@@ -12,7 +11,6 @@ module Columns exposing
     , encoder
     , fromList
     , namedTagColumnTags
-    , optionsForSelect
     , restrictSpecialColumns
     , setNamesToDefault
     , toList
@@ -48,13 +46,6 @@ import TsJson.Encode as TsEncode
 type Columns
     = WithCompleted (List Column) CompletedColumn
     | WithoutCompleted (List Column)
-
-
-type alias OptionsForSelect =
-    { isSelected : Bool
-    , text : String
-    , value : String
-    }
 
 
 
@@ -126,106 +117,6 @@ namedTagColumnTags columns =
         |> toList
         |> List.map Column.namedTagTag
         |> ME.values
-
-
-optionsForSelect : Columns -> NewColumnConfig -> List OptionsForSelect
-optionsForSelect columns newColumnConfig =
-    let
-        alreadyHasCompleted : Bool
-        alreadyHasCompleted =
-            columns
-                |> toList
-                |> List.any Column.isCompleted
-
-        alreadyHasOtherTags : Bool
-        alreadyHasOtherTags =
-            columns
-                |> toList
-                |> List.any Column.isOtherTags
-
-        alreadyHasUndated : Bool
-        alreadyHasUndated =
-            columns
-                |> toList
-                |> List.any Column.isUndated
-
-        alreadyHasUntagged : Bool
-        alreadyHasUntagged =
-            columns
-                |> toList
-                |> List.any Column.isUntagged
-
-        completed : List OptionsForSelect
-        completed =
-            if alreadyHasCompleted then
-                []
-
-            else
-                [ { isSelected = newColumnConfig.columnType == "completed"
-                  , text = "Completed"
-                  , value = "completed"
-                  }
-                ]
-
-        otherTags : List OptionsForSelect
-        otherTags =
-            if alreadyHasOtherTags then
-                []
-
-            else
-                [ { isSelected = newColumnConfig.columnType == "otherTags"
-                  , text = "Other Tags"
-                  , value = "otherTags"
-                  }
-                ]
-
-        undated : List OptionsForSelect
-        undated =
-            if alreadyHasUndated then
-                []
-
-            else
-                [ { isSelected = newColumnConfig.columnType == "undated"
-                  , text = "Undated"
-                  , value = "undated"
-                  }
-                ]
-
-        untagged : List OptionsForSelect
-        untagged =
-            if alreadyHasUntagged then
-                []
-
-            else
-                [ { isSelected = newColumnConfig.columnType == "untagged"
-                  , text = "Untagged"
-                  , value = "untagged"
-                  }
-                ]
-
-        allColumns : List OptionsForSelect
-        allColumns =
-            completed
-                ++ [ { isSelected = newColumnConfig.columnType == "dated"
-                     , text = "Dated"
-                     , value = "dated"
-                     }
-                   ]
-                ++ otherTags
-                ++ [ { isSelected = newColumnConfig.columnType == "namedTag"
-                     , text = "Tagged"
-                     , value = "namedTag"
-                     }
-                   ]
-                ++ undated
-                ++ untagged
-    in
-    if List.any .isSelected allColumns then
-        allColumns
-
-    else
-        allColumns
-            |> LE.updateAt 0 (\ofs -> { ofs | isSelected = True })
 
 
 

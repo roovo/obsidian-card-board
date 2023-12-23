@@ -1,5 +1,6 @@
 module Form.BoardConfigs exposing
     ( Form
+    , addColumn
     , columnsForms
     , decoder
     , empty
@@ -10,9 +11,11 @@ module Form.BoardConfigs exposing
 
 import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
+import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 
 
@@ -62,6 +65,17 @@ columnsForms form =
 
 
 -- MODIFICATION
+
+
+addColumn : DefaultColumnNames -> NewColumnConfig -> Form -> Form
+addColumn defaultColumnNames_ configToAdd form =
+    { form
+        | columnsForms =
+            SafeZipper.mapSelectedAndRest
+                (ColumnsForm.addColumn defaultColumnNames_ configToAdd)
+                identity
+                form.columnsForms
+    }
 
 
 switchToBoard : Int -> Form -> Form

@@ -15,6 +15,7 @@ import Form.CompletedColumn as CompletedColumnForm
 import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
 import List.Extra as LE
+import NewColumnConfig exposing (NewColumnConfig)
 import Test exposing (..)
 
 
@@ -25,6 +26,7 @@ suite =
         , empty
         , find
         , init
+        , optionsForSelect
         , updateColumnName
         , updateCompletedColumnLimit
         , updateDatedColumnRangeType
@@ -148,6 +150,198 @@ init =
                         , ColumnForm.OtherTagsColumnForm { name = "foo" }
                         , ColumnForm.UndatedColumnForm { name = "foo" }
                         , ColumnForm.UntaggedColumnForm { name = "foo" }
+                        ]
+        ]
+
+
+optionsForSelect : Test
+optionsForSelect =
+    describe "optionsForSelect"
+        [ test "returns all options if there is an empty columnsForm" <|
+            \() ->
+                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnConfig "" "completed")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "selects the first item if the selection isn't valid" <|
+            \() ->
+                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnConfig "" "xxx")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except Completed if there is a completed column" <|
+            \() ->
+                let
+                    columnsForm : ColumnsForm.Form
+                    columnsForm =
+                        Columns.fromList
+                            [ Column.completed <| CompletedColumn.init "" 0 10 ]
+                            |> ColumnsForm.init
+                in
+                ColumnsForm.optionsForSelect columnsForm (NewColumnConfig "" "dated")
+                    |> Expect.equal
+                        [ { isSelected = True
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except otherTags if there is an otherTags column" <|
+            \() ->
+                let
+                    columnsForm : ColumnsForm.Form
+                    columnsForm =
+                        Columns.fromList
+                            [ Column.otherTags "" [] ]
+                            |> ColumnsForm.init
+                in
+                ColumnsForm.optionsForSelect columnsForm (NewColumnConfig "" "dated")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = True
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Undated"
+                          , value = "undated"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except undated if there is an undated column" <|
+            \() ->
+                let
+                    columnsForm : ColumnsForm.Form
+                    columnsForm =
+                        Columns.fromList
+                            [ Column.undated "" ]
+                            |> ColumnsForm.init
+                in
+                ColumnsForm.optionsForSelect columnsForm (NewColumnConfig "" "otherTags")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = True
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = False
+                          , text = "Untagged"
+                          , value = "untagged"
+                          }
+                        ]
+        , test "returns all options except untagged if there is an untagged column" <|
+            \() ->
+                let
+                    columnsForm : ColumnsForm.Form
+                    columnsForm =
+                        Columns.fromList
+                            [ Column.untagged "" ]
+                            |> ColumnsForm.init
+                in
+                ColumnsForm.optionsForSelect columnsForm (NewColumnConfig "" "undated")
+                    |> Expect.equal
+                        [ { isSelected = False
+                          , text = "Completed"
+                          , value = "completed"
+                          }
+                        , { isSelected = False
+                          , text = "Dated"
+                          , value = "dated"
+                          }
+                        , { isSelected = False
+                          , text = "Other Tags"
+                          , value = "otherTags"
+                          }
+                        , { isSelected = False
+                          , text = "Tagged"
+                          , value = "namedTag"
+                          }
+                        , { isSelected = True
+                          , text = "Undated"
+                          , value = "undated"
+                          }
                         ]
         ]
 
