@@ -31,7 +31,7 @@ type Error
 
 type LimitError
     = InvalidInt
-    | Negative
+    | NotPositive
 
 
 
@@ -78,7 +78,7 @@ limitDecoder : FD.Decoder Form Error Int
 limitDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
-        |> FD.assert (FD.minBound Negative 0)
+        |> FD.assert (FD.minBound NotPositive 1)
         |> FD.mapError LimitError
         |> Input.required LimitRequired
         |> FD.lift .limit

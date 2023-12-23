@@ -28,11 +28,6 @@ decoder =
                 { name = "  foo  ", limit = " 7 " }
                     |> FD.run CompletedColumnForm.decoder
                     |> Expect.equal (Ok <| CompletedColumn.init "foo" 0 7)
-        , test "has no errors if the input is valid" <|
-            \() ->
-                { name = "foo", limit = "0" }
-                    |> FD.errors CompletedColumnForm.decoder
-                    |> Expect.equal []
         , test "errors with a 'x' as the limit" <|
             \() ->
                 { name = "foo", limit = "x" }
@@ -47,7 +42,12 @@ decoder =
             \() ->
                 { name = "foo", limit = "-1" }
                     |> FD.errors CompletedColumnForm.decoder
-                    |> Expect.equal [ CompletedColumnForm.LimitError CompletedColumnForm.Negative ]
+                    |> Expect.equal [ CompletedColumnForm.LimitError CompletedColumnForm.NotPositive ]
+        , test "errors with a zero limit" <|
+            \() ->
+                { name = "foo", limit = "0" }
+                    |> FD.errors CompletedColumnForm.decoder
+                    |> Expect.equal [ CompletedColumnForm.LimitError CompletedColumnForm.NotPositive ]
         , test "errors with an empty limit" <|
             \() ->
                 { name = "foo", limit = "" }
