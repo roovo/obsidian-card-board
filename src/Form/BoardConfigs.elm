@@ -5,6 +5,7 @@ module Form.BoardConfigs exposing
     , columnsForms
     , decoder
     , deleteColumn
+    , deleteCurrentBoard
     , empty
     , init
     , moveColumn
@@ -103,6 +104,11 @@ deleteColumn index form =
                 identity
                 form.columnsForms
     }
+
+
+deleteCurrentBoard : Form -> Form
+deleteCurrentBoard form =
+    { form | columnsForms = SafeZipper.deleteCurrent form.columnsForms }
 
 
 moveColumn : String -> BeaconPosition -> Form -> Form

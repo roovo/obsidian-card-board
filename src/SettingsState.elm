@@ -332,7 +332,18 @@ deleteConfirmed : SettingsState -> SettingsState
 deleteConfirmed settingsState =
     case settingsState of
         DeletingBoard settings_ boardConfigsForm_ ->
-            init (Settings.deleteCurrentBoard settings_)
+            let
+                newSettings =
+                    Settings.deleteCurrentBoard settings_
+
+                newBoardConfigsForm =
+                    BoardConfigsForm.deleteCurrentBoard boardConfigsForm_
+            in
+            if Settings.hasAnyBordsConfigured newSettings then
+                EditingBoard newSettings newBoardConfigsForm
+
+            else
+                AddingBoard NewBoardConfig.default newSettings newBoardConfigsForm
 
         DeletingColumn index settings_ boardConfigsForm_ ->
             EditingBoard settings_ (BoardConfigsForm.deleteColumn index boardConfigsForm_)

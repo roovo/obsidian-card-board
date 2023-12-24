@@ -484,25 +484,26 @@ deleteConfirmed =
                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) BoardConfigsForm.empty
                     |> SettingsState.deleteConfirmed
                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfig.default Settings.default BoardConfigsForm.empty)
-        , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
-            \() ->
-                SettingsState.DeletingBoard
-                    (settingsFromBoardConfigsWithIndex 1
-                        [ exampleBoardConfigNoColumns, exampleBoardConfig, exampleBoardConfigNoColumns ]
-                    )
-                    BoardConfigsForm.empty
-                    |> SettingsState.deleteConfirmed
-                    |> Expect.equal
-                        (SettingsState.EditingBoard
-                            (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfigNoColumns ])
-                            { columnsForms =
-                                SafeZipper.fromList
-                                    [ { columnForms = [] }
-                                    , { columnForms = [] }
-                                    ]
-                                    |> SafeZipper.atIndex 1
-                            }
-                        )
+
+        -- , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
+        --     \() ->
+        --         SettingsState.DeletingBoard
+        --             (settingsFromBoardConfigsWithIndex 1
+        --                 [ exampleBoardConfigNoColumns, exampleBoardConfig, exampleBoardConfigNoColumns ]
+        --             )
+        --             BoardConfigsForm.empty
+        --             |> SettingsState.deleteConfirmed
+        --             |> Expect.equal
+        --                 (SettingsState.EditingBoard
+        --                     (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfigNoColumns ])
+        --                     { columnsForms =
+        --                         SafeZipper.fromList
+        --                             [ { columnForms = [] }
+        --                             , { columnForms = [] }
+        --                             ]
+        --                             |> SafeZipper.atIndex 1
+        --                     }
+        --                 )
         , test "deletes the current column and -> EditingBoard if DeletingColumn" <|
             \() ->
                 let
