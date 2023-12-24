@@ -137,9 +137,17 @@ addBoardConfirmed : DefaultColumnNames -> SettingsState -> SettingsState
 addBoardConfirmed defaultColumnNames settingsState =
     case settingsState of
         AddingBoard c settings_ boardConfigsForm_ ->
-            Settings.addBoard defaultColumnNames c settings_
-                |> Settings.cleanupNames
-                |> (\s -> EditingBoard s boardConfigsForm_)
+            let
+                newSettings : Settings
+                newSettings =
+                    Settings.addBoard defaultColumnNames c settings_
+                        |> Settings.cleanupNames
+
+                newBoardConfigsForm : BoardConfigsForm.Form
+                newBoardConfigsForm =
+                    BoardConfigsForm.addBoard defaultColumnNames c boardConfigsForm_
+            in
+            EditingBoard newSettings newBoardConfigsForm
 
         _ ->
             settingsState

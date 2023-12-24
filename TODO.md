@@ -8,7 +8,7 @@
     https://sakurachan.info/posts/2019/form-decoding/
     https://arowm.github.io/elm-form-decoder/#goat-registerForm
     https://github.com/arowM/elm-form-decoder/
-- add board, delete board
+- delete board
 - save on settings exit
 - show errors on settings pane ??
 - remove Column.typeString Columns.optionsForSelect Settings.addColumn Column.fromColumnConfig Settings.moveColumn

@@ -6,6 +6,7 @@ module Form.Columns exposing
     , deleteColumn
     , empty
     , find
+    , fromNewBoardConfig
     , init
     , moveColumn
     , optionsForSelect
@@ -18,10 +19,12 @@ module Form.Columns exposing
     )
 
 import Columns exposing (Columns)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
 import List.Extra as LE
+import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 
 
@@ -55,6 +58,29 @@ init columns =
 empty : Form
 empty =
     { columnForms = [] }
+
+
+fromNewBoardConfig : DefaultColumnNames -> NewBoardConfig -> Form
+fromNewBoardConfig defaultColumnNames newBoardConfig =
+    case newBoardConfig.boardType of
+        "dateBoard" ->
+            Form
+                [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
+                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
+                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
+                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "future" defaultColumnNames, rangeType = "After", from = "1", to = "" }
+                , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                ]
+
+        "tagBoard" ->
+            Form
+                [ ColumnForm.UntaggedColumnForm { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
+                , ColumnForm.OtherTagsColumnForm { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
+                , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                ]
+
+        _ ->
+            Form []
 
 
 

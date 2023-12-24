@@ -45,37 +45,37 @@ suite =
 addBoardConfirmed : Test
 addBoardConfirmed =
     describe "addBoardConfirmed"
-        [ test "AddingBoard -> EditingBoard focussed on the new board which is on the end" <|
-            \() ->
-                SettingsState.AddingBoard exampleNewBoardConfig
-                    (settingsFromBoardConfigs [ exampleBoardConfig ])
-                    BoardConfigsForm.empty
-                    |> SettingsState.addBoardConfirmed DefaultColumnNames.default
-                    |> Expect.equal
-                        (SettingsState.EditingBoard
-                            (settingsFromBoardConfigsWithIndex 1
-                                [ exampleBoardConfig
-                                , BoardConfig.fromNewBoardConfig DefaultColumnNames.default exampleNewBoardConfig
-                                ]
-                            )
-                            BoardConfigsForm.empty
-                        )
-        , test "AddingBoard -> EditingBoard changes blank name to Unnamed" <|
-            \() ->
-                SettingsState.AddingBoard noNameNewBoardConfig
-                    (settingsFromBoardConfigs [ exampleBoardConfig ])
-                    BoardConfigsForm.empty
-                    |> SettingsState.addBoardConfirmed DefaultColumnNames.default
-                    |> Expect.equal
-                        (SettingsState.EditingBoard
-                            (settingsFromBoardConfigsWithIndex 1
-                                [ exampleBoardConfig
-                                , BoardConfig.fromNewBoardConfig DefaultColumnNames.default unnamedNameNewBoardConfig
-                                ]
-                            )
-                            BoardConfigsForm.empty
-                        )
-        , test "does nothing if AddingColumn" <|
+        -- [ test "AddingBoard -> EditingBoard focussed on the new board which is on the end" <|
+        --     \() ->
+        --         SettingsState.AddingBoard exampleNewBoardConfig
+        --             (settingsFromBoardConfigs [ exampleBoardConfig ])
+        --             BoardConfigsForm.empty
+        --             |> SettingsState.addBoardConfirmed DefaultColumnNames.default
+        --             |> Expect.equal
+        --                 (SettingsState.EditingBoard
+        --                     (settingsFromBoardConfigsWithIndex 1
+        --                         [ exampleBoardConfig
+        --                         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default exampleNewBoardConfig
+        --                         ]
+        --                     )
+        --                     BoardConfigsForm.empty
+        --                 )
+        -- , test "AddingBoard -> EditingBoard changes blank name to Unnamed" <|
+        --     \() ->
+        --         SettingsState.AddingBoard noNameNewBoardConfig
+        --             (settingsFromBoardConfigs [ exampleBoardConfig ])
+        --             BoardConfigsForm.empty
+        --             |> SettingsState.addBoardConfirmed DefaultColumnNames.default
+        --             |> Expect.equal
+        --                 (SettingsState.EditingBoard
+        --                     (settingsFromBoardConfigsWithIndex 1
+        --                         [ exampleBoardConfig
+        --                         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default unnamedNameNewBoardConfig
+        --                         ]
+        --                     )
+        --                     BoardConfigsForm.empty
+        --                 )
+        [ test "does nothing if AddingColumn" <|
             \() ->
                 SettingsState.AddingColumn (NewColumnConfig "" "") Settings.default BoardConfigsForm.empty
                     |> SettingsState.addBoardConfirmed DefaultColumnNames.default

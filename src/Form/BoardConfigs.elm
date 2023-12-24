@@ -1,5 +1,6 @@
 module Form.BoardConfigs exposing
     ( Form
+    , addBoard
     , addColumn
     , columnsForms
     , decoder
@@ -18,6 +19,7 @@ import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
+import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 
@@ -68,6 +70,17 @@ columnsForms form =
 
 
 -- MODIFICATION
+
+
+addBoard : DefaultColumnNames -> NewBoardConfig -> Form -> Form
+addBoard defaultColumnNames_ configToAdd form =
+    { form
+        | columnsForms =
+            SafeZipper.last <|
+                SafeZipper.add
+                    (ColumnsForm.fromNewBoardConfig defaultColumnNames_ configToAdd)
+                    form.columnsForms
+    }
 
 
 addColumn : NewColumnConfig -> Form -> Form
