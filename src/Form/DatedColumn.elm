@@ -5,6 +5,7 @@ module Form.DatedColumn exposing
     , RangeValueError(..)
     , decoder
     , init
+    , safeDecoder
     , updateFrom
     , updateName
     , updateRangeType
@@ -16,6 +17,7 @@ import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.Decoder as FD
 import Form.Input as Input
+import Form.SafeDecoder as SD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -124,6 +126,13 @@ decoder =
         rangeDecoder
 
 
+safeDecoder : SD.Decoder Form DatedColumn
+safeDecoder =
+    SD.map2 DatedColumn.init
+        safeNameDecoder
+        safeRangeDecoder
+
+
 
 -- MODIFICATION
 
@@ -150,6 +159,31 @@ updateTo newValue form =
 
 
 -- PRIVATE
+
+
+formRangeBetweenValueDecoder : FD.Decoder Form Error Range
+formRangeBetweenValueDecoder =
+    FD.map2 Range
+        formRangeFromValueDecoder
+        formRangeToValueDecoder
+
+
+formRangeFromValueDecoder : FD.Decoder Form Error Int
+formRangeFromValueDecoder =
+    FD.int InvalidInt
+        |> FD.lift String.trim
+        |> FD.mapError RangeValueFromError
+        |> Input.required RangeFromValueRequired
+        |> FD.lift .from
+
+
+formRangeToValueDecoder : FD.Decoder Form Error Int
+formRangeToValueDecoder =
+    FD.int InvalidInt
+        |> FD.lift String.trim
+        |> FD.mapError RangeValueToError
+        |> Input.required RangeToValueRequired
+        |> FD.lift .to
 
 
 nameDecoder : FD.Decoder Form Error String
@@ -200,26 +234,67 @@ rangeTypeDecoder =
                     Err [ Invalid ]
 
 
-formRangeToValueDecoder : FD.Decoder Form Error Int
-formRangeToValueDecoder =
-    FD.int InvalidInt
-        |> FD.lift String.trim
-        |> FD.mapError RangeValueToError
-        |> Input.required RangeToValueRequired
-        |> FD.lift .to
+safeFormRangeToValueDecoder : SD.Decoder Form Int
+safeFormRangeToValueDecoder =
+    SD.int 0
+        |> SD.lift String.trim
+        |> SD.lift .to
 
 
-formRangeFromValueDecoder : FD.Decoder Form Error Int
-formRangeFromValueDecoder =
-    FD.int InvalidInt
-        |> FD.lift String.trim
-        |> FD.mapError RangeValueFromError
-        |> Input.required RangeFromValueRequired
-        |> FD.lift .from
+safeFormRangeFromValueDecoder : SD.Decoder Form Int
+safeFormRangeFromValueDecoder =
+    SD.int 0
+        |> SD.lift String.trim
+        |> SD.lift .from
 
 
-formRangeBetweenValueDecoder : FD.Decoder Form Error Range
-formRangeBetweenValueDecoder =
-    FD.map2 Range
-        formRangeFromValueDecoder
-        formRangeToValueDecoder
+safeFormRangeBetweenValueDecoder : SD.Decoder Form Range
+safeFormRangeBetweenValueDecoder =
+    SD.map2 Range
+        safeFormRangeFromValueDecoder
+        safeFormRangeToValueDecoder
+
+
+safeNameDecoder : SD.Decoder Form String
+safeNameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name
+
+
+safeRangeDecoder : SD.Decoder Form RelativeDateRange
+safeRangeDecoder =
+    safeRangeTypeDecoder
+        |> SD.lift .rangeType
+        |> SD.andThen safeRangeDecoder_
+
+
+safeRangeDecoder_ : RangeType -> SD.Decoder Form RelativeDateRange
+safeRangeDecoder_ rangeType =
+    case rangeType of
+        After ->
+            SD.map DatedColumn.After safeFormRangeFromValueDecoder
+
+        Before ->
+            SD.map DatedColumn.Before safeFormRangeToValueDecoder
+
+        Between ->
+            SD.map DatedColumn.Between safeFormRangeBetweenValueDecoder
+
+
+safeRangeTypeDecoder : SD.Decoder String RangeType
+safeRangeTypeDecoder =
+    SD.custom <|
+        \str ->
+            case String.trim str of
+                "After" ->
+                    Ok After
+
+                "Before" ->
+                    Ok Before
+
+                "Between" ->
+                    Ok Between
+
+                _ ->
+                    Ok Before

@@ -9,6 +9,7 @@ module Form.BoardConfigs exposing
     , empty
     , init
     , moveColumn
+    , safeDecoder
     , switchToBoard
     , updateCurrentColumnsForm
     )
@@ -20,6 +21,7 @@ import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
+import Form.SafeDecoder as SD
 import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
@@ -58,6 +60,12 @@ decoder : FD.Decoder Form ( Int, ( Int, ColumnForm.Error ) ) (List Columns)
 decoder =
     FD.listOf ColumnsForm.decoder
         |> FD.lift (SafeZipper.toList << columnsForms)
+
+
+safeDecoder : SD.Decoder Form (List Columns)
+safeDecoder =
+    SD.listOf ColumnsForm.safeDecoder
+        |> SD.lift (SafeZipper.toList << columnsForms)
 
 
 

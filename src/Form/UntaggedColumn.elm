@@ -3,12 +3,14 @@ module Form.UntaggedColumn exposing
     , Form
     , decoder
     , init
+    , safeDecoder
     , updateName
     )
 
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import Form.Decoder as FD
 import Form.Input as Input
+import Form.SafeDecoder as SD
 
 
 
@@ -42,6 +44,11 @@ decoder =
     FD.map UntaggedColumn.init nameDecoder
 
 
+safeDecoder : SD.Decoder Form UntaggedColumn
+safeDecoder =
+    SD.map UntaggedColumn.init safeNameDecoder
+
+
 
 -- MODIFICATION
 
@@ -61,3 +68,10 @@ nameDecoder =
         |> FD.lift String.trim
         |> Input.required NameRequired
         |> FD.lift .name
+
+
+safeNameDecoder : SD.Decoder Form String
+safeNameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name

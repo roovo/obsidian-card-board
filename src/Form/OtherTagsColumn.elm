@@ -3,12 +3,14 @@ module Form.OtherTagsColumn exposing
     , Form
     , decoder
     , init
+    , safeDecoder
     , updateName
     )
 
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import Form.Decoder as FD
 import Form.Input as Input
+import Form.SafeDecoder as SD
 
 
 
@@ -44,6 +46,13 @@ decoder =
         (FD.always [])
 
 
+safeDecoder : SD.Decoder Form OtherTagsColumn
+safeDecoder =
+    SD.map2 OtherTagsColumn.init
+        safeNameDecoder
+        (SD.always [])
+
+
 
 -- MODIFICATION
 
@@ -63,3 +72,10 @@ nameDecoder =
         |> FD.lift String.trim
         |> Input.required NameRequired
         |> FD.lift .name
+
+
+safeNameDecoder : SD.Decoder Form String
+safeNameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name

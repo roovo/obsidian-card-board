@@ -12,6 +12,7 @@ import Form.Column as ColumnForm
 import Form.CompletedColumn as CompletedColumnForm
 import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
+import Form.SafeDecoder as SD
 import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper
 import Test exposing (..)
@@ -23,6 +24,7 @@ suite =
         [ decoder
         , empty
         , init
+        , safeDecoder
         , switchToBoard
         ]
 
@@ -110,6 +112,54 @@ init =
                                     , ColumnForm.CompletedColumnForm { name = "Completed", limit = "10" }
                                     ]
                               }
+                            ]
+                        )
+        ]
+
+
+safeDecoder : Test
+safeDecoder =
+    describe "safeDecoder"
+        [ test "decodes an empty BoardConfigsForm" <|
+            \() ->
+                BoardConfigsForm.empty
+                    |> SD.run BoardConfigsForm.safeDecoder
+                    |> Expect.equal (Ok [])
+        , test "decodes a list of one of each Column type" <|
+            \() ->
+                { columnsForms =
+                    SafeZipper.fromList
+                        [ { columnForms = [] }
+                        , { columnForms =
+                                [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
+                                , ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" }
+                                ]
+                          }
+                        ]
+                }
+                    |> SD.run BoardConfigsForm.safeDecoder
+                    |> Expect.equal
+                        (Ok <|
+                            [ Columns.empty
+                            , Columns.fromList
+                                [ Column.Completed <| CompletedColumn.init "foo" 0 4
+                                , Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7)
+                                ]
+                            ]
+                        )
+        , test "decodes if given invalid data" <|
+            \() ->
+                { columnsForms =
+                    SafeZipper.fromList
+                        [ { columnForms = [ ColumnForm.CompletedColumnForm { name = "foo", limit = "p" } ] }
+                        , { columnForms = [ ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "", to = "7" } ] }
+                        ]
+                }
+                    |> SD.run BoardConfigsForm.safeDecoder
+                    |> Expect.equal
+                        (Ok <|
+                            [ Columns.fromList [ Column.Completed <| CompletedColumn.init "foo" 0 10 ]
+                            , Columns.fromList [ Column.Dated <| DatedColumn.init "" (DatedColumn.Before 7) ]
                             ]
                         )
         ]

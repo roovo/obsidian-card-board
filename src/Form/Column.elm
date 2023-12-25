@@ -10,6 +10,7 @@ module Form.Column exposing
     , isUntagged
     , name
     , placeholder
+    , safeDecoder
     , typeString
     , updateCompletedColumnLimit
     , updateDatedColumnRangeType
@@ -26,6 +27,7 @@ import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
 import Form.NamedTagColumn as NamedTagColumnForm
 import Form.OtherTagsColumn as OtherTagsColumnForm
+import Form.SafeDecoder as SD
 import Form.UndatedColumn as UndatedColumnForm
 import Form.UntaggedColumn as UntaggedColumnForm
 import NewColumnConfig exposing (NewColumnConfig)
@@ -151,6 +153,45 @@ decoder =
                         |> Result.map Column.Untagged
     in
     FD.custom subformDecoder
+
+
+safeDecoder : SD.Decoder Form Column
+safeDecoder =
+    let
+        subformDecoder : Form -> Result Never Column
+        subformDecoder form =
+            case form of
+                CompletedColumnForm subform ->
+                    subform
+                        |> SD.run CompletedColumnForm.safeDecoder
+                        |> Result.map Column.Completed
+
+                DatedColumnForm subform ->
+                    subform
+                        |> SD.run DatedColumnForm.safeDecoder
+                        |> Result.map Column.Dated
+
+                NamedTagColumnForm subform ->
+                    subform
+                        |> SD.run NamedTagColumnForm.safeDecoder
+                        |> Result.map Column.NamedTag
+
+                OtherTagsColumnForm subform ->
+                    subform
+                        |> SD.run OtherTagsColumnForm.safeDecoder
+                        |> Result.map Column.OtherTags
+
+                UndatedColumnForm subform ->
+                    subform
+                        |> SD.run UndatedColumnForm.safeDecoder
+                        |> Result.map Column.Undated
+
+                UntaggedColumnForm subform ->
+                    subform
+                        |> SD.run UntaggedColumnForm.safeDecoder
+                        |> Result.map Column.Untagged
+    in
+    SD.custom subformDecoder
 
 
 

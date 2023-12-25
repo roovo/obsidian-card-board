@@ -10,6 +10,7 @@ module Form.Columns exposing
     , init
     , moveColumn
     , optionsForSelect
+    , safeDecoder
     , updateColumnName
     , updateCompletedColumnLimit
     , updateDatedColumnRangeType
@@ -23,6 +24,7 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
+import Form.SafeDecoder as SD
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
 import NewColumnConfig exposing (NewColumnConfig)
@@ -92,6 +94,13 @@ decoder =
     FD.listOf ColumnForm.decoder
         |> FD.lift .columnForms
         |> FD.map Columns.fromList
+
+
+safeDecoder : SD.Decoder Form Columns
+safeDecoder =
+    SD.listOf ColumnForm.safeDecoder
+        |> SD.lift .columnForms
+        |> SD.map Columns.fromList
 
 
 

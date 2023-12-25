@@ -3,6 +3,7 @@ module Form.UntaggedColumnTests exposing (suite)
 import Column.Untagged as UntaggedColumn
 import Expect
 import Form.Decoder as FD
+import Form.SafeDecoder as SD
 import Form.UntaggedColumn as UntaggedColumnForm
 import Test exposing (..)
 
@@ -12,6 +13,7 @@ suite =
     concat
         [ decoder
         , init
+        , safeDecoder
         ]
 
 
@@ -45,4 +47,25 @@ init =
                     |> UntaggedColumnForm.init
                     |> .name
                     |> Expect.equal "foo"
+        ]
+
+
+safeDecoder : Test
+safeDecoder =
+    describe "safeDecoder"
+        [ test "decodes a valid input" <|
+            \() ->
+                { name = "foo" }
+                    |> SD.run UntaggedColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| UntaggedColumn.init "foo")
+        , test "ignores leading and trailing whitespace when decoding a valid input" <|
+            \() ->
+                { name = " foo " }
+                    |> SD.run UntaggedColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| UntaggedColumn.init "foo")
+        , test "errors with an empty name" <|
+            \() ->
+                { name = "" }
+                    |> SD.run UntaggedColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| UntaggedColumn.init "")
         ]

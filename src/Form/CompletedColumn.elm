@@ -4,6 +4,7 @@ module Form.CompletedColumn exposing
     , LimitError(..)
     , decoder
     , init
+    , safeDecoder
     , updateLimit
     , updateName
     )
@@ -11,6 +12,7 @@ module Form.CompletedColumn exposing
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Form.Decoder as FD
 import Form.Input as Input
+import Form.SafeDecoder as SD
 
 
 
@@ -56,6 +58,13 @@ decoder =
         limitDecoder
 
 
+safeDecoder : SD.Decoder Form CompletedColumn
+safeDecoder =
+    SD.map2 fromForm
+        safeNameDecoder
+        safeLimitDecoder
+
+
 
 -- MODIFICATION
 
@@ -72,6 +81,11 @@ updateName newName form =
 
 
 -- PRIVATE
+
+
+fromForm : String -> Int -> CompletedColumn
+fromForm name_ limit_ =
+    CompletedColumn.init name_ 0 limit_
 
 
 limitDecoder : FD.Decoder Form Error Int
@@ -92,6 +106,16 @@ nameDecoder =
         |> FD.lift .name
 
 
-fromForm : String -> Int -> CompletedColumn
-fromForm name_ limit_ =
-    CompletedColumn.init name_ 0 limit_
+safeLimitDecoder : SD.Decoder Form Int
+safeLimitDecoder =
+    SD.int 10
+        |> SD.lift String.trim
+        |> SD.assert (SD.minBound 10 1)
+        |> SD.lift .limit
+
+
+safeNameDecoder : SD.Decoder Form String
+safeNameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name

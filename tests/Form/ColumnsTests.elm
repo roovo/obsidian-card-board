@@ -14,6 +14,7 @@ import Form.Columns as ColumnsForm
 import Form.CompletedColumn as CompletedColumnForm
 import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
+import Form.SafeDecoder as SD
 import List.Extra as LE
 import NewColumnConfig exposing (NewColumnConfig)
 import Test exposing (..)
@@ -27,6 +28,7 @@ suite =
         , find
         , init
         , optionsForSelect
+        , safeDecoder
         , updateColumnName
         , updateCompletedColumnLimit
         , updateDatedColumnRangeType
@@ -343,6 +345,55 @@ optionsForSelect =
                           , value = "undated"
                           }
                         ]
+        ]
+
+
+safeDecoder : Test
+safeDecoder =
+    describe "safeDecoder"
+        [ test "decodes an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.init Columns.empty
+                    |> SD.run ColumnsForm.safeDecoder
+                    |> Expect.equal (Ok Columns.empty)
+        , test "decodes a list of one of each Column type" <|
+            \() ->
+                { columnForms =
+                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
+                    , ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" }
+                    , ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
+                    , ColumnForm.OtherTagsColumnForm { name = "foo" }
+                    , ColumnForm.UndatedColumnForm { name = "foo" }
+                    , ColumnForm.UntaggedColumnForm { name = "foo" }
+                    ]
+                }
+                    |> SD.run ColumnsForm.safeDecoder
+                    |> Expect.equal
+                        (Ok <|
+                            Columns.fromList
+                                [ Column.Completed <| CompletedColumn.init "foo" 0 4
+                                , Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7)
+                                , Column.NamedTag <| NamedTagColumn.init "foo" "aTag"
+                                , Column.OtherTags <| OtherTagsColumn.init "foo" []
+                                , Column.Undated <| UndatedColumn.init "foo"
+                                , Column.Untagged <| UntaggedColumn.init "foo"
+                                ]
+                        )
+        , test "decodes if given invalid data" <|
+            \() ->
+                { columnForms =
+                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "p" }
+                    , ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "", to = "plop" }
+                    ]
+                }
+                    |> SD.run ColumnsForm.safeDecoder
+                    |> Expect.equal
+                        (Ok <|
+                            Columns.fromList
+                                [ Column.Completed <| CompletedColumn.init "foo" 0 10
+                                , Column.Dated <| DatedColumn.init "" (DatedColumn.Before 0)
+                                ]
+                        )
         ]
 
 

@@ -3,6 +3,7 @@ module Form.NamedTagColumn exposing
     , Form
     , decoder
     , init
+    , safeDecoder
     , updateName
     , updateTag
     )
@@ -10,6 +11,7 @@ module Form.NamedTagColumn exposing
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Form.Decoder as FD
 import Form.Input as Input
+import Form.SafeDecoder as SD
 import Tag
 
 
@@ -49,6 +51,13 @@ decoder =
     FD.map2 NamedTagColumn.init
         nameDecoder
         tagDecoder
+
+
+safeDecoder : SD.Decoder Form NamedTagColumn
+safeDecoder =
+    SD.map2 NamedTagColumn.init
+        safeNameDecoder
+        safeTagDecoder
 
 
 
@@ -95,3 +104,17 @@ tagDecoder =
         |> Input.required TagRequired
         |> isValidTag InvalidTagCharacters
         |> FD.lift .tag
+
+
+safeNameDecoder : SD.Decoder Form String
+safeNameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name
+
+
+safeTagDecoder : SD.Decoder Form String
+safeTagDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .tag

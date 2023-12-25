@@ -14,6 +14,7 @@ import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
 import Form.NamedTagColumn as NamedTagColumnForm
 import Form.OtherTagsColumn as OtherTagsColumnForm
+import Form.SafeDecoder as SD
 import Form.UndatedColumn as UndatedColumnForm
 import Form.UntaggedColumn as UntaggedColumnForm
 import Test exposing (..)
@@ -25,6 +26,7 @@ suite =
         [ decoder
         , init
         , name
+        , safeDecoder
         , typeString
         ]
 
@@ -170,6 +172,72 @@ name =
                     |> ColumnForm.init
                     |> ColumnForm.name
                     |> Expect.equal "foo"
+        ]
+
+
+safeDecoder : Test
+safeDecoder =
+    describe "safeDecoder"
+        [ test "decodes a valid Completed SubForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.completed (CompletedColumn.init "foo" 0 4))
+        , test "allows an invalid Completed form" <|
+            \() ->
+                ColumnForm.CompletedColumnForm { name = "", limit = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.completed (CompletedColumn.init "" 0 10))
+        , test "decodes a valid Dated form" <|
+            \() ->
+                ColumnForm.DatedColumnForm { name = "foo", rangeType = "After", from = "2", to = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.dated (DatedColumn.init "foo" (DatedColumn.After 2)))
+        , test "allows an invalid Dated form" <|
+            \() ->
+                ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "2", to = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.dated (DatedColumn.init "" (DatedColumn.Before 0)))
+        , test "decodes a valid NamedTag form" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.namedTag "foo" "aTag")
+        , test "allows an invalid NamedTag form" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm { name = "", tag = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.namedTag "" "")
+        , test "decodes a valid OtherTags form" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.otherTags "foo" [])
+        , test "allows an invalid OtherTags form" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm { name = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.otherTags "" [])
+        , test "decodes a valid Undated form" <|
+            \() ->
+                ColumnForm.UndatedColumnForm { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.undated "foo")
+        , test "allows an invalid Undated form" <|
+            \() ->
+                ColumnForm.UndatedColumnForm { name = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.undated "")
+        , test "decodes a valid Untagged form" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.untagged "foo")
+        , test "allows an invalid Untagged form" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm { name = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Expect.equal (Ok <| Column.untagged "")
         ]
 
 
