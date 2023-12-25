@@ -28,6 +28,7 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfigs as BoardConfigsForm
 import Form.Columns as ColumnsForm exposing (OptionsForSelect)
+import Form.SafeDecoder as SD
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import NewBoardConfig exposing (NewBoardConfig)
@@ -103,30 +104,67 @@ boardConfigsForm settingsState =
 
 settings : SettingsState -> Settings
 settings settingsState =
+    let
+        merged : Settings -> BoardConfigsForm.Form -> Settings
+        merged settings_ boardConfigsForm_ =
+            let
+                currentBoardConfigs : SafeZipper BoardConfig
+                currentBoardConfigs =
+                    Settings.boardConfigs settings_
+
+                currentIndex : Int
+                currentIndex =
+                    SafeZipper.currentIndex currentBoardConfigs
+                        |> Maybe.withDefault 0
+
+                columnsList : List Columns
+                columnsList =
+                    SD.run BoardConfigsForm.safeDecoder boardConfigsForm_
+                        |> Result.withDefault []
+
+                columnsAtIndex : Int -> Maybe Columns
+                columnsAtIndex index =
+                    LE.getAt index columnsList
+
+                mapper : Int -> Columns -> Columns
+                mapper index columns =
+                    columnsAtIndex index
+                        |> Maybe.withDefault columns
+
+                newBoardConfigs : SafeZipper BoardConfig
+                newBoardConfigs =
+                    currentBoardConfigs
+                        |> SafeZipper.toList
+                        |> List.indexedMap (\i bc -> BoardConfig.mapColumns (mapper i) bc)
+                        |> SafeZipper.fromList
+                        |> SafeZipper.atIndex currentIndex
+            in
+            Settings.updateBoardConfigs newBoardConfigs settings_
+    in
     case settingsState of
-        AddingBoard _ settings_ _ ->
-            settings_
+        AddingBoard _ settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        AddingColumn _ settings_ _ ->
-            settings_
+        AddingColumn _ settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        ClosingPlugin settings_ _ ->
-            settings_
+        ClosingPlugin settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        ClosingSettings settings_ _ ->
-            settings_
+        ClosingSettings settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        DeletingBoard settings_ _ ->
-            settings_
+        DeletingBoard settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        DeletingColumn _ settings_ _ ->
-            settings_
+        DeletingColumn _ settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        EditingBoard settings_ _ ->
-            settings_
+        EditingBoard settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
-        EditingGlobalSettings settings_ _ ->
-            settings_
+        EditingGlobalSettings settings_ boardConfigsForm_ ->
+            merged settings_ boardConfigsForm_
 
 
 
