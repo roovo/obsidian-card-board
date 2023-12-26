@@ -1,6 +1,6 @@
-module Form.UndatedColumn exposing
+module Form.Column.Undated exposing
     ( Error(..)
-    , Form
+    , UndatedColumnForm
     , decoder
     , init
     , safeDecoder
@@ -17,7 +17,7 @@ import Form.SafeDecoder as SD
 -- TYPES
 
 
-type alias Form =
+type alias UndatedColumnForm =
     { name : String
     }
 
@@ -30,7 +30,7 @@ type Error
 -- CONSTRUCTION
 
 
-init : UndatedColumn -> Form
+init : UndatedColumn -> UndatedColumnForm
 init undatedColumn =
     { name = UndatedColumn.name undatedColumn }
 
@@ -39,12 +39,12 @@ init undatedColumn =
 -- DECODER
 
 
-decoder : FD.Decoder Form Error UndatedColumn
+decoder : FD.Decoder UndatedColumnForm Error UndatedColumn
 decoder =
     FD.map UndatedColumn.init nameDecoder
 
 
-safeDecoder : SD.Decoder Form UndatedColumn
+safeDecoder : SD.Decoder UndatedColumnForm UndatedColumn
 safeDecoder =
     SD.map UndatedColumn.init safeNameDecoder
 
@@ -53,7 +53,7 @@ safeDecoder =
 -- MODIFICATION
 
 
-updateName : String -> Form -> Form
+updateName : String -> UndatedColumnForm -> UndatedColumnForm
 updateName newName form =
     { form | name = newName }
 
@@ -62,7 +62,7 @@ updateName newName form =
 -- PRIVATE
 
 
-nameDecoder : FD.Decoder Form Error String
+nameDecoder : FD.Decoder UndatedColumnForm Error String
 nameDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -70,7 +70,7 @@ nameDecoder =
         |> FD.lift .name
 
 
-safeNameDecoder : SD.Decoder Form String
+safeNameDecoder : SD.Decoder UndatedColumnForm String
 safeNameDecoder =
     SD.identity
         |> SD.lift String.trim

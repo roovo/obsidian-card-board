@@ -1,8 +1,8 @@
-module Form.DatedColumnTests exposing (suite)
+module Form.Column.DatedTests exposing (suite)
 
 import Column.Dated as DatedColumn
 import Expect
-import Form.DatedColumn as DatedColumnForm
+import Form.Column.Dated as DatedColumnForm
 import Form.Decoder as FD
 import Form.SafeDecoder as SD
 import Test exposing (..)

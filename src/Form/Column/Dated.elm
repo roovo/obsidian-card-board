@@ -1,6 +1,6 @@
-module Form.DatedColumn exposing
-    ( Error(..)
-    , Form
+module Form.Column.Dated exposing
+    ( DatedColumnForm
+    , Error(..)
     , RangeTypeError(..)
     , RangeValueError(..)
     , decoder
@@ -30,7 +30,7 @@ import TsJson.Encode as TsEncode
 -- TYPES
 
 
-type alias Form =
+type alias DatedColumnForm =
     { from : String
     , name : String
     , rangeType : String
@@ -72,7 +72,7 @@ type alias Range =
 -- CONSTRUCTION
 
 
-init : DatedColumn -> Form
+init : DatedColumn -> DatedColumnForm
 init datedColumn =
     let
         rangeType =
@@ -119,14 +119,14 @@ init datedColumn =
 -- DECODE
 
 
-decoder : FD.Decoder Form Error DatedColumn
+decoder : FD.Decoder DatedColumnForm Error DatedColumn
 decoder =
     FD.map2 DatedColumn.init
         nameDecoder
         rangeDecoder
 
 
-safeDecoder : SD.Decoder Form DatedColumn
+safeDecoder : SD.Decoder DatedColumnForm DatedColumn
 safeDecoder =
     SD.map2 DatedColumn.init
         safeNameDecoder
@@ -137,22 +137,22 @@ safeDecoder =
 -- MODIFICATION
 
 
-updateFrom : String -> Form -> Form
+updateFrom : String -> DatedColumnForm -> DatedColumnForm
 updateFrom newValue form =
     { form | from = newValue }
 
 
-updateName : String -> Form -> Form
+updateName : String -> DatedColumnForm -> DatedColumnForm
 updateName newName form =
     { form | name = newName }
 
 
-updateRangeType : String -> Form -> Form
+updateRangeType : String -> DatedColumnForm -> DatedColumnForm
 updateRangeType newType form =
     { form | rangeType = newType }
 
 
-updateTo : String -> Form -> Form
+updateTo : String -> DatedColumnForm -> DatedColumnForm
 updateTo newValue form =
     { form | to = newValue }
 
@@ -161,14 +161,14 @@ updateTo newValue form =
 -- PRIVATE
 
 
-formRangeBetweenValueDecoder : FD.Decoder Form Error Range
+formRangeBetweenValueDecoder : FD.Decoder DatedColumnForm Error Range
 formRangeBetweenValueDecoder =
     FD.map2 Range
         formRangeFromValueDecoder
         formRangeToValueDecoder
 
 
-formRangeFromValueDecoder : FD.Decoder Form Error Int
+formRangeFromValueDecoder : FD.Decoder DatedColumnForm Error Int
 formRangeFromValueDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
@@ -177,7 +177,7 @@ formRangeFromValueDecoder =
         |> FD.lift .from
 
 
-formRangeToValueDecoder : FD.Decoder Form Error Int
+formRangeToValueDecoder : FD.Decoder DatedColumnForm Error Int
 formRangeToValueDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
@@ -186,7 +186,7 @@ formRangeToValueDecoder =
         |> FD.lift .to
 
 
-nameDecoder : FD.Decoder Form Error String
+nameDecoder : FD.Decoder DatedColumnForm Error String
 nameDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -194,7 +194,7 @@ nameDecoder =
         |> FD.lift .name
 
 
-rangeDecoder : FD.Decoder Form Error RelativeDateRange
+rangeDecoder : FD.Decoder DatedColumnForm Error RelativeDateRange
 rangeDecoder =
     rangeTypeDecoder
         |> FD.mapError RangeTypeError
@@ -203,7 +203,7 @@ rangeDecoder =
         |> FD.andThen rangeDecoder_
 
 
-rangeDecoder_ : RangeType -> FD.Decoder Form Error RelativeDateRange
+rangeDecoder_ : RangeType -> FD.Decoder DatedColumnForm Error RelativeDateRange
 rangeDecoder_ rangeType =
     case rangeType of
         After ->
@@ -234,52 +234,52 @@ rangeTypeDecoder =
                     Err [ Invalid ]
 
 
-safeFormRangeToValueDecoder : SD.Decoder Form Int
-safeFormRangeToValueDecoder =
+safeRangeToValueDecoder : SD.Decoder DatedColumnForm Int
+safeRangeToValueDecoder =
     SD.int 0
         |> SD.lift String.trim
         |> SD.lift .to
 
 
-safeFormRangeFromValueDecoder : SD.Decoder Form Int
-safeFormRangeFromValueDecoder =
+safeRangeFromValueDecoder : SD.Decoder DatedColumnForm Int
+safeRangeFromValueDecoder =
     SD.int 0
         |> SD.lift String.trim
         |> SD.lift .from
 
 
-safeFormRangeBetweenValueDecoder : SD.Decoder Form Range
-safeFormRangeBetweenValueDecoder =
+safeRangeBetweenValueDecoder : SD.Decoder DatedColumnForm Range
+safeRangeBetweenValueDecoder =
     SD.map2 Range
-        safeFormRangeFromValueDecoder
-        safeFormRangeToValueDecoder
+        safeRangeFromValueDecoder
+        safeRangeToValueDecoder
 
 
-safeNameDecoder : SD.Decoder Form String
+safeNameDecoder : SD.Decoder DatedColumnForm String
 safeNameDecoder =
     SD.identity
         |> SD.lift String.trim
         |> SD.lift .name
 
 
-safeRangeDecoder : SD.Decoder Form RelativeDateRange
+safeRangeDecoder : SD.Decoder DatedColumnForm RelativeDateRange
 safeRangeDecoder =
     safeRangeTypeDecoder
         |> SD.lift .rangeType
         |> SD.andThen safeRangeDecoder_
 
 
-safeRangeDecoder_ : RangeType -> SD.Decoder Form RelativeDateRange
+safeRangeDecoder_ : RangeType -> SD.Decoder DatedColumnForm RelativeDateRange
 safeRangeDecoder_ rangeType =
     case rangeType of
         After ->
-            SD.map DatedColumn.After safeFormRangeFromValueDecoder
+            SD.map DatedColumn.After safeRangeFromValueDecoder
 
         Before ->
-            SD.map DatedColumn.Before safeFormRangeToValueDecoder
+            SD.map DatedColumn.Before safeRangeToValueDecoder
 
         Between ->
-            SD.map DatedColumn.Between safeFormRangeBetweenValueDecoder
+            SD.map DatedColumn.Between safeRangeBetweenValueDecoder
 
 
 safeRangeTypeDecoder : SD.Decoder String RangeType

@@ -1,6 +1,6 @@
-module Form.CompletedColumn exposing
-    ( Error(..)
-    , Form
+module Form.Column.Completed exposing
+    ( CompletedColumnForm
+    , Error(..)
     , LimitError(..)
     , decoder
     , init
@@ -19,7 +19,7 @@ import Form.SafeDecoder as SD
 -- TYPES
 
 
-type alias Form =
+type alias CompletedColumnForm =
     { name : String
     , limit : String
     }
@@ -40,7 +40,7 @@ type LimitError
 -- CONSTRUCTION
 
 
-init : CompletedColumn -> Form
+init : CompletedColumn -> CompletedColumnForm
 init completedColumn =
     { name = CompletedColumn.name completedColumn
     , limit = String.fromInt <| CompletedColumn.limit completedColumn
@@ -51,14 +51,14 @@ init completedColumn =
 -- DECODER
 
 
-decoder : FD.Decoder Form Error CompletedColumn
+decoder : FD.Decoder CompletedColumnForm Error CompletedColumn
 decoder =
     FD.map2 fromForm
         nameDecoder
         limitDecoder
 
 
-safeDecoder : SD.Decoder Form CompletedColumn
+safeDecoder : SD.Decoder CompletedColumnForm CompletedColumn
 safeDecoder =
     SD.map2 fromForm
         safeNameDecoder
@@ -69,12 +69,12 @@ safeDecoder =
 -- MODIFICATION
 
 
-updateLimit : String -> Form -> Form
+updateLimit : String -> CompletedColumnForm -> CompletedColumnForm
 updateLimit newLimit form =
     { form | limit = newLimit }
 
 
-updateName : String -> Form -> Form
+updateName : String -> CompletedColumnForm -> CompletedColumnForm
 updateName newName form =
     { form | name = newName }
 
@@ -88,7 +88,7 @@ fromForm name_ limit_ =
     CompletedColumn.init name_ 0 limit_
 
 
-limitDecoder : FD.Decoder Form Error Int
+limitDecoder : FD.Decoder CompletedColumnForm Error Int
 limitDecoder =
     FD.int InvalidInt
         |> FD.lift String.trim
@@ -98,7 +98,7 @@ limitDecoder =
         |> FD.lift .limit
 
 
-nameDecoder : FD.Decoder Form Error String
+nameDecoder : FD.Decoder CompletedColumnForm Error String
 nameDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -106,7 +106,7 @@ nameDecoder =
         |> FD.lift .name
 
 
-safeLimitDecoder : SD.Decoder Form Int
+safeLimitDecoder : SD.Decoder CompletedColumnForm Int
 safeLimitDecoder =
     SD.int 10
         |> SD.lift String.trim
@@ -114,7 +114,7 @@ safeLimitDecoder =
         |> SD.lift .limit
 
 
-safeNameDecoder : SD.Decoder Form String
+safeNameDecoder : SD.Decoder CompletedColumnForm String
 safeNameDecoder =
     SD.identity
         |> SD.lift String.trim

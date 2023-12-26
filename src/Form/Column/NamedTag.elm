@@ -1,6 +1,6 @@
-module Form.NamedTagColumn exposing
+module Form.Column.NamedTag exposing
     ( Error(..)
-    , Form
+    , NamedTagColumnForm
     , decoder
     , init
     , safeDecoder
@@ -19,7 +19,7 @@ import Tag
 -- TYPES
 
 
-type alias Form =
+type alias NamedTagColumnForm =
     { name : String
     , tag : String
     }
@@ -35,7 +35,7 @@ type Error
 -- CONSTRUCTION
 
 
-init : NamedTagColumn -> Form
+init : NamedTagColumn -> NamedTagColumnForm
 init namedTagColumn =
     { name = NamedTagColumn.name namedTagColumn
     , tag = NamedTagColumn.tag namedTagColumn
@@ -46,14 +46,14 @@ init namedTagColumn =
 -- DECODER
 
 
-decoder : FD.Decoder Form Error NamedTagColumn
+decoder : FD.Decoder NamedTagColumnForm Error NamedTagColumn
 decoder =
     FD.map2 NamedTagColumn.init
         nameDecoder
         tagDecoder
 
 
-safeDecoder : SD.Decoder Form NamedTagColumn
+safeDecoder : SD.Decoder NamedTagColumnForm NamedTagColumn
 safeDecoder =
     SD.map2 NamedTagColumn.init
         safeNameDecoder
@@ -64,12 +64,12 @@ safeDecoder =
 -- MODIFICATION
 
 
-updateName : String -> Form -> Form
+updateName : String -> NamedTagColumnForm -> NamedTagColumnForm
 updateName newName form =
     { form | name = newName }
 
 
-updateTag : String -> Form -> Form
+updateTag : String -> NamedTagColumnForm -> NamedTagColumnForm
 updateTag newName form =
     { form | tag = newName }
 
@@ -89,7 +89,7 @@ isValidTag error d =
                 d
 
 
-nameDecoder : FD.Decoder Form Error String
+nameDecoder : FD.Decoder NamedTagColumnForm Error String
 nameDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -97,7 +97,7 @@ nameDecoder =
         |> FD.lift .name
 
 
-tagDecoder : FD.Decoder Form Error String
+tagDecoder : FD.Decoder NamedTagColumnForm Error String
 tagDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -106,14 +106,14 @@ tagDecoder =
         |> FD.lift .tag
 
 
-safeNameDecoder : SD.Decoder Form String
+safeNameDecoder : SD.Decoder NamedTagColumnForm String
 safeNameDecoder =
     SD.identity
         |> SD.lift String.trim
         |> SD.lift .name
 
 
-safeTagDecoder : SD.Decoder Form String
+safeTagDecoder : SD.Decoder NamedTagColumnForm String
 safeTagDecoder =
     SD.identity
         |> SD.lift String.trim

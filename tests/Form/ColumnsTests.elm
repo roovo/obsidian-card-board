@@ -10,9 +10,9 @@ import Column.Untagged as UntaggedColumn
 import Columns
 import Expect
 import Form.Column as ColumnForm
+import Form.Column.Completed as CompletedColumnForm
+import Form.Column.Dated as DatedColumnForm
 import Form.Columns as ColumnsForm
-import Form.CompletedColumn as CompletedColumnForm
-import Form.DatedColumn as DatedColumnForm
 import Form.Decoder as FD
 import Form.SafeDecoder as SD
 import List.Extra as LE

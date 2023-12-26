@@ -1,10 +1,10 @@
-module Form.UndatedColumnTests exposing (suite)
+module Form.Column.UndatedTests exposing (suite)
 
 import Column.Undated as UndatedColumn
 import Expect
+import Form.Column.Undated as UndatedColumnForm
 import Form.Decoder as FD
 import Form.SafeDecoder as SD
-import Form.UndatedColumn as UndatedColumnForm
 import Test exposing (..)
 
 

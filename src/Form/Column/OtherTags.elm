@@ -1,6 +1,6 @@
-module Form.OtherTagsColumn exposing
+module Form.Column.OtherTags exposing
     ( Error(..)
-    , Form
+    , OtherTagsColumnForm
     , decoder
     , init
     , safeDecoder
@@ -17,7 +17,7 @@ import Form.SafeDecoder as SD
 -- TYPES
 
 
-type alias Form =
+type alias OtherTagsColumnForm =
     { name : String
     }
 
@@ -30,7 +30,7 @@ type Error
 -- CONSTRUCTION
 
 
-init : OtherTagsColumn -> Form
+init : OtherTagsColumn -> OtherTagsColumnForm
 init otherTagsColumn =
     { name = OtherTagsColumn.name otherTagsColumn }
 
@@ -39,14 +39,14 @@ init otherTagsColumn =
 -- DECODER
 
 
-decoder : FD.Decoder Form Error OtherTagsColumn
+decoder : FD.Decoder OtherTagsColumnForm Error OtherTagsColumn
 decoder =
     FD.map2 OtherTagsColumn.init
         nameDecoder
         (FD.always [])
 
 
-safeDecoder : SD.Decoder Form OtherTagsColumn
+safeDecoder : SD.Decoder OtherTagsColumnForm OtherTagsColumn
 safeDecoder =
     SD.map2 OtherTagsColumn.init
         safeNameDecoder
@@ -57,7 +57,7 @@ safeDecoder =
 -- MODIFICATION
 
 
-updateName : String -> Form -> Form
+updateName : String -> OtherTagsColumnForm -> OtherTagsColumnForm
 updateName newName form =
     { form | name = newName }
 
@@ -66,7 +66,7 @@ updateName newName form =
 -- PRIVATE
 
 
-nameDecoder : FD.Decoder Form Error String
+nameDecoder : FD.Decoder OtherTagsColumnForm Error String
 nameDecoder =
     FD.identity
         |> FD.lift String.trim
@@ -74,7 +74,7 @@ nameDecoder =
         |> FD.lift .name
 
 
-safeNameDecoder : SD.Decoder Form String
+safeNameDecoder : SD.Decoder OtherTagsColumnForm String
 safeNameDecoder =
     SD.identity
         |> SD.lift String.trim

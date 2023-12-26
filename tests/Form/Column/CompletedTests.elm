@@ -1,8 +1,8 @@
-module Form.CompletedColumnTests exposing (suite)
+module Form.Column.CompletedTests exposing (suite)
 
 import Column.Completed as CompletedColumn
 import Expect
-import Form.CompletedColumn as CompletedColumnForm
+import Form.Column.Completed as CompletedColumnForm
 import Form.Decoder as FD
 import Form.SafeDecoder as SD
 import Test exposing (..)

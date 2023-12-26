@@ -26,8 +26,8 @@ import FeatherIcons exposing (Icon)
 import Filter exposing (Filter, Polarity)
 import Form.BoardConfig as BoardConfigForm
 import Form.Column as ColumnForm
+import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm
-import Form.DatedColumn as DatedColumnForm
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
@@ -1460,7 +1460,7 @@ settingsColumnControlView index columnForm =
                 [ Html.text "" ]
 
 
-rangeSelectView : Int -> DatedColumnForm.Form -> Html Msg
+rangeSelectView : Int -> DatedColumnForm -> Html Msg
 rangeSelectView index datedColumnForm =
     case datedColumnForm.rangeType of
         "After" ->
@@ -1503,7 +1503,7 @@ rangeSelectView index datedColumnForm =
                 ]
 
 
-rangeInputsView : Int -> DatedColumnForm.Form -> List (Html Msg)
+rangeInputsView : Int -> DatedColumnForm -> List (Html Msg)
 rangeInputsView index datedColumnForm =
     case datedColumnForm.rangeType of
         "After" ->

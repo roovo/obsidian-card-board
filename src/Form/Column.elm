@@ -22,14 +22,14 @@ module Form.Column exposing
 
 import Column exposing (Column)
 import DefaultColumnNames exposing (DefaultColumnNames)
-import Form.CompletedColumn as CompletedColumnForm
-import Form.DatedColumn as DatedColumnForm
+import Form.Column.Completed as CompletedColumnForm exposing (CompletedColumnForm)
+import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
+import Form.Column.NamedTag as NamedTagColumnForm exposing (NamedTagColumnForm)
+import Form.Column.OtherTags as OtherTagsColumnForm exposing (OtherTagsColumnForm)
+import Form.Column.Undated as UndatedColumnForm exposing (UndatedColumnForm)
+import Form.Column.Untagged as UntaggedColumnForm exposing (UntaggedColumnForm)
 import Form.Decoder as FD
-import Form.NamedTagColumn as NamedTagColumnForm
-import Form.OtherTagsColumn as OtherTagsColumnForm
 import Form.SafeDecoder as SD
-import Form.UndatedColumn as UndatedColumnForm
-import Form.UntaggedColumn as UntaggedColumnForm
 import NewColumnConfig exposing (NewColumnConfig)
 
 
@@ -38,12 +38,12 @@ import NewColumnConfig exposing (NewColumnConfig)
 
 
 type Form
-    = CompletedColumnForm CompletedColumnForm.Form
-    | DatedColumnForm DatedColumnForm.Form
-    | NamedTagColumnForm NamedTagColumnForm.Form
-    | OtherTagsColumnForm OtherTagsColumnForm.Form
-    | UndatedColumnForm UndatedColumnForm.Form
-    | UntaggedColumnForm UntaggedColumnForm.Form
+    = CompletedColumnForm CompletedColumnForm
+    | DatedColumnForm DatedColumnForm
+    | NamedTagColumnForm NamedTagColumnForm
+    | OtherTagsColumnForm OtherTagsColumnForm
+    | UndatedColumnForm UndatedColumnForm
+    | UntaggedColumnForm UntaggedColumnForm
 
 
 type Error

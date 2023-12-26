@@ -9,14 +9,14 @@ import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
 import Expect
 import Form.Column as ColumnForm
-import Form.CompletedColumn as CompletedColumnForm
-import Form.DatedColumn as DatedColumnForm
+import Form.Column.Completed as CompletedColumnForm
+import Form.Column.Dated as DatedColumnForm
+import Form.Column.NamedTag as NamedTagColumnForm
+import Form.Column.OtherTags as OtherTagsColumnForm
+import Form.Column.Undated as UndatedColumnForm
+import Form.Column.Untagged as UntaggedColumnForm
 import Form.Decoder as FD
-import Form.NamedTagColumn as NamedTagColumnForm
-import Form.OtherTagsColumn as OtherTagsColumnForm
 import Form.SafeDecoder as SD
-import Form.UndatedColumn as UndatedColumnForm
-import Form.UntaggedColumn as UntaggedColumnForm
 import Test exposing (..)
 
 

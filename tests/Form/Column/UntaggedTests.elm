@@ -1,10 +1,10 @@
-module Form.UntaggedColumnTests exposing (suite)
+module Form.Column.UntaggedTests exposing (suite)
 
 import Column.Untagged as UntaggedColumn
 import Expect
+import Form.Column.Untagged as UntaggedColumnForm
 import Form.Decoder as FD
 import Form.SafeDecoder as SD
-import Form.UntaggedColumn as UntaggedColumnForm
 import Test exposing (..)
 
 

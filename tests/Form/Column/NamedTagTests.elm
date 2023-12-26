@@ -1,9 +1,9 @@
-module Form.NamedTagColumnTests exposing (suite)
+module Form.Column.NamedTagTests exposing (suite)
 
 import Column.NamedTag as NamedTagColumn
 import Expect
+import Form.Column.NamedTag as NamedTagColumnForm
 import Form.Decoder as FD
-import Form.NamedTagColumn as NamedTagColumnForm
 import Form.SafeDecoder as SD
 import Test exposing (..)
 

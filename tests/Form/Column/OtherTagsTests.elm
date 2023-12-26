@@ -1,9 +1,9 @@
-module Form.OtherTagsColumnTests exposing (suite)
+module Form.Column.OtherTagsTests exposing (suite)
 
 import Column.OtherTags as OtherTagsColumn
 import Expect
+import Form.Column.OtherTags as OtherTagsColumnForm
 import Form.Decoder as FD
-import Form.OtherTagsColumn as OtherTagsColumnForm
 import Form.SafeDecoder as SD
 import Test exposing (..)
 
