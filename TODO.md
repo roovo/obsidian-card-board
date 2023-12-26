@@ -1,3 +1,4 @@
+- can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
 - improve input boxes for numbers as they are a bit odd due to the fact that
   they cannot be empty..
   - dated -> must be integers
@@ -8,10 +9,9 @@
     https://sakurachan.info/posts/2019/form-decoding/
     https://arowm.github.io/elm-form-decoder/#goat-registerForm
     https://github.com/arowM/elm-form-decoder/
-- save on settings exit
 - show errors on settings pane ??
 - remove Column.typeString Columns.optionsForSelect Settings.addColumn Column.fromColumnConfig Settings.moveColumn
-- can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
+
 - allow tags in column definitions to optionaly start with the # character
 - delete confirm dialog (board and column)
     - actually say what is being deleted
