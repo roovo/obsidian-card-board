@@ -28,8 +28,8 @@ import Form.BoardConfig as BoardConfigForm
 import Form.Column as ColumnForm
 import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm
-import Form.NewBoardConfig as NewBoardConfigForm exposing (NewBoardConfigForm)
-import Form.NewColumnConfig as NewColumnConfigForm exposing (NewColumnConfigForm)
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
@@ -305,10 +305,10 @@ update msg model =
                 }
 
         EnteredNewBoardName name ->
-            mapBoardBeingAdded (NewBoardConfigForm.updateName name) model
+            mapBoardBeingAdded (NewBoardForm.updateName name) model
 
         EnteredNewColumnName name ->
-            mapColumnBeingAdded (NewColumnConfigForm.updateName name) model
+            mapColumnBeingAdded (NewColumnForm.updateName name) model
 
         EnteredName name ->
             mapBoardBeingEdited (BoardConfig.updateName name) model
@@ -347,10 +347,10 @@ update msg model =
             handleClose model
 
         NewBoardTypeSelected boardType ->
-            mapBoardBeingAdded (NewBoardConfigForm.updateBoardType boardType) model
+            mapBoardBeingAdded (NewBoardForm.updateBoardType boardType) model
 
         NewColumnTypeSelected columnType ->
-            mapColumnBeingAdded (NewColumnConfigForm.updateColumnType columnType) model
+            mapColumnBeingAdded (NewColumnForm.updateColumnType columnType) model
 
         PathsRequested _ _ ->
             let
@@ -475,12 +475,12 @@ mapSettingsState fn model =
     wrap { model | settingsState = fn model.settingsState }
 
 
-mapBoardBeingAdded : (NewBoardConfigForm -> NewBoardConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded : (NewBoardForm -> NewBoardForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
 
-mapColumnBeingAdded : (NewColumnConfigForm -> NewColumnConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapColumnBeingAdded : (NewColumnForm -> NewColumnForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapColumnBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapColumnBeingAdded fn model.settingsState }
 
@@ -596,7 +596,7 @@ view model =
             Html.text ""
 
 
-modalAddBoard : NewBoardConfigForm -> Html Msg
+modalAddBoard : NewBoardForm -> Html Msg
 modalAddBoard newBoardConfigForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
@@ -629,7 +629,7 @@ modalAddBoard newBoardConfigForm =
                             [ class "dropdown"
                             , onInput NewBoardTypeSelected
                             ]
-                            (NewBoardConfigForm.optionsForSelect newBoardConfigForm
+                            (NewBoardForm.optionsForSelect newBoardConfigForm
                                 |> List.map
                                     (\c ->
                                         Html.option
@@ -659,7 +659,7 @@ modalAddBoard newBoardConfigForm =
         ]
 
 
-modalAddColumn : NewColumnConfigForm -> SettingsForm.Form -> Html Msg
+modalAddColumn : NewColumnForm -> SettingsForm.Form -> Html Msg
 modalAddColumn newColumnConfigForm settingsForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []

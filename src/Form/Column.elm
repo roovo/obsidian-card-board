@@ -2,7 +2,7 @@ module Form.Column exposing
     ( Error(..)
     , Form(..)
     , decoder
-    , fromColumnConfig
+      -- , fromColumnConfig
     , init
     , isCompleted
     , isOtherTags
@@ -20,6 +20,8 @@ module Form.Column exposing
     , updateNamedTagTag
     )
 
+-- import Form.NewColumnConfig exposing (NewColumnConfigForm)
+
 import Column exposing (Column)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Form.Column.Completed as CompletedColumnForm exposing (CompletedColumnForm)
@@ -29,7 +31,6 @@ import Form.Column.OtherTags as OtherTagsColumnForm exposing (OtherTagsColumnFor
 import Form.Column.Undated as UndatedColumnForm exposing (UndatedColumnForm)
 import Form.Column.Untagged as UntaggedColumnForm exposing (UntaggedColumnForm)
 import Form.Decoder as FD
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Form.SafeDecoder as SD
 
 
@@ -57,31 +58,30 @@ type Error
 
 
 -- CONSTRUCTION
-
-
-fromColumnConfig : NewColumnConfigForm -> Maybe Form
-fromColumnConfig newColumnConfigForm =
-    case newColumnConfigForm.columnType of
-        "completed" ->
-            Just (CompletedColumnForm { name = newColumnConfigForm.name, limit = "10" })
-
-        "dated" ->
-            Just (DatedColumnForm { name = newColumnConfigForm.name, rangeType = "Before", from = "", to = "" })
-
-        "namedTag" ->
-            Just (NamedTagColumnForm { name = newColumnConfigForm.name, tag = "" })
-
-        "otherTags" ->
-            Just (OtherTagsColumnForm { name = newColumnConfigForm.name })
-
-        "undated" ->
-            Just (UndatedColumnForm { name = newColumnConfigForm.name })
-
-        "untagged" ->
-            Just (UntaggedColumnForm { name = newColumnConfigForm.name })
-
-        _ ->
-            Nothing
+-- fromColumnConfig : NewColumnConfigForm -> Maybe Form
+-- fromColumnConfig newColumnConfigForm =
+--     case newColumnConfigForm.columnType of
+--         "Completed" ->
+--             Just (CompletedColumnForm { name = newColumnConfigForm.name, limit = "10" })
+--
+--         "Dated" ->
+--             Just (DatedColumnForm { name = newColumnConfigForm.name, rangeType = "Before", from = "", to = "" })
+--
+--         "NamedTag" ->
+--             Just (NamedTagColumnForm { name = newColumnConfigForm.name, tag = "" })
+--
+--         "OtherTags" ->
+--             Just (OtherTagsColumnForm { name = newColumnConfigForm.name })
+--
+--         "Undated" ->
+--             Just (UndatedColumnForm { name = newColumnConfigForm.name })
+--
+--         "Untagged" ->
+--             Just (UntaggedColumnForm { name = newColumnConfigForm.name })
+--
+--         _ ->
+--             Nothing
+--
 
 
 init : Column -> Form

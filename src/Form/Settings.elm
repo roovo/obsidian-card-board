@@ -24,8 +24,8 @@ import Form.BoardConfig as BoardConfigForm
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
-import Form.NewBoardConfig exposing (NewBoardConfigForm)
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
+import Form.NewBoard exposing (NewBoardForm)
+import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import GlobalSettings
 import SafeZipper exposing (SafeZipper)
@@ -135,19 +135,19 @@ hasAnyBordsConfigured form =
 -- MODIFICATION
 
 
-addBoard : DefaultColumnNames -> NewBoardConfigForm -> Form -> Form
+addBoard : DefaultColumnNames -> NewBoardForm -> Form -> Form
 addBoard defaultColumnNames_ configToAdd form =
     -- { form
     --     | boardConfigForms =
     --         SafeZipper.last <|
     --             SafeZipper.add
-    --                 (ColumnsForm.fromNewBoardConfig defaultColumnNames_ configToAdd)
+    --                 (ColumnsForm.fromNewBoardForm defaultColumnNames_ configToAdd)
     --                 form.boardConfigForms
     -- }
     form
 
 
-addColumn : NewColumnConfigForm -> Form -> Form
+addColumn : NewColumnForm -> Form -> Form
 addColumn configToAdd form =
     -- { form
     --     | boardConfigForms =

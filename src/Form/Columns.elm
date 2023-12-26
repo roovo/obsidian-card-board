@@ -6,7 +6,7 @@ module Form.Columns exposing
     , deleteColumn
     , empty
     , find
-    , fromNewBoardConfig
+    , fromNewBoardForm
     , init
     , moveColumn
     , optionsForSelect
@@ -24,8 +24,8 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
-import Form.NewBoardConfig exposing (NewBoardConfigForm)
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
+import Form.NewBoard exposing (NewBoardForm)
+import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import List.Extra as LE
 
@@ -62,8 +62,8 @@ empty =
     { columnForms = [] }
 
 
-fromNewBoardConfig : DefaultColumnNames -> NewBoardConfigForm -> Form
-fromNewBoardConfig defaultColumnNames newBoardConfigForm =
+fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> Form
+fromNewBoardForm defaultColumnNames newBoardConfigForm =
     case newBoardConfigForm.boardType of
         "dateBoard" ->
             Form
@@ -112,7 +112,7 @@ find fn form =
     LE.find fn form.columnForms
 
 
-optionsForSelect : Form -> NewColumnConfigForm -> List OptionsForSelect
+optionsForSelect : Form -> NewColumnForm -> List OptionsForSelect
 optionsForSelect form newColumnConfigForm =
     let
         alreadyHasCompleted : Bool
@@ -216,39 +216,36 @@ optionsForSelect form newColumnConfigForm =
 -- MODIFICATION
 
 
-addColumn : NewColumnConfigForm -> Form -> Form
+addColumn : NewColumnForm -> Form -> Form
 addColumn newColumnConfigForm form =
-    let
-        allColumns : List ColumnForm.Form
-        allColumns =
-            form.columnForms
-
-        completedPosition : Maybe Int
-        completedPosition =
-            LE.findIndex ColumnForm.isCompleted allColumns
-
-        newColumn : List ColumnForm.Form
-        newColumn =
-            ColumnForm.fromColumnConfig newColumnConfigForm
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    (case completedPosition of
-        Just position ->
-            let
-                ( preCompleted, completedPlus ) =
-                    LE.splitAt position allColumns
-            in
-            if List.length completedPlus == 1 then
-                preCompleted ++ newColumn ++ completedPlus
-
-            else
-                allColumns ++ newColumn
-
-        Nothing ->
-            allColumns ++ newColumn
-    )
-        |> Form
+    -- let
+    --     allColumns : List ColumnForm.Form
+    --     allColumns =
+    --         form.columnForms
+    --     completedPosition : Maybe Int
+    --     completedPosition =
+    --         LE.findIndex ColumnForm.isCompleted allColumns
+    --     newColumn : List ColumnForm.Form
+    --     newColumn =
+    --         ColumnForm.fromColumnConfig newColumnConfigForm
+    --             |> Maybe.map List.singleton
+    --             |> Maybe.withDefault []
+    -- in
+    -- (case completedPosition of
+    --     Just position ->
+    --         let
+    --             ( preCompleted, completedPlus ) =
+    --                 LE.splitAt position allColumns
+    --         in
+    --         if List.length completedPlus == 1 then
+    --             preCompleted ++ newColumn ++ completedPlus
+    --         else
+    --             allColumns ++ newColumn
+    --     Nothing ->
+    --         allColumns ++ newColumn
+    -- )
+    --     |> Form
+    form
 
 
 deleteColumn : Int -> Form -> Form

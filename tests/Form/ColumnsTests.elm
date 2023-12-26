@@ -14,7 +14,7 @@ import Form.Column.Completed as CompletedColumnForm
 import Form.Column.Dated as DatedColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
+import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import List.Extra as LE
 import Test exposing (..)
@@ -161,7 +161,7 @@ optionsForSelect =
     describe "optionsForSelect"
         [ test "returns all options if there is an empty columnsForm" <|
             \() ->
-                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnConfigForm "" "completed")
+                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnForm "" "completed")
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Completed"
@@ -190,7 +190,7 @@ optionsForSelect =
                         ]
         , test "selects the first item if the selection isn't valid" <|
             \() ->
-                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnConfigForm "" "xxx")
+                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnForm "" "xxx")
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Completed"
@@ -226,7 +226,7 @@ optionsForSelect =
                             [ Column.completed <| CompletedColumn.init "" 0 10 ]
                             |> ColumnsForm.init
                 in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnConfigForm "" "dated")
+                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "dated")
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Dated"
@@ -258,7 +258,7 @@ optionsForSelect =
                             [ Column.otherTags "" [] ]
                             |> ColumnsForm.init
                 in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnConfigForm "" "dated")
+                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "dated")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"
@@ -290,7 +290,7 @@ optionsForSelect =
                             [ Column.undated "" ]
                             |> ColumnsForm.init
                 in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnConfigForm "" "otherTags")
+                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "otherTags")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"
@@ -322,7 +322,7 @@ optionsForSelect =
                             [ Column.untagged "" ]
                             |> ColumnsForm.init
                 in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnConfigForm "" "undated")
+                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "undated")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"

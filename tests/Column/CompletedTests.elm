@@ -26,7 +26,8 @@ suite =
         , setTagsToHide
         , toList
         , toggleCollapse
-        , updateCompletedCount
+
+        -- , updateCompletedCount
         , updateName
         ]
 
@@ -350,35 +351,38 @@ toggleCollapse =
         ]
 
 
-updateCompletedCount : Test
-updateCompletedCount =
-    describe "updateCompletedCount"
-        [ test "limits the number as per the updated completed count" <|
-            \() ->
-                CompletedColumn.init "" 1 2
-                    |> CompletedColumn.updateCompletedCount 3
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] f @completed(2022-01-01T00:00:02)")
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] d @completed(2022-01-02T00:00:01)")
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] E @completed(2022-01-01T00:00:02)")
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] c @completed(2022-01-02T00:00:01)")
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] a @completed(2022-01-03T00:00:00)")
-                    |> CompletedColumn.addTaskItem
-                        [ PlacementResult.CompletedInThisColumn ]
-                        (taskItem "- [ ] B @completed(2022-01-03T00:00:00)")
-                    |> CompletedColumn.toList
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "a", "B", "c" ]
-        ]
+
+-- updateCompletedCount : Test
+-- updateCompletedCount =
+--     describe "updateCompletedCount"
+--         [ test "limits the number as per the updated completed count" <|
+--             \() ->
+--                 CompletedColumn.init "" 1 2
+--                     |> CompletedColumn.updateCompletedCount 3
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] f @completed(2022-01-01T00:00:02)")
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] d @completed(2022-01-02T00:00:01)")
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] E @completed(2022-01-01T00:00:02)")
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] c @completed(2022-01-02T00:00:01)")
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] a @completed(2022-01-03T00:00:00)")
+--                     |> CompletedColumn.addTaskItem
+--                         [ PlacementResult.CompletedInThisColumn ]
+--                         (taskItem "- [ ] B @completed(2022-01-03T00:00:00)")
+--                     |> CompletedColumn.toList
+--                     |> List.map TaskItem.title
+--                     |> Expect.equal [ "a", "B", "c" ]
+--         ]
+--
+--
 
 
 updateName : Test

@@ -14,7 +14,7 @@ module Column.NamedTag exposing
     , toList
     , toggleCollapse
     , updateName
-    , updateTag
+      -- , updateTag
     )
 
 import Form.Decoder as FD
@@ -144,12 +144,13 @@ updateName newName (NamedTagColumn c tth tl) =
     NamedTagColumn { c | name = newName } tth tl
 
 
-updateTag : String -> NamedTagColumn -> NamedTagColumn
-updateTag newTag (NamedTagColumn c tth tl) =
-    NamedTagColumn { c | tag = newTag } tth tl
 
-
-
+-- updateTag : String -> NamedTagColumn -> NamedTagColumn
+-- updateTag newTag (NamedTagColumn c tth tl) =
+--     NamedTagColumn { c | tag = newTag } tth tl
+--
+--
+--
 -- PRIVATE
 
 

@@ -28,7 +28,8 @@ suite =
         , moveDragable
         , replaceTaskItems
         , stopTrackingDragable
-        , updatePath
+
+        -- , updatePath
         , waitForDrag
         ]
 
@@ -292,39 +293,38 @@ stopTrackingDragable =
         ]
 
 
-updatePath : Test
-updatePath =
-    describe "updatePath"
-        [ test "updates taskList paths" <|
-            \() ->
-                Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.updatePath "a" "b"
-                    |> Session.taskList
-                    |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
-                    |> Expect.equal [ "b", "b" ]
-        , test "updates filter paths" <|
-            \() ->
-                Session.default
-                    |> Session.updateSettings exampleSettings
-                    |> Session.updatePath "a/path" "a"
-                    |> Session.updatePath "b/path" "b"
-                    |> Session.boardConfigs
-                    |> SafeZipper.toList
-                    |> List.concatMap BoardConfig.filters
-                    |> List.map Filter.value
-                    |> Expect.equal [ "a", "b", "tag1", "tag2" ]
-        ]
 
-
-
+-- updatePath : Test
+-- updatePath =
+--     describe "updatePath"
+--         [ test "updates taskList paths" <|
+--             \() ->
+--                 Session.default
+--                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
+--                     |> Session.updatePath "a" "b"
+--                     |> Session.taskList
+--                     |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
+--                     |> Expect.equal [ "b", "b" ]
+--         , test "updates filter paths" <|
+--             \() ->
+--                 Session.default
+--                     |> Session.updateSettings exampleSettings
+--                     |> Session.updatePath "a/path" "a"
+--                     |> Session.updatePath "b/path" "b"
+--                     |> Session.boardConfigs
+--                     |> SafeZipper.toList
+--                     |> List.concatMap BoardConfig.filters
+--                     |> List.map Filter.value
+--                     |> Expect.equal [ "a", "b", "tag1", "tag2" ]
+--         ]
+--
+--
+--
 -- HELPERS
-
-
-exampleSettings : Settings
-exampleSettings =
-    Settings.default
-        |> Settings.updateBoardConfigs
-            (SafeZipper.fromList
-                [ BoardConfigHelpers.exampleDateBoardConfig ]
-            )
+-- exampleSettings : Settings
+-- exampleSettings =
+--     Settings.default
+--         |> Settings.updateBoardConfigs
+--             (SafeZipper.fromList
+--                 [ BoardConfigHelpers.exampleDateBoardConfig ]
+--             )

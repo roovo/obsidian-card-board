@@ -27,9 +27,10 @@ suite =
         , toList
         , toggleCollapse
         , updateName
-        , updateRangeType
-        , updateRangeValueFrom
-        , updateRangeValueTo
+
+        -- , updateRangeType
+        -- , updateRangeValueFrom
+        -- , updateRangeValueTo
         ]
 
 
@@ -433,133 +434,134 @@ updateName =
         ]
 
 
-updateRangeType : Test
-updateRangeType =
-    describe "updateRangeType"
-        [ describe "originally 'Before'"
-            [ test "does nothing if being set to 'Before'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Before 3)
-                        |> DatedColumn.updateRangeType "Before"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Before 3)
-            , test "maintains the range value if being set to 'After'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Before 3)
-                        |> DatedColumn.updateRangeType "After"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.After 3)
-            , test "maintains the range values if being set to 'Between'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Before 3)
-                        |> DatedColumn.updateRangeType "Between"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Between { from = 3, to = 3 })
-            ]
-        , describe "originally 'After'"
-            [ test "maintains the range value if being set to 'Before'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.After 3)
-                        |> DatedColumn.updateRangeType "Before"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Before 3)
-            , test "does nothing if being set to 'After'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.After 3)
-                        |> DatedColumn.updateRangeType "After"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.After 3)
-            , test "maintains the range values if being set to 'Between'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.After 3)
-                        |> DatedColumn.updateRangeType "Between"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Between { from = 3, to = 3 })
-            ]
-        , describe "originally 'Between'"
-            [ test "uses the from range value if being set to 'Before'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
-                        |> DatedColumn.updateRangeType "Before"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Before 2)
-            , test "uses the to range value if being set to 'Before' and to is smaller than from" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Between { from = 5, to = 3 })
-                        |> DatedColumn.updateRangeType "Before"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Before 3)
-            , test "uses the to range value if being set to 'After'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
-                        |> DatedColumn.updateRangeType "After"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.After 3)
-            , test "uses the from range value if being set to 'After' and it is larger than to" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Between { from = 5, to = 3 })
-                        |> DatedColumn.updateRangeType "After"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.After 5)
-            , test "does nothing if being set to 'Between'" <|
-                \() ->
-                    DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
-                        |> DatedColumn.updateRangeType "Between"
-                        |> DatedColumn.range
-                        |> Expect.equal (DatedColumn.Between { from = 2, to = 3 })
-            ]
-        ]
 
-
-updateRangeValueFrom : Test
-updateRangeValueFrom =
-    describe "updateRangeValueFrom"
-        [ test "does nothing to a Before" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.Before 3)
-                    |> DatedColumn.updateRangeValueFrom 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.Before 3)
-        , test "updates the range value of an After" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.After 3)
-                    |> DatedColumn.updateRangeValueFrom 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.After 7)
-        , test "updates the from the value of a Between" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.Between { from = 3, to = 4 })
-                    |> DatedColumn.updateRangeValueFrom 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.Between { from = 7, to = 4 })
-        ]
-
-
-updateRangeValueTo : Test
-updateRangeValueTo =
-    describe "updateRangeValueTo"
-        [ test "updates the range value of a Before" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.Before 3)
-                    |> DatedColumn.updateRangeValueTo 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.Before 7)
-        , test "does nothing to an After" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.After 3)
-                    |> DatedColumn.updateRangeValueTo 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.After 3)
-        , test "updates the to the value of a Between" <|
-            \() ->
-                DatedColumn.init "" (DatedColumn.Between { from = 3, to = 4 })
-                    |> DatedColumn.updateRangeValueTo 7
-                    |> DatedColumn.range
-                    |> Expect.equal (DatedColumn.Between { from = 3, to = 7 })
-        ]
-
-
-
+-- updateRangeType : Test
+-- updateRangeType =
+--     describe "updateRangeType"
+--         [ describe "originally 'Before'"
+--             [ test "does nothing if being set to 'Before'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Before 3)
+--                         |> DatedColumn.updateRangeType "Before"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Before 3)
+--             , test "maintains the range value if being set to 'After'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Before 3)
+--                         |> DatedColumn.updateRangeType "After"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.After 3)
+--             , test "maintains the range values if being set to 'Between'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Before 3)
+--                         |> DatedColumn.updateRangeType "Between"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Between { from = 3, to = 3 })
+--             ]
+--         , describe "originally 'After'"
+--             [ test "maintains the range value if being set to 'Before'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.After 3)
+--                         |> DatedColumn.updateRangeType "Before"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Before 3)
+--             , test "does nothing if being set to 'After'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.After 3)
+--                         |> DatedColumn.updateRangeType "After"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.After 3)
+--             , test "maintains the range values if being set to 'Between'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.After 3)
+--                         |> DatedColumn.updateRangeType "Between"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Between { from = 3, to = 3 })
+--             ]
+--         , describe "originally 'Between'"
+--             [ test "uses the from range value if being set to 'Before'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
+--                         |> DatedColumn.updateRangeType "Before"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Before 2)
+--             , test "uses the to range value if being set to 'Before' and to is smaller than from" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Between { from = 5, to = 3 })
+--                         |> DatedColumn.updateRangeType "Before"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Before 3)
+--             , test "uses the to range value if being set to 'After'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
+--                         |> DatedColumn.updateRangeType "After"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.After 3)
+--             , test "uses the from range value if being set to 'After' and it is larger than to" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Between { from = 5, to = 3 })
+--                         |> DatedColumn.updateRangeType "After"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.After 5)
+--             , test "does nothing if being set to 'Between'" <|
+--                 \() ->
+--                     DatedColumn.init "" (DatedColumn.Between { from = 2, to = 3 })
+--                         |> DatedColumn.updateRangeType "Between"
+--                         |> DatedColumn.range
+--                         |> Expect.equal (DatedColumn.Between { from = 2, to = 3 })
+--             ]
+--         ]
+--
+--
+-- updateRangeValueFrom : Test
+-- updateRangeValueFrom =
+--     describe "updateRangeValueFrom"
+--         [ test "does nothing to a Before" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.Before 3)
+--                     |> DatedColumn.updateRangeValueFrom 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.Before 3)
+--         , test "updates the range value of an After" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.After 3)
+--                     |> DatedColumn.updateRangeValueFrom 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.After 7)
+--         , test "updates the from the value of a Between" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.Between { from = 3, to = 4 })
+--                     |> DatedColumn.updateRangeValueFrom 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.Between { from = 7, to = 4 })
+--         ]
+--
+--
+-- updateRangeValueTo : Test
+-- updateRangeValueTo =
+--     describe "updateRangeValueTo"
+--         [ test "updates the range value of a Before" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.Before 3)
+--                     |> DatedColumn.updateRangeValueTo 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.Before 7)
+--         , test "does nothing to an After" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.After 3)
+--                     |> DatedColumn.updateRangeValueTo 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.After 3)
+--         , test "updates the to the value of a Between" <|
+--             \() ->
+--                 DatedColumn.init "" (DatedColumn.Between { from = 3, to = 4 })
+--                     |> DatedColumn.updateRangeValueTo 7
+--                     |> DatedColumn.range
+--                     |> Expect.equal (DatedColumn.Between { from = 3, to = 7 })
+--         ]
+--
+--
+--
 -- HELPERS
 
 

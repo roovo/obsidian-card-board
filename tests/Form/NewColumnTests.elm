@@ -1,7 +1,7 @@
-module Form.NewColumnConfigTests exposing (suite)
+module Form.NewColumnTests exposing (suite)
 
 import Expect
-import Form.NewColumnConfig as NewColumnConfigForm
+import Form.NewColumn as NewColumnForm
 import Test exposing (..)
 
 
@@ -19,12 +19,12 @@ default =
     describe "default"
         [ test "returns config with no name" <|
             \() ->
-                NewColumnConfigForm.default
+                NewColumnForm.default
                     |> .name
                     |> Expect.equal ""
         , test "returns config with an empty columnType" <|
             \() ->
-                NewColumnConfigForm.default
+                NewColumnForm.default
                     |> .columnType
                     |> Expect.equal ""
         ]
@@ -35,8 +35,8 @@ updateColumnType =
     describe "updateColumnType"
         [ test "updates the column type" <|
             \() ->
-                NewColumnConfigForm.default
-                    |> NewColumnConfigForm.updateColumnType "foo"
+                NewColumnForm.default
+                    |> NewColumnForm.updateColumnType "foo"
                     |> .columnType
                     |> Expect.equal "foo"
         ]
@@ -47,8 +47,8 @@ updateName =
     describe "updateName"
         [ test "updates the board name" <|
             \() ->
-                NewColumnConfigForm.default
-                    |> NewColumnConfigForm.updateName "foo"
+                NewColumnForm.default
+                    |> NewColumnForm.updateName "foo"
                     |> .name
                     |> Expect.equal "foo"
         ]

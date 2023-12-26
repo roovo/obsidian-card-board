@@ -1,27 +1,30 @@
 module Settings exposing
     ( Settings
-    , addBoard
-    , addColumn
+      -- , addBoard
+      -- , addColumn
     , boardConfigs
     , cleanupNames
     , currentVersion
     , decoder
     , default
     , defaultColumnNames
-    , deleteColumn
-    , deleteCurrentBoard
+      -- , deleteColumn
+      -- , deleteCurrentBoard
     , encoder
     , globalSettings
     , hasAnyBordsConfigured
-    , mapGlobalSettings
+      -- , mapGlobalSettings
     , moveBoard
     , moveColumn
     , restrictSpecialColumns
     , switchToBoard
-    , updateBoardConfigs
+      -- , updateBoardConfigs
     , updateCurrentBoard
     , updatePath
     )
+
+-- import Form.NewBoardConfig exposing (NewBoardConfigForm)
+-- import Form.NewColumnConfig exposing (NewColumnConfigForm)
 
 import BoardConfig exposing (BoardConfig)
 import Column
@@ -29,8 +32,6 @@ import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
-import Form.NewBoardConfig exposing (NewBoardConfigForm)
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper exposing (SafeZipper)
 import Semver
@@ -104,49 +105,39 @@ hasAnyBordsConfigured settings =
 
 
 -- TRANSFORM
-
-
-addBoard : DefaultColumnNames -> NewBoardConfigForm -> Settings -> Settings
-addBoard defaultColumnNames_ configToAdd settings =
-    { settings
-        | boardConfigs =
-            SafeZipper.last <|
-                SafeZipper.add
-                    (BoardConfig.fromNewBoardConfig defaultColumnNames_ configToAdd)
-                    settings.boardConfigs
-    }
-
-
-addColumn : DefaultColumnNames -> NewColumnConfigForm -> Settings -> Settings
-addColumn defaultColumnNames_ configToAdd settings =
-    { settings
-        | boardConfigs =
-            SafeZipper.mapSelectedAndRest
-                (BoardConfig.addColumn defaultColumnNames_ configToAdd)
-                identity
-                settings.boardConfigs
-    }
-
-
-deleteColumn : Int -> Settings -> Settings
-deleteColumn index settings =
-    { settings
-        | boardConfigs =
-            SafeZipper.mapSelectedAndRest
-                (BoardConfig.deleteColumn index)
-                identity
-                settings.boardConfigs
-    }
-
-
-deleteCurrentBoard : Settings -> Settings
-deleteCurrentBoard settings =
-    { settings | boardConfigs = SafeZipper.deleteCurrent settings.boardConfigs }
-
-
-mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
-mapGlobalSettings fn settings =
-    { settings | globalSettings = fn settings.globalSettings }
+-- addBoard : DefaultColumnNames -> NewBoardConfigForm -> Settings -> Settings
+-- addBoard defaultColumnNames_ configToAdd settings =
+--     { settings
+--         | boardConfigs =
+--             SafeZipper.last <|
+--                 SafeZipper.add
+--                     (BoardConfig.fromNewBoardConfig defaultColumnNames_ configToAdd)
+--                     settings.boardConfigs
+--     }
+-- addColumn : DefaultColumnNames -> NewColumnConfigForm -> Settings -> Settings
+-- addColumn defaultColumnNames_ configToAdd settings =
+--     { settings
+--         | boardConfigs =
+--             SafeZipper.mapSelectedAndRest
+--                 (BoardConfig.addColumn defaultColumnNames_ configToAdd)
+--                 identity
+--                 settings.boardConfigs
+--     }
+-- deleteColumn : Int -> Settings -> Settings
+-- deleteColumn index settings =
+--     { settings
+--         | boardConfigs =
+--             SafeZipper.mapSelectedAndRest
+--                 (BoardConfig.deleteColumn index)
+--                 identity
+--                 settings.boardConfigs
+--     }
+-- deleteCurrentBoard : Settings -> Settings
+-- deleteCurrentBoard settings =
+--     { settings | boardConfigs = SafeZipper.deleteCurrent settings.boardConfigs }
+-- mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
+-- mapGlobalSettings fn settings =
+--     { settings | globalSettings = fn settings.globalSettings }
 
 
 moveBoard : String -> BeaconPosition -> Settings -> Settings
@@ -193,9 +184,12 @@ switchToBoard index settings =
     { settings | boardConfigs = SafeZipper.atIndex index settings.boardConfigs }
 
 
-updateBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
-updateBoardConfigs newConfigs settings =
-    { settings | boardConfigs = newConfigs }
+
+-- updateBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
+-- updateBoardConfigs newConfigs settings =
+--     { settings | boardConfigs = newConfigs }
+--
+--
 
 
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings

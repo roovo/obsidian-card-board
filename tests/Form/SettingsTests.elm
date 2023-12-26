@@ -11,7 +11,7 @@ import Form.Column as ColumnForm
 import Form.Column.Completed as CompletedColumnForm
 import Form.Column.Dated as DatedColumnForm
 import Form.Decoder as FD
-import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewBoard exposing (NewBoardForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm
 import SafeZipper
@@ -103,8 +103,8 @@ init =
         -- , test "initialises columns from Settings" <|
         --     \() ->
         --         SafeZipper.fromList
-        --             [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
-        --             , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "baz" "tagBoard")
+        --             [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "foo" "emptyBoard")
+        --             , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "baz" "tagBoard")
         --             ]
         --             |> SettingsForm.init
         --             |> SettingsForm.columnsForms
@@ -184,8 +184,8 @@ init =
 --         , test "goes to the end of the list if given an index which is past the last one" <|
 --             \() ->
 --                 SafeZipper.fromList
---                     [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
---                     , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "baz" "tagBoard")
+--                     [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "foo" "emptyBoard")
+--                     , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "baz" "tagBoard")
 --                     ]
 --                     |> SettingsForm.init
 --                     |> SettingsForm.switchToBoard 7
@@ -195,8 +195,8 @@ init =
 --         , test "switches index" <|
 --             \() ->
 --                 SafeZipper.fromList
---                     [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
---                     , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "baz" "tagBoard")
+--                     [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "foo" "emptyBoard")
+--                     , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoard "baz" "tagBoard")
 --                     ]
 --                     |> SettingsForm.init
 --                     |> SettingsForm.switchToBoard 1

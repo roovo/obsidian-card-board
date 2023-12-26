@@ -9,8 +9,8 @@ import Expect
 import Filter
 import Form.Column as ColumnForm exposing (Form)
 import Form.Columns as ColumnsForm
-import Form.NewBoardConfig exposing (NewBoardConfigForm)
-import Form.NewColumnConfig exposing (NewColumnConfigForm)
+import Form.NewBoard exposing (NewBoardForm)
+import Form.NewColumn exposing (NewColumnForm)
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper
@@ -49,7 +49,7 @@ suite =
 --     describe "addBoardConfirmed"
 --         -- [ test "AddingBoard -> EditingBoard focussed on the new board which is on the end" <|
 --         --     \() ->
---         --         SettingsState.AddingBoard exampleNewBoardConfig
+--         --         SettingsState.AddingBoard exampleNewBoard
 --         --             (settingsFromBoardConfigs [ exampleBoardConfig ])
 --         --             SettingsForm.empty
 --         --             |> SettingsState.addBoardConfirmed DefaultColumnNames.default
@@ -57,14 +57,14 @@ suite =
 --         --                 (SettingsState.EditingBoard
 --         --                     (settingsFromBoardConfigsWithIndex 1
 --         --                         [ exampleBoardConfig
---         --                         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default exampleNewBoardConfig
+--         --                         , BoardConfig.fromNewBoard DefaultColumnNames.default exampleNewBoard
 --         --                         ]
 --         --                     )
 --         --                     SettingsForm.empty
 --         --                 )
 --         -- , test "AddingBoard -> EditingBoard changes blank name to Unnamed" <|
 --         --     \() ->
---         --         SettingsState.AddingBoard noNameNewBoardConfig
+--         --         SettingsState.AddingBoard noNameNewBoard
 --         --             (settingsFromBoardConfigs [ exampleBoardConfig ])
 --         --             SettingsForm.empty
 --         --             |> SettingsState.addBoardConfirmed DefaultColumnNames.default
@@ -72,16 +72,16 @@ suite =
 --         --                 (SettingsState.EditingBoard
 --         --                     (settingsFromBoardConfigsWithIndex 1
 --         --                         [ exampleBoardConfig
---         --                         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default unnamedNameNewBoardConfig
+--         --                         , BoardConfig.fromNewBoard DefaultColumnNames.default unnamedNameNewBoard
 --         --                         ]
 --         --                     )
 --         --                     SettingsForm.empty
 --         --                 )
 --         [ test "does nothing if AddingColumn" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardConfirmed DefaultColumnNames.default
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty)
 --         , test "does nothing if ClosingPlugin" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
@@ -120,44 +120,44 @@ suite =
 --     describe "addBoardRequested"
 --         [ test "does nothing if already in AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "AddingColumn -> AddingBoard" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "ClosingPlugin -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "ClosingSettings -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "DeletingBoard -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "DeletingColumn -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "EditingBoard -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.EditingBoard Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "EditingGlobalSettings -> AddingBoard" <|
 --             \() ->
 --                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
 --                     |> SettingsState.addBoardRequested
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         ]
 --
 --
@@ -166,12 +166,12 @@ suite =
 --     describe "addColumnConfirmed"
 --         [ test "does nothing if AddingBoard" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnConfirmed
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "AddingColumn -> EditingBoard" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnConfirmed
 --                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if ClosingPlugin" <|
@@ -212,51 +212,51 @@ suite =
 --     describe "addColumnRequested"
 --         [ test "AddingBoard -> AddingColumn" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
---         , test "the NewColumnConfigForm defaults to the first dropdown item" <|
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
+--         , test "the NewColumnForm defaults to the first dropdown item" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
 --                     |> newColumnConfigForm
 --                     |> Maybe.map .columnType
 --                     |> Expect.equal (Just "completed")
 --         , test "does nothing if already in AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "ClosingPlugin -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "ClosingSettings -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "DeletingBoard -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "DeletingColumn -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "EditingBoard -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.EditingBoard Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         , test "EditingGlobalSettings -> AddingColumn" <|
 --             \() ->
 --                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
 --                     |> SettingsState.addColumnRequested
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "completed") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "completed") Settings.default SettingsForm.empty)
 --         ]
 --
 --
@@ -265,12 +265,12 @@ suite =
 --     describe "boardConfigs"
 --         [ test "returns the configs (apart from the one being added) if in AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.boardConfigs
 --                     |> Expect.equal (SafeZipper.fromList [ exampleBoardConfig ])
 --         , test "returns the configs if in AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.boardConfigs
 --                     |> Expect.equal (SafeZipper.fromList [ exampleBoardConfig ])
 --         , test "returns the configs if in ClosingPlugin state" <|
@@ -311,12 +311,12 @@ suite =
 --     describe "cancelCurrentState"
 --         [ test "AddingBoard -> ClosingPlugin if the board list is empty" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.cancelCurrentState
 --                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
 --         , test "AddingBoard -> EditingBoard if the board list is NOT empty" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.cancelCurrentState
 --                     |> Expect.equal
 --                         (SettingsState.EditingBoard
@@ -330,7 +330,7 @@ suite =
 --                         )
 --         , test "AddingColumn -> EditingBoard" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.cancelCurrentState
 --                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty)
 --         , test "ClosingPlugin -> ClosingPlugin" <|
@@ -371,12 +371,12 @@ suite =
 --     describe "deleteBoardRequested"
 --         [ test "AddingBoard -> DeletingBoard" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteBoardRequested
 --                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
 --         , test "AddingColumn -> DeletingBoard" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteBoardRequested
 --                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
 --         , test "ClosingPlugin -> DeletingBoard" <|
@@ -417,12 +417,12 @@ suite =
 --     describe "deleteColumnRequested"
 --         [ test "AddingBoard -> DeletingColumn" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteColumnRequested 3
 --                     |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default SettingsForm.empty)
 --         , test "AddingColumn -> DeletingColumn" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteColumnRequested 3
 --                     |> Expect.equal (SettingsState.DeletingColumn 3 Settings.default SettingsForm.empty)
 --         , test "ClosingPlugin -> DeletingColumn" <|
@@ -463,14 +463,14 @@ suite =
 --     describe "deleteConfirmed"
 --         [ test "does nothing if AddingBoard" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteConfirmed
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "does nothing if AddingColumn" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.deleteConfirmed
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty)
 --         , test "does nothing if ClosingPlugin" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
@@ -485,7 +485,7 @@ suite =
 --             \() ->
 --                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.deleteConfirmed
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --
 --         -- , test "deletes the current board and -> EditingBoard if DeletingBoard and there is MORE THAN one board" <|
 --         --     \() ->
@@ -511,8 +511,8 @@ suite =
 --                 let
 --                     result =
 --                         SafeZipper.fromList
---                             [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "foo" "emptyBoard")
---                             , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "baz" "tagBoard")
+--                             [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+--                             , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "baz" "tagBoard")
 --                                 |> BoardConfig.deleteColumn 1
 --                             ]
 --                             |> SafeZipper.atIndex 1
@@ -540,7 +540,7 @@ suite =
 --         [ test "AddingBoard -> EditingBoard" <|
 --             \() ->
 --                 SettingsState.AddingBoard
---                     NewBoardConfigForm.default
+--                     NewBoardForm.default
 --                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
 --                     { columnsForms =
 --                         SafeZipper.fromList
@@ -563,7 +563,7 @@ suite =
 --         , test "AddingColumn -> EditingBoard" <|
 --             \() ->
 --                 SettingsState.AddingColumn
---                     (NewColumnConfigForm "" "")
+--                     (NewColumnForm "" "")
 --                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
 --                     { columnsForms =
 --                         SafeZipper.fromList
@@ -724,12 +724,12 @@ suite =
 --     describe "editGlobalSettings"
 --         [ test "AddingBoard -> EditingGlobalSettings" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
 --                     |> SettingsState.editGlobalSettings
 --                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
 --         , test "AddingColumn -> EditingGlobalSettings" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.editGlobalSettings
 --                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
 --         , test "ClosingPlugin -> EditingGlobalSettings" <|
@@ -773,7 +773,7 @@ init =
                 -- SettingsState.init Settings.default
                 --     |> Expect.equal
                 --         (SettingsState.AddingBoard
-                --             NewBoardConfigForm.default
+                --             NewBoardForm.default
                 --             Settings.default
                 --             SettingsForm.empty
                 --         )
@@ -822,43 +822,43 @@ init =
 --     describe "mapBoardBeingAdded"
 --         [ test "maps the board being added if it is in the AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
---                     |> Expect.equal (SettingsState.AddingBoard exampleNewBoardConfig Settings.default SettingsForm.empty)
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
+--                     |> Expect.equal (SettingsState.AddingBoard exampleNewBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty)
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the ClosingPlugin state" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the ClosingSettings state" <|
 --             \() ->
 --                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the DeletingBoard state" <|
 --             \() ->
 --                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the DeletingColumn state" <|
 --             \() ->
 --                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the EditingBoard state" <|
 --             \() ->
 --                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the EditingGlobalSettings state" <|
 --             \() ->
 --                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoardConfig)
+--                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
 --                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
 --         ]
 --
@@ -868,14 +868,14 @@ init =
 --     describe "mapBoardBeingEdited"
 --         [ test "does nothing if it is in the AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
 --         , test "does nothing if it is in the AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
 --                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
 --         , test "does nothing if it is in the ClosingPlugin state" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
@@ -914,14 +914,14 @@ init =
 --     describe "mapCurrentColumnsForm"
 --         [ test "does nothing if it is in the AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm
+--                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm
 --                     |> SettingsState.mapCurrentColumnsForm identity
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm)
 --         , test "does nothing if it is in the AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm
+--                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm
 --                     |> SettingsState.mapCurrentColumnsForm identity
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm)
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm)
 --         , test "does nothing if it is in the ClosingPlugin state" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) exampleBoardConfigsForm
@@ -960,43 +960,43 @@ init =
 --     describe "mapColumnBeingAdded"
 --         [ test "does nothing if it is in the AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardConfigForm.default Settings.default SettingsForm.empty)
+--                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
+--                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
 --         , test "maps the board being added if it is in the AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always <| NewColumnConfigForm "a" "b")
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnConfigForm "a" "b") Settings.default SettingsForm.empty)
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
+--                     |> SettingsState.mapColumnBeingAdded (always <| NewColumnForm "a" "b")
+--                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "a" "b") Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the ClosingPlugin state" <|
 --             \() ->
 --                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the ClosingSettings state" <|
 --             \() ->
 --                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the DeletingBoard state" <|
 --             \() ->
 --                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the DeletingColumn state" <|
 --             \() ->
 --                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the EditingBoard state" <|
 --             \() ->
 --                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
 --         , test "does nothing if it is in the EditingGlobalSettings state" <|
 --             \() ->
 --                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumnConfig)
+--                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
 --                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
 --         ]
 --
@@ -1006,14 +1006,14 @@ init =
 --     describe "mapGlobalSettings"
 --         [ test "does nothing if it is in the AddingBoard state" <|
 --             \() ->
---                 SettingsState.AddingBoard (NewBoardConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingBoard (NewBoardForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
 --                     |> SettingsState.settings
 --                     |> Settings.globalSettings
 --                     |> Expect.equal GlobalSettings.default
 --         , test "does nothing if it is in the AddingColumn state" <|
 --             \() ->
---                 SettingsState.AddingColumn (NewColumnConfigForm "" "") Settings.default SettingsForm.empty
+--                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
 --                     |> SettingsState.mapGlobalSettings (always exampleGlobalSettings)
 --                     |> SettingsState.settings
 --                     |> Settings.globalSettings
@@ -1067,24 +1067,24 @@ init =
 -- -- HELPERS
 --
 --
--- exampleNewBoardConfig : NewBoardConfigForm
--- exampleNewBoardConfig =
---     NewBoardConfigForm "foo" "emptyBoard"
+-- exampleNewBoard : NewBoardForm
+-- exampleNewBoard =
+--     NewBoardForm "foo" "emptyBoard"
 --
 --
--- noNameNewBoardConfig : NewBoardConfigForm
--- noNameNewBoardConfig =
---     NewBoardConfigForm "" "emptyBoard"
+-- noNameNewBoard : NewBoardForm
+-- noNameNewBoard =
+--     NewBoardForm "" "emptyBoard"
 --
 --
--- exampleNewColumnConfig : NewColumnConfigForm
--- exampleNewColumnConfig =
---     NewColumnConfigForm "a name" "a type"
+-- exampleNewColumn : NewColumnForm
+-- exampleNewColumn =
+--     NewColumnForm "a name" "a type"
 --
 --
--- unnamedNameNewBoardConfig : NewBoardConfigForm
--- unnamedNameNewBoardConfig =
---     NewBoardConfigForm "Unnamed" "emptyBoard"
+-- unnamedNameNewBoard : NewBoardForm
+-- unnamedNameNewBoard =
+--     NewBoardForm "Unnamed" "emptyBoard"
 --
 --
 -- exampleBoardConfig : BoardConfig
@@ -1134,8 +1134,8 @@ init =
 -- exampleBoardConfigsForm : SettingsForm.Form
 -- exampleBoardConfigsForm =
 --     SafeZipper.fromList
---         [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "foo" "emptyBoard")
---         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "baz" "tagBoard")
+--         [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+--         , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "baz" "tagBoard")
 --         ]
 --         |> SafeZipper.atIndex 1
 --         |> SettingsForm.init
@@ -1144,8 +1144,8 @@ init =
 -- exampleBoardConfigsFormEmpty : SettingsForm.Form
 -- exampleBoardConfigsFormEmpty =
 --     SafeZipper.fromList
---         [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "foo" "emptyBoard")
---         , BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "baz" "emptyBoard")
+--         [ BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+--         , BoardConfig.fromNewBoard DefaultColumnNames.default (NewBoardForm "baz" "emptyBoard")
 --         ]
 --         |> SafeZipper.atIndex 1
 --         |> SettingsForm.init
@@ -1159,7 +1159,7 @@ init =
 --     }
 --
 --
--- newColumnConfigForm : SettingsState -> Maybe NewColumnConfigForm
+-- newColumnConfigForm : SettingsState -> Maybe NewColumnForm
 -- newColumnConfigForm settingsState =
 --     case settingsState of
 --         SettingsState.AddingColumn ncc _ _ ->
