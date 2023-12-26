@@ -1,6 +1,6 @@
 module Form.Column exposing
-    ( Error(..)
-    , Form(..)
+    ( ColumnForm(..)
+    , Error(..)
     , decoder
       -- , fromColumnConfig
     , init
@@ -38,7 +38,7 @@ import Form.SafeDecoder as SD
 -- TYPES
 
 
-type Form
+type ColumnForm
     = CompletedColumnForm CompletedColumnForm
     | DatedColumnForm DatedColumnForm
     | NamedTagColumnForm NamedTagColumnForm
@@ -58,7 +58,7 @@ type Error
 
 
 -- CONSTRUCTION
--- fromColumnConfig : NewColumnConfigForm -> Maybe Form
+-- fromColumnConfig : NewColumnConfigForm -> Maybe ColumnForm
 -- fromColumnConfig newColumnConfigForm =
 --     case newColumnConfigForm.columnType of
 --         "Completed" ->
@@ -84,7 +84,7 @@ type Error
 --
 
 
-init : Column -> Form
+init : Column -> ColumnForm
 init column =
     case column of
         Column.Completed completedColumn ->
@@ -110,10 +110,10 @@ init column =
 -- DECODER
 
 
-decoder : FD.Decoder Form Error Column
+decoder : FD.Decoder ColumnForm Error Column
 decoder =
     let
-        subformDecoder : Form -> Result (List Error) Column
+        subformDecoder : ColumnForm -> Result (List Error) Column
         subformDecoder form =
             case form of
                 CompletedColumnForm subform ->
@@ -155,10 +155,10 @@ decoder =
     FD.custom subformDecoder
 
 
-safeDecoder : SD.Decoder Form Column
+safeDecoder : SD.Decoder ColumnForm Column
 safeDecoder =
     let
-        subformDecoder : Form -> Result Never Column
+        subformDecoder : ColumnForm -> Result Never Column
         subformDecoder form =
             case form of
                 CompletedColumnForm subform ->
@@ -198,7 +198,7 @@ safeDecoder =
 -- INFO
 
 
-isCompleted : Form -> Bool
+isCompleted : ColumnForm -> Bool
 isCompleted form =
     case form of
         CompletedColumnForm _ ->
@@ -208,7 +208,7 @@ isCompleted form =
             False
 
 
-isOtherTags : Form -> Bool
+isOtherTags : ColumnForm -> Bool
 isOtherTags form =
     case form of
         OtherTagsColumnForm _ ->
@@ -218,7 +218,7 @@ isOtherTags form =
             False
 
 
-isUndated : Form -> Bool
+isUndated : ColumnForm -> Bool
 isUndated form =
     case form of
         UndatedColumnForm _ ->
@@ -228,7 +228,7 @@ isUndated form =
             False
 
 
-isUntagged : Form -> Bool
+isUntagged : ColumnForm -> Bool
 isUntagged form =
     case form of
         UntaggedColumnForm _ ->
@@ -238,7 +238,7 @@ isUntagged form =
             False
 
 
-name : Form -> String
+name : ColumnForm -> String
 name form =
     case form of
         CompletedColumnForm subform ->
@@ -260,7 +260,7 @@ name form =
             subform.name
 
 
-placeholder : DefaultColumnNames -> Form -> String
+placeholder : DefaultColumnNames -> ColumnForm -> String
 placeholder defaultColumnNames form =
     case form of
         CompletedColumnForm _ ->
@@ -282,7 +282,7 @@ placeholder defaultColumnNames form =
             DefaultColumnNames.nameFor "untagged" defaultColumnNames
 
 
-typeString : Form -> String
+typeString : ColumnForm -> String
 typeString form =
     case form of
         CompletedColumnForm subform ->
@@ -308,7 +308,7 @@ typeString form =
 -- MODIFICATION
 
 
-updateCompletedColumnLimit : String -> Form -> Form
+updateCompletedColumnLimit : String -> ColumnForm -> ColumnForm
 updateCompletedColumnLimit newLimit form =
     case form of
         CompletedColumnForm subform ->
@@ -318,7 +318,7 @@ updateCompletedColumnLimit newLimit form =
             form
 
 
-updateDatedColumnRangeType : String -> Form -> Form
+updateDatedColumnRangeType : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeType newType form =
     case form of
         DatedColumnForm subform ->
@@ -328,7 +328,7 @@ updateDatedColumnRangeType newType form =
             form
 
 
-updateDatedColumnRangeValueFrom : String -> Form -> Form
+updateDatedColumnRangeValueFrom : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeValueFrom newValue form =
     case form of
         DatedColumnForm subform ->
@@ -338,7 +338,7 @@ updateDatedColumnRangeValueFrom newValue form =
             form
 
 
-updateDatedColumnRangeValueTo : String -> Form -> Form
+updateDatedColumnRangeValueTo : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeValueTo newValue form =
     case form of
         DatedColumnForm subform ->
@@ -348,7 +348,7 @@ updateDatedColumnRangeValueTo newValue form =
             form
 
 
-updateName : String -> Form -> Form
+updateName : String -> ColumnForm -> ColumnForm
 updateName newName form =
     case form of
         CompletedColumnForm subform ->
@@ -370,7 +370,7 @@ updateName newName form =
             UntaggedColumnForm <| UntaggedColumnForm.updateName newName subform
 
 
-updateNamedTagTag : String -> Form -> Form
+updateNamedTagTag : String -> ColumnForm -> ColumnForm
 updateNamedTagTag newName form =
     case form of
         NamedTagColumnForm subform ->

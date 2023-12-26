@@ -10,6 +10,8 @@ suite =
     concat
         [ default
         , optionsForSelect
+
+        -- , safeDecoder
         , updateBoardType
         , updateName
         ]
@@ -29,6 +31,68 @@ default =
                     |> .boardType
                     |> Expect.equal "emptyBoard"
         ]
+
+
+
+-- safeDecoder : Test
+-- safeDecoder =
+--     describe "safeDecoder"
+--         [ test "decodes an empty board" <|
+--             \() ->
+--                 { name = "foo", boardType = "EmptyBoard" }
+--                     |> SD.run NewBoardForm.safeDecoder
+--                     |> Expect.equal (Ok <| Just (
+--
+--                       ))
+--         ]
+-- fromNewBoardConfig : DefaultColumnNames -> NewBoardConfigForm -> BoardConfig
+-- fromNewBoardConfig defaultColumnNames newBoardConfigForm =
+--     case newBoardConfigForm.boardType of
+--         "dateBoard" ->
+--             BoardConfig
+--                 { columns =
+--                     Columns.fromList
+--                         [ Column.undated (DefaultColumnNames.nameFor "undated" defaultColumnNames)
+--                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "today" defaultColumnNames) (DatedColumn.Before 1)
+--                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "tomorrow" defaultColumnNames) (DatedColumn.Between { from = 1, to = 1 })
+--                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "future" defaultColumnNames) (DatedColumn.After 1)
+--                         , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 4 10
+--                         ]
+--                 , filters = []
+--                 , filterPolarity = Filter.defaultPolarity
+--                 , filterScope = Filter.defaultScope
+--                 , name = newBoardConfigForm.name
+--                 , showColumnTags = True
+--                 , showFilteredTags = True
+--                 }
+--
+--         "tagBoard" ->
+--             BoardConfig
+--                 { columns =
+--                     Columns.fromList
+--                         [ Column.untagged (DefaultColumnNames.nameFor "untagged" defaultColumnNames)
+--                         , Column.otherTags (DefaultColumnNames.nameFor "otherTags" defaultColumnNames) []
+--                         , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 2 10
+--                         ]
+--                 , filters = []
+--                 , filterPolarity = Filter.defaultPolarity
+--                 , filterScope = Filter.defaultScope
+--                 , name = newBoardConfigForm.name
+--                 , showColumnTags = True
+--                 , showFilteredTags = True
+--                 }
+--
+--         _ ->
+--             BoardConfig
+--                 { columns = Columns.empty
+--                 , filters = []
+--                 , filterPolarity = Filter.defaultPolarity
+--                 , filterScope = Filter.defaultScope
+--                 , name = newBoardConfigForm.name
+--                 , showColumnTags = True
+--                 , showFilteredTags = True
+--                 }
+-- UTILITIES
 
 
 optionsForSelect : Test

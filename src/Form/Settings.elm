@@ -1,5 +1,5 @@
 module Form.Settings exposing
-    ( Form
+    ( SettingsForm
     , addBoard
     , addColumn
     , boardConfigForms
@@ -20,7 +20,7 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
-import Form.BoardConfig as BoardConfigForm
+import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
@@ -36,8 +36,8 @@ import Settings exposing (Settings)
 -- TYPES
 
 
-type alias Form =
-    { boardConfigForms : SafeZipper BoardConfigForm.Form
+type alias SettingsForm =
+    { boardConfigForms : SafeZipper BoardConfigForm
     , taskCompletionFormat : String
     , today : String
     , tomorrow : String
@@ -54,7 +54,7 @@ type alias Form =
 -- CONSTRUCTION
 
 
-init : Settings -> Form
+init : Settings -> SettingsForm
 init settings =
     let
         boardConfigForms_ =
@@ -95,17 +95,17 @@ init settings =
 
 
 
--- empty : Form
+-- empty : SettingsForm
 -- empty =
 --     { boardConfigForms = SafeZipper.empty }
 -- DECODER
--- decoder : FD.Decoder Form ( Int, ( Int, ColumnForm.Error ) ) (List Columns)
+-- decoder : FD.Decoder SettingsForm ( Int, ( Int, ColumnForm.Error ) ) (List Columns)
 -- decoder =
 --     FD.listOf ColumnsForm.decoder
 --         |> FD.lift (SafeZipper.toList << boardConfigForms)
 
 
-safeDecoder : SD.Decoder Form Settings
+safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
     -- SD.listOf BoardConfigForm.safeDecoder
     --     |> SD.lift (SafeZipper.toList << boardConfigForms)
@@ -116,17 +116,17 @@ safeDecoder =
 -- INFO
 
 
-boardConfigForms : Form -> SafeZipper BoardConfigForm.Form
+boardConfigForms : SettingsForm -> SafeZipper BoardConfigForm
 boardConfigForms form =
     form.boardConfigForms
 
 
-defaultColumnNames : Form -> DefaultColumnNames
+defaultColumnNames : SettingsForm -> DefaultColumnNames
 defaultColumnNames form =
     DefaultColumnNames.default
 
 
-hasAnyBordsConfigured : Form -> Bool
+hasAnyBordsConfigured : SettingsForm -> Bool
 hasAnyBordsConfigured form =
     SafeZipper.length form.boardConfigForms /= 0
 
@@ -135,7 +135,7 @@ hasAnyBordsConfigured form =
 -- MODIFICATION
 
 
-addBoard : DefaultColumnNames -> NewBoardForm -> Form -> Form
+addBoard : DefaultColumnNames -> NewBoardForm -> SettingsForm -> SettingsForm
 addBoard defaultColumnNames_ configToAdd form =
     -- { form
     --     | boardConfigForms =
@@ -147,7 +147,7 @@ addBoard defaultColumnNames_ configToAdd form =
     form
 
 
-addColumn : NewColumnForm -> Form -> Form
+addColumn : NewColumnForm -> SettingsForm -> SettingsForm
 addColumn configToAdd form =
     -- { form
     --     | boardConfigForms =
@@ -159,7 +159,7 @@ addColumn configToAdd form =
     form
 
 
-deleteColumn : Int -> Form -> Form
+deleteColumn : Int -> SettingsForm -> SettingsForm
 deleteColumn index form =
     -- { form
     --     | boardConfigForms =
@@ -171,12 +171,12 @@ deleteColumn index form =
     form
 
 
-deleteCurrentBoard : Form -> Form
+deleteCurrentBoard : SettingsForm -> SettingsForm
 deleteCurrentBoard form =
     { form | boardConfigForms = SafeZipper.deleteCurrent form.boardConfigForms }
 
 
-moveColumn : String -> BeaconPosition -> Form -> Form
+moveColumn : String -> BeaconPosition -> SettingsForm -> SettingsForm
 moveColumn draggedId beaconPosition form =
     -- { form
     --     | boardConfigForms =
@@ -188,12 +188,12 @@ moveColumn draggedId beaconPosition form =
     form
 
 
-switchToBoard : Int -> Form -> Form
+switchToBoard : Int -> SettingsForm -> SettingsForm
 switchToBoard index form =
     { form | boardConfigForms = SafeZipper.atIndex index form.boardConfigForms }
 
 
 
--- updateCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> Form -> Form
+-- updateCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> SettingsForm -> SettingsForm
 -- updateCurrentColumnsForm fn form =
 --     { form | boardConfigForms = SafeZipper.mapSelectedAndRest fn identity form.boardConfigForms }

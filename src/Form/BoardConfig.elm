@@ -1,5 +1,5 @@
 module Form.BoardConfig exposing
-    ( Form
+    ( BoardConfigForm
       -- , safeDecoder
     )
 
@@ -15,7 +15,7 @@ import Form.SafeDecoder as SD
 --     = BoardConfig Config
 
 
-type alias Form =
+type alias BoardConfigForm =
     -- { columns : Columns
     -- , filters : List Filter
     -- , filterPolarity : String

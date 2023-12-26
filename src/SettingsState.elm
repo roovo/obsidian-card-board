@@ -26,11 +26,11 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
-import Form.Columns as ColumnsForm exposing (OptionsForSelect)
+import Form.Columns as ColumnsForm exposing (ColumnsForm, OptionsForSelect)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
-import Form.Settings as SettingsForm
+import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
@@ -42,14 +42,14 @@ import Settings exposing (Settings)
 
 
 type SettingsState
-    = AddingBoard NewBoardForm SettingsForm.Form
-    | AddingColumn NewColumnForm SettingsForm.Form
-    | ClosingPlugin SettingsForm.Form
-    | ClosingSettings SettingsForm.Form
-    | DeletingBoard SettingsForm.Form
-    | DeletingColumn Int SettingsForm.Form
-    | EditingBoard SettingsForm.Form
-    | EditingGlobalSettings SettingsForm.Form
+    = AddingBoard NewBoardForm SettingsForm
+    | AddingColumn NewColumnForm SettingsForm
+    | ClosingPlugin SettingsForm
+    | ClosingSettings SettingsForm
+    | DeletingBoard SettingsForm
+    | DeletingColumn Int SettingsForm
+    | EditingBoard SettingsForm
+    | EditingGlobalSettings SettingsForm
 
 
 
@@ -498,7 +498,7 @@ mapColumnBeingAdded fn settingsState =
             settingsState
 
 
-mapCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> SettingsState -> SettingsState
+mapCurrentColumnsForm : (ColumnsForm -> ColumnsForm) -> SettingsState -> SettingsState
 mapCurrentColumnsForm fn settingsState =
     case settingsState of
         EditingBoard settingsForm_ ->
@@ -524,7 +524,7 @@ mapGlobalSettings fn settingsState =
 -- PRIVATE
 
 
-mapSettingsForm : (SettingsForm.Form -> SettingsForm.Form) -> SettingsState -> SettingsState
+mapSettingsForm : (SettingsForm -> SettingsForm) -> SettingsState -> SettingsState
 mapSettingsForm fn settingsState =
     case settingsState of
         AddingBoard config settingsForm_ ->
@@ -552,7 +552,7 @@ mapSettingsForm fn settingsState =
             EditingGlobalSettings (fn settingsForm_)
 
 
-settingsForm : SettingsState -> SettingsForm.Form
+settingsForm : SettingsState -> SettingsForm
 settingsForm settingsState =
     case settingsState of
         AddingBoard _ settingsForm_ ->

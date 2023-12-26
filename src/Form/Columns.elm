@@ -1,5 +1,5 @@
 module Form.Columns exposing
-    ( Form
+    ( ColumnsForm
     , OptionsForSelect
     , addColumn
     , decoder
@@ -22,7 +22,7 @@ module Form.Columns exposing
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
-import Form.Column as ColumnForm
+import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Decoder as FD
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
@@ -34,8 +34,8 @@ import List.Extra as LE
 -- TYPES
 
 
-type alias Form =
-    { columnForms : List ColumnForm.Form }
+type alias ColumnsForm =
+    { columnForms : List ColumnForm }
 
 
 type alias OptionsForSelect =
@@ -49,24 +49,24 @@ type alias OptionsForSelect =
 -- CONSTRUCTION
 
 
-init : Columns -> Form
+init : Columns -> ColumnsForm
 init columns =
     columns
         |> Columns.toList
         |> List.map ColumnForm.init
-        |> Form
+        |> ColumnsForm
 
 
-empty : Form
+empty : ColumnsForm
 empty =
     { columnForms = [] }
 
 
-fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> Form
+fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> ColumnsForm
 fromNewBoardForm defaultColumnNames newBoardConfigForm =
     case newBoardConfigForm.boardType of
         "dateBoard" ->
-            Form
+            ColumnsForm
                 [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
                 , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
                 , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
@@ -75,28 +75,28 @@ fromNewBoardForm defaultColumnNames newBoardConfigForm =
                 ]
 
         "tagBoard" ->
-            Form
+            ColumnsForm
                 [ ColumnForm.UntaggedColumnForm { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
                 , ColumnForm.OtherTagsColumnForm { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
                 , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
                 ]
 
         _ ->
-            Form []
+            ColumnsForm []
 
 
 
 -- DECODER
 
 
-decoder : FD.Decoder Form ( Int, ColumnForm.Error ) Columns
+decoder : FD.Decoder ColumnsForm ( Int, ColumnForm.Error ) Columns
 decoder =
     FD.listOf ColumnForm.decoder
         |> FD.lift .columnForms
         |> FD.map Columns.fromList
 
 
-safeDecoder : SD.Decoder Form Columns
+safeDecoder : SD.Decoder ColumnsForm Columns
 safeDecoder =
     SD.listOf ColumnForm.safeDecoder
         |> SD.lift .columnForms
@@ -107,12 +107,12 @@ safeDecoder =
 -- INFO
 
 
-find : (ColumnForm.Form -> Bool) -> Form -> Maybe ColumnForm.Form
+find : (ColumnForm -> Bool) -> ColumnsForm -> Maybe ColumnForm
 find fn form =
     LE.find fn form.columnForms
 
 
-optionsForSelect : Form -> NewColumnForm -> List OptionsForSelect
+optionsForSelect : ColumnsForm -> NewColumnForm -> List OptionsForSelect
 optionsForSelect form newColumnConfigForm =
     let
         alreadyHasCompleted : Bool
@@ -216,7 +216,7 @@ optionsForSelect form newColumnConfigForm =
 -- MODIFICATION
 
 
-addColumn : NewColumnForm -> Form -> Form
+addColumn : NewColumnForm -> ColumnsForm -> ColumnsForm
 addColumn newColumnConfigForm form =
     -- let
     --     allColumns : List ColumnForm.Form
@@ -244,48 +244,48 @@ addColumn newColumnConfigForm form =
     --     Nothing ->
     --         allColumns ++ newColumn
     -- )
-    --     |> Form
+    --     |> ColumnsForm
     form
 
 
-deleteColumn : Int -> Form -> Form
+deleteColumn : Int -> ColumnsForm -> ColumnsForm
 deleteColumn index form =
     { form | columnForms = LE.removeAt index form.columnForms }
 
 
-moveColumn : String -> BeaconPosition -> Form -> Form
+moveColumn : String -> BeaconPosition -> ColumnsForm -> ColumnsForm
 moveColumn draggedId beaconPosition form =
     form
         |> .columnForms
         |> BeaconPosition.performMove draggedId beaconPosition ColumnForm.name
-        |> Form
+        |> ColumnsForm
 
 
-updateColumnName : Int -> String -> Form -> Form
+updateColumnName : Int -> String -> ColumnsForm -> ColumnsForm
 updateColumnName index newName form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateName newName) form.columnForms }
 
 
-updateCompletedColumnLimit : Int -> String -> Form -> Form
+updateCompletedColumnLimit : Int -> String -> ColumnsForm -> ColumnsForm
 updateCompletedColumnLimit index newLimit form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateCompletedColumnLimit newLimit) form.columnForms }
 
 
-updateDatedColumnRangeType : Int -> String -> Form -> Form
+updateDatedColumnRangeType : Int -> String -> ColumnsForm -> ColumnsForm
 updateDatedColumnRangeType index newType form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeType newType) form.columnForms }
 
 
-updateDatedColumnRangeValueFrom : Int -> String -> Form -> Form
+updateDatedColumnRangeValueFrom : Int -> String -> ColumnsForm -> ColumnsForm
 updateDatedColumnRangeValueFrom index newValue form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeValueFrom newValue) form.columnForms }
 
 
-updateDatedColumnRangeValueTo : Int -> String -> Form -> Form
+updateDatedColumnRangeValueTo : Int -> String -> ColumnsForm -> ColumnsForm
 updateDatedColumnRangeValueTo index newValue form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateDatedColumnRangeValueTo newValue) form.columnForms }
 
 
-updateNamedTagTag : Int -> String -> Form -> Form
+updateNamedTagTag : Int -> String -> ColumnsForm -> ColumnsForm
 updateNamedTagTag index newName form =
     { form | columnForms = LE.updateAt index (ColumnForm.updateNamedTagTag newName) form.columnForms }

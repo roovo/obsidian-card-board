@@ -24,13 +24,13 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons exposing (Icon)
 import Filter exposing (Filter, Polarity)
-import Form.BoardConfig as BoardConfigForm
-import Form.Column as ColumnForm
+import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
-import Form.Columns as ColumnsForm
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
-import Form.Settings as SettingsForm
+import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
@@ -490,7 +490,7 @@ mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 
 
-mapCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapCurrentColumnsForm : (ColumnsForm -> ColumnsForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapCurrentColumnsForm fn model =
     wrap { model | settingsState = SettingsState.mapCurrentColumnsForm fn model.settingsState }
 
@@ -659,7 +659,7 @@ modalAddBoard newBoardConfigForm =
         ]
 
 
-modalAddColumn : NewColumnForm -> SettingsForm.Form -> Html Msg
+modalAddColumn : NewColumnForm -> SettingsForm -> Html Msg
 modalAddColumn newColumnConfigForm settingsForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
@@ -850,7 +850,7 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfigForm.Form -> SettingsForm.Form -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView : SafeZipper BoardConfigForm -> SettingsForm -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
 boardSettingsView boardConfigs settingsForm defaultColumnNames multiselect dragTracker =
     -- boardSettingsForm
     --     (SafeZipper.current boardConfigs)
@@ -1102,12 +1102,12 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm.Form -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
 boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multiselect dragTracker =
     case ( boardConfig, columnsForm, boardIndex ) of
         ( Just config, Just form, Just _ ) ->
             let
-                draggedColumn : Maybe ColumnForm.Form
+                draggedColumn : Maybe ColumnForm
                 draggedColumn =
                     ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) form
 
@@ -1303,7 +1303,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
             [ Html.text "" ]
 
 
-settingsColumnView : Maybe String -> DefaultColumnNames -> Int -> ColumnForm.Form -> Html Msg
+settingsColumnView : Maybe String -> DefaultColumnNames -> Int -> ColumnForm -> Html Msg
 settingsColumnView uniqueId defaultColumnNames index columnForm =
     let
         domId : String
@@ -1374,7 +1374,7 @@ settingsColumnView uniqueId defaultColumnNames index columnForm =
         ]
 
 
-settingsColumnDraggedView : Bool -> Maybe ColumnForm.Form -> DragTracker -> Html Msg
+settingsColumnDraggedView : Bool -> Maybe ColumnForm -> DragTracker -> Html Msg
 settingsColumnDraggedView isDragging columnForm dragTracker =
     case ( isDragging, columnForm, dragTracker ) of
         ( True, Just draggedColumnForm, DragTracker.Dragging clientData domData ) ->
@@ -1422,7 +1422,7 @@ settingsColumnDraggedView isDragging columnForm dragTracker =
             Html.text ""
 
 
-settingsColumnControlView : Int -> ColumnForm.Form -> Html Msg
+settingsColumnControlView : Int -> ColumnForm -> Html Msg
 settingsColumnControlView index columnForm =
     case columnForm of
         ColumnForm.CompletedColumnForm completedForm ->

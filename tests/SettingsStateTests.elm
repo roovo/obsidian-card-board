@@ -7,8 +7,8 @@ import Columns
 import DefaultColumnNames
 import Expect
 import Filter
-import Form.Column as ColumnForm exposing (Form)
-import Form.Columns as ColumnsForm
+import Form.Column as ColumnForm exposing (ColumnForm)
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.Settings as SettingsForm

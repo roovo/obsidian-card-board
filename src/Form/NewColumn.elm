@@ -1,11 +1,12 @@
 module Form.NewColumn exposing
     ( NewColumnForm
     , default
+    , safeDecoder
     , updateColumnType
     , updateName
     )
 
-import Form.Column as ColumnForm
+import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.SafeDecoder as SD
 
 
@@ -20,30 +21,6 @@ type alias NewColumnForm =
 
 
 
--- fromColumn : NewColumnForm -> Maybe Form
--- fromColumn newColumnForm =
---     case newColumnForm.columnType of
---         "Completed" ->
---             Just (CompletedColumnForm { name = newColumnForm.name, limit = "10" })
---
---         "Dated" ->
---             Just (DatedColumnForm { name = newColumnForm.name, rangeType = "Before", from = "", to = "" })
---
---         "NamedTag" ->
---             Just (NamedTagColumnForm { name = newColumnForm.name, tag = "" })
---
---         "OtherTags" ->
---             Just (OtherTagsColumnForm { name = newColumnForm.name })
---
---         "Undated" ->
---             Just (UndatedColumnForm { name = newColumnForm.name })
---
---         "Untagged" ->
---             Just (UntaggedColumnForm { name = newColumnForm.name })
---
---         _ ->
---             Nothing
---
 -- INITIALIZE
 
 
@@ -52,6 +29,37 @@ default =
     { name = ""
     , columnType = ""
     }
+
+
+
+-- DECODE
+
+
+safeDecoder : SD.Decoder NewColumnForm (Maybe ColumnForm)
+safeDecoder =
+    SD.custom <|
+        \form ->
+            case form.columnType of
+                "Completed" ->
+                    Ok <| Just (ColumnForm.CompletedColumnForm { name = form.name, limit = "10" })
+
+                "Dated" ->
+                    Ok <| Just (ColumnForm.DatedColumnForm { name = form.name, rangeType = "Before", from = "", to = "" })
+
+                "NamedTag" ->
+                    Ok <| Just (ColumnForm.NamedTagColumnForm { name = form.name, tag = "" })
+
+                "OtherTags" ->
+                    Ok <| Just (ColumnForm.OtherTagsColumnForm { name = form.name })
+
+                "Undated" ->
+                    Ok <| Just (ColumnForm.UndatedColumnForm { name = form.name })
+
+                "Untagged" ->
+                    Ok <| Just (ColumnForm.UntaggedColumnForm { name = form.name })
+
+                _ ->
+                    Ok <| Nothing
 
 
 

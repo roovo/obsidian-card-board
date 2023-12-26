@@ -1,3 +1,5 @@
+- Form.BoardConfig.Form -> Form.BoardConfigForm, Columns, Settings, Column
+- Form.NewBoardForm.safeDecoder
 - can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
 - improve input boxes for numbers as they are a bit odd due to the fact that
   they cannot be empty..

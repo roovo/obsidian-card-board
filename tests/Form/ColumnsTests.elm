@@ -9,10 +9,10 @@ import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
 import Columns
 import Expect
-import Form.Column as ColumnForm
+import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Column.Completed as CompletedColumnForm
 import Form.Column.Dated as DatedColumnForm
-import Form.Columns as ColumnsForm
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.Decoder as FD
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
@@ -220,7 +220,7 @@ optionsForSelect =
         , test "returns all options except Completed if there is a completed column" <|
             \() ->
                 let
-                    columnsForm : ColumnsForm.Form
+                    columnsForm : ColumnsForm
                     columnsForm =
                         Columns.fromList
                             [ Column.completed <| CompletedColumn.init "" 0 10 ]
@@ -252,7 +252,7 @@ optionsForSelect =
         , test "returns all options except otherTags if there is an otherTags column" <|
             \() ->
                 let
-                    columnsForm : ColumnsForm.Form
+                    columnsForm : ColumnsForm
                     columnsForm =
                         Columns.fromList
                             [ Column.otherTags "" [] ]
@@ -284,7 +284,7 @@ optionsForSelect =
         , test "returns all options except undated if there is an undated column" <|
             \() ->
                 let
-                    columnsForm : ColumnsForm.Form
+                    columnsForm : ColumnsForm
                     columnsForm =
                         Columns.fromList
                             [ Column.undated "" ]
@@ -316,7 +316,7 @@ optionsForSelect =
         , test "returns all options except untagged if there is an untagged column" <|
             \() ->
                 let
-                    columnsForm : ColumnsForm.Form
+                    columnsForm : ColumnsForm
                     columnsForm =
                         Columns.fromList
                             [ Column.untagged "" ]
