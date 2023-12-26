@@ -49,7 +49,7 @@ import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import Date exposing (Date)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
-import NewColumnConfig exposing (NewColumnConfig)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
@@ -83,18 +83,18 @@ dated =
     Dated
 
 
-fromColumnConfig : DefaultColumnNames -> NewColumnConfig -> Maybe Column
-fromColumnConfig defaultColumnNames newColumnConfig =
+fromColumnConfig : DefaultColumnNames -> NewColumnConfigForm -> Maybe Column
+fromColumnConfig defaultColumnNames newColumnConfigForm =
     let
         newName : String
         newName =
-            if String.isEmpty (String.trim newColumnConfig.name) then
-                DefaultColumnNames.nameFor newColumnConfig.columnType defaultColumnNames
+            if String.isEmpty (String.trim newColumnConfigForm.name) then
+                DefaultColumnNames.nameFor newColumnConfigForm.columnType defaultColumnNames
 
             else
-                newColumnConfig.name
+                newColumnConfigForm.name
     in
-    case newColumnConfig.columnType of
+    case newColumnConfigForm.columnType of
         "completed" ->
             Just (Completed <| CompletedColumn.init newName 0 10)
 
@@ -102,16 +102,16 @@ fromColumnConfig defaultColumnNames newColumnConfig =
             let
                 todayName : String
                 todayName =
-                    if String.isEmpty (String.trim newColumnConfig.name) then
+                    if String.isEmpty (String.trim newColumnConfigForm.name) then
                         DefaultColumnNames.nameFor "today" defaultColumnNames
 
                     else
-                        newColumnConfig.name
+                        newColumnConfigForm.name
             in
             Just (Dated <| DatedColumn.init todayName (DatedColumn.Before 1))
 
         "namedTag" ->
-            Just (namedTag newColumnConfig.name "")
+            Just (namedTag newColumnConfigForm.name "")
 
         "otherTags" ->
             Just (otherTags newName [])

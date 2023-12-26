@@ -52,8 +52,8 @@ import Columns exposing (Columns)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter, Polarity, Scope)
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import TsJson.Decode as TsDecode
 import TsJson.Decode.Pipeline as TsDecode
 import TsJson.Encode as TsEncode
@@ -88,9 +88,9 @@ type alias LocalColumnConfig =
 -- CREATE
 
 
-fromNewBoardConfig : DefaultColumnNames -> NewBoardConfig -> BoardConfig
-fromNewBoardConfig defaultColumnNames newBoardConfig =
-    case newBoardConfig.boardType of
+fromNewBoardConfig : DefaultColumnNames -> NewBoardConfigForm -> BoardConfig
+fromNewBoardConfig defaultColumnNames newBoardConfigForm =
+    case newBoardConfigForm.boardType of
         "dateBoard" ->
             BoardConfig
                 { columns =
@@ -104,7 +104,7 @@ fromNewBoardConfig defaultColumnNames newBoardConfig =
                 , filters = []
                 , filterPolarity = Filter.defaultPolarity
                 , filterScope = Filter.defaultScope
-                , name = newBoardConfig.name
+                , name = newBoardConfigForm.name
                 , showColumnTags = True
                 , showFilteredTags = True
                 }
@@ -120,7 +120,7 @@ fromNewBoardConfig defaultColumnNames newBoardConfig =
                 , filters = []
                 , filterPolarity = Filter.defaultPolarity
                 , filterScope = Filter.defaultScope
-                , name = newBoardConfig.name
+                , name = newBoardConfigForm.name
                 , showColumnTags = True
                 , showFilteredTags = True
                 }
@@ -131,7 +131,7 @@ fromNewBoardConfig defaultColumnNames newBoardConfig =
                 , filters = []
                 , filterPolarity = Filter.defaultPolarity
                 , filterScope = Filter.defaultScope
-                , name = newBoardConfig.name
+                , name = newBoardConfigForm.name
                 , showColumnTags = True
                 , showFilteredTags = True
                 }
@@ -213,9 +213,9 @@ decoder_v_0_11_0 =
 -- TRANSFORM
 
 
-addColumn : DefaultColumnNames -> NewColumnConfig -> BoardConfig -> BoardConfig
-addColumn defaultColumnNames newColumnConfig (BoardConfig c) =
-    BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfig c.columns }
+addColumn : DefaultColumnNames -> NewColumnConfigForm -> BoardConfig -> BoardConfig
+addColumn defaultColumnNames newColumnConfigForm (BoardConfig c) =
+    BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfigForm c.columns }
 
 
 cleanupColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig

@@ -29,8 +29,8 @@ import Form.Column.OtherTags as OtherTagsColumnForm exposing (OtherTagsColumnFor
 import Form.Column.Undated as UndatedColumnForm exposing (UndatedColumnForm)
 import Form.Column.Untagged as UntaggedColumnForm exposing (UntaggedColumnForm)
 import Form.Decoder as FD
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Form.SafeDecoder as SD
-import NewColumnConfig exposing (NewColumnConfig)
 
 
 
@@ -59,26 +59,26 @@ type Error
 -- CONSTRUCTION
 
 
-fromColumnConfig : NewColumnConfig -> Maybe Form
-fromColumnConfig newColumnConfig =
-    case newColumnConfig.columnType of
+fromColumnConfig : NewColumnConfigForm -> Maybe Form
+fromColumnConfig newColumnConfigForm =
+    case newColumnConfigForm.columnType of
         "completed" ->
-            Just (CompletedColumnForm { name = newColumnConfig.name, limit = "10" })
+            Just (CompletedColumnForm { name = newColumnConfigForm.name, limit = "10" })
 
         "dated" ->
-            Just (DatedColumnForm { name = newColumnConfig.name, rangeType = "Before", from = "", to = "" })
+            Just (DatedColumnForm { name = newColumnConfigForm.name, rangeType = "Before", from = "", to = "" })
 
         "namedTag" ->
-            Just (NamedTagColumnForm { name = newColumnConfig.name, tag = "" })
+            Just (NamedTagColumnForm { name = newColumnConfigForm.name, tag = "" })
 
         "otherTags" ->
-            Just (OtherTagsColumnForm { name = newColumnConfig.name })
+            Just (OtherTagsColumnForm { name = newColumnConfigForm.name })
 
         "undated" ->
-            Just (UndatedColumnForm { name = newColumnConfig.name })
+            Just (UndatedColumnForm { name = newColumnConfigForm.name })
 
         "untagged" ->
-            Just (UntaggedColumnForm { name = newColumnConfig.name })
+            Just (UntaggedColumnForm { name = newColumnConfigForm.name })
 
         _ ->
             Nothing

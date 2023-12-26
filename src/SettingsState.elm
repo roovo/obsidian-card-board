@@ -27,12 +27,12 @@ import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Columns as ColumnsForm exposing (OptionsForSelect)
+import Form.NewBoardConfig as NewBoardConfigForm exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 
@@ -42,8 +42,8 @@ import Settings exposing (Settings)
 
 
 type SettingsState
-    = AddingBoard NewBoardConfig SettingsForm.Form
-    | AddingColumn NewColumnConfig SettingsForm.Form
+    = AddingBoard NewBoardConfigForm SettingsForm.Form
+    | AddingColumn NewColumnConfigForm SettingsForm.Form
     | ClosingPlugin SettingsForm.Form
     | ClosingSettings SettingsForm.Form
     | DeletingBoard SettingsForm.Form
@@ -62,7 +62,7 @@ init settings_ =
         EditingBoard <| SettingsForm.init settings_
 
     else
-        AddingBoard NewBoardConfig.default (SettingsForm.init settings_)
+        AddingBoard NewBoardConfigForm.default (SettingsForm.init settings_)
 
 
 
@@ -149,25 +149,25 @@ addBoardRequested settingsState =
             settingsState
 
         AddingColumn _ settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         ClosingPlugin settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         ClosingSettings settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         DeletingBoard settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         DeletingColumn _ settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         EditingBoard settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
         EditingGlobalSettings settingsForm_ ->
-            AddingBoard NewBoardConfig.default settingsForm_
+            AddingBoard NewBoardConfigForm.default settingsForm_
 
 
 addColumnConfirmed : SettingsState -> SettingsState
@@ -193,7 +193,7 @@ addColumnRequested settingsState =
     --             |> Maybe.withDefault ColumnsForm.empty
     --     optionsForSelect : List OptionsForSelect
     --     optionsForSelect =
-    --         ColumnsForm.optionsForSelect columns (NewColumnConfig "" "")
+    --         ColumnsForm.optionsForSelect columns (NewColumnConfigForm "" "")
     --     selectedOption : String
     --     selectedOption =
     --         optionsForSelect
@@ -203,34 +203,34 @@ addColumnRequested settingsState =
     -- in
     case settingsState of
         AddingBoard _ settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         AddingColumn _ settingsForm_ ->
             settingsState
 
         ClosingPlugin settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         ClosingSettings settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         DeletingBoard settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         DeletingColumn _ settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         EditingBoard settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
         EditingGlobalSettings settingsForm_ ->
-            -- AddingColumn (NewColumnConfig "" selectedOption) settingsForm_
+            -- AddingColumn (NewColumnConfigForm "" selectedOption) settingsForm_
             settingsState
 
 
@@ -334,7 +334,7 @@ deleteConfirmed settingsState =
             -- if Settings.hasAnyBordsConfigured newSettings then
             --     EditingBoard newSettings newSettingsForm
             -- else
-            --     AddingBoard NewBoardConfig.default newSettings newSettingsForm
+            --     AddingBoard NewBoardConfigForm.default newSettings newSettingsForm
             settingsState
 
         DeletingColumn index settingsForm_ ->
@@ -467,7 +467,7 @@ moveColumn draggedId beaconPosition settingsState =
 -- MAPPING
 
 
-mapBoardBeingAdded : (NewBoardConfig -> NewBoardConfig) -> SettingsState -> SettingsState
+mapBoardBeingAdded : (NewBoardConfigForm -> NewBoardConfigForm) -> SettingsState -> SettingsState
 mapBoardBeingAdded fn settingsState =
     case settingsState of
         AddingBoard c settingsForm_ ->
@@ -488,7 +488,7 @@ mapBoardBeingEdited fn settingsState =
             settingsState
 
 
-mapColumnBeingAdded : (NewColumnConfig -> NewColumnConfig) -> SettingsState -> SettingsState
+mapColumnBeingAdded : (NewColumnConfigForm -> NewColumnConfigForm) -> SettingsState -> SettingsState
 mapColumnBeingAdded fn settingsState =
     case settingsState of
         AddingColumn c settingsForm_ ->

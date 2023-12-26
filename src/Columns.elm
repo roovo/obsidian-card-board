@@ -28,9 +28,9 @@ import Column.Completed as CompletedColumn exposing (CompletedColumn)
 import Column.OtherTags exposing (OtherTagsColumn)
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import List.Extra as LE
 import Maybe.Extra as ME
-import NewColumnConfig exposing (NewColumnConfig)
 import PlacementResult exposing (PlacementResult)
 import Set exposing (Set)
 import TaskItem exposing (TaskItem)
@@ -123,8 +123,8 @@ namedTagColumnTags columns =
 -- MODIFICATION
 
 
-addColumn : DefaultColumnNames -> NewColumnConfig -> Columns -> Columns
-addColumn defaultColumnNames newColumnConfig columns =
+addColumn : DefaultColumnNames -> NewColumnConfigForm -> Columns -> Columns
+addColumn defaultColumnNames newColumnConfigForm columns =
     let
         allColumns : List Column
         allColumns =
@@ -136,7 +136,7 @@ addColumn defaultColumnNames newColumnConfig columns =
 
         newColumn : List Column
         newColumn =
-            Column.fromColumnConfig defaultColumnNames newColumnConfig
+            Column.fromColumnConfig defaultColumnNames newColumnConfigForm
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in

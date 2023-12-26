@@ -5,8 +5,8 @@ module Form.BoardConfig exposing
 
 import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames
+import Form.NewBoardConfig as NewBoardConfigForm
 import Form.SafeDecoder as SD
-import NewBoardConfig
 
 
 
@@ -39,4 +39,4 @@ safeDecoder =
     -- )
     --     |> TsDecode.map configureOtherTagsColumn
     --     |> TsDecode.map BoardConfig
-    SD.always <| BoardConfig.fromNewBoardConfig DefaultColumnNames.default NewBoardConfig.default
+    SD.always <| BoardConfig.fromNewBoardConfig DefaultColumnNames.default NewBoardConfigForm.default

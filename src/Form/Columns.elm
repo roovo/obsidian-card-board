@@ -24,10 +24,10 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm
 import Form.Decoder as FD
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Form.SafeDecoder as SD
 import List.Extra as LE
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 
 
 
@@ -62,9 +62,9 @@ empty =
     { columnForms = [] }
 
 
-fromNewBoardConfig : DefaultColumnNames -> NewBoardConfig -> Form
-fromNewBoardConfig defaultColumnNames newBoardConfig =
-    case newBoardConfig.boardType of
+fromNewBoardConfig : DefaultColumnNames -> NewBoardConfigForm -> Form
+fromNewBoardConfig defaultColumnNames newBoardConfigForm =
+    case newBoardConfigForm.boardType of
         "dateBoard" ->
             Form
                 [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
@@ -112,8 +112,8 @@ find fn form =
     LE.find fn form.columnForms
 
 
-optionsForSelect : Form -> NewColumnConfig -> List OptionsForSelect
-optionsForSelect form newColumnConfig =
+optionsForSelect : Form -> NewColumnConfigForm -> List OptionsForSelect
+optionsForSelect form newColumnConfigForm =
     let
         alreadyHasCompleted : Bool
         alreadyHasCompleted =
@@ -145,7 +145,7 @@ optionsForSelect form newColumnConfig =
                 []
 
             else
-                [ { isSelected = newColumnConfig.columnType == "completed"
+                [ { isSelected = newColumnConfigForm.columnType == "completed"
                   , text = "Completed"
                   , value = "completed"
                   }
@@ -157,7 +157,7 @@ optionsForSelect form newColumnConfig =
                 []
 
             else
-                [ { isSelected = newColumnConfig.columnType == "otherTags"
+                [ { isSelected = newColumnConfigForm.columnType == "otherTags"
                   , text = "Other Tags"
                   , value = "otherTags"
                   }
@@ -169,7 +169,7 @@ optionsForSelect form newColumnConfig =
                 []
 
             else
-                [ { isSelected = newColumnConfig.columnType == "undated"
+                [ { isSelected = newColumnConfigForm.columnType == "undated"
                   , text = "Undated"
                   , value = "undated"
                   }
@@ -181,7 +181,7 @@ optionsForSelect form newColumnConfig =
                 []
 
             else
-                [ { isSelected = newColumnConfig.columnType == "untagged"
+                [ { isSelected = newColumnConfigForm.columnType == "untagged"
                   , text = "Untagged"
                   , value = "untagged"
                   }
@@ -190,13 +190,13 @@ optionsForSelect form newColumnConfig =
         allColumns : List OptionsForSelect
         allColumns =
             completed
-                ++ [ { isSelected = newColumnConfig.columnType == "dated"
+                ++ [ { isSelected = newColumnConfigForm.columnType == "dated"
                      , text = "Dated"
                      , value = "dated"
                      }
                    ]
                 ++ otherTags
-                ++ [ { isSelected = newColumnConfig.columnType == "namedTag"
+                ++ [ { isSelected = newColumnConfigForm.columnType == "namedTag"
                      , text = "Tagged"
                      , value = "namedTag"
                      }
@@ -216,8 +216,8 @@ optionsForSelect form newColumnConfig =
 -- MODIFICATION
 
 
-addColumn : NewColumnConfig -> Form -> Form
-addColumn newColumnConfig form =
+addColumn : NewColumnConfigForm -> Form -> Form
+addColumn newColumnConfigForm form =
     let
         allColumns : List ColumnForm.Form
         allColumns =
@@ -229,7 +229,7 @@ addColumn newColumnConfig form =
 
         newColumn : List ColumnForm.Form
         newColumn =
-            ColumnForm.fromColumnConfig newColumnConfig
+            ColumnForm.fromColumnConfig newColumnConfigForm
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in

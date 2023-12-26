@@ -1,7 +1,7 @@
-module NewBoardConfigTests exposing (suite)
+module Form.NewBoardConfigTests exposing (suite)
 
 import Expect
-import NewBoardConfig exposing (NewBoardConfig)
+import Form.NewBoardConfig as NewBoardConfigForm exposing (NewBoardConfigForm)
 import Test exposing (..)
 
 
@@ -20,12 +20,12 @@ default =
     describe "default"
         [ test "returns config with no name" <|
             \() ->
-                NewBoardConfig.default
+                NewBoardConfigForm.default
                     |> .name
                     |> Expect.equal ""
         , test "returns config with the emptyBoard boardType" <|
             \() ->
-                NewBoardConfig.default
+                NewBoardConfigForm.default
                     |> .boardType
                     |> Expect.equal "emptyBoard"
         ]
@@ -36,7 +36,7 @@ optionsForSelect =
     describe "optionsForSelect"
         [ test "can return the information with the emptyBoard boardType selected" <|
             \() ->
-                NewBoardConfig.optionsForSelect (NewBoardConfig "" "emptyBoard")
+                NewBoardConfigForm.optionsForSelect (NewBoardConfigForm "" "emptyBoard")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Date Board"
@@ -53,7 +53,7 @@ optionsForSelect =
                         ]
         , test "returns the information with the emptyBoard boardType selected for an unrecognised board type" <|
             \() ->
-                NewBoardConfig.optionsForSelect (NewBoardConfig "" "xxxBoard")
+                NewBoardConfigForm.optionsForSelect (NewBoardConfigForm "" "xxxBoard")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Date Board"
@@ -70,7 +70,7 @@ optionsForSelect =
                         ]
         , test "can return the information with the dateBoard boardType selected" <|
             \() ->
-                NewBoardConfig.optionsForSelect (NewBoardConfig "" "dateBoard")
+                NewBoardConfigForm.optionsForSelect (NewBoardConfigForm "" "dateBoard")
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Date Board"
@@ -87,7 +87,7 @@ optionsForSelect =
                         ]
         , test "can return the information with the tagBoard boardType selected" <|
             \() ->
-                NewBoardConfig.optionsForSelect (NewBoardConfig "" "tagBoard")
+                NewBoardConfigForm.optionsForSelect (NewBoardConfigForm "" "tagBoard")
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Date Board"
@@ -110,8 +110,8 @@ updateBoardType =
     describe "updateBoardType"
         [ test "updates the board name" <|
             \() ->
-                NewBoardConfig.default
-                    |> NewBoardConfig.updateBoardType "foo"
+                NewBoardConfigForm.default
+                    |> NewBoardConfigForm.updateBoardType "foo"
                     |> .boardType
                     |> Expect.equal "foo"
         ]
@@ -122,8 +122,8 @@ updateName =
     describe "updateName"
         [ test "updates the board name" <|
             \() ->
-                NewBoardConfig.default
-                    |> NewBoardConfig.updateName "foo"
+                NewBoardConfigForm.default
+                    |> NewBoardConfigForm.updateName "foo"
                     |> .name
                     |> Expect.equal "foo"
         ]

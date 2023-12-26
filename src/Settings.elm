@@ -29,9 +29,9 @@ import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import GlobalSettings exposing (GlobalSettings)
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -106,7 +106,7 @@ hasAnyBordsConfigured settings =
 -- TRANSFORM
 
 
-addBoard : DefaultColumnNames -> NewBoardConfig -> Settings -> Settings
+addBoard : DefaultColumnNames -> NewBoardConfigForm -> Settings -> Settings
 addBoard defaultColumnNames_ configToAdd settings =
     { settings
         | boardConfigs =
@@ -117,7 +117,7 @@ addBoard defaultColumnNames_ configToAdd settings =
     }
 
 
-addColumn : DefaultColumnNames -> NewColumnConfig -> Settings -> Settings
+addColumn : DefaultColumnNames -> NewColumnConfigForm -> Settings -> Settings
 addColumn defaultColumnNames_ configToAdd settings =
     { settings
         | boardConfigs =

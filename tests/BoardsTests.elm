@@ -5,8 +5,8 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import DefaultColumnNames
 import Expect
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
 import Helpers.TaskListHelpers as TaskListHelpers
-import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper
 import TaskList
 import Test exposing (..)
@@ -37,7 +37,7 @@ boardZipper =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1" (SafeZipper.fromList [ dateBoard ]) TaskList.empty
@@ -49,7 +49,7 @@ boardZipper =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1"
@@ -76,12 +76,12 @@ currentIndex =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
                     emptyBoard : BoardConfig
                     emptyBoard =
-                        NewBoardConfig "bar" "emptyBoard"
+                        NewBoardConfigForm "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1"
@@ -94,12 +94,12 @@ currentIndex =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
                     emptyBoard : BoardConfig
                     emptyBoard =
-                        NewBoardConfig "bar" "emptyBoard"
+                        NewBoardConfigForm "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1"
@@ -123,12 +123,12 @@ length =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
                     emptyBoard : BoardConfig
                     emptyBoard =
-                        NewBoardConfig "bar" "emptyBoard"
+                        NewBoardConfigForm "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1"
@@ -147,12 +147,12 @@ names =
                 let
                     dateBoard : BoardConfig
                     dateBoard =
-                        NewBoardConfig "foo" "dateBoard"
+                        NewBoardConfigForm "foo" "dateBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
 
                     emptyBoard : BoardConfig
                     emptyBoard =
-                        NewBoardConfig "bar" "emptyBoard"
+                        NewBoardConfigForm "bar" "emptyBoard"
                             |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                 in
                 Boards.init "b1"

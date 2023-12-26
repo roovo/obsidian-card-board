@@ -24,10 +24,10 @@ import Form.BoardConfig as BoardConfigForm
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.Decoder as FD
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Form.SafeDecoder as SD
 import GlobalSettings
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 
@@ -135,7 +135,7 @@ hasAnyBordsConfigured form =
 -- MODIFICATION
 
 
-addBoard : DefaultColumnNames -> NewBoardConfig -> Form -> Form
+addBoard : DefaultColumnNames -> NewBoardConfigForm -> Form -> Form
 addBoard defaultColumnNames_ configToAdd form =
     -- { form
     --     | boardConfigForms =
@@ -147,7 +147,7 @@ addBoard defaultColumnNames_ configToAdd form =
     form
 
 
-addColumn : NewColumnConfig -> Form -> Form
+addColumn : NewColumnConfigForm -> Form -> Form
 addColumn configToAdd form =
     -- { form
     --     | boardConfigForms =

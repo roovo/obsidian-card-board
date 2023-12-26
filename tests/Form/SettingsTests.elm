@@ -11,9 +11,9 @@ import Form.Column as ColumnForm
 import Form.Column.Completed as CompletedColumnForm
 import Form.Column.Dated as DatedColumnForm
 import Form.Decoder as FD
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm
-import NewBoardConfig exposing (NewBoardConfig)
 import SafeZipper
 import Test exposing (..)
 

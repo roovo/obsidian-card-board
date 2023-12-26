@@ -7,13 +7,13 @@ import Columns
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Filter
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import List.Extra as LE
 import Maybe.Extra as ME
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -50,42 +50,42 @@ addColumn =
     describe "addColumn"
         [ test "adds an Undated columnn to an empty board" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Undated" "undated")
+                        (NewColumnConfigForm "Undated" "undated")
                     |> BoardConfig.columns
                     |> Columns.toList
                     |> List.map Column.name
                     |> Expect.equal [ "Undated" ]
         , test "adds an Undated  columnn after an existing Untagged column" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Untagged" "untagged")
+                        (NewColumnConfigForm "Untagged" "untagged")
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Undated" "undated")
+                        (NewColumnConfigForm "Undated" "undated")
                     |> BoardConfig.columns
                     |> Columns.toList
                     |> List.map Column.name
                     |> Expect.equal [ "Untagged", "Undated" ]
         , test "adds a non-Completed columnn before the completed column" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Untagged" "untagged")
+                        (NewColumnConfigForm "Untagged" "untagged")
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Completed" "completed")
+                        (NewColumnConfigForm "Completed" "completed")
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Undated" "undated")
+                        (NewColumnConfigForm "Undated" "undated")
                     |> BoardConfig.columns
                     |> Columns.toList
                     |> List.map Column.name
@@ -98,7 +98,7 @@ collapseColumn =
     describe "collapseColumn"
         [ test "collapses a column" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.collapseColumn 1 True
                     |> BoardConfig.columns
@@ -107,7 +107,7 @@ collapseColumn =
                     |> Expect.equal [ False, True, False, False, False ]
         , test "UNcollapses a column" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.collapseColumn 1 True
                     |> BoardConfig.collapseColumn 1 False
@@ -123,7 +123,7 @@ deleteColumn =
     describe "deleteColumn"
         [ test "deletes the column at the given index" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.deleteColumn 1
                     |> BoardConfig.columns
@@ -132,7 +132,7 @@ deleteColumn =
                     |> Expect.equal [ "Undated", "Tomorrow", "Future", "Completed" ]
         , test "does nothing if there is no column at the given index" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.deleteColumn 10
                     |> BoardConfig.columns
@@ -162,7 +162,7 @@ fromNewBoardConfig =
         [ describe "dateBoard"
             [ test "has the basic date columns" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.columns
                         |> Columns.toList
@@ -170,7 +170,7 @@ fromNewBoardConfig =
                         |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
             , test "can override the names of the basic date columns" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig customColumnNames
                         |> BoardConfig.columns
                         |> Columns.toList
@@ -178,37 +178,37 @@ fromNewBoardConfig =
                         |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
             , test "has no filters" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filters
                         |> Expect.equal []
             , test "has the default filter polarity" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterPolarity
                         |> Expect.equal Filter.defaultPolarity
             , test "has the default filter scope" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterScope
                         |> Expect.equal Filter.defaultScope
             , test "sets the board name" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.name
                         |> Expect.equal "foo"
             , test "shows column tags" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showColumnTags
                         |> Expect.equal True
             , test "shows filtered tags" <|
                 \() ->
-                    NewBoardConfig "foo" "dateBoard"
+                    NewBoardConfigForm "foo" "dateBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showFilteredTags
                         |> Expect.equal True
@@ -216,43 +216,43 @@ fromNewBoardConfig =
         , describe "emptyBoard"
             [ test "has no columns" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.columns
                         |> Expect.equal Columns.empty
             , test "has no filters" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filters
                         |> Expect.equal []
             , test "has the default filter polarity" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterPolarity
                         |> Expect.equal Filter.defaultPolarity
             , test "has the default filter scope" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterScope
                         |> Expect.equal Filter.defaultScope
             , test "sets the board name" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.name
                         |> Expect.equal "foo"
             , test "shows column tags" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showColumnTags
                         |> Expect.equal True
             , test "shows filtered tags" <|
                 \() ->
-                    NewBoardConfig "foo" "emptyBoard"
+                    NewBoardConfigForm "foo" "emptyBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showFilteredTags
                         |> Expect.equal True
@@ -260,7 +260,7 @@ fromNewBoardConfig =
         , describe "tagBoard"
             [ test "has the basic tag board columns" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.columns
                         |> Columns.toList
@@ -268,7 +268,7 @@ fromNewBoardConfig =
                         |> Expect.equal [ "Untagged", "Other Tags", "Completed" ]
             , test "can override the names of tag board columns" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig customColumnNames
                         |> BoardConfig.columns
                         |> Columns.toList
@@ -276,37 +276,37 @@ fromNewBoardConfig =
                         |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
             , test "has no filters" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filters
                         |> Expect.equal []
             , test "has the default filter polarity" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterPolarity
                         |> Expect.equal Filter.defaultPolarity
             , test "has the default filter scope" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.filterScope
                         |> Expect.equal Filter.defaultScope
             , test "sets the board name" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.name
                         |> Expect.equal "foo"
             , test "shows column tags" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showColumnTags
                         |> Expect.equal True
             , test "shows filtered tags" <|
                 \() ->
-                    NewBoardConfig "foo" "tagBoard"
+                    NewBoardConfigForm "foo" "tagBoard"
                         |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                         |> BoardConfig.showFilteredTags
                         |> Expect.equal True
@@ -319,7 +319,7 @@ mapColumns =
     describe "mapColumns"
         [ test "updates the columns" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.mapColumns (always Columns.empty)
                     |> BoardConfig.columns
@@ -333,7 +333,7 @@ mapFilters =
     describe "mapFilters"
         [ test "updates the filters" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
                     |> BoardConfig.mapFilters (always Filter.dummy)
@@ -348,7 +348,7 @@ setNamesToDefault =
     describe "setNamesToDefault"
         [ test "can set standard date board column names to the given defaults" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.setNamesToDefault customColumnNames
                     |> BoardConfig.columns
@@ -357,7 +357,7 @@ setNamesToDefault =
                     |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
         , test "can set standard tag board column names to the given defaults" <|
             \() ->
-                NewBoardConfig "foo" "tagBoard"
+                NewBoardConfigForm "foo" "tagBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.setNamesToDefault customColumnNames
                     |> BoardConfig.columns
@@ -372,7 +372,7 @@ toggleShowColumnTags =
     describe "toggleShowColumnTags"
         [ test "toggles showColumnTags" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.toggleShowColumnTags
                     |> BoardConfig.showColumnTags
@@ -385,7 +385,7 @@ toggleShowFilteredTags =
     describe "toggleShowFilteredTags"
         [ test "toggles showFilteredTags" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.toggleShowFilteredTags
                     |> BoardConfig.showFilteredTags
@@ -398,14 +398,14 @@ toggleTagFilterScope =
     describe "toggleTagFilterScope"
         [ test "toggles Both -> TopLevelOnly" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.toggleTagFilterScope
                     |> BoardConfig.filterScope
                     |> Expect.equal Filter.TopLevelOnly
         , test "toggles TopLevelOnly -> SubTasksOnly" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.toggleTagFilterScope
                     |> BoardConfig.toggleTagFilterScope
@@ -413,7 +413,7 @@ toggleTagFilterScope =
                     |> Expect.equal Filter.SubTasksOnly
         , test "toggles SubTasksOnly -> Both" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.toggleTagFilterScope
                     |> BoardConfig.toggleTagFilterScope
@@ -428,7 +428,7 @@ updateColumnName =
     describe "updateColumnName"
         [ test "updates a column name" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateColumnName 1 "new name"
                     |> BoardConfig.columns
@@ -443,7 +443,7 @@ updateCompletedColumnLimit =
     describe "updateCompletedColumnLimit"
         [ test "updates the limit" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateCompletedColumnLimit 4 (Just 7)
                     |> BoardConfig.columns
@@ -451,7 +451,7 @@ updateCompletedColumnLimit =
                     |> Expect.equal 7
         , test "does nothing if given the wrong index" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateCompletedColumnLimit 0 (Just 7)
                     |> BoardConfig.columns
@@ -459,7 +459,7 @@ updateCompletedColumnLimit =
                     |> Expect.equal 10
         , test "does nothing if given Nothing" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateCompletedColumnLimit 4 Nothing
                     |> BoardConfig.columns
@@ -473,7 +473,7 @@ updateDatedColumnRangeType =
     describe "updateDatedColumnRangeType"
         [ test "updates the limit" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeType 1 "After"
                     |> BoardConfig.columns
@@ -485,7 +485,7 @@ updateDatedColumnRangeType =
                     |> Expect.equal (Just <| DatedColumn.After 1)
         , test "does nothing if given the wrong index" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeType 0 "After"
                     |> BoardConfig.columns
@@ -497,7 +497,7 @@ updateDatedColumnRangeType =
                     |> Expect.equal (Just <| DatedColumn.Before 1)
         , test "does nothing if given an invalid range type" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeType 1 "Xxxx"
                     |> BoardConfig.columns
@@ -515,7 +515,7 @@ updateDatedColumnRangeValueFrom =
     describe "updateDatedColumnRangeValueFrom"
         [ test "updates the limit for an After range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueFrom 3 (Just 7)
                     |> BoardConfig.columns
@@ -527,7 +527,7 @@ updateDatedColumnRangeValueFrom =
                     |> Expect.equal (Just <| DatedColumn.After 7)
         , test "does nothing if given a column with a Before range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueFrom 1 (Just 7)
                     |> BoardConfig.columns
@@ -539,7 +539,7 @@ updateDatedColumnRangeValueFrom =
                     |> Expect.equal (Just <| DatedColumn.Before 1)
         , test "updates the from part of a Between range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueFrom 2 (Just 7)
                     |> BoardConfig.columns
@@ -551,7 +551,7 @@ updateDatedColumnRangeValueFrom =
                     |> Expect.equal (Just <| DatedColumn.Between { from = 7, to = 1 })
         , test "does nothing if given Nothing" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueFrom 3 Nothing
                     |> BoardConfig.columns
@@ -569,7 +569,7 @@ updateDatedColumnRangeValueTo =
     describe "updateDatedColumnRangeValueTo"
         [ test "updates the limit for a Before range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueTo 1 (Just 7)
                     |> BoardConfig.columns
@@ -581,7 +581,7 @@ updateDatedColumnRangeValueTo =
                     |> Expect.equal (Just <| DatedColumn.Before 7)
         , test "does nothing if given a column with an After range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueTo 3 (Just 7)
                     |> BoardConfig.columns
@@ -593,7 +593,7 @@ updateDatedColumnRangeValueTo =
                     |> Expect.equal (Just <| DatedColumn.After 1)
         , test "updates the to part of a Between range" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueTo 2 (Just 7)
                     |> BoardConfig.columns
@@ -605,7 +605,7 @@ updateDatedColumnRangeValueTo =
                     |> Expect.equal (Just <| DatedColumn.Between { from = 1, to = 7 })
         , test "does nothing if given Nothing" <|
             \() ->
-                NewBoardConfig "foo" "dateBoard"
+                NewBoardConfigForm "foo" "dateBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateDatedColumnRangeValueTo 1 Nothing
                     |> BoardConfig.columns
@@ -623,7 +623,7 @@ updateFilterPolarity =
     describe "updateFilterPolarity"
         [ test "updates the filter polarity" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateFilterPolarity "Deny"
                     |> BoardConfig.filterPolarity
@@ -636,7 +636,7 @@ updateFilterScope =
     describe "updateFilterScope"
         [ test "updates the filter scope" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateFilterScope Filter.SubTasksOnly
                     |> BoardConfig.filterScope
@@ -649,7 +649,7 @@ updateFilters =
     describe "updateFilters"
         [ test "updates the filters for a DateBoard config" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
                     |> BoardConfig.filters
@@ -662,7 +662,7 @@ updateName =
     describe "updateName"
         [ test "updates the title for a DateBoard config" <|
             \() ->
-                NewBoardConfig "foo" "emptyBoard"
+                NewBoardConfigForm "foo" "emptyBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.updateName "new title"
                     |> BoardConfig.name
@@ -675,11 +675,11 @@ updateNamedTagTag =
     describe "updateNamedTagTag"
         [ test "updates the limit" <|
             \() ->
-                NewBoardConfig "foo" "tagBoard"
+                NewBoardConfigForm "foo" "tagBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Tagged" "namedTag")
+                        (NewColumnConfigForm "Tagged" "namedTag")
                     |> BoardConfig.updateNamedTagTag 2 "newTag"
                     |> BoardConfig.columns
                     |> Columns.toList
@@ -687,11 +687,11 @@ updateNamedTagTag =
                     |> Expect.equal [ Nothing, Nothing, Just "newTag", Nothing ]
         , test "does nothing if given the wrong index" <|
             \() ->
-                NewBoardConfig "foo" "tagBoard"
+                NewBoardConfigForm "foo" "tagBoard"
                     |> BoardConfig.fromNewBoardConfig DefaultColumnNames.default
                     |> BoardConfig.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "Tagged" "namedTag")
+                        (NewColumnConfigForm "Tagged" "namedTag")
                     |> BoardConfig.updateNamedTagTag 3 "newTag"
                     |> BoardConfig.columns
                     |> Columns.toList

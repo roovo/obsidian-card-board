@@ -6,11 +6,11 @@ import Columns
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
+import Form.NewBoardConfig exposing (NewBoardConfigForm)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import SafeZipper
 import Semver
 import Settings
@@ -43,7 +43,7 @@ addColumn =
                 Settings.default
                     |> Settings.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "foo" "completed")
+                        (NewColumnConfigForm "foo" "completed")
                     |> .boardConfigs
                     |> SafeZipper.toList
                     |> Expect.equal []
@@ -52,10 +52,10 @@ addColumn =
                 Settings.default
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "foo" "emptyBoard")
+                        (NewBoardConfigForm "foo" "emptyBoard")
                     |> Settings.addColumn
                         DefaultColumnNames.default
-                        (NewColumnConfig "bar" "completed")
+                        (NewColumnConfigForm "bar" "completed")
                     |> .boardConfigs
                     |> SafeZipper.current
                     |> Maybe.map BoardConfig.columns
@@ -74,7 +74,7 @@ addBoard =
                 Settings.default
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "foo" "emptyBoard")
+                        (NewBoardConfigForm "foo" "emptyBoard")
                     |> .boardConfigs
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
@@ -84,10 +84,10 @@ addBoard =
                 Settings.default
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "foo" "emptyBoard")
+                        (NewBoardConfigForm "foo" "emptyBoard")
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "bar" "emptyBoard")
+                        (NewBoardConfigForm "bar" "emptyBoard")
                     |> .boardConfigs
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
@@ -97,10 +97,10 @@ addBoard =
                 Settings.default
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "foo" "emptyBoard")
+                        (NewBoardConfigForm "foo" "emptyBoard")
                     |> Settings.addBoard
                         DefaultColumnNames.default
-                        (NewBoardConfig "bar" "emptyBoard")
+                        (NewBoardConfigForm "bar" "emptyBoard")
                     |> .boardConfigs
                     |> SafeZipper.currentIndex
                     |> Expect.equal (Just 1)
@@ -413,7 +413,7 @@ exampleSettingsWithBoardWithNoColumns =
         SafeZipper.fromList
             [ BoardConfig.fromNewBoardConfig
                 DefaultColumnNames.default
-                (NewBoardConfig "foo" "emptyBoard")
+                (NewBoardConfigForm "foo" "emptyBoard")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -426,22 +426,22 @@ exampleSettingsWithBoardWithConsecutiveColumns =
         SafeZipper.fromList
             [ BoardConfig.fromNewBoardConfig
                 DefaultColumnNames.default
-                (NewBoardConfig "foo" "emptyBoard")
+                (NewBoardConfigForm "foo" "emptyBoard")
                 |> BoardConfig.addColumn
                     DefaultColumnNames.default
-                    (NewColumnConfig "0" "namedTag")
+                    (NewColumnConfigForm "0" "namedTag")
                 |> BoardConfig.addColumn
                     DefaultColumnNames.default
-                    (NewColumnConfig "1" "namedTag")
+                    (NewColumnConfigForm "1" "namedTag")
                 |> BoardConfig.addColumn
                     DefaultColumnNames.default
-                    (NewColumnConfig "2" "namedTag")
+                    (NewColumnConfigForm "2" "namedTag")
                 |> BoardConfig.addColumn
                     DefaultColumnNames.default
-                    (NewColumnConfig "3" "namedTag")
+                    (NewColumnConfigForm "3" "namedTag")
                 |> BoardConfig.addColumn
                     DefaultColumnNames.default
-                    (NewColumnConfig "4" "namedTag")
+                    (NewColumnConfigForm "4" "namedTag")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -515,16 +515,16 @@ exampleSettingsWithDuplicateSpecialColumns : Settings.Settings
 exampleSettingsWithDuplicateSpecialColumns =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "1" "namedTag")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "2" "completed")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "3" "completed")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "4" "otherTags")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "5" "otherTags")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "6" "undated")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "7" "undated")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "8" "untagged")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "9" "untagged")
+            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "foo" "emptyBoard")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "1" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "2" "completed")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "3" "completed")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "4" "otherTags")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "5" "otherTags")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "6" "undated")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "7" "undated")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "8" "untagged")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "9" "untagged")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -535,10 +535,10 @@ exampleSettingsWithMissingColumnNames : Settings.Settings
 exampleSettingsWithMissingColumnNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfig "foo" "emptyBoard")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "" "namedTag")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "with a name" "namedTag")
-                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfig "  " "namedTag")
+            [ BoardConfig.fromNewBoardConfig DefaultColumnNames.default (NewBoardConfigForm "foo" "emptyBoard")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "with a name" "namedTag")
+                |> BoardConfig.addColumn DefaultColumnNames.default (NewColumnConfigForm "  " "namedTag")
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion

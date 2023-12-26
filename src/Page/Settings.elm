@@ -28,6 +28,8 @@ import Form.BoardConfig as BoardConfigForm
 import Form.Column as ColumnForm
 import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm
+import Form.NewBoardConfig as NewBoardConfigForm exposing (NewBoardConfigForm)
+import Form.NewColumnConfig as NewColumnConfigForm exposing (NewColumnConfigForm)
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
@@ -39,8 +41,6 @@ import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
 import Maybe.Extra as ME
-import NewBoardConfig exposing (NewBoardConfig)
-import NewColumnConfig exposing (NewColumnConfig)
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -305,10 +305,10 @@ update msg model =
                 }
 
         EnteredNewBoardName name ->
-            mapBoardBeingAdded (NewBoardConfig.updateName name) model
+            mapBoardBeingAdded (NewBoardConfigForm.updateName name) model
 
         EnteredNewColumnName name ->
-            mapColumnBeingAdded (NewColumnConfig.updateName name) model
+            mapColumnBeingAdded (NewColumnConfigForm.updateName name) model
 
         EnteredName name ->
             mapBoardBeingEdited (BoardConfig.updateName name) model
@@ -347,10 +347,10 @@ update msg model =
             handleClose model
 
         NewBoardTypeSelected boardType ->
-            mapBoardBeingAdded (NewBoardConfig.updateBoardType boardType) model
+            mapBoardBeingAdded (NewBoardConfigForm.updateBoardType boardType) model
 
         NewColumnTypeSelected columnType ->
-            mapColumnBeingAdded (NewColumnConfig.updateColumnType columnType) model
+            mapColumnBeingAdded (NewColumnConfigForm.updateColumnType columnType) model
 
         PathsRequested _ _ ->
             let
@@ -475,12 +475,12 @@ mapSettingsState fn model =
     wrap { model | settingsState = fn model.settingsState }
 
 
-mapBoardBeingAdded : (NewBoardConfig -> NewBoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded : (NewBoardConfigForm -> NewBoardConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
 
-mapColumnBeingAdded : (NewColumnConfig -> NewColumnConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapColumnBeingAdded : (NewColumnConfigForm -> NewColumnConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapColumnBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapColumnBeingAdded fn model.settingsState }
 
@@ -596,8 +596,8 @@ view model =
             Html.text ""
 
 
-modalAddBoard : NewBoardConfig -> Html Msg
-modalAddBoard newBoardConfig =
+modalAddBoard : NewBoardConfigForm -> Html Msg
+modalAddBoard newBoardConfigForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -615,7 +615,7 @@ modalAddBoard newBoardConfig =
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| newBoardConfig.name
+                            , value <| newBoardConfigForm.name
                             , onInput EnteredNewBoardName
                             ]
                             []
@@ -629,7 +629,7 @@ modalAddBoard newBoardConfig =
                             [ class "dropdown"
                             , onInput NewBoardTypeSelected
                             ]
-                            (NewBoardConfig.optionsForSelect newBoardConfig
+                            (NewBoardConfigForm.optionsForSelect newBoardConfigForm
                                 |> List.map
                                     (\c ->
                                         Html.option
@@ -659,8 +659,8 @@ modalAddBoard newBoardConfig =
         ]
 
 
-modalAddColumn : NewColumnConfig -> SettingsForm.Form -> Html Msg
-modalAddColumn newColumnConfig settingsForm =
+modalAddColumn : NewColumnConfigForm -> SettingsForm.Form -> Html Msg
+modalAddColumn newColumnConfigForm settingsForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -678,7 +678,7 @@ modalAddColumn newColumnConfig settingsForm =
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| newColumnConfig.name
+                            , value <| newColumnConfigForm.name
                             , onInput EnteredNewColumnName
                             ]
                             []
@@ -699,7 +699,7 @@ modalAddColumn newColumnConfig settingsForm =
                                 --     |> Maybe.withDefault ColumnsForm.empty
                                 -- )
                                 ColumnsForm.empty
-                                newColumnConfig
+                                newColumnConfigForm
                                 |> List.map
                                     (\c ->
                                         Html.option

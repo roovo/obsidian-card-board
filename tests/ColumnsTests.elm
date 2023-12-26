@@ -6,7 +6,7 @@ import Column.Dated as DatedColumn
 import Columns exposing (Columns)
 import DefaultColumnNames
 import Expect
-import NewColumnConfig exposing (NewColumnConfig)
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Test exposing (..)
 
 

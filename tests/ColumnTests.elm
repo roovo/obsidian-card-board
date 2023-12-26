@@ -9,11 +9,11 @@ import Column.OtherTags as OtherTagsColumn
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Form.NewColumnConfig exposing (NewColumnConfigForm)
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Maybe.Extra as ME
-import NewColumnConfig exposing (NewColumnConfig)
 import Parser
 import PlacementResult
 import TaskItem exposing (TaskItem)
@@ -589,22 +589,22 @@ fromColumnConfig =
         [ describe "CompletedColumn"
             [ test "can build a CompletedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "completed")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "completed")
                         |> Maybe.map Column.isCompleted
                         |> Expect.equal (Just True)
             , test "names the CompletedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "completed")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "completed")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "uses the default name if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "completed")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "completed")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "Completed")
             , test "gives the CompletedColumn a limit of 10" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "completed")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "completed")
                         |> Maybe.map Column.asCompletedColumn
                         |> ME.join
                         |> Maybe.map CompletedColumn.limit
@@ -613,22 +613,22 @@ fromColumnConfig =
         , describe "DatedColumn"
             [ test "can build a DatedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "dated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "dated")
                         |> Maybe.map Column.isDated
                         |> Expect.equal (Just True)
             , test "names the DatedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "dated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "dated")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "uses the default name for Today if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "dated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "dated")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "Today")
             , test "gives the DatedColumn a range of Between 0 0" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "dated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "dated")
                         |> Maybe.map Column.asDatedColumn
                         |> ME.join
                         |> Maybe.map DatedColumn.range
@@ -637,22 +637,22 @@ fromColumnConfig =
         , describe "NamedTagColumn"
             [ test "can build a NamedTagColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "namedTag")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "namedTag")
                         |> Maybe.map Column.isNamedTag
                         |> Expect.equal (Just True)
             , test "names the NamedTagColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "namedTag")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "namedTag")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "leaves the name empty if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "namedTag")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "namedTag")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "")
             , test "gives the NamedTagColumn an empty tag" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "namedTag")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "namedTag")
                         |> Maybe.map Column.asNamedTagColumn
                         |> ME.join
                         |> Maybe.map NamedTagColumn.tag
@@ -661,22 +661,22 @@ fromColumnConfig =
         , describe "OtherTagsColumn"
             [ test "can build a OtherTagsColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "otherTags")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "otherTags")
                         |> Maybe.map Column.isOtherTags
                         |> Expect.equal (Just True)
             , test "names the OtherTagsColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "otherTags")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "otherTags")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "uses the default name if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "otherTags")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "otherTags")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "Other Tags")
             , test "gives the OtherTagsColumn an empty otherTags" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "otherTags")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "otherTags")
                         |> Maybe.map Column.asOtherTagsColumn
                         |> ME.join
                         |> Maybe.map OtherTagsColumn.otherTags
@@ -685,34 +685,34 @@ fromColumnConfig =
         , describe "UndatedColumn"
             [ test "can build a UndatedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "undated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "undated")
                         |> Maybe.map Column.isUndated
                         |> Expect.equal (Just True)
             , test "names the UndatedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "undated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "undated")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "uses the default name if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "undated")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "undated")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "Undated")
             ]
         , describe "UntaggedColumn"
             [ test "can build a UntaggedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "untagged")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "untagged")
                         |> Maybe.map Column.isUntagged
                         |> Expect.equal (Just True)
             , test "names the UntaggedColumn" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "foo" "untagged")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "foo" "untagged")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "foo")
             , test "uses the default name if no name has been given" <|
                 \() ->
-                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfig "" "untagged")
+                    Column.fromColumnConfig DefaultColumnNames.default (NewColumnConfigForm "" "untagged")
                         |> Maybe.map Column.name
                         |> Expect.equal (Just "Untagged")
             ]
