@@ -56,10 +56,9 @@ init : Settings -> SettingsForm
 init settings =
     let
         boardConfigForms_ =
-            -- SafeZipper.map (ColumnsForm.init << BoardConfig.columns) (Settings.boardConfigs settings)
-            SafeZipper.empty
+            SafeZipper.map BoardConfigForm.init (Settings.boardConfigs settings)
 
-        taskCompletionFormat =
+        taskCompletionFormat_ =
             case Settings.globalSettings settings |> .taskCompletionFormat of
                 GlobalSettings.NoCompletion ->
                     "NoCompletion"
@@ -73,18 +72,18 @@ init settings =
                 GlobalSettings.ObsidianTasks ->
                     "ObsidianTasks"
 
-        globalSettings =
+        globalSettings_ =
             Settings.globalSettings settings
 
         defaultColumnNames_ =
-            globalSettings.defaultColumnNames
+            globalSettings_.defaultColumnNames
     in
     { boardConfigForms = boardConfigForms_
     , completed = Maybe.withDefault "" defaultColumnNames_.completed
     , future = Maybe.withDefault "" defaultColumnNames_.future
-    , ignoreFileNameDates = globalSettings.ignoreFileNameDates
+    , ignoreFileNameDates = globalSettings_.ignoreFileNameDates
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
-    , taskCompletionFormat = taskCompletionFormat
+    , taskCompletionFormat = taskCompletionFormat_
     , today = Maybe.withDefault "" defaultColumnNames_.today
     , tomorrow = Maybe.withDefault "" defaultColumnNames_.tomorrow
     , undated = Maybe.withDefault "" defaultColumnNames_.undated

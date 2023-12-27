@@ -7,6 +7,7 @@ import Columns
 import Expect
 import Filter
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.SafeDecoder as SD
 import Helpers.FilterHelpers as FilterHelpers
@@ -16,7 +17,91 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ safeDecoder
+        [ init
+        , safeDecoder
+        ]
+
+
+init : Test
+init =
+    describe "init"
+        [ test "initialises the columns from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | columns = Columns.fromList [ Column.undated "foo", Column.untagged "bar" ] }
+                    |> BoardConfigForm.init
+                    |> .columns
+                    |> Expect.equal
+                        { columnForms =
+                            [ ColumnForm.UndatedColumnForm { name = "foo" }
+                            , ColumnForm.UntaggedColumnForm { name = "bar" }
+                            ]
+                        }
+        , test "initialises the filters from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filters = FilterHelpers.exampleFilters }
+                    |> BoardConfigForm.init
+                    |> .filters
+                    |> Expect.equal FilterHelpers.exampleFilters
+        , test "initialises the Allow filterPolarity from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filterPolarity = Filter.Allow }
+                    |> BoardConfigForm.init
+                    |> .filterPolarity
+                    |> Expect.equal "Allow"
+        , test "initialises the Deny filterPolarity from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filterPolarity = Filter.Deny }
+                    |> BoardConfigForm.init
+                    |> .filterPolarity
+                    |> Expect.equal "Deny"
+        , test "initialises the TopLevelOnly filterScope from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filterScope = Filter.TopLevelOnly }
+                    |> BoardConfigForm.init
+                    |> .filterScope
+                    |> Expect.equal "TopLevelOnly"
+        , test "initialises the SubTasksOnly filterScope from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filterScope = Filter.SubTasksOnly }
+                    |> BoardConfigForm.init
+                    |> .filterScope
+                    |> Expect.equal "SubTasksOnly"
+        , test "initialises the Both filterScope from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | filterScope = Filter.Both }
+                    |> BoardConfigForm.init
+                    |> .filterScope
+                    |> Expect.equal "Both"
+        , test "initialises the name from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | name = "a name" }
+                    |> BoardConfigForm.init
+                    |> .name
+                    |> Expect.equal "a name"
+        , test "initialises True showColumnTags from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | showColumnTags = True }
+                    |> BoardConfigForm.init
+                    |> .showColumnTags
+                    |> Expect.equal True
+        , test "initialises False showColumnTags from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | showColumnTags = False }
+                    |> BoardConfigForm.init
+                    |> .showColumnTags
+                    |> Expect.equal False
+        , test "initialises True showFilteredTags from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | showFilteredTags = True }
+                    |> BoardConfigForm.init
+                    |> .showFilteredTags
+                    |> Expect.equal True
+        , test "initialises False showFilteredTags from the board config" <|
+            \() ->
+                BoardConfig.fromConfig { exampleBoardConfig | showFilteredTags = False }
+                    |> BoardConfigForm.init
+                    |> .showFilteredTags
+                    |> Expect.equal False
         ]
 
 
@@ -128,6 +213,18 @@ safeDecoder =
 
 
 -- HELPERS
+
+
+exampleBoardConfig : BoardConfig.Config
+exampleBoardConfig =
+    { columns = Columns.empty
+    , filters = []
+    , filterPolarity = Filter.Allow
+    , filterScope = Filter.Both
+    , name = ""
+    , showColumnTags = False
+    , showFilteredTags = False
+    }
 
 
 exampleBoardConfigForm : BoardConfigForm

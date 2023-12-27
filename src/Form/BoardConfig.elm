@@ -1,5 +1,6 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
+    , init
     , safeDecoder
     )
 

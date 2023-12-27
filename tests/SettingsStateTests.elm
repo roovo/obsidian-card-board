@@ -9,7 +9,7 @@ import Expect
 import Filter
 import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.NewBoard exposing (NewBoardForm)
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.Settings as SettingsForm
 import GlobalSettings exposing (GlobalSettings)
@@ -768,51 +768,25 @@ suite =
 init : Test
 init =
     describe "init"
-        [ test "returns AddingBoard with the default BoardConfig if there are no existing board configs" <|
+        [ test "returns AddingBoard with the default NewBoardForm if there are no existing board configs" <|
             \() ->
-                -- SettingsState.init Settings.default
-                --     |> Expect.equal
-                --         (SettingsState.AddingBoard
-                --             NewBoardForm.default
-                --             Settings.default
-                --             SettingsForm.empty
-                --         )
-                True
-                    |> Expect.equal True
-
-        -- , test "returns EditingBoard boardConfig" <|
-        --     \() ->
-        --         SettingsState.init (settingsFromBoardConfigs [ exampleBoardConfigNoColumns ])
-        --             |> Expect.equal
-        --                 (SettingsState.EditingBoard
-        --                     (settingsFromBoardConfigs [ exampleBoardConfigNoColumns ])
-        --                     { columnsForms = SafeZipper.fromList [ { columnForms = [] } ] }
-        --                 )
-        -- , test "returns the BoardConfigsForm built from the currently selected board" <|
-        --     \() ->
-        --         let
-        --             settings =
-        --                 settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfigMultiColumns, exampleBoardConfig ]
-        --                     |> Settings.switchToBoard 1
-        --         in
-        --         SettingsState.init settings
-        --             |> Expect.equal
-        --                 (SettingsState.EditingBoard
-        --                     settings
-        --                     { columnsForms =
-        --                         SafeZipper.fromList
-        --                             [ { columnForms = [] }
-        --                             , { columnForms =
-        --                                     [ ColumnForm.NamedTagColumnForm { name = "named", tag = "aTag" }
-        --                                     , ColumnForm.UntaggedColumnForm { name = "untagged" }
-        --                                     , ColumnForm.CompletedColumnForm { name = "completed", limit = "5" }
-        --                                     ]
-        --                               }
-        --                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
-        --                             ]
-        --                             |> SafeZipper.atIndex 1
-        --                     }
-        --                 )
+                SettingsState.init Settings.default
+                    |> newBoardFormBeingAdded
+                    |> Expect.equal (Just NewBoardForm.default)
+        , test "returns AddingBoard with no board configs if there are no existing board configs" <|
+            \() ->
+                SettingsState.init Settings.default
+                    |> SettingsState.settings
+                    |> Settings.boardConfigs
+                    |> Expect.equal SafeZipper.empty
+        , test "returns EditingBoard with the board configs if there are some board configs" <|
+            \() ->
+                SettingsState.init settingsWithBoards
+                    |> SettingsState.settings
+                    |> Settings.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "board 1", "board 2", "board 3" ]
         ]
 
 
@@ -1064,7 +1038,69 @@ init =
 --
 --
 --
--- -- HELPERS
+-- HELPERS
+
+
+newBoardFormBeingAdded : SettingsState -> Maybe NewBoardForm
+newBoardFormBeingAdded settingsState =
+    case settingsState of
+        SettingsState.AddingBoard newBoardForm _ ->
+            Just newBoardForm
+
+        _ ->
+            Nothing
+
+
+boardConfig1 : BoardConfig
+boardConfig1 =
+    BoardConfig.fromConfig
+        { columns = Columns.empty
+        , filters = []
+        , filterPolarity = Filter.Allow
+        , filterScope = Filter.Both
+        , name = "board 1"
+        , showColumnTags = False
+        , showFilteredTags = False
+        }
+
+
+boardConfig2 : BoardConfig
+boardConfig2 =
+    BoardConfig.fromConfig
+        { columns = Columns.empty
+        , filters = []
+        , filterPolarity = Filter.Allow
+        , filterScope = Filter.Both
+        , name = "board 2"
+        , showColumnTags = False
+        , showFilteredTags = False
+        }
+
+
+boardConfig3 : BoardConfig
+boardConfig3 =
+    BoardConfig.fromConfig
+        { columns = Columns.empty
+        , filters = []
+        , filterPolarity = Filter.Allow
+        , filterScope = Filter.Both
+        , name = "board 3"
+        , showColumnTags = False
+        , showFilteredTags = False
+        }
+
+
+settingsWithBoards : Settings
+settingsWithBoards =
+    let
+        defaultSettings : Settings
+        defaultSettings =
+            Settings.default
+    in
+    { defaultSettings | boardConfigs = SafeZipper.fromList [ boardConfig1, boardConfig2, boardConfig3 ] }
+
+
+
 --
 --
 -- exampleNewBoard : NewBoardForm

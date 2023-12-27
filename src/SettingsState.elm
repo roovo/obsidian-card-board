@@ -76,56 +76,36 @@ boardConfigs settingsState =
 
 settings : SettingsState -> Settings
 settings settingsState =
-    -- let
-    --     merged : Settings -> SettingsForm.Form -> Settings
-    --     merged settings_ settingsForm_ =
-    --         let
-    --             currentBoardConfigs : SafeZipper BoardConfig
-    --             currentBoardConfigs =
-    --                 Settings.boardConfigs settings_
-    --             currentIndex : Int
-    --             currentIndex =
-    --                 SafeZipper.currentIndex currentBoardConfigs
-    --                     |> Maybe.withDefault 0
-    --             columnsList : List Columns
-    --             columnsList =
-    --                 SD.run SettingsForm.safeDecoder settingsForm_
-    --                     |> Result.withDefault []
-    --             columnsAtIndex : Int -> Maybe Columns
-    --             columnsAtIndex index =
-    --                 LE.getAt index columnsList
-    --             mapper : Int -> Columns -> Columns
-    --             mapper index columns =
-    --                 columnsAtIndex index
-    --                     |> Maybe.withDefault columns
-    --             newBoardConfigs : SafeZipper BoardConfig
-    --             newBoardConfigs =
-    --                 currentBoardConfigs
-    --                     |> SafeZipper.toList
-    --                     |> List.indexedMap (\i bc -> BoardConfig.mapColumns (mapper i) bc)
-    --                     |> SafeZipper.fromList
-    --                     |> SafeZipper.atIndex currentIndex
-    --         in
-    --         Settings.updateBoardConfigs newBoardConfigs settings_
-    -- in
-    -- case settingsState of
-    --     AddingBoard _ settingsForm_ ->
-    --         merged settingsForm_
-    --     AddingColumn _ settingsForm_ ->
-    --         merged settingsForm_
-    --     ClosingPlugin settingsForm_ ->
-    --         merged settingsForm_
-    --     ClosingSettings settingsForm_ ->
-    --         merged settingsForm_
-    --     DeletingBoard settingsForm_ ->
-    --         merged settingsForm_
-    --     DeletingColumn _ settingsForm_ ->
-    --         merged settingsForm_
-    --     EditingBoard settingsForm_ ->
-    --         merged settingsForm_
-    --     EditingGlobalSettings settingsForm_ ->
-    --         merged settingsForm_
-    Settings.default
+    let
+        settingsFromForm : SettingsForm -> Settings
+        settingsFromForm settingsForm_ =
+            SD.run SettingsForm.safeDecoder settingsForm_
+                |> Result.withDefault Settings.default
+    in
+    case settingsState of
+        AddingBoard _ settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        AddingColumn _ settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        ClosingPlugin settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        ClosingSettings settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        DeletingBoard settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        DeletingColumn _ settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        EditingBoard settingsForm_ ->
+            settingsFromForm settingsForm_
+
+        EditingGlobalSettings settingsForm_ ->
+            settingsFromForm settingsForm_
 
 
 

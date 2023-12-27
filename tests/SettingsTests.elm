@@ -6,6 +6,7 @@ import Columns
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
+import Filter
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import GlobalSettings exposing (GlobalSettings)
@@ -29,6 +30,7 @@ suite =
         , cleanupNames
         , currentVersion
         , encodeDecode
+        , hasAnyBordsConfigured
         , moveBoard
         , moveColumn
 
@@ -240,6 +242,22 @@ encodeDecode =
         ]
 
 
+hasAnyBordsConfigured : Test
+hasAnyBordsConfigured =
+    describe "hasAnyBordsConfigured"
+        [ test "returns False if there are no boards" <|
+            \() ->
+                { exampleSettings | boardConfigs = SafeZipper.empty }
+                    |> Settings.hasAnyBordsConfigured
+                    |> Expect.equal False
+        , test "returns True if there is a board" <|
+            \() ->
+                { exampleSettings | boardConfigs = SafeZipper.fromList [ BoardConfig.fromConfig exampleBoardConfig ] }
+                    |> Settings.hasAnyBordsConfigured
+                    |> Expect.equal True
+        ]
+
+
 moveBoard : Test
 moveBoard =
     describe "moveBoard"
@@ -417,6 +435,37 @@ uniqueBoardNames =
 
 
 -- HELPERS
+
+
+exampleBoardConfig : BoardConfig.Config
+exampleBoardConfig =
+    { columns = Columns.empty
+    , filters = []
+    , filterPolarity = Filter.Allow
+    , filterScope = Filter.Both
+    , name = ""
+    , showColumnTags = False
+    , showFilteredTags = False
+    }
+
+
+exampleGlobalSettings : GlobalSettings
+exampleGlobalSettings =
+    { taskCompletionFormat = GlobalSettings.NoCompletion
+    , defaultColumnNames = DefaultColumnNames.default
+    , ignoreFileNameDates = False
+    }
+
+
+exampleSettings : Settings.Settings
+exampleSettings =
+    { boardConfigs = SafeZipper.fromList []
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+
 -- exampleSettingsWithBoardWithNoColumns : Settings.Settings
 -- exampleSettingsWithBoardWithNoColumns =
 --     { boardConfigs =
@@ -454,26 +503,6 @@ uniqueBoardNames =
 --     , globalSettings = exampleGlobalSettings
 --     , version = Settings.currentVersion
 --     }
-
-
-exampleGlobalSettings : GlobalSettings
-exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , defaultColumnNames = DefaultColumnNames.default
-    , ignoreFileNameDates = False
-    }
-
-
-exampleSettings : Settings.Settings
-exampleSettings =
-    { boardConfigs =
-        SafeZipper.fromList
-            [ BoardConfigHelpers.exampleTagBoardConfig
-            , BoardConfigHelpers.exampleDateBoardConfig
-            ]
-    , globalSettings = exampleGlobalSettings
-    , version = Settings.currentVersion
-    }
 
 
 exampleSettingsWithConsecutiveNames : Settings.Settings
