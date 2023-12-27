@@ -10,7 +10,9 @@ module Form.SafeDecoder exposing
     , lift
     , listOf
     , map
+    , map10
     , map2
+    , map7
     , minBound
     , minLength
     , run
@@ -126,6 +128,54 @@ map2 f d1 d2 =
     top f
         |> field d1
         |> field d2
+
+
+map7 :
+    (a -> b -> c -> d -> e -> f -> g -> value)
+    -> Decoder input a
+    -> Decoder input b
+    -> Decoder input c
+    -> Decoder input d
+    -> Decoder input e
+    -> Decoder input f
+    -> Decoder input g
+    -> Decoder input value
+map7 f d1 d2 d3 d4 d5 d6 d7 =
+    top f
+        |> field d1
+        |> field d2
+        |> field d3
+        |> field d4
+        |> field d5
+        |> field d6
+        |> field d7
+
+
+map10 :
+    (a -> b -> c -> d -> e -> f -> g -> h -> i -> j -> value)
+    -> Decoder input a
+    -> Decoder input b
+    -> Decoder input c
+    -> Decoder input d
+    -> Decoder input e
+    -> Decoder input f
+    -> Decoder input g
+    -> Decoder input h
+    -> Decoder input i
+    -> Decoder input j
+    -> Decoder input value
+map10 f d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 =
+    top f
+        |> field d1
+        |> field d2
+        |> field d3
+        |> field d4
+        |> field d5
+        |> field d6
+        |> field d7
+        |> field d8
+        |> field d9
+        |> field d10
 
 
 

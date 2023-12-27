@@ -1,7 +1,6 @@
 module BoardConfig exposing
     ( BoardConfig(..)
     , Config
-      -- , addColumn
     , cleanupColumnNames
     , collapseColumn
     , columns
@@ -16,12 +15,11 @@ module BoardConfig exposing
     , decoder_v_0_7_0
     , decoder_v_0_8_0
     , decoder_v_0_9_0
-      -- , deleteColumn
     , encoder
     , filterPolarity
     , filterScope
     , filters
-      -- , fromNewBoardConfig
+    , fromConfig
     , mapColumns
     , mapFilters
     , name
@@ -32,20 +30,11 @@ module BoardConfig exposing
     , toggleShowColumnTags
     , toggleShowFilteredTags
     , toggleTagFilterScope
-      -- , updateColumnName
-      -- , updateCompletedColumnLimit
-      -- , updateDatedColumnRangeType
-      -- , updateDatedColumnRangeValueFrom
-      -- , updateDatedColumnRangeValueTo
     , updateFilterPolarity
     , updateFilterScope
     , updateFilters
     , updateName
-      -- , updateNamedTagTag
     )
-
--- import Form.NewBoardConfig exposing (NewBoardConfigForm)
--- import Form.NewColumnConfig exposing (NewColumnConfigForm)
 
 import Column exposing (Column)
 import Column.Completed as CompletedColumn
@@ -79,61 +68,16 @@ type alias Config =
     }
 
 
-type alias LocalColumnConfig =
-    { tag : String
-    , displayName : String
-    }
-
-
 
 -- CREATE
--- fromNewBoardConfig : DefaultColumnNames -> NewBoardConfigForm -> BoardConfig
--- fromNewBoardConfig defaultColumnNames newBoardConfigForm =
---     case newBoardConfigForm.boardType of
---         "dateBoard" ->
---             BoardConfig
---                 { columns =
---                     Columns.fromList
---                         [ Column.undated (DefaultColumnNames.nameFor "undated" defaultColumnNames)
---                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "today" defaultColumnNames) (DatedColumn.Before 1)
---                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "tomorrow" defaultColumnNames) (DatedColumn.Between { from = 1, to = 1 })
---                         , Column.dated <| DatedColumn.init (DefaultColumnNames.nameFor "future" defaultColumnNames) (DatedColumn.After 1)
---                         , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 4 10
---                         ]
---                 , filters = []
---                 , filterPolarity = Filter.defaultPolarity
---                 , filterScope = Filter.defaultScope
---                 , name = newBoardConfigForm.name
---                 , showColumnTags = True
---                 , showFilteredTags = True
---                 }
---
---         "tagBoard" ->
---             BoardConfig
---                 { columns =
---                     Columns.fromList
---                         [ Column.untagged (DefaultColumnNames.nameFor "untagged" defaultColumnNames)
---                         , Column.otherTags (DefaultColumnNames.nameFor "otherTags" defaultColumnNames) []
---                         , Column.completed <| CompletedColumn.init (DefaultColumnNames.nameFor "completed" defaultColumnNames) 2 10
---                         ]
---                 , filters = []
---                 , filterPolarity = Filter.defaultPolarity
---                 , filterScope = Filter.defaultScope
---                 , name = newBoardConfigForm.name
---                 , showColumnTags = True
---                 , showFilteredTags = True
---                 }
---
---         _ ->
---             BoardConfig
---                 { columns = Columns.empty
---                 , filters = []
---                 , filterPolarity = Filter.defaultPolarity
---                 , filterScope = Filter.defaultScope
---                 , name = newBoardConfigForm.name
---                 , showColumnTags = True
---                 , showFilteredTags = True
---                 }
+
+
+fromConfig : Config -> BoardConfig
+fromConfig =
+    BoardConfig
+
+
+
 -- UTILITIES
 
 
@@ -207,22 +151,11 @@ decoder_v_0_11_0 =
 
 
 -- TRANSFORM
--- addColumn : DefaultColumnNames -> NewColumnConfigForm -> BoardConfig -> BoardConfig
--- addColumn defaultColumnNames newColumnConfigForm (BoardConfig c) =
---     BoardConfig { c | columns = Columns.addColumn defaultColumnNames newColumnConfigForm c.columns }
 
 
 cleanupColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig
 cleanupColumnNames defaultColumnNames (BoardConfig c) =
     BoardConfig { c | columns = Columns.cleanupNames defaultColumnNames c.columns }
-
-
-
--- deleteColumn : Int -> BoardConfig -> BoardConfig
--- deleteColumn index (BoardConfig c) =
---     BoardConfig { c | columns = Columns.deleteColumn index c.columns }
---
---
 
 
 mapColumns : (Columns -> Columns) -> BoardConfig -> BoardConfig
@@ -278,50 +211,6 @@ toggleTagFilterScope (BoardConfig c) =
     BoardConfig { c | filterScope = cycleScope c.filterScope }
 
 
-
--- updateColumnName : Int -> String -> BoardConfig -> BoardConfig
--- updateColumnName index newName (BoardConfig c) =
---     BoardConfig { c | columns = Columns.updateColumnName index newName c.columns }
---
---
--- updateCompletedColumnLimit : Int -> Maybe Int -> BoardConfig -> BoardConfig
--- updateCompletedColumnLimit index value ((BoardConfig c) as boardConfig) =
---     case value of
---         Just newLimit ->
---             BoardConfig { c | columns = Columns.updateCompletedColumnLimit index newLimit c.columns }
---
---         _ ->
---             boardConfig
---
---
---
--- updateDatedColumnRangeType : Int -> String -> BoardConfig -> BoardConfig
--- updateDatedColumnRangeType index rangeType (BoardConfig c) =
---     BoardConfig { c | columns = Columns.updateDatedColumnRangeType index rangeType c.columns }
---
---
--- updateDatedColumnRangeValueFrom : Int -> Maybe Int -> BoardConfig -> BoardConfig
--- updateDatedColumnRangeValueFrom index value ((BoardConfig c) as boardConfig) =
---     case value of
---         Just newValue ->
---             BoardConfig { c | columns = Columns.updateDatedColumnRangeValueFrom index newValue c.columns }
---
---         _ ->
---             boardConfig
---
---
--- updateDatedColumnRangeValueTo : Int -> Maybe Int -> BoardConfig -> BoardConfig
--- updateDatedColumnRangeValueTo index value ((BoardConfig c) as boardConfig) =
---     case value of
---         Just newValue ->
---             BoardConfig { c | columns = Columns.updateDatedColumnRangeValueTo index newValue c.columns }
---
---         _ ->
---             boardConfig
---
---
-
-
 updateFilterPolarity : String -> BoardConfig -> BoardConfig
 updateFilterPolarity polarity (BoardConfig c) =
     BoardConfig { c | filterPolarity = Filter.polarityFromString polarity }
@@ -343,12 +232,13 @@ updateName name_ (BoardConfig c) =
 
 
 
--- updateNamedTagTag : Int -> String -> BoardConfig -> BoardConfig
--- updateNamedTagTag index newTag (BoardConfig c) =
---     BoardConfig { c | columns = Columns.updateNamedTagTag index newTag c.columns }
---
---
 -- LEGACY
+
+
+type alias LocalColumnConfig =
+    { tag : String
+    , displayName : String
+    }
 
 
 decoder_v_0_10_0 : TsDecode.Decoder BoardConfig
@@ -845,13 +735,6 @@ buildTagBoardFromPreV11 localColumnConfigs collapsedColumns completedCount_ filt
     }
 
 
-localColumnConfigDecoder : TsDecode.Decoder LocalColumnConfig
-localColumnConfigDecoder =
-    TsDecode.succeed LocalColumnConfig
-        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)
-
-
 
 -- PRIVATE
 
@@ -869,3 +752,10 @@ configureOtherTagsColumn config_ =
                 (OtherTagsColumn.setOtherTags <| Columns.namedTagColumnTags config_.columns)
                 config_.columns
     }
+
+
+localColumnConfigDecoder : TsDecode.Decoder LocalColumnConfig
+localColumnConfigDecoder =
+    TsDecode.succeed LocalColumnConfig
+        |> TsDecode.andMap (TsDecode.field "tag" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "displayTitle" TsDecode.string)

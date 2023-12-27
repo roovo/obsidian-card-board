@@ -1,43 +1,142 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
-      -- , safeDecoder
+    , safeDecoder
     )
 
 import BoardConfig exposing (BoardConfig)
+import Columns exposing (Columns)
 import DefaultColumnNames
+import Filter exposing (Filter)
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm
 import Form.SafeDecoder as SD
 
 
 
 -- TYPES
--- type FO
---     = BoardConfig Config
 
 
 type alias BoardConfigForm =
-    -- { columns : Columns
-    -- , filters : List Filter
-    -- , filterPolarity : String
-    -- , filterScope : String
-    { name : String
+    { columns : ColumnsForm
+    , filters : List Filter
+    , filterPolarity : String
+    , filterScope : String
+    , name : String
     , showColumnTags : Bool
     , showFilteredTags : Bool
     }
 
 
 
--- safeDecoder : SD.Decoder Form BoardConfig
--- safeDecoder =
---     -- (TsDecode.succeed Config
---     --     |> TsDecode.required "columns" Columns.decoder
---     --     |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
---     --     |> TsDecode.required "filterPolarity" Filter.polarityDecoder
---     --     |> TsDecode.required "filterScope" Filter.scopeDecoder
---     --     |> TsDecode.required "name" TsDecode.string
---     --     |> TsDecode.required "showColumnTags" TsDecode.bool
---     --     |> TsDecode.required "showFilteredTags" TsDecode.bool
---     -- )
---     --     |> TsDecode.map configureOtherTagsColumn
---     --     |> TsDecode.map BoardConfig
---     SD.always <| BoardConfig.fromNewBoard DefaultColumnNames.default NewBoardForm.default
+-- CONSTRUCTION
+
+
+init : BoardConfig -> BoardConfigForm
+init boardConfig =
+    let
+        filterPolarity =
+            case BoardConfig.filterPolarity boardConfig of
+                Filter.Allow ->
+                    "Allow"
+
+                Filter.Deny ->
+                    "Deny"
+
+        filterScope =
+            case BoardConfig.filterScope boardConfig of
+                Filter.TopLevelOnly ->
+                    "TopLevelOnly"
+
+                Filter.SubTasksOnly ->
+                    "SubTasksOnly"
+
+                Filter.Both ->
+                    "Both"
+    in
+    { columns = ColumnsForm.init <| BoardConfig.columns boardConfig
+    , filters = BoardConfig.filters boardConfig
+    , filterPolarity = filterPolarity
+    , filterScope = filterScope
+    , name = BoardConfig.name boardConfig
+    , showColumnTags = BoardConfig.showColumnTags boardConfig
+    , showFilteredTags = BoardConfig.showFilteredTags boardConfig
+    }
+
+
+safeDecoder : SD.Decoder BoardConfigForm BoardConfig
+safeDecoder =
+    SD.map7 BoardConfig.Config
+        columnsDecoder
+        filtersDecoder
+        filterPolarityDecoder
+        filterScopeDecoder
+        nameDecoder
+        showColumnTagsDecoder
+        showFilteredTagsDecoder
+        |> SD.map BoardConfig.fromConfig
+
+
+
+-- PRIVATE
+
+
+columnsDecoder : SD.Decoder BoardConfigForm Columns
+columnsDecoder =
+    ColumnsForm.safeDecoder
+        |> SD.lift .columns
+
+
+filtersDecoder : SD.Decoder BoardConfigForm (List Filter)
+filtersDecoder =
+    SD.identity
+        |> SD.lift .filters
+
+
+filterPolarityDecoder : SD.Decoder BoardConfigForm Filter.Polarity
+filterPolarityDecoder =
+    (SD.custom <|
+        \polarity ->
+            case polarity of
+                "Deny" ->
+                    Ok Filter.Deny
+
+                _ ->
+                    Ok Filter.Allow
+    )
+        |> SD.lift .filterPolarity
+
+
+filterScopeDecoder : SD.Decoder BoardConfigForm Filter.Scope
+filterScopeDecoder =
+    (SD.custom <|
+        \scope ->
+            case scope of
+                "TopLevelOnly" ->
+                    Ok Filter.TopLevelOnly
+
+                "SubTasksOnly" ->
+                    Ok Filter.SubTasksOnly
+
+                _ ->
+                    Ok Filter.Both
+    )
+        |> SD.lift .filterScope
+
+
+nameDecoder : SD.Decoder BoardConfigForm String
+nameDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.lift .name
+
+
+showColumnTagsDecoder : SD.Decoder BoardConfigForm Bool
+showColumnTagsDecoder =
+    SD.identity
+        |> SD.lift .showColumnTags
+
+
+showFilteredTagsDecoder : SD.Decoder BoardConfigForm Bool
+showFilteredTagsDecoder =
+    SD.identity
+        |> SD.lift .showFilteredTags

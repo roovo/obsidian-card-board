@@ -3,17 +3,14 @@ module Form.Settings exposing
     , addBoard
     , addColumn
     , boardConfigForms
-      -- , decoder
     , defaultColumnNames
     , deleteColumn
     , deleteCurrentBoard
-      -- , empty
     , hasAnyBordsConfigured
     , init
     , moveColumn
     , safeDecoder
     , switchToBoard
-      -- , updateCurrentColumnsForm
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -28,6 +25,7 @@ import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import GlobalSettings
+import Maybe.Extra as ME
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 
@@ -38,15 +36,15 @@ import Settings exposing (Settings)
 
 type alias SettingsForm =
     { boardConfigForms : SafeZipper BoardConfigForm
+    , completed : String
+    , future : String
+    , ignoreFileNameDates : Bool
+    , otherTags : String
     , taskCompletionFormat : String
     , today : String
     , tomorrow : String
-    , future : String
     , undated : String
-    , otherTags : String
     , untagged : String
-    , completed : String
-    , ignoreFileNameDates : Bool
     }
 
 
@@ -82,34 +80,35 @@ init settings =
             globalSettings.defaultColumnNames
     in
     { boardConfigForms = boardConfigForms_
+    , completed = Maybe.withDefault "" defaultColumnNames_.completed
+    , future = Maybe.withDefault "" defaultColumnNames_.future
+    , ignoreFileNameDates = globalSettings.ignoreFileNameDates
+    , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
     , taskCompletionFormat = taskCompletionFormat
     , today = Maybe.withDefault "" defaultColumnNames_.today
     , tomorrow = Maybe.withDefault "" defaultColumnNames_.tomorrow
-    , future = Maybe.withDefault "" defaultColumnNames_.future
     , undated = Maybe.withDefault "" defaultColumnNames_.undated
-    , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
     , untagged = Maybe.withDefault "" defaultColumnNames_.untagged
-    , completed = Maybe.withDefault "" defaultColumnNames_.completed
-    , ignoreFileNameDates = globalSettings.ignoreFileNameDates
     }
 
 
 
--- empty : SettingsForm
--- empty =
---     { boardConfigForms = SafeZipper.empty }
 -- DECODER
--- decoder : FD.Decoder SettingsForm ( Int, ( Int, ColumnForm.Error ) ) (List Columns)
--- decoder =
---     FD.listOf ColumnsForm.decoder
---         |> FD.lift (SafeZipper.toList << boardConfigForms)
 
 
 safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
-    -- SD.listOf BoardConfigForm.safeDecoder
-    --     |> SD.lift (SafeZipper.toList << boardConfigForms)
-    SD.always Settings.default
+    SD.map10 settingsBuilder
+        boardConfigFormsDecoder
+        completedDecoder
+        futureDecoder
+        ignoreFileNameDatesDecoder
+        otherTagsDecoder
+        taskCompletionFormatDecoder
+        todayDecoder
+        tomorrowDecoder
+        undatedDecoder
+        untaggedDecoder
 
 
 
@@ -197,3 +196,158 @@ switchToBoard index form =
 -- updateCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> SettingsForm -> SettingsForm
 -- updateCurrentColumnsForm fn form =
 --     { form | boardConfigForms = SafeZipper.mapSelectedAndRest fn identity form.boardConfigForms }
+--
+--
+--
+--
+-- PRIVATE
+
+
+boardConfigFormsDecoder : SD.Decoder SettingsForm (SafeZipper BoardConfig)
+boardConfigFormsDecoder =
+    (SD.custom <|
+        \bcfs ->
+            let
+                currentIndex : Int
+                currentIndex =
+                    bcfs
+                        |> SafeZipper.currentIndex
+                        |> Maybe.withDefault 0
+            in
+            bcfs
+                |> SafeZipper.toList
+                |> List.map (SD.run BoardConfigForm.safeDecoder)
+                |> List.map Result.toMaybe
+                |> ME.values
+                |> SafeZipper.fromList
+                |> SafeZipper.atIndex currentIndex
+                |> Ok
+    )
+        |> SD.lift .boardConfigForms
+
+
+completedDecoder : SD.Decoder SettingsForm (Maybe String)
+completedDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .completed
+
+
+futureDecoder : SD.Decoder SettingsForm (Maybe String)
+futureDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .future
+
+
+ignoreFileNameDatesDecoder : SD.Decoder SettingsForm Bool
+ignoreFileNameDatesDecoder =
+    SD.identity
+        |> SD.lift .ignoreFileNameDates
+
+
+otherTagsDecoder : SD.Decoder SettingsForm (Maybe String)
+otherTagsDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .otherTags
+
+
+settingsBuilder :
+    SafeZipper BoardConfig
+    -> Maybe String
+    -> Maybe String
+    -> Bool
+    -> Maybe String
+    -> GlobalSettings.TaskCompletionFormat
+    -> Maybe String
+    -> Maybe String
+    -> Maybe String
+    -> Maybe String
+    -> Settings
+settingsBuilder bc com fut ifn ots tcf tod tom und unt =
+    let
+        defaultColumnNames_ =
+            { today = tod
+            , tomorrow = tom
+            , future = fut
+            , undated = und
+            , otherTags = ots
+            , untagged = unt
+            , completed = com
+            }
+
+        globalSettings =
+            { taskCompletionFormat = tcf
+            , defaultColumnNames = defaultColumnNames_
+            , ignoreFileNameDates = ifn
+            }
+    in
+    { boardConfigs = bc
+    , globalSettings = globalSettings
+    , version = Settings.currentVersion
+    }
+
+
+taskCompletionFormatDecoder : SD.Decoder SettingsForm GlobalSettings.TaskCompletionFormat
+taskCompletionFormatDecoder =
+    (SD.custom <|
+        \tcf ->
+            case tcf of
+                "NoCompletion" ->
+                    Ok <| GlobalSettings.NoCompletion
+
+                "ObsidianDataview" ->
+                    Ok <| GlobalSettings.ObsidianDataview
+
+                "ObsidianTasks" ->
+                    Ok <| GlobalSettings.ObsidianTasks
+
+                _ ->
+                    Ok <| GlobalSettings.ObsidianCardBoard
+    )
+        |> SD.lift .taskCompletionFormat
+
+
+todayDecoder : SD.Decoder SettingsForm (Maybe String)
+todayDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .today
+
+
+toMaybeString : String -> Maybe String
+toMaybeString str =
+    if String.length str == 0 then
+        Nothing
+
+    else
+        Just str
+
+
+tomorrowDecoder : SD.Decoder SettingsForm (Maybe String)
+tomorrowDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .tomorrow
+
+
+undatedDecoder : SD.Decoder SettingsForm (Maybe String)
+undatedDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .undated
+
+
+untaggedDecoder : SD.Decoder SettingsForm (Maybe String)
+untaggedDecoder =
+    SD.identity
+        |> SD.lift String.trim
+        |> SD.map toMaybeString
+        |> SD.lift .untagged
