@@ -9,6 +9,7 @@ import Columns
 import DefaultColumnNames
 import Expect
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
@@ -21,9 +22,45 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ mapCurrentBoard
+        [ deleteColumn
+        , mapCurrentBoard
         , mapCurrentColumnsForm
         , safeDecoder
+        ]
+
+
+deleteColumn : Test
+deleteColumn =
+    describe "deleteColumn"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.empty }
+                    |> SettingsForm.deleteColumn 0
+                    |> .boardConfigForms
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+        , test "does nothing if there are is a board but there is no column at the given index" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.fromList [ exampleBoardConfigForm3 ] }
+                    |> SettingsForm.deleteColumn 10
+                    |> .boardConfigForms
+                    |> SafeZipper.current
+                    |> Maybe.map .columns
+                    |> Maybe.map .columnForms
+                    |> Maybe.withDefault []
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "deletes a column at the given index" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.fromList [ exampleBoardConfigForm3 ] }
+                    |> SettingsForm.deleteColumn 1
+                    |> .boardConfigForms
+                    |> SafeZipper.current
+                    |> Maybe.map .columns
+                    |> Maybe.map .columnForms
+                    |> Maybe.withDefault []
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo" ]
         ]
 
 
@@ -395,7 +432,7 @@ exampleBoardConfigForm2 =
 
 exampleBoardConfigForm3 : BoardConfigForm
 exampleBoardConfigForm3 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.undated "", Column.untagged "" ]
+    { columns = ColumnsForm.init <| Columns.fromList [ Column.undated "foo", Column.untagged "bar" ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""

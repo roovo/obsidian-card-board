@@ -1,5 +1,6 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
+    , deleteColumn
     , init
     , mapColumnsForm
     , safeDecoder
@@ -85,6 +86,11 @@ safeDecoder =
 
 
 -- MODIFICATION
+
+
+deleteColumn : Int -> BoardConfigForm -> BoardConfigForm
+deleteColumn index boardConfigForm =
+    { boardConfigForm | columns = ColumnsForm.deleteColumn index boardConfigForm.columns }
 
 
 mapColumnsForm : (ColumnsForm -> ColumnsForm) -> BoardConfigForm -> BoardConfigForm

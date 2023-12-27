@@ -161,14 +161,13 @@ addColumn configToAdd form =
 
 deleteColumn : Int -> SettingsForm -> SettingsForm
 deleteColumn index form =
-    -- { form
-    --     | boardConfigForms =
-    --         SafeZipper.mapSelectedAndRest
-    --             (ColumnsForm.deleteColumn index)
-    --             identity
-    --             form.boardConfigForms
-    -- }
-    form
+    { form
+        | boardConfigForms =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfigForm.deleteColumn index)
+                identity
+                form.boardConfigForms
+    }
 
 
 deleteCurrentBoard : SettingsForm -> SettingsForm
