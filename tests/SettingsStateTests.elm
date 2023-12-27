@@ -32,9 +32,10 @@ suite =
         -- , deleteConfirmed
         -- , deleteBoardRequested
         -- , deleteColumnRequested
-        -- , editBoardAt
+        [ editBoardAt
+
         -- , editGlobalSettings
-        [ init
+        , init
 
         -- , mapBoardBeingAdded
         , mapBoardBeingEdited
@@ -537,191 +538,68 @@ suite =
 --         ]
 --
 --
--- editBoardAt : Test
--- editBoardAt =
---     describe "editBoardAt"
---         [ test "AddingBoard -> EditingBoard" <|
---             \() ->
---                 SettingsState.AddingBoard
---                     NewBoardForm.default
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "AddingColumn -> EditingBoard" <|
---             \() ->
---                 SettingsState.AddingColumn
---                     (NewColumnForm "" "")
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "ClosingPlugin -> EditingBoard" <|
---             \() ->
---                 SettingsState.ClosingPlugin
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "ClosingSettings -> EditingBoard" <|
---             \() ->
---                 SettingsState.ClosingSettings
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "DeletingBoard -> EditingBoard" <|
---             \() ->
---                 SettingsState.DeletingBoard
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "DeletingColumn -> EditingBoard" <|
---             \() ->
---                 SettingsState.DeletingColumn
---                     1
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "EditingBoard -> EditingBoard (switched)" <|
---             \() ->
---                 SettingsState.EditingBoard
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         , test "EditingGlobalSettings -> EditingBoard" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings
---                     (settingsFromBoardConfigsWithIndex 0 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                     { columnsForms =
---                         SafeZipper.fromList
---                             [ { columnForms = [] }
---                             , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                             ]
---                     }
---                     |> SettingsState.editBoardAt 1
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigsWithIndex 1 [ exampleBoardConfigNoColumns, exampleBoardConfig ])
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [] }
---                                     , { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] }
---                                     ]
---                                     |> SafeZipper.atIndex 1
---                             }
---                         )
---         ]
---
---
+
+
+editBoardAt : Test
+editBoardAt =
+    describe "editBoardAt"
+        [ test "AddingBoard -> EditingBoard" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "AddingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "ClosingPlugin -> EditingBoard" <|
+            \() ->
+                SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "ClosingSettings -> EditingBoard" <|
+            \() ->
+                SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "DeletingBoard -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "DeletingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "EditingBoard -> EditingBoard (no change if the board isn't changed)" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> SettingsState.settings
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.name
+                    |> Expect.equal (Just "board 2")
+        , test "EditingBoard -> EditingBoard (changes the board)" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 2
+                    |> SettingsState.settings
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.name
+                    |> Expect.equal (Just "board 3")
+        , test "EditingGlobalSettings -> EditingBoard" <|
+            \() ->
+                SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.editBoardAt 1
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        ]
+
+
+
 -- editGlobalSettings : Test
 -- editGlobalSettings =
 --     describe "editGlobalSettings"
