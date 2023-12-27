@@ -462,7 +462,6 @@ mapBoardBeingEdited : (BoardConfigForm -> BoardConfigForm) -> SettingsState -> S
 mapBoardBeingEdited fn settingsState =
     case settingsState of
         EditingBoard settingsForm_ ->
-            -- EditingBoard boardConfigForm_
             EditingBoard (SettingsForm.mapCurrentBoard fn settingsForm_)
 
         _ ->

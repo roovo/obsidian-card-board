@@ -22,6 +22,7 @@ suite =
         , toggleShowColumnTags
         , toggleShowFilteredTags
         , updateFilterPolarity
+        , updateFilterScope
         , updateName
         ]
 
@@ -259,6 +260,18 @@ updateFilterPolarity =
                 { exampleBoardConfigForm | filterPolarity = "" }
                     |> BoardConfigForm.updateFilterPolarity "foo"
                     |> .filterPolarity
+                    |> Expect.equal "foo"
+        ]
+
+
+updateFilterScope : Test
+updateFilterScope =
+    describe "updateFilterScope"
+        [ test "sets the filterPolarity to the given value" <|
+            \() ->
+                { exampleBoardConfigForm | filterScope = "" }
+                    |> BoardConfigForm.updateFilterScope "foo"
+                    |> .filterScope
                     |> Expect.equal "foo"
         ]
 

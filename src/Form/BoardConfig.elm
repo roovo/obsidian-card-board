@@ -5,6 +5,7 @@ module Form.BoardConfig exposing
     , toggleShowColumnTags
     , toggleShowFilteredTags
     , updateFilterPolarity
+    , updateFilterScope
     , updateName
     )
 
@@ -98,6 +99,11 @@ toggleShowFilteredTags boardConfigForm =
 updateFilterPolarity : String -> BoardConfigForm -> BoardConfigForm
 updateFilterPolarity newPolarity boardConfigForm =
     { boardConfigForm | filterPolarity = newPolarity }
+
+
+updateFilterScope : String -> BoardConfigForm -> BoardConfigForm
+updateFilterScope newScope boardConfigForm =
+    { boardConfigForm | filterScope = newScope }
 
 
 updateName : String -> BoardConfigForm -> BoardConfigForm

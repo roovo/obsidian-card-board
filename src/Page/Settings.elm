@@ -140,12 +140,12 @@ type Msg
     | NewColumnTypeSelected String
     | PathsRequested Int String
     | PolaritySelected String
+    | ScopeSelected String
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleIgnoreFileNameDate
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
-    | ToggleTagFilterScope
 
 
 boardNameDragType : String
@@ -374,6 +374,9 @@ update msg model =
         PolaritySelected polarity ->
             mapBoardBeingEdited (BoardConfigForm.updateFilterPolarity polarity) model
 
+        ScopeSelected scope ->
+            mapBoardBeingEdited (BoardConfigForm.updateFilterScope scope) model
+
         SelectedDatedColumnRangeType index rangeType ->
             mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeType index rangeType) model
 
@@ -400,9 +403,6 @@ update msg model =
 
         ToggleShowFilteredTags ->
             mapBoardBeingEdited BoardConfigForm.toggleShowFilteredTags model
-
-        ToggleTagFilterScope ->
-            mapBoardBeingEdited identity model
 
 
 selectedItemLabel : Filter -> String
@@ -1145,30 +1145,6 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
 
                     else
                         ""
-
-                tagFilterScopeStyle : String
-                tagFilterScopeStyle =
-                    case configForm.filterScope of
-                        "TopLevelOnly" ->
-                            ""
-
-                        "SubTasksOnly" ->
-                            " is-mid-enabled"
-
-                        _ ->
-                            " is-enabled"
-
-                tagFilterScopeText : String
-                tagFilterScopeText =
-                    case configForm.filterScope of
-                        "TopLevelOnly" ->
-                            "Top level"
-
-                        "SubTasksOnly" ->
-                            "Sub-tasks"
-
-                        _ ->
-                            "Both"
             in
             [ Html.div
                 [ class "setting-item"
@@ -1226,14 +1202,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
                         [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ Html.div []
-                        [ Html.text tagFilterScopeText ]
-                    , Html.div
-                        [ class <| "checkbox-container" ++ tagFilterScopeStyle
-                        , onClick ToggleTagFilterScope
-                        ]
-                        []
-                    ]
+                    [ scopeSelect <| configForm.filterScope ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1601,6 +1570,42 @@ taskCompletionFormatSelect taskCompletionFormat =
                     [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks", selected True ]
                     [ Html.text "Tasks" ]
+                ]
+        )
+
+
+scopeSelect : String -> Html Msg
+scopeSelect scope =
+    Html.select
+        [ class "dropdown"
+        , onInput ScopeSelected
+        ]
+        (case scope of
+            "TopLevelOnly" ->
+                [ Html.option [ value "TopLevelOnly", selected True ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly" ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both" ]
+                    [ Html.text "Both" ]
+                ]
+
+            "SubTasksOnly" ->
+                [ Html.option [ value "TopLevelOnly" ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly", selected True ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both" ]
+                    [ Html.text "Both" ]
+                ]
+
+            _ ->
+                [ Html.option [ value "TopLevelOnly" ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly" ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both", selected True ]
+                    [ Html.text "Both" ]
                 ]
         )
 
