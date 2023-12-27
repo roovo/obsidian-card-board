@@ -555,13 +555,13 @@ view model =
     case model.settingsState of
         SettingsState.AddingBoard newConfig settingsForm ->
             Html.div []
-                [ boardSettingsView (SettingsForm.boardConfigForms settingsForm) settingsForm (SettingsForm.defaultColumnNames settingsForm) model.multiSelect dragTracker
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
                 , modalAddBoard newConfig
                 ]
 
         SettingsState.AddingColumn newConfig settingsForm ->
             Html.div []
-                [ boardSettingsView (SettingsForm.boardConfigForms settingsForm) settingsForm (SettingsForm.defaultColumnNames settingsForm) model.multiSelect dragTracker
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
                 , modalAddColumn newConfig settingsForm
                 ]
 
@@ -573,23 +573,18 @@ view model =
 
         SettingsState.DeletingBoard settingsForm ->
             Html.div []
-                [ boardSettingsView (SettingsForm.boardConfigForms settingsForm) settingsForm (SettingsForm.defaultColumnNames settingsForm) model.multiSelect dragTracker
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
         SettingsState.DeletingColumn _ settingsForm ->
             Html.div []
-                [ boardSettingsView (SettingsForm.boardConfigForms settingsForm) settingsForm (SettingsForm.defaultColumnNames settingsForm) model.multiSelect dragTracker
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
                 , modalConfirmDelete
                 ]
 
         SettingsState.EditingBoard settingsForm ->
-            boardSettingsView
-                (SettingsForm.boardConfigForms settingsForm)
-                settingsForm
-                (SettingsForm.defaultColumnNames settingsForm)
-                model.multiSelect
-                dragTracker
+            boardSettingsView settingsForm model.multiSelect dragTracker
 
         SettingsState.EditingGlobalSettings settingsForm ->
             -- globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
@@ -758,10 +753,10 @@ modalConfirmDelete =
         ]
 
 
-settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> DragTracker -> List (Html Msg) -> Html Msg
-settingsSurroundView currentSection configs dragTracker formContents =
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfigForm -> DragTracker -> List (Html Msg) -> Html Msg
+settingsSurroundView currentSection boardConfigForms dragTracker formContents =
     let
-        boardMapFn : Int -> BoardConfig -> Html Msg
+        boardMapFn : Int -> BoardConfigForm -> Html Msg
         boardMapFn =
             case currentSection of
                 Options ->
@@ -831,12 +826,12 @@ settingsSurroundView currentSection configs dragTracker formContents =
                                 ]
                             ]
                         , Html.div [ class "vertical-tab-header-group-items" ]
-                            (configs
+                            (boardConfigForms
                                 |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingNameView
                                 |> SafeZipper.toList
                                 |> (\hs ->
                                         List.append hs
-                                            [ settingNameDraggedView isDragging (SafeZipper.current configs) dragTracker ]
+                                            [ settingNameDraggedView isDragging (SafeZipper.current boardConfigForms) dragTracker ]
                                    )
                             )
                         ]
@@ -850,25 +845,24 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfigForm -> SettingsForm -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView boardConfigs settingsForm defaultColumnNames multiselect dragTracker =
-    -- boardSettingsForm
-    --     (SafeZipper.current boardConfigs)
-    --     (SafeZipper.currentIndex boardConfigs)
-    --     (SafeZipper.current (SettingsForm.boardConfigForms settingsForm))
-    --     defaultColumnNames
-    --     multiselect
-    --     dragTracker
-    --     |> settingsSurroundView Boards boardConfigs dragTracker
+boardSettingsView : SettingsForm -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView settingsForm multiselect dragTracker =
+    boardSettingsForm
+        (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
+        (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
+        (SettingsForm.defaultColumnNames settingsForm)
+        multiselect
+        dragTracker
+        |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
+
+
+globalSettingsView : DataviewTaskCompletion -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion settingsForm dragTracker =
+    -- settingsForm
+    --     |> Settings.globalSettings
+    --     |> globalSettingsForm dataviewTaskCompletion
+    --     |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
     Html.text ""
-
-
-globalSettingsView : DataviewTaskCompletion -> Settings -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion settings dragTracker =
-    settings
-        |> Settings.globalSettings
-        |> globalSettingsForm dataviewTaskCompletion
-        |> settingsSurroundView Options (Settings.boardConfigs settings) dragTracker
 
 
 globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
@@ -1102,14 +1096,23 @@ columNamesForm defaultColumnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> Maybe ColumnsForm -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multiselect dragTracker =
-    case ( boardConfig, columnsForm, boardIndex ) of
-        ( Just config, Just form, Just _ ) ->
+
+-- boardSettingsForm
+--     (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
+--     (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
+--     settingsForm
+--     multiselect
+--     dragTracker
+
+
+boardSettingsForm : Maybe BoardConfigForm -> Maybe Int -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect dragTracker =
+    case ( boardConfigForm, boardIndex ) of
+        ( Just configForm, Just _ ) ->
             let
                 draggedColumn : Maybe ColumnForm
                 draggedColumn =
-                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) form
+                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) configForm.columns
 
                 draggedType : Maybe String
                 draggedType =
@@ -1129,7 +1132,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
 
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
-                    if BoardConfig.showFilteredTags config then
+                    if configForm.showFilteredTags then
                         " is-enabled"
 
                     else
@@ -1137,7 +1140,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
 
                 showColumnTagsStyle : String
                 showColumnTagsStyle =
-                    if BoardConfig.showColumnTags config then
+                    if configForm.showColumnTags then
                         " is-enabled"
 
                     else
@@ -1145,26 +1148,26 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
 
                 tagFilterScopeStyle : String
                 tagFilterScopeStyle =
-                    case BoardConfig.filterScope config of
-                        Filter.TopLevelOnly ->
+                    case configForm.filterScope of
+                        "TopLevelOnly" ->
                             ""
 
-                        Filter.SubTasksOnly ->
+                        "SubTasksOnly" ->
                             " is-mid-enabled"
 
-                        Filter.Both ->
+                        _ ->
                             " is-enabled"
 
                 tagFilterScopeText : String
                 tagFilterScopeText =
-                    case BoardConfig.filterScope config of
-                        Filter.TopLevelOnly ->
+                    case configForm.filterScope of
+                        "TopLevelOnly" ->
                             "Top level"
 
-                        Filter.SubTasksOnly ->
+                        "SubTasksOnly" ->
                             "Sub-tasks"
 
-                        Filter.Both ->
+                        _ ->
                             "Both"
             in
             [ Html.div
@@ -1180,7 +1183,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
                 , Html.div [ class "setting-item-control" ]
                     [ Html.input
                         [ type_ "text"
-                        , value <| BoardConfig.name config
+                        , value <| configForm.name
                         , onInput EnteredName
                         ]
                         []
@@ -1213,7 +1216,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
                         [ Html.text "Use the filters defined above as an Allow or Deny list." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ polaritySelect <| BoardConfig.filterPolarity config ]
+                    [ polaritySelect <| configForm.filterPolarity ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1257,7 +1260,7 @@ boardSettingsForm boardConfig boardIndex columnsForm defaultColumnNames multisel
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
-                    ((form
+                    ((configForm.columns
                         |> .columnForms
                         |> List.indexedMap (settingsColumnView draggedUniqueId defaultColumnNames)
                      )
@@ -1602,21 +1605,21 @@ taskCompletionFormatSelect taskCompletionFormat =
         )
 
 
-polaritySelect : Polarity -> Html Msg
+polaritySelect : String -> Html Msg
 polaritySelect polarity =
     Html.select
         [ class "dropdown"
         , onInput PolaritySelected
         ]
         (case polarity of
-            Filter.Allow ->
+            "Allow" ->
                 [ Html.option [ value "Allow", selected True ]
                     [ Html.text "Allow" ]
                 , Html.option [ value "Deny" ]
                     [ Html.text "Deny" ]
                 ]
 
-            Filter.Deny ->
+            _ ->
                 [ Html.option [ value "Allow" ]
                     [ Html.text "Allow" ]
                 , Html.option [ value "Deny", selected True ]
@@ -1625,8 +1628,8 @@ polaritySelect polarity =
         )
 
 
-settingNameView : Int -> BoardConfig -> Html Msg
-settingNameView index boardConfig =
+settingNameView : Int -> BoardConfigForm -> Html Msg
+settingNameView index boardConfigForm =
     let
         domId : String
         domId =
@@ -1634,7 +1637,7 @@ settingNameView index boardConfig =
 
         name : String
         name =
-            BoardConfig.name boardConfig
+            boardConfigForm.name
     in
     Html.div []
         [ boardNameBeacon (BeaconPosition.Before name)
@@ -1658,8 +1661,8 @@ settingNameView index boardConfig =
         ]
 
 
-settingNameSelectedView : Bool -> Int -> BoardConfig -> Html Msg
-settingNameSelectedView isDragging index boardConfig =
+settingNameSelectedView : Bool -> Int -> BoardConfigForm -> Html Msg
+settingNameSelectedView isDragging index boardConfigForm =
     let
         domId : String
         domId =
@@ -1667,7 +1670,7 @@ settingNameSelectedView isDragging index boardConfig =
 
         name : String
         name =
-            BoardConfig.name boardConfig
+            boardConfigForm.name
     in
     Html.div []
         [ boardNameBeacon (BeaconPosition.Before name)
@@ -1692,9 +1695,9 @@ settingNameSelectedView isDragging index boardConfig =
         ]
 
 
-settingNameDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
-settingNameDraggedView isDragging boardConfig dragTracker =
-    case ( isDragging, boardConfig, dragTracker ) of
+settingNameDraggedView : Bool -> Maybe BoardConfigForm -> DragTracker -> Html Msg
+settingNameDraggedView isDragging boardConfigForm dragTracker =
+    case ( isDragging, boardConfigForm, dragTracker ) of
         ( True, Just config, DragTracker.Dragging clientData domData ) ->
             Html.div []
                 [ Html.div
@@ -1716,7 +1719,7 @@ settingNameDraggedView isDragging boardConfig dragTracker =
                     , style "cursor" "grabbing"
                     , style "opacity" "0.85"
                     ]
-                    [ Html.text (BoardConfig.name config) ]
+                    [ Html.text config.name ]
                 ]
 
         _ ->
