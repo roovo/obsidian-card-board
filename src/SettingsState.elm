@@ -26,6 +26,7 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import Form.BoardConfig exposing (BoardConfigForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm, OptionsForSelect)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
@@ -457,12 +458,12 @@ mapBoardBeingAdded fn settingsState =
             settingsState
 
 
-mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> SettingsState -> SettingsState
+mapBoardBeingEdited : (BoardConfigForm -> BoardConfigForm) -> SettingsState -> SettingsState
 mapBoardBeingEdited fn settingsState =
     case settingsState of
         EditingBoard settingsForm_ ->
-            -- EditingBoard (Settings.updateCurrentBoard fn settings_) settingsForm_
-            settingsState
+            -- EditingBoard boardConfigForm_
+            EditingBoard (SettingsForm.mapCurrentBoard fn settingsForm_)
 
         _ ->
             settingsState

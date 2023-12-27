@@ -2,6 +2,10 @@ module Form.BoardConfig exposing
     ( BoardConfigForm
     , init
     , safeDecoder
+    , toggleShowColumnTags
+    , toggleShowFilteredTags
+    , updateFilterPolarity
+    , updateName
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -75,6 +79,30 @@ safeDecoder =
         showColumnTagsDecoder
         showFilteredTagsDecoder
         |> SD.map BoardConfig.fromConfig
+
+
+
+-- MODIFICATION
+
+
+toggleShowColumnTags : BoardConfigForm -> BoardConfigForm
+toggleShowColumnTags boardConfigForm =
+    { boardConfigForm | showColumnTags = not boardConfigForm.showColumnTags }
+
+
+toggleShowFilteredTags : BoardConfigForm -> BoardConfigForm
+toggleShowFilteredTags boardConfigForm =
+    { boardConfigForm | showFilteredTags = not boardConfigForm.showFilteredTags }
+
+
+updateFilterPolarity : String -> BoardConfigForm -> BoardConfigForm
+updateFilterPolarity newPolarity boardConfigForm =
+    { boardConfigForm | filterPolarity = newPolarity }
+
+
+updateName : String -> BoardConfigForm -> BoardConfigForm
+updateName newName boardConfigForm =
+    { boardConfigForm | name = newName }
 
 
 

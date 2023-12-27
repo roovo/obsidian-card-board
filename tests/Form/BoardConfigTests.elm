@@ -19,6 +19,10 @@ suite =
     concat
         [ init
         , safeDecoder
+        , toggleShowColumnTags
+        , toggleShowFilteredTags
+        , updateFilterPolarity
+        , updateName
         ]
 
 
@@ -208,6 +212,66 @@ safeDecoder =
                     |> SD.run BoardConfigForm.safeDecoder
                     |> Result.map BoardConfig.showFilteredTags
                     |> Expect.equal (Ok <| False)
+        ]
+
+
+toggleShowColumnTags : Test
+toggleShowColumnTags =
+    describe "toggleShowColumnTags"
+        [ test "toggles showColumnTags from False to True" <|
+            \() ->
+                { exampleBoardConfigForm | showColumnTags = False }
+                    |> BoardConfigForm.toggleShowColumnTags
+                    |> .showColumnTags
+                    |> Expect.equal True
+        , test "toggles showColumnTags from True to False" <|
+            \() ->
+                { exampleBoardConfigForm | showColumnTags = True }
+                    |> BoardConfigForm.toggleShowColumnTags
+                    |> .showColumnTags
+                    |> Expect.equal False
+        ]
+
+
+toggleShowFilteredTags : Test
+toggleShowFilteredTags =
+    describe "toggleShowFilteredTags"
+        [ test "toggles showFilteredTags from False to True" <|
+            \() ->
+                { exampleBoardConfigForm | showFilteredTags = False }
+                    |> BoardConfigForm.toggleShowFilteredTags
+                    |> .showFilteredTags
+                    |> Expect.equal True
+        , test "toggles showFilteredTags from True to False" <|
+            \() ->
+                { exampleBoardConfigForm | showFilteredTags = True }
+                    |> BoardConfigForm.toggleShowFilteredTags
+                    |> .showFilteredTags
+                    |> Expect.equal False
+        ]
+
+
+updateFilterPolarity : Test
+updateFilterPolarity =
+    describe "updateFilterPolarity"
+        [ test "sets the filterPolarity to the given value" <|
+            \() ->
+                { exampleBoardConfigForm | filterPolarity = "" }
+                    |> BoardConfigForm.updateFilterPolarity "foo"
+                    |> .filterPolarity
+                    |> Expect.equal "foo"
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "sets the name to the given value" <|
+            \() ->
+                { exampleBoardConfigForm | name = "" }
+                    |> BoardConfigForm.updateName "foo"
+                    |> .name
+                    |> Expect.equal "foo"
         ]
 
 

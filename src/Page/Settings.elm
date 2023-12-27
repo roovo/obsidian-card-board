@@ -168,7 +168,7 @@ switchSettingsState fn model =
         newSettingsState : SettingsState
         newSettingsState =
             model.settingsState
-                |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
+                |> SettingsState.mapBoardBeingEdited (\bc -> { bc | filters = currentSelectedFilters })
                 |> fn
 
         newFilters : Dict String Filter
@@ -311,7 +311,7 @@ update msg model =
             mapColumnBeingAdded (NewColumnForm.updateName name) model
 
         EnteredName name ->
-            mapBoardBeingEdited (BoardConfig.updateName name) model
+            mapBoardBeingEdited (BoardConfigForm.updateName name) model
 
         FilterCandidatesReceived filterCandidates ->
             let
@@ -372,7 +372,7 @@ update msg model =
             )
 
         PolaritySelected polarity ->
-            mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+            mapBoardBeingEdited (BoardConfigForm.updateFilterPolarity polarity) model
 
         SelectedDatedColumnRangeType index rangeType ->
             mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeType index rangeType) model
@@ -396,13 +396,13 @@ update msg model =
                 }
 
         ToggleShowColumnTags ->
-            mapBoardBeingEdited BoardConfig.toggleShowColumnTags model
+            mapBoardBeingEdited BoardConfigForm.toggleShowColumnTags model
 
         ToggleShowFilteredTags ->
-            mapBoardBeingEdited BoardConfig.toggleShowFilteredTags model
+            mapBoardBeingEdited BoardConfigForm.toggleShowFilteredTags model
 
         ToggleTagFilterScope ->
-            mapBoardBeingEdited BoardConfig.toggleTagFilterScope model
+            mapBoardBeingEdited identity model
 
 
 selectedItemLabel : Filter -> String
@@ -485,7 +485,7 @@ mapColumnBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapColumnBeingAdded fn model.settingsState }
 
 
-mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingEdited : (BoardConfigForm -> BoardConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
 

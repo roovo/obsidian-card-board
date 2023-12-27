@@ -8,6 +8,7 @@ module Form.Settings exposing
     , deleteCurrentBoard
     , hasAnyBordsConfigured
     , init
+    , mapCurrentBoard
     , moveColumn
     , safeDecoder
     , switchToBoard
@@ -172,6 +173,11 @@ deleteColumn index form =
 deleteCurrentBoard : SettingsForm -> SettingsForm
 deleteCurrentBoard form =
     { form | boardConfigForms = SafeZipper.deleteCurrent form.boardConfigForms }
+
+
+mapCurrentBoard : (BoardConfigForm -> BoardConfigForm) -> SettingsForm -> SettingsForm
+mapCurrentBoard fn form =
+    { form | boardConfigForms = SafeZipper.mapSelectedAndRest fn identity form.boardConfigForms }
 
 
 moveColumn : String -> BeaconPosition -> SettingsForm -> SettingsForm

@@ -7,11 +7,12 @@ import Columns
 import DefaultColumnNames
 import Expect
 import Filter
+import Form.BoardConfig exposing (BoardConfigForm)
 import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
-import Form.Settings as SettingsForm
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
+import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper
 import Settings exposing (Settings)
@@ -36,7 +37,8 @@ suite =
         [ init
 
         -- , mapBoardBeingAdded
-        -- , mapBoardBeingEdited
+        , mapBoardBeingEdited
+
         -- , mapColumnBeingAdded
         -- , mapCurrentColumnsForm
         -- , mapGlobalSettings
@@ -837,52 +839,112 @@ init =
 --         ]
 --
 --
--- mapBoardBeingEdited : Test
--- mapBoardBeingEdited =
---     describe "mapBoardBeingEdited"
---         [ test "does nothing if it is in the AddingBoard state" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the AddingColumn state" <|
---             \() ->
---                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the ClosingPlugin state" <|
---             \() ->
---                 SettingsState.ClosingPlugin (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.ClosingPlugin (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the ClosingSettings state" <|
---             \() ->
---                 SettingsState.ClosingSettings (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.ClosingSettings (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the DeletingBoard state" <|
---             \() ->
---                 SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.DeletingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the DeletingColumn state" <|
---             \() ->
---                 SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.DeletingColumn 1 (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         , test "updates the current board if it is in the EditingBoard state" <|
---             \() ->
---                 SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfig, exampleBoardConfig ]) SettingsForm.empty)
---         , test "does nothing if it is in the EditingGlobalSettings state" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.mapBoardBeingEdited (always exampleBoardConfig)
---                     |> Expect.equal (SettingsState.EditingGlobalSettings (settingsFromBoardConfigs [ exampleBoardConfigNoColumns, exampleBoardConfig ]) SettingsForm.empty)
---         ]
---
---
+
+
+exampleSettingsFormWithThreeBoards : SettingsForm
+exampleSettingsFormWithThreeBoards =
+    { exampleSettingsForm
+        | boardConfigForms =
+            SafeZipper.fromList [ exampleBoardConfigForm1, exampleBoardConfigForm2, exampleBoardConfigForm3 ]
+                |> SafeZipper.atIndex 1
+    }
+
+
+mapBoardBeingEdited : Test
+mapBoardBeingEdited =
+    describe "mapBoardBeingEdited"
+        [ test "does nothing if it is in the AddingBoard state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the AddingColumn state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the ClosingPlugin state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the ClosingSettings state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the DeletingBoard state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "does nothing if it is in the EditingBoard state and there are no boards" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.EditingBoard exampleSettingsForm
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        , test "updates the current board if it is in the EditingBoard state and there is a current board" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal
+                        (SettingsState.EditingBoard
+                            { exampleSettingsForm
+                                | boardConfigForms =
+                                    SafeZipper.fromList [ exampleBoardConfigForm1, exampleBoardConfigForm1, exampleBoardConfigForm3 ]
+                                        |> SafeZipper.atIndex 1
+                            }
+                        )
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                let
+                    initialState =
+                        SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
+                in
+                initialState
+                    |> SettingsState.mapBoardBeingEdited (always exampleBoardConfigForm1)
+                    |> Expect.equal initialState
+        ]
+
+
+
 -- mapCurrentColumnsForm : Test
 -- mapCurrentColumnsForm =
 --     describe "mapCurrentColumnsForm"
@@ -1098,6 +1160,57 @@ settingsWithBoards =
             Settings.default
     in
     { defaultSettings | boardConfigs = SafeZipper.fromList [ boardConfig1, boardConfig2, boardConfig3 ] }
+
+
+exampleSettingsForm : SettingsForm
+exampleSettingsForm =
+    { boardConfigForms = SafeZipper.empty
+    , completed = ""
+    , future = ""
+    , ignoreFileNameDates = False
+    , otherTags = ""
+    , taskCompletionFormat = ""
+    , today = ""
+    , tomorrow = ""
+    , undated = ""
+    , untagged = ""
+    }
+
+
+exampleBoardConfigForm1 : BoardConfigForm
+exampleBoardConfigForm1 =
+    { columns = ColumnsForm.init <| Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
+    , filters = []
+    , filterPolarity = ""
+    , filterScope = ""
+    , name = "board 1"
+    , showColumnTags = False
+    , showFilteredTags = False
+    }
+
+
+exampleBoardConfigForm2 : BoardConfigForm
+exampleBoardConfigForm2 =
+    { columns = ColumnsForm.init <| Columns.fromList [ Column.otherTags "" [] ]
+    , filters = []
+    , filterPolarity = ""
+    , filterScope = ""
+    , name = "board 2"
+    , showColumnTags = False
+    , showFilteredTags = False
+    }
+
+
+exampleBoardConfigForm3 : BoardConfigForm
+exampleBoardConfigForm3 =
+    { columns = ColumnsForm.init <| Columns.fromList [ Column.undated "", Column.untagged "" ]
+    , filters = []
+    , filterPolarity = ""
+    , filterScope = ""
+    , name = "board 3"
+    , showColumnTags = False
+    , showFilteredTags = False
+    }
 
 
 

@@ -21,7 +21,21 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ safeDecoder
+        [ mapCurrentBoard
+        , safeDecoder
+        ]
+
+
+mapCurrentBoard : Test
+mapCurrentBoard =
+    describe "mapCurrentBoard"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.empty }
+                    |> SettingsForm.mapCurrentBoard (\bc -> { bc | name = "new name" })
+                    |> .boardConfigForms
+                    |> SafeZipper.toList
+                    |> Expect.equal []
         ]
 
 
@@ -53,6 +67,22 @@ safeDecoder =
                     |> Result.withDefault []
                     |> List.map BoardConfig.name
                     |> Expect.equal [ "board 1", "board 2", "board 3" ]
+        , test "preserves the position when there are multiple boards" <|
+            \() ->
+                { exampleSettingsForm
+                    | boardConfigForms =
+                        SafeZipper.fromList
+                            [ exampleBoardConfigForm1
+                            , exampleBoardConfigForm2
+                            , exampleBoardConfigForm3
+                            ]
+                            |> SafeZipper.atIndex 1
+                }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map .boardConfigs
+                    |> Result.map SafeZipper.currentIndex
+                    |> Result.map (Maybe.withDefault -1)
+                    |> Expect.equal (Ok 1)
         , test "decodes a completed string as Just the string" <|
             \() ->
                 { exampleSettingsForm | completed = "foo" }
