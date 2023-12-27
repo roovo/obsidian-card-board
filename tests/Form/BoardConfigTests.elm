@@ -19,6 +19,7 @@ suite =
     concat
         [ init
         , safeDecoder
+        , mapColumnsForm
         , toggleShowColumnTags
         , toggleShowFilteredTags
         , updateFilterPolarity
@@ -213,6 +214,18 @@ safeDecoder =
                     |> SD.run BoardConfigForm.safeDecoder
                     |> Result.map BoardConfig.showFilteredTags
                     |> Expect.equal (Ok <| False)
+        ]
+
+
+mapColumnsForm : Test
+mapColumnsForm =
+    describe "mapColumnsForm"
+        [ test "applies the map function to the ColumnsForm" <|
+            \() ->
+                { exampleBoardConfigForm | columns = ColumnsForm.init <| Columns.fromList [ Column.untagged "foo" ] }
+                    |> BoardConfigForm.mapColumnsForm (always ColumnsForm.empty)
+                    |> .columns
+                    |> Expect.equal ColumnsForm.empty
         ]
 
 

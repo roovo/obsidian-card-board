@@ -1,5 +1,6 @@
 - Form.BoardConfig.columns -> columnsForm
-- settings pane, tag filter scope control => dropdown
+- bug => collapse some columns then click on the settings icon, close settings and nothing is collapsed
+  anymore
 - Form.NewBoardForm.safeDecoder
 - can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
 - improve input boxes for numbers as they are a bit odd due to the fact that

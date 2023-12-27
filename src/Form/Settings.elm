@@ -9,6 +9,7 @@ module Form.Settings exposing
     , hasAnyBordsConfigured
     , init
     , mapCurrentBoard
+    , mapCurrentColumnsForm
     , moveColumn
     , safeDecoder
     , switchToBoard
@@ -20,7 +21,7 @@ import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
-import Form.Columns as ColumnsForm
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.Decoder as FD
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
@@ -178,6 +179,17 @@ deleteCurrentBoard form =
 mapCurrentBoard : (BoardConfigForm -> BoardConfigForm) -> SettingsForm -> SettingsForm
 mapCurrentBoard fn form =
     { form | boardConfigForms = SafeZipper.mapSelectedAndRest fn identity form.boardConfigForms }
+
+
+mapCurrentColumnsForm : (ColumnsForm -> ColumnsForm) -> SettingsForm -> SettingsForm
+mapCurrentColumnsForm fn form =
+    { form
+        | boardConfigForms =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfigForm.mapColumnsForm fn)
+                identity
+                form.boardConfigForms
+    }
 
 
 moveColumn : String -> BeaconPosition -> SettingsForm -> SettingsForm

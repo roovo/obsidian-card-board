@@ -482,8 +482,7 @@ mapCurrentColumnsForm : (ColumnsForm -> ColumnsForm) -> SettingsState -> Setting
 mapCurrentColumnsForm fn settingsState =
     case settingsState of
         EditingBoard settingsForm_ ->
-            -- EditingBoard (SettingsForm.updateCurrentColumnsForm fn settingsForm_)
-            settingsState
+            EditingBoard (SettingsForm.mapCurrentColumnsForm fn settingsForm_)
 
         _ ->
             settingsState

@@ -1,6 +1,7 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
     , init
+    , mapColumnsForm
     , safeDecoder
     , toggleShowColumnTags
     , toggleShowFilteredTags
@@ -84,6 +85,11 @@ safeDecoder =
 
 
 -- MODIFICATION
+
+
+mapColumnsForm : (ColumnsForm -> ColumnsForm) -> BoardConfigForm -> BoardConfigForm
+mapColumnsForm fn boardConfigForm =
+    { boardConfigForm | columns = fn boardConfigForm.columns }
 
 
 toggleShowColumnTags : BoardConfigForm -> BoardConfigForm

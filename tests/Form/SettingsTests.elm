@@ -22,6 +22,7 @@ suite : Test
 suite =
     concat
         [ mapCurrentBoard
+        , mapCurrentColumnsForm
         , safeDecoder
         ]
 
@@ -36,6 +37,52 @@ mapCurrentBoard =
                     |> .boardConfigForms
                     |> SafeZipper.toList
                     |> Expect.equal []
+        , test "applies the map function to the current board if there is one" <|
+            \() ->
+                { exampleSettingsForm
+                    | boardConfigForms =
+                        SafeZipper.fromList
+                            [ exampleBoardConfigForm1
+                            , exampleBoardConfigForm2
+                            , exampleBoardConfigForm3
+                            ]
+                            |> SafeZipper.atIndex 1
+                }
+                    |> SettingsForm.mapCurrentBoard (\bc -> { bc | name = "new name" })
+                    |> .boardConfigForms
+                    |> SafeZipper.current
+                    |> Maybe.map .name
+                    |> Expect.equal (Just "new name")
+        ]
+
+
+mapCurrentColumnsForm : Test
+mapCurrentColumnsForm =
+    describe "mapCurrentColumnsForm"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.empty }
+                    |> SettingsForm.mapCurrentColumnsForm (always ColumnsForm.empty)
+                    |> .boardConfigForms
+                    |> SafeZipper.toList
+                    |> Expect.equal []
+
+        -- , test "applies the map function to the current board if there is one" <|
+        --     \() ->
+        --         { exampleSettingsForm
+        --             | boardConfigForms =
+        --                 SafeZipper.fromList
+        --                     [ exampleBoardConfigForm1
+        --                     , exampleBoardConfigForm2
+        --                     , exampleBoardConfigForm3
+        --                     ]
+        --                     |> SafeZipper.atIndex 1
+        --         }
+        --             |> SettingsForm.mapCurrentColumnsForm (\bc -> { bc | name = "new name" })
+        --             |> .boardConfigForms
+        --             |> SafeZipper.current
+        --             |> Maybe.map .name
+        --             |> Expect.equal (Just "new name")
         ]
 
 
