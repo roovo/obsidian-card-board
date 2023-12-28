@@ -1,14 +1,12 @@
 module Form.Column.Untagged exposing
     ( Error(..)
     , UntaggedColumnForm
-    , decoder
     , init
     , safeDecoder
     , updateName
     )
 
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
-import Form.Decoder as FD
 import Form.Input as Input
 import Form.SafeDecoder as SD
 
@@ -39,11 +37,6 @@ init untaggedColumn =
 -- DECODER
 
 
-decoder : FD.Decoder UntaggedColumnForm Error UntaggedColumn
-decoder =
-    FD.map UntaggedColumn.init nameDecoder
-
-
 safeDecoder : SD.Decoder UntaggedColumnForm UntaggedColumn
 safeDecoder =
     SD.map UntaggedColumn.init safeNameDecoder
@@ -60,14 +53,6 @@ updateName newName form =
 
 
 -- PRIVATE
-
-
-nameDecoder : FD.Decoder UntaggedColumnForm Error String
-nameDecoder =
-    FD.identity
-        |> FD.lift String.trim
-        |> Input.required NameRequired
-        |> FD.lift .name
 
 
 safeNameDecoder : SD.Decoder UntaggedColumnForm String

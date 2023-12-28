@@ -1,14 +1,12 @@
 module Form.Column.Undated exposing
     ( Error(..)
     , UndatedColumnForm
-    , decoder
     , init
     , safeDecoder
     , updateName
     )
 
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
-import Form.Decoder as FD
 import Form.Input as Input
 import Form.SafeDecoder as SD
 
@@ -39,11 +37,6 @@ init undatedColumn =
 -- DECODER
 
 
-decoder : FD.Decoder UndatedColumnForm Error UndatedColumn
-decoder =
-    FD.map UndatedColumn.init nameDecoder
-
-
 safeDecoder : SD.Decoder UndatedColumnForm UndatedColumn
 safeDecoder =
     SD.map UndatedColumn.init safeNameDecoder
@@ -60,14 +53,6 @@ updateName newName form =
 
 
 -- PRIVATE
-
-
-nameDecoder : FD.Decoder UndatedColumnForm Error String
-nameDecoder =
-    FD.identity
-        |> FD.lift String.trim
-        |> Input.required NameRequired
-        |> FD.lift .name
 
 
 safeNameDecoder : SD.Decoder UndatedColumnForm String

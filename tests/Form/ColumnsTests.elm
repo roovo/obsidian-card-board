@@ -14,7 +14,6 @@ import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Column.Completed as CompletedColumnForm
 import Form.Column.Dated as DatedColumnForm
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.Decoder as FD
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import List.Extra as LE
@@ -25,7 +24,6 @@ suite : Test
 suite =
     concat
         [ addColumn
-        , decoder
         , empty
         , find
         , init
@@ -69,52 +67,6 @@ addColumn =
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo", "bar", "baz" ]
-        ]
-
-
-decoder : Test
-decoder =
-    describe "decoder"
-        [ test "decodes an empty ColumnsForm" <|
-            \() ->
-                ColumnsForm.init Columns.empty
-                    |> FD.run ColumnsForm.decoder
-                    |> Expect.equal (Ok Columns.empty)
-        , test "decodes a list of one of each Column type" <|
-            \() ->
-                { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
-                    , ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" }
-                    , ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
-                    , ColumnForm.OtherTagsColumnForm { name = "foo" }
-                    , ColumnForm.UndatedColumnForm { name = "foo" }
-                    , ColumnForm.UntaggedColumnForm { name = "foo" }
-                    ]
-                }
-                    |> FD.run ColumnsForm.decoder
-                    |> Expect.equal
-                        (Ok <|
-                            Columns.fromList
-                                [ Column.Completed <| CompletedColumn.init "foo" 0 4
-                                , Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7)
-                                , Column.NamedTag <| NamedTagColumn.init "foo" "aTag"
-                                , Column.OtherTags <| OtherTagsColumn.init "foo" []
-                                , Column.Undated <| UndatedColumn.init "foo"
-                                , Column.Untagged <| UntaggedColumn.init "foo"
-                                ]
-                        )
-        , test "errors if given invalid data" <|
-            \() ->
-                { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "p" }
-                    , ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "", to = "7" }
-                    ]
-                }
-                    |> FD.errors ColumnsForm.decoder
-                    |> Expect.equal
-                        [ ( 0, ColumnForm.CompletedColumnError (CompletedColumnForm.LimitError CompletedColumnForm.InvalidInt) )
-                        , ( 1, ColumnForm.DatedColumnError DatedColumnForm.NameRequired )
-                        ]
         ]
 
 

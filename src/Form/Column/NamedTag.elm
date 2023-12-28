@@ -1,7 +1,6 @@
 module Form.Column.NamedTag exposing
     ( Error(..)
     , NamedTagColumnForm
-    , decoder
     , init
     , safeDecoder
     , updateName
@@ -9,7 +8,6 @@ module Form.Column.NamedTag exposing
     )
 
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
-import Form.Decoder as FD
 import Form.Input as Input
 import Form.SafeDecoder as SD
 import Tag
@@ -46,13 +44,6 @@ init namedTagColumn =
 -- DECODER
 
 
-decoder : FD.Decoder NamedTagColumnForm Error NamedTagColumn
-decoder =
-    FD.map2 NamedTagColumn.init
-        nameDecoder
-        tagDecoder
-
-
 safeDecoder : SD.Decoder NamedTagColumnForm NamedTagColumn
 safeDecoder =
     SD.map2 NamedTagColumn.init
@@ -76,34 +67,6 @@ updateTag newName form =
 
 
 -- PRIVATE
-
-
-isValidTag : err -> FD.Decoder String err a -> FD.Decoder String err a
-isValidTag error d =
-    FD.with <|
-        \a ->
-            if Tag.containsInvalidCharacters (String.trim a) then
-                FD.fail error
-
-            else
-                d
-
-
-nameDecoder : FD.Decoder NamedTagColumnForm Error String
-nameDecoder =
-    FD.identity
-        |> FD.lift String.trim
-        |> Input.required NameRequired
-        |> FD.lift .name
-
-
-tagDecoder : FD.Decoder NamedTagColumnForm Error String
-tagDecoder =
-    FD.identity
-        |> FD.lift String.trim
-        |> Input.required TagRequired
-        |> isValidTag InvalidTagCharacters
-        |> FD.lift .tag
 
 
 safeNameDecoder : SD.Decoder NamedTagColumnForm String

@@ -15,7 +15,6 @@ import Form.Column.NamedTag as NamedTagColumnForm
 import Form.Column.OtherTags as OtherTagsColumnForm
 import Form.Column.Undated as UndatedColumnForm
 import Form.Column.Untagged as UntaggedColumnForm
-import Form.Decoder as FD
 import Form.SafeDecoder as SD
 import Test exposing (..)
 
@@ -23,77 +22,10 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ decoder
-        , init
+        [ init
         , name
         , safeDecoder
         , typeString
-        ]
-
-
-decoder : Test
-decoder =
-    describe "decoder"
-        [ test "decodes a valid Completed SubForm" <|
-            \() ->
-                ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.completed (CompletedColumn.init "foo" 0 4))
-        , test "errors an invalid Completed form" <|
-            \() ->
-                ColumnForm.CompletedColumnForm { name = "", limit = "4" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.CompletedColumnError CompletedColumnForm.NameRequired ]
-        , test "decodes a valid Dated form" <|
-            \() ->
-                ColumnForm.DatedColumnForm { name = "foo", rangeType = "After", from = "2", to = "" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.dated (DatedColumn.init "foo" (DatedColumn.After 2)))
-        , test "errors an invalid Dated form" <|
-            \() ->
-                ColumnForm.DatedColumnForm { name = "", rangeType = "After", from = "2", to = "" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.DatedColumnError DatedColumnForm.NameRequired ]
-        , test "decodes a valid NamedTag form" <|
-            \() ->
-                ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.namedTag "foo" "aTag")
-        , test "errors an invalid NamedTag form" <|
-            \() ->
-                ColumnForm.NamedTagColumnForm { name = "", tag = "aTag" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.NamedTagColumnError NamedTagColumnForm.NameRequired ]
-        , test "decodes a valid OtherTags form" <|
-            \() ->
-                ColumnForm.OtherTagsColumnForm { name = "foo" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.otherTags "foo" [])
-        , test "errors an invalid OtherTags form" <|
-            \() ->
-                ColumnForm.OtherTagsColumnForm { name = "" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.OtherTagsColumnError OtherTagsColumnForm.NameRequired ]
-        , test "decodes a valid Undated form" <|
-            \() ->
-                ColumnForm.UndatedColumnForm { name = "foo" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.undated "foo")
-        , test "errors an invalid Undated form" <|
-            \() ->
-                ColumnForm.UndatedColumnForm { name = "" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.UndatedColumnError UndatedColumnForm.NameRequired ]
-        , test "decodes a valid Untagged form" <|
-            \() ->
-                ColumnForm.UntaggedColumnForm { name = "foo" }
-                    |> FD.run ColumnForm.decoder
-                    |> Expect.equal (Ok <| Column.untagged "foo")
-        , test "errors an invalid Untagged form" <|
-            \() ->
-                ColumnForm.UntaggedColumnForm { name = "" }
-                    |> FD.errors ColumnForm.decoder
-                    |> Expect.equal [ ColumnForm.UntaggedColumnError UntaggedColumnForm.NameRequired ]
         ]
 
 

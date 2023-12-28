@@ -3,7 +3,6 @@ module Form.Column.Dated exposing
     , Error(..)
     , RangeTypeError(..)
     , RangeValueError(..)
-    , decoder
     , init
     , safeDecoder
     , updateFrom
@@ -15,7 +14,6 @@ module Form.Column.Dated exposing
 import Column.Dated as DatedColumn exposing (DatedColumn, RelativeDateRange)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
-import Form.Decoder as FD
 import Form.Input as Input
 import Form.SafeDecoder as SD
 import PlacementResult exposing (PlacementResult)
@@ -119,13 +117,6 @@ init datedColumn =
 -- DECODE
 
 
-decoder : FD.Decoder DatedColumnForm Error DatedColumn
-decoder =
-    FD.map2 DatedColumn.init
-        nameDecoder
-        rangeDecoder
-
-
 safeDecoder : SD.Decoder DatedColumnForm DatedColumn
 safeDecoder =
     SD.map2 DatedColumn.init
@@ -159,79 +150,6 @@ updateTo newValue form =
 
 
 -- PRIVATE
-
-
-formRangeBetweenValueDecoder : FD.Decoder DatedColumnForm Error Range
-formRangeBetweenValueDecoder =
-    FD.map2 Range
-        formRangeFromValueDecoder
-        formRangeToValueDecoder
-
-
-formRangeFromValueDecoder : FD.Decoder DatedColumnForm Error Int
-formRangeFromValueDecoder =
-    FD.int InvalidInt
-        |> FD.lift String.trim
-        |> FD.mapError RangeValueFromError
-        |> Input.required RangeFromValueRequired
-        |> FD.lift .from
-
-
-formRangeToValueDecoder : FD.Decoder DatedColumnForm Error Int
-formRangeToValueDecoder =
-    FD.int InvalidInt
-        |> FD.lift String.trim
-        |> FD.mapError RangeValueToError
-        |> Input.required RangeToValueRequired
-        |> FD.lift .to
-
-
-nameDecoder : FD.Decoder DatedColumnForm Error String
-nameDecoder =
-    FD.identity
-        |> FD.lift String.trim
-        |> Input.required NameRequired
-        |> FD.lift .name
-
-
-rangeDecoder : FD.Decoder DatedColumnForm Error RelativeDateRange
-rangeDecoder =
-    rangeTypeDecoder
-        |> FD.mapError RangeTypeError
-        |> Input.required RangeTypeRequired
-        |> FD.lift .rangeType
-        |> FD.andThen rangeDecoder_
-
-
-rangeDecoder_ : RangeType -> FD.Decoder DatedColumnForm Error RelativeDateRange
-rangeDecoder_ rangeType =
-    case rangeType of
-        After ->
-            FD.map DatedColumn.After formRangeFromValueDecoder
-
-        Before ->
-            FD.map DatedColumn.Before formRangeToValueDecoder
-
-        Between ->
-            FD.map DatedColumn.Between formRangeBetweenValueDecoder
-
-
-rangeTypeDecoder : FD.Decoder String RangeTypeError RangeType
-rangeTypeDecoder =
-    FD.custom <|
-        \str ->
-            case String.trim str of
-                "After" ->
-                    Ok After
-
-                "Before" ->
-                    Ok Before
-
-                "Between" ->
-                    Ok Between
-
-                _ ->
-                    Err [ Invalid ]
 
 
 safeRangeToValueDecoder : SD.Decoder DatedColumnForm Int

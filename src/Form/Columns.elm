@@ -1,7 +1,6 @@
 module Form.Columns exposing
     ( ColumnsForm
     , addColumn
-    , decoder
     , deleteColumn
     , empty
     , find
@@ -21,7 +20,6 @@ import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.Decoder as FD
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
@@ -57,13 +55,6 @@ empty =
 
 
 -- DECODER
-
-
-decoder : FD.Decoder ColumnsForm ( Int, ColumnForm.Error ) Columns
-decoder =
-    FD.listOf ColumnForm.decoder
-        |> FD.lift .columnForms
-        |> FD.map Columns.fromList
 
 
 safeDecoder : SD.Decoder ColumnsForm Columns
