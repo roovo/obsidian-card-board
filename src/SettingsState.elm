@@ -299,17 +299,17 @@ deleteConfirmed : SettingsState -> SettingsState
 deleteConfirmed settingsState =
     case settingsState of
         DeletingBoard settingsForm_ ->
-            -- let
-            --     newSettings =
-            --         Settings.deleteCurrentBoard settings_
-            --     newSettingsForm =
-            --         SettingsForm.deleteCurrentBoard settingsForm_
-            -- in
-            -- if Settings.hasAnyBordsConfigured newSettings then
-            --     EditingBoard newSettings newSettingsForm
-            -- else
-            --     AddingBoard NewBoardForm.default newSettings newSettingsForm
-            settingsState
+            let
+                -- newSettings =
+                --     Settings.deleteCurrentBoard settingsForm_
+                newSettingsForm =
+                    SettingsForm.deleteCurrentBoard settingsForm_
+            in
+            if SettingsForm.hasAnyBordsConfigured newSettingsForm then
+                EditingBoard newSettingsForm
+
+            else
+                AddingBoard NewBoardForm.default newSettingsForm
 
         DeletingColumn index settingsForm_ ->
             EditingBoard (SettingsForm.deleteColumn index settingsForm_)
