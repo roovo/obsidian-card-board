@@ -1,5 +1,6 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
+    , fromNewBoardForm
     , init
     , mapColumnsForm
     , optionsForSelect
@@ -13,10 +14,11 @@ module Form.BoardConfig exposing
 
 import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
-import DefaultColumnNames
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter)
+import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.NewBoard as NewBoardForm
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Select exposing (Option)
@@ -39,6 +41,40 @@ type alias BoardConfigForm =
 
 
 -- CONSTRUCTION
+
+
+fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> BoardConfigForm
+fromNewBoardForm defaultColumnNames newBoardConfigForm =
+    let
+        columnsForm =
+            case newBoardConfigForm.boardType of
+                "dateBoard" ->
+                    ColumnsForm
+                        [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
+                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
+                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
+                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "future" defaultColumnNames, rangeType = "After", from = "1", to = "" }
+                        , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                        ]
+
+                "tagBoard" ->
+                    ColumnsForm
+                        [ ColumnForm.UntaggedColumnForm { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
+                        , ColumnForm.OtherTagsColumnForm { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
+                        , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                        ]
+
+                _ ->
+                    ColumnsForm []
+    in
+    { columns = columnsForm
+    , filters = []
+    , filterPolarity = "Allow"
+    , filterScope = "Both"
+    , name = newBoardConfigForm.name
+    , showColumnTags = True
+    , showFilteredTags = True
+    }
 
 
 init : BoardConfig -> BoardConfigForm

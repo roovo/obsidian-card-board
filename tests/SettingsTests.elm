@@ -32,7 +32,6 @@ suite =
         , encodeDecode
         , hasAnyBordsConfigured
         , moveBoard
-        , moveColumn
 
         -- , restrictSpecialColumns
         , uniqueBoardNames
@@ -355,51 +354,6 @@ moveBoard =
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "2", "3", "4" ]
-        ]
-
-
-moveColumn : Test
-moveColumn =
-    describe "moveColumn"
-        [ test "does nothing if there are no boards" <|
-            \() ->
-                { exampleSettings | boardConfigs = SafeZipper.empty }
-                    |> Settings.moveColumn "0" (BeaconPosition.After "0")
-                    |> Settings.boardConfigs
-                    |> Expect.equal SafeZipper.empty
-
-        -- , test "does nothing if there is a board with no columns" <|
-        --     \() ->
-        --         exampleSettingsWithBoardWithNoColumns
-        --             |> Settings.moveColumn "0" (BeaconPosition.After "0")
-        --             |> Settings.boardConfigs
-        --             |> SafeZipper.current
-        --             |> Maybe.map BoardConfig.columns
-        --             |> Maybe.map Columns.toList
-        --             |> Maybe.withDefault []
-        --             |> Expect.equal []
-        -- , test "does nothing if moving to the same index" <|
-        --     \() ->
-        --         exampleSettingsWithBoardWithConsecutiveColumns
-        --             |> Settings.moveColumn "2" (BeaconPosition.After "2")
-        --             |> Settings.boardConfigs
-        --             |> SafeZipper.current
-        --             |> Maybe.map BoardConfig.columns
-        --             |> Maybe.map Columns.toList
-        --             |> Maybe.withDefault []
-        --             |> List.map Column.name
-        --             |> Expect.equal [ "0", "1", "2", "3", "4" ]
-        -- , test "moves a column to a different position" <|
-        --     \() ->
-        --         exampleSettingsWithBoardWithConsecutiveColumns
-        --             |> Settings.moveColumn "2" (BeaconPosition.Before "1")
-        --             |> Settings.boardConfigs
-        --             |> SafeZipper.current
-        --             |> Maybe.map BoardConfig.columns
-        --             |> Maybe.map Columns.toList
-        --             |> Maybe.withDefault []
-        --             |> List.map Column.name
-        --             |> Expect.equal [ "0", "2", "1", "3", "4" ]
         ]
 
 

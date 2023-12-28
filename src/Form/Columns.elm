@@ -5,7 +5,7 @@ module Form.Columns exposing
     , deleteColumn
     , empty
     , find
-    , fromNewBoardForm
+      -- , fromNewBoardForm
     , init
     , moveColumn
     , optionsForSelect

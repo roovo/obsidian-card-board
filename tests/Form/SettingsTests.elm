@@ -11,6 +11,7 @@ import Expect
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings
@@ -22,10 +23,41 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ deleteColumn
+        [ addBoard
+        , deleteColumn
         , mapCurrentBoard
         , mapCurrentColumnsForm
         , safeDecoder
+        ]
+
+
+addBoard : Test
+addBoard =
+    describe "addBoard"
+        [ test "adds an emptyBoard to a settingsForm with no boards" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.empty }
+                    |> SettingsForm.addBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+                    |> SettingsForm.boardConfigForms
+                    |> SafeZipper.toList
+                    |> List.map .name
+                    |> Expect.equal [ "foo" ]
+        , test "adds new boards to the end of the list" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.fromList [ exampleBoardConfigForm3 ] }
+                    |> SettingsForm.addBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+                    |> SettingsForm.boardConfigForms
+                    |> SafeZipper.toList
+                    |> List.map .name
+                    |> Expect.equal [ "board 3", "foo" ]
+        , test "is focussed on the new board" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.fromList [ exampleBoardConfigForm3 ] }
+                    |> SettingsForm.addBoard DefaultColumnNames.default (NewBoardForm "foo" "emptyBoard")
+                    |> SettingsForm.boardConfigForms
+                    |> SafeZipper.current
+                    |> Maybe.map .name
+                    |> Expect.equal (Just "foo")
         ]
 
 

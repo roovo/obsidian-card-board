@@ -4,11 +4,13 @@ import BoardConfig
 import Column
 import Column.Completed as CompletedColumn
 import Columns
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Filter
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.SafeDecoder as SD
 import Helpers.FilterHelpers as FilterHelpers
 import Test exposing (..)
@@ -17,7 +19,8 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ init
+        [ fromNewBoardForm
+        , init
         , safeDecoder
         , mapColumnsForm
         , toggleShowColumnTags
@@ -25,6 +28,92 @@ suite =
         , updateFilterPolarity
         , updateFilterScope
         , updateName
+        ]
+
+
+fromNewBoardForm : Test
+fromNewBoardForm =
+    describe "fromNewBoardForm"
+        [ describe "emptyBoard"
+            [ test "has no columns" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .columns
+                        |> Expect.equal ColumnsForm.empty
+            , test "has no filters" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .filters
+                        |> Expect.equal []
+            , test "has Allow filterPolarity" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .filterPolarity
+                        |> Expect.equal "Allow"
+            , test "has Both filterScope" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .filterScope
+                        |> Expect.equal "Both"
+            , test "sets the board name" <|
+                \() ->
+                    NewBoardForm "foo" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .name
+                        |> Expect.equal "foo"
+            , test "shows the column tags" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .showColumnTags
+                        |> Expect.equal True
+            , test "shows the filtered tags" <|
+                \() ->
+                    NewBoardForm "" "emptyBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .showFilteredTags
+                        |> Expect.equal True
+            ]
+        , describe "dateBoard"
+            [ test "has the basic date columns" <|
+                \() ->
+                    NewBoardForm "" "dateBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .columns
+                        |> .columnForms
+                        |> List.map ColumnForm.name
+                        |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
+            , test "can override the basic date column names" <|
+                \() ->
+                    NewBoardForm "" "dateBoard"
+                        |> BoardConfigForm.fromNewBoardForm customColumnNames
+                        |> .columns
+                        |> .columnForms
+                        |> List.map ColumnForm.name
+                        |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
+            ]
+        , describe "tagBoard"
+            [ test "has the basic tag board columns" <|
+                \() ->
+                    NewBoardForm "" "tagBoard"
+                        |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                        |> .columns
+                        |> .columnForms
+                        |> List.map ColumnForm.name
+                        |> Expect.equal [ "Untagged", "Other Tags", "Completed" ]
+            , test "can override the basic tag board column names" <|
+                \() ->
+                    NewBoardForm "" "tagBoard"
+                        |> BoardConfigForm.fromNewBoardForm customColumnNames
+                        |> .columns
+                        |> .columnForms
+                        |> List.map ColumnForm.name
+                        |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
+            ]
         ]
 
 
@@ -303,6 +392,18 @@ updateName =
 
 
 -- HELPERS
+
+
+customColumnNames : DefaultColumnNames
+customColumnNames =
+    { today = Just "This Day"
+    , tomorrow = Just "The Morrow"
+    , future = Just "Way Out"
+    , undated = Just "No Date"
+    , otherTags = Just "Other Taggy-Waggys"
+    , untagged = Just "No Tags"
+    , completed = Just "Done"
+    }
 
 
 exampleBoardConfig : BoardConfig.Config

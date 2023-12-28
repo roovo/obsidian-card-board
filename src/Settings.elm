@@ -1,15 +1,11 @@
 module Settings exposing
     ( Settings
-      -- , addBoard
-      -- , addColumn
     , boardConfigs
     , cleanupNames
     , currentVersion
     , decoder
     , default
     , defaultColumnNames
-      -- , deleteColumn
-      -- , deleteCurrentBoard
     , encoder
     , globalSettings
     , hasAnyBordsConfigured
@@ -105,36 +101,8 @@ hasAnyBordsConfigured settings =
 
 
 -- TRANSFORM
--- addBoard : DefaultColumnNames -> NewBoardConfigForm -> Settings -> Settings
--- addBoard defaultColumnNames_ configToAdd settings =
---     { settings
---         | boardConfigs =
---             SafeZipper.last <|
---                 SafeZipper.add
---                     (BoardConfig.fromNewBoardConfig defaultColumnNames_ configToAdd)
---                     settings.boardConfigs
---     }
--- addColumn : DefaultColumnNames -> NewColumnConfigForm -> Settings -> Settings
--- addColumn defaultColumnNames_ configToAdd settings =
---     { settings
---         | boardConfigs =
---             SafeZipper.mapSelectedAndRest
---                 (BoardConfig.addColumn defaultColumnNames_ configToAdd)
---                 identity
---                 settings.boardConfigs
---     }
--- deleteColumn : Int -> Settings -> Settings
--- deleteColumn index settings =
---     { settings
---         | boardConfigs =
---             SafeZipper.mapSelectedAndRest
---                 (BoardConfig.deleteColumn index)
---                 identity
---                 settings.boardConfigs
---     }
--- deleteCurrentBoard : Settings -> Settings
--- deleteCurrentBoard settings =
---     { settings | boardConfigs = SafeZipper.deleteCurrent settings.boardConfigs }
+--
+--
 -- mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
 -- mapGlobalSettings fn settings =
 --     { settings | globalSettings = fn settings.globalSettings }

@@ -137,14 +137,13 @@ hasAnyBordsConfigured form =
 
 addBoard : DefaultColumnNames -> NewBoardForm -> SettingsForm -> SettingsForm
 addBoard defaultColumnNames_ configToAdd form =
-    -- { form
-    --     | boardConfigForms =
-    --         SafeZipper.last <|
-    --             SafeZipper.add
-    --                 (ColumnsForm.fromNewBoardForm defaultColumnNames_ configToAdd)
-    --                 form.boardConfigForms
-    -- }
-    form
+    { form
+        | boardConfigForms =
+            SafeZipper.last <|
+                SafeZipper.add
+                    (BoardConfigForm.fromNewBoardForm defaultColumnNames_ configToAdd)
+                    form.boardConfigForms
+    }
 
 
 addColumn : NewColumnForm -> SettingsForm -> SettingsForm

@@ -1,8 +1,12 @@
+- always add a new column to the end of the board ...less confusing
 - Form.BoardConfig.columns -> columnsForm
 - bug => collapse some columns then click on the settings icon, close settings and nothing is collapsed
   anymore
 - move multiselect into the form?
+- move SettingsState into the Form folder?
 - Form.NewBoardForm.safeDecoder
+- add new board - should I default the name when adding or should I make the highlighted name in the list
+  so it isn't narrower than the others?
 - can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
 - improve input boxes for numbers as they are a bit odd due to the fact that
   they cannot be empty..
