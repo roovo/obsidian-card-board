@@ -37,11 +37,9 @@ suite =
 
         -- , editGlobalSettings
         , init
-
-        -- , mapBoardBeingAdded
+        , mapBoardBeingAdded
         , mapBoardBeingEdited
-
-        -- , mapColumnBeingAdded
+        , mapColumnBeingAdded
         , mapCurrentColumnsForm
 
         -- , mapGlobalSettings
@@ -667,53 +665,50 @@ init =
         ]
 
 
-
--- mapBoardBeingAdded : Test
--- mapBoardBeingAdded =
---     describe "mapBoardBeingAdded"
---         [ test "maps the board being added if it is in the AddingBoard state" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.AddingBoard exampleNewBoard Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the AddingColumn state" <|
---             \() ->
---                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the ClosingPlugin state" <|
---             \() ->
---                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the ClosingSettings state" <|
---             \() ->
---                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the DeletingBoard state" <|
---             \() ->
---                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the DeletingColumn state" <|
---             \() ->
---                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the EditingBoard state" <|
---             \() ->
---                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the EditingGlobalSettings state" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapBoardBeingAdded (always exampleNewBoard)
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         ]
---
---
+mapBoardBeingAdded : Test
+mapBoardBeingAdded =
+    describe "mapBoardBeingAdded"
+        [ test "maps the board being added if it is in the AddingBoard state" <|
+            \() ->
+                SettingsState.AddingBoard (NewBoardForm "foo" "emptyBoard") exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always <| NewBoardForm "bar" "dateBoard")
+                    |> Expect.equal (SettingsState.AddingBoard (NewBoardForm "bar" "dateBoard") exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the AddingColumn state" <|
+            \() ->
+                SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the ClosingPlugin state" <|
+            \() ->
+                SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the ClosingSettings state" <|
+            \() ->
+                SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the DeletingBoard state" <|
+            \() ->
+                SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the EditingBoard state" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapBoardBeingAdded (always NewBoardForm.default)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards)
+        ]
 
 
 mapBoardBeingEdited : Test
@@ -901,53 +896,53 @@ mapCurrentColumnsForm =
         ]
 
 
+mapColumnBeingAdded : Test
+mapColumnBeingAdded =
+    describe "mapColumnBeingAdded"
+        [ test "does nothing if it is in the AddingBoard state" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards)
+        , test "maps the board being added if it is in the AddingColumn state" <|
+            \() ->
+                SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always <| NewColumnForm "bar" "Completed")
+                    |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "bar" "Completed") exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the ClosingPlugin state" <|
+            \() ->
+                SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the ClosingSettings state" <|
+            \() ->
+                SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the DeletingBoard state" <|
+            \() ->
+                SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the DeletingColumn state" <|
+            \() ->
+                SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the EditingBoard state" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "does nothing if it is in the EditingGlobalSettings state" <|
+            \() ->
+                SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.mapColumnBeingAdded (always NewColumnForm.default)
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards)
+        ]
 
--- mapColumnBeingAdded : Test
--- mapColumnBeingAdded =
---     describe "mapColumnBeingAdded"
---         [ test "does nothing if it is in the AddingBoard state" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty)
---         , test "maps the board being added if it is in the AddingColumn state" <|
---             \() ->
---                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always <| NewColumnForm "a" "b")
---                     |> Expect.equal (SettingsState.AddingColumn (NewColumnForm "a" "b") Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the ClosingPlugin state" <|
---             \() ->
---                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the ClosingSettings state" <|
---             \() ->
---                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the DeletingBoard state" <|
---             \() ->
---                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.DeletingBoard Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the DeletingColumn state" <|
---             \() ->
---                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the EditingBoard state" <|
---             \() ->
---                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
---         , test "does nothing if it is in the EditingGlobalSettings state" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.mapColumnBeingAdded (always exampleNewColumn)
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         ]
---
---
+
+
 -- mapGlobalSettings : Test
 -- mapGlobalSettings =
 --     describe "mapGlobalSettings"
