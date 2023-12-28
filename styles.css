@@ -427,6 +427,7 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .card-board-view .vertical-tab-nav-item {
   padding-right: 1.5em;
+  min-height: 1.9em;
 }
 
 .modal-form {

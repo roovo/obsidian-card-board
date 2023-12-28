@@ -1,7 +1,3 @@
-- add new board - should I default the name when adding or should I make the highlighted name in the list
-  so it isn't narrower than the others?
-- show errors on settings pane ??
-
 - tests for loading settings: handle blank column names and restrict to one of each special column type
 
 - allow tags in column definitions to optionaly start with the # character
@@ -17,6 +13,7 @@
 - can I animate tab moving so it isn't instantaneous? (look at settings page checkboxes)
 
 - touch events - iPad ??
+- show errors on settings pane ??
 
 # Cleanups
 - simplify parsing as per typing tutor
