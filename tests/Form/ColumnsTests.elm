@@ -58,7 +58,7 @@ addColumn =
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo", "bar" ]
-        , test "adds a non-Completed columnn before the completed column" <|
+        , test "adds a non-Completed columnn after the completed column" <|
             \() ->
                 { columnForms =
                     [ ColumnForm.UntaggedColumnForm { name = "foo" }
@@ -68,7 +68,7 @@ addColumn =
                     |> ColumnsForm.addColumn (NewColumnForm "baz" "Undated")
                     |> .columnForms
                     |> List.map ColumnForm.name
-                    |> Expect.equal [ "foo", "baz", "bar" ]
+                    |> Expect.equal [ "foo", "bar", "baz" ]
         ]
 
 

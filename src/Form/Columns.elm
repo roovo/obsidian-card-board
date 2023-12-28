@@ -5,7 +5,6 @@ module Form.Columns exposing
     , deleteColumn
     , empty
     , find
-      -- , fromNewBoardForm
     , init
     , moveColumn
     , optionsForSelect
@@ -54,29 +53,6 @@ init columns =
 empty : ColumnsForm
 empty =
     { columnForms = [] }
-
-
-fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> ColumnsForm
-fromNewBoardForm defaultColumnNames newBoardConfigForm =
-    case newBoardConfigForm.boardType of
-        "dateBoard" ->
-            ColumnsForm
-                [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
-                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
-                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
-                , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "future" defaultColumnNames, rangeType = "After", from = "1", to = "" }
-                , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
-                ]
-
-        "tagBoard" ->
-            ColumnsForm
-                [ ColumnForm.UntaggedColumnForm { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
-                , ColumnForm.OtherTagsColumnForm { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
-                , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
-                ]
-
-        _ ->
-            ColumnsForm []
 
 
 
@@ -213,14 +189,6 @@ optionsForSelect form newColumnConfigForm =
 addColumn : NewColumnForm -> ColumnsForm -> ColumnsForm
 addColumn newColumnForm columnsForm =
     let
-        allColumns : List ColumnForm
-        allColumns =
-            columnsForm.columnForms
-
-        completedPosition : Maybe Int
-        completedPosition =
-            LE.findIndex ColumnForm.isCompleted allColumns
-
         newColumn : List ColumnForm
         newColumn =
             SD.run NewColumnForm.safeDecoder newColumnForm
@@ -229,22 +197,7 @@ addColumn newColumnForm columnsForm =
                 |> Maybe.map List.singleton
                 |> Maybe.withDefault []
     in
-    (case completedPosition of
-        Just position ->
-            let
-                ( preCompleted, completedPlus ) =
-                    LE.splitAt position allColumns
-            in
-            if List.length completedPlus == 1 then
-                preCompleted ++ newColumn ++ completedPlus
-
-            else
-                allColumns ++ newColumn
-
-        Nothing ->
-            allColumns ++ newColumn
-    )
-        |> ColumnsForm
+    ColumnsForm <| columnsForm.columnForms ++ newColumn
 
 
 deleteColumn : Int -> ColumnsForm -> ColumnsForm
