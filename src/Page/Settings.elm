@@ -690,7 +690,7 @@ modalAddColumn newColumnConfigForm settingsForm =
                                 (settingsForm
                                     |> SettingsForm.boardConfigForms
                                     |> SafeZipper.current
-                                    |> Maybe.map .columns
+                                    |> Maybe.map .columnsForm
                                     |> Maybe.withDefault ColumnsForm.empty
                                 )
                                 newColumnConfigForm
@@ -1100,7 +1100,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
             let
                 draggedColumn : Maybe ColumnForm
                 draggedColumn =
-                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) configForm.columns
+                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) configForm.columnsForm
 
                 draggedType : Maybe String
                 draggedType =
@@ -1217,7 +1217,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
-                    ((configForm.columns
+                    ((configForm.columnsForm
                         |> .columnForms
                         |> List.indexedMap (settingsColumnView draggedUniqueId defaultColumnNames)
                      )

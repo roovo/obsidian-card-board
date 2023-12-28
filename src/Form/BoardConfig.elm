@@ -29,7 +29,7 @@ import Form.Select exposing (Option)
 
 
 type alias BoardConfigForm =
-    { columns : ColumnsForm
+    { columnsForm : ColumnsForm
     , filters : List Filter
     , filterPolarity : String
     , filterScope : String
@@ -67,7 +67,7 @@ fromNewBoardForm defaultColumnNames newBoardConfigForm =
                 _ ->
                     ColumnsForm []
     in
-    { columns = columnsForm
+    { columnsForm = columnsForm
     , filters = []
     , filterPolarity = "Allow"
     , filterScope = "Both"
@@ -99,7 +99,7 @@ init boardConfig =
                 Filter.Both ->
                     "Both"
     in
-    { columns = ColumnsForm.init <| BoardConfig.columns boardConfig
+    { columnsForm = ColumnsForm.init <| BoardConfig.columns boardConfig
     , filters = BoardConfig.filters boardConfig
     , filterPolarity = filterPolarity
     , filterScope = filterScope
@@ -130,7 +130,7 @@ optionsForSelect : NewColumnForm -> Maybe BoardConfigForm -> List Option
 optionsForSelect newColumnForm boardConfigForm =
     case boardConfigForm of
         Just configForm ->
-            ColumnsForm.optionsForSelect configForm.columns newColumnForm
+            ColumnsForm.optionsForSelect configForm.columnsForm newColumnForm
 
         Nothing ->
             []
@@ -142,7 +142,7 @@ optionsForSelect newColumnForm boardConfigForm =
 
 mapColumnsForm : (ColumnsForm -> ColumnsForm) -> BoardConfigForm -> BoardConfigForm
 mapColumnsForm fn boardConfigForm =
-    { boardConfigForm | columns = fn boardConfigForm.columns }
+    { boardConfigForm | columnsForm = fn boardConfigForm.columnsForm }
 
 
 toggleShowColumnTags : BoardConfigForm -> BoardConfigForm
@@ -177,7 +177,7 @@ updateName newName boardConfigForm =
 columnsDecoder : SD.Decoder BoardConfigForm Columns
 columnsDecoder =
     ColumnsForm.safeDecoder
-        |> SD.lift .columns
+        |> SD.lift .columnsForm
 
 
 filtersDecoder : SD.Decoder BoardConfigForm (List Filter)

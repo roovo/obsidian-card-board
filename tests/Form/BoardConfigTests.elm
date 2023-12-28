@@ -39,7 +39,7 @@ fromNewBoardForm =
                 \() ->
                     NewBoardForm "" "emptyBoard"
                         |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
-                        |> .columns
+                        |> .columnsForm
                         |> Expect.equal ColumnsForm.empty
             , test "has no filters" <|
                 \() ->
@@ -83,7 +83,7 @@ fromNewBoardForm =
                 \() ->
                     NewBoardForm "" "dateBoard"
                         |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
-                        |> .columns
+                        |> .columnsForm
                         |> .columnForms
                         |> List.map ColumnForm.name
                         |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
@@ -91,7 +91,7 @@ fromNewBoardForm =
                 \() ->
                     NewBoardForm "" "dateBoard"
                         |> BoardConfigForm.fromNewBoardForm customColumnNames
-                        |> .columns
+                        |> .columnsForm
                         |> .columnForms
                         |> List.map ColumnForm.name
                         |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
@@ -101,7 +101,7 @@ fromNewBoardForm =
                 \() ->
                     NewBoardForm "" "tagBoard"
                         |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
-                        |> .columns
+                        |> .columnsForm
                         |> .columnForms
                         |> List.map ColumnForm.name
                         |> Expect.equal [ "Untagged", "Other Tags", "Completed" ]
@@ -109,7 +109,7 @@ fromNewBoardForm =
                 \() ->
                     NewBoardForm "" "tagBoard"
                         |> BoardConfigForm.fromNewBoardForm customColumnNames
-                        |> .columns
+                        |> .columnsForm
                         |> .columnForms
                         |> List.map ColumnForm.name
                         |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
@@ -124,7 +124,7 @@ init =
             \() ->
                 BoardConfig.fromConfig { exampleBoardConfig | columns = Columns.fromList [ Column.undated "foo", Column.untagged "bar" ] }
                     |> BoardConfigForm.init
-                    |> .columns
+                    |> .columnsForm
                     |> Expect.equal
                         { columnForms =
                             [ ColumnForm.UndatedColumnForm { name = "foo" }
@@ -206,7 +206,7 @@ safeDecoder =
         [ test "decodes the columns" <|
             \() ->
                 { exampleBoardConfigForm
-                    | columns =
+                    | columnsForm =
                         ColumnsForm.init <|
                             Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
                 }
@@ -311,9 +311,9 @@ mapColumnsForm =
     describe "mapColumnsForm"
         [ test "applies the map function to the ColumnsForm" <|
             \() ->
-                { exampleBoardConfigForm | columns = ColumnsForm.init <| Columns.fromList [ Column.untagged "foo" ] }
+                { exampleBoardConfigForm | columnsForm = ColumnsForm.init <| Columns.fromList [ Column.untagged "foo" ] }
                     |> BoardConfigForm.mapColumnsForm (always ColumnsForm.empty)
-                    |> .columns
+                    |> .columnsForm
                     |> Expect.equal ColumnsForm.empty
         ]
 
@@ -420,7 +420,7 @@ exampleBoardConfig =
 
 exampleBoardConfigForm : BoardConfigForm
 exampleBoardConfigForm =
-    { columns = ColumnsForm.init <| Columns.fromList []
+    { columnsForm = ColumnsForm.init <| Columns.fromList []
     , filters = []
     , filterPolarity = ""
     , filterScope = ""

@@ -1,4 +1,3 @@
-- Form.BoardConfig.columns -> columnsForm
 - bug => collapse some columns then click on the settings icon, close settings and nothing is collapsed
   anymore
 - move multiselect into the form?

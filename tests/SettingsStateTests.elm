@@ -985,7 +985,7 @@ exampleBoardConfig3 =
 
 exampleBoardConfigForm1 : BoardConfigForm
 exampleBoardConfigForm1 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""
@@ -997,7 +997,7 @@ exampleBoardConfigForm1 =
 
 exampleBoardConfigForm2 : BoardConfigForm
 exampleBoardConfigForm2 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.otherTags "foo" [] ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.otherTags "foo" [] ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""
@@ -1009,7 +1009,7 @@ exampleBoardConfigForm2 =
 
 exampleBoardConfigForm3 : BoardConfigForm
 exampleBoardConfigForm3 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.undated "bar", Column.untagged "baz" ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.undated "bar", Column.untagged "baz" ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""

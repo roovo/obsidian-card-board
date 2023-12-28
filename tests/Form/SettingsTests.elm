@@ -131,7 +131,7 @@ deleteColumn =
                     |> SettingsForm.deleteColumn 10
                     |> .boardConfigForms
                     |> SafeZipper.current
-                    |> Maybe.map .columns
+                    |> Maybe.map .columnsForm
                     |> Maybe.map .columnForms
                     |> Maybe.withDefault []
                     |> List.map ColumnForm.name
@@ -142,7 +142,7 @@ deleteColumn =
                     |> SettingsForm.deleteColumn 1
                     |> .boardConfigForms
                     |> SafeZipper.current
-                    |> Maybe.map .columns
+                    |> Maybe.map .columnsForm
                     |> Maybe.map .columnForms
                     |> Maybe.withDefault []
                     |> List.map ColumnForm.name
@@ -608,7 +608,7 @@ exampleSettingsForm =
 
 exampleBoardConfigForm1 : BoardConfigForm
 exampleBoardConfigForm1 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.completed <| CompletedColumn.init "" 0 10 ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""
@@ -620,7 +620,7 @@ exampleBoardConfigForm1 =
 
 exampleBoardConfigForm2 : BoardConfigForm
 exampleBoardConfigForm2 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.otherTags "" [] ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.otherTags "" [] ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""
@@ -632,7 +632,7 @@ exampleBoardConfigForm2 =
 
 exampleBoardConfigForm3 : BoardConfigForm
 exampleBoardConfigForm3 =
-    { columns = ColumnsForm.init <| Columns.fromList [ Column.undated "foo", Column.untagged "bar" ]
+    { columnsForm = ColumnsForm.init <| Columns.fromList [ Column.undated "foo", Column.untagged "bar" ]
     , filters = []
     , filterPolarity = ""
     , filterScope = ""
