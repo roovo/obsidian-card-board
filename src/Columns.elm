@@ -1,12 +1,10 @@
 module Columns exposing
     ( Columns
-      -- , addColumn
     , addTaskList
     , cleanupNames
     , collapseColumn
     , completedLimit
     , decoder
-      -- , deleteColumn
     , empty
     , encoder
     , fromList
@@ -14,16 +12,8 @@ module Columns exposing
     , restrictSpecialColumns
     , setNamesToDefault
     , toList
-      -- , updateColumnName
-      -- , updateCompletedColumnLimit
-      --   , updateDatedColumnRangeType
-      -- , updateDatedColumnRangeValueFrom
-      -- , updateDatedColumnRangeValueTo
-      -- , updateNamedTagTag
     , updateOtherTags
     )
-
--- import Form.NewColumn exposing (NewColumnForm)
 
 import Column exposing (Column)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
@@ -122,39 +112,6 @@ namedTagColumnTags columns =
 
 
 -- MODIFICATION
--- addColumn : DefaultColumnNames -> NewColumnConfigForm -> Columns -> Columns
--- addColumn defaultColumnNames newColumnConfigForm columns =
---     let
---         allColumns : List Column
---         allColumns =
---             toList columns
---
---         completedPosition : Maybe Int
---         completedPosition =
---             LE.findIndex Column.isCompleted allColumns
---
---         newColumn : List Column
---         newColumn =
---             Column.fromColumnConfig defaultColumnNames newColumnConfigForm
---                 |> Maybe.map List.singleton
---                 |> Maybe.withDefault []
---     in
---     (case completedPosition of
---         Just position ->
---             let
---                 ( preCompleted, completedPlus ) =
---                     LE.splitAt position allColumns
---             in
---             if List.length completedPlus == 1 then
---                 preCompleted ++ newColumn ++ completedPlus
---
---             else
---                 allColumns ++ newColumn
---
---         Nothing ->
---             allColumns ++ newColumn
---     )
---         |> fromList
 
 
 addTaskList : Date -> List String -> Columns -> TaskList -> Columns
@@ -221,17 +178,6 @@ collapseColumn columnIndex isCollapsed columns =
         |> fromList
 
 
-
--- deleteColumn : Int -> Columns -> Columns
--- deleteColumn index columns =
---     columns
---         |> toList
---         |> LE.removeAt index
---         |> fromList
---
---
-
-
 restrictSpecialColumns : Columns -> Columns
 restrictSpecialColumns columns =
     let
@@ -277,57 +223,6 @@ setNamesToDefault defaultColumnNames columns =
         |> toList
         |> List.map (Column.setNameToDefault defaultColumnNames)
         |> fromList
-
-
-
--- updateColumnName : Int -> String -> Columns -> Columns
--- updateColumnName index newName columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateName newName)
---         |> fromList
---
---
--- updateCompletedColumnLimit : Int -> Int -> Columns -> Columns
--- updateCompletedColumnLimit index newLimit columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateCompletedColumnLimit newLimit)
---         |> fromList
---
---
--- updateDatedColumnRangeType : Int -> String -> Columns -> Columns
--- updateDatedColumnRangeType index rangeType columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateDatedColumnRangeType rangeType)
---         |> fromList
---
---
--- updateDatedColumnRangeValueFrom : Int -> Int -> Columns -> Columns
--- updateDatedColumnRangeValueFrom index newValue columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateDatedColumnRangeValueFrom newValue)
---         |> fromList
---
---
--- updateDatedColumnRangeValueTo : Int -> Int -> Columns -> Columns
--- updateDatedColumnRangeValueTo index newValue columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateDatedColumnRangeValueTo newValue)
---         |> fromList
---
---
--- updateNamedTagTag : Int -> String -> Columns -> Columns
--- updateNamedTagTag index newTag columns =
---     columns
---         |> toList
---         |> LE.updateAt index (Column.updateNamedTagTag newTag)
---         |> fromList
---
---
 
 
 updateOtherTags : (OtherTagsColumn -> OtherTagsColumn) -> Columns -> Columns

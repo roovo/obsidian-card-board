@@ -3,6 +3,9 @@ module BoardTests exposing (suite)
 import Board
 import BoardConfig exposing (BoardConfig)
 import Card
+import Column
+import Column.Completed as CompletedColumn
+import Columns
 import Expect
 import Filter
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
@@ -32,9 +35,11 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.fileFilter "a" ]
-                                |> BoardConfig.updateFilterPolarity "Allow"
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.fileFilter "a" ]
+                                    , filterPolarity = Filter.Allow
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -50,9 +55,11 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.fileFilter "a" ]
-                                |> BoardConfig.updateFilterPolarity "Deny"
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.fileFilter "a" ]
+                                    , filterPolarity = Filter.Deny
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -71,9 +78,11 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.pathFilter "aa" ]
-                                |> BoardConfig.updateFilterPolarity "Allow"
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa" ]
+                                    , filterPolarity = Filter.Allow
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -89,9 +98,11 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.pathFilter "aa" ]
-                                |> BoardConfig.updateFilterPolarity "Deny"
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.pathFilter "aa" ]
+                                    , filterPolarity = Filter.Deny
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -110,10 +121,12 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.tagFilter "tag1" ]
-                                |> BoardConfig.updateFilterPolarity "Allow"
-                                |> BoardConfig.updateFilterScope Filter.Both
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
+                                    , filterPolarity = Filter.Allow
+                                    , filterScope = Filter.Both
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -129,10 +142,12 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters [ FilterHelpers.tagFilter "tag1" ]
-                                |> BoardConfig.updateFilterPolarity "Deny"
-                                |> BoardConfig.updateFilterScope Filter.Both
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters = [ FilterHelpers.tagFilter "tag1" ]
+                                    , filterPolarity = Filter.Deny
+                                    , filterScope = Filter.Both
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -151,15 +166,17 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters
-                                    [ FilterHelpers.fileFilter "a"
-                                    , FilterHelpers.pathFilter "aa"
-                                    , FilterHelpers.tagFilter "tag1"
-                                    , FilterHelpers.tagFilter "tag2"
-                                    ]
-                                |> BoardConfig.updateFilterPolarity "Allow"
-                                |> BoardConfig.updateFilterScope Filter.Both
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters =
+                                        [ FilterHelpers.fileFilter "a"
+                                        , FilterHelpers.pathFilter "aa"
+                                        , FilterHelpers.tagFilter "tag1"
+                                        , FilterHelpers.tagFilter "tag2"
+                                        ]
+                                    , filterPolarity = Filter.Allow
+                                    , filterScope = Filter.Both
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -176,15 +193,17 @@ columns =
                     TaskListHelpers.exampleTagBoardTaskList
                         |> Board.init
                             "d1"
-                            (exampleTagBoardConfig
-                                |> BoardConfig.updateFilters
-                                    [ FilterHelpers.fileFilter "a"
-                                    , FilterHelpers.pathFilter "aa"
-                                    , FilterHelpers.tagFilter "tag1"
-                                    , FilterHelpers.tagFilter "tag2"
-                                    ]
-                                |> BoardConfig.updateFilterPolarity "Deny"
-                                |> BoardConfig.updateFilterScope Filter.Both
+                            (BoardConfig.fromConfig
+                                { exampleTagBoardConfig
+                                    | filters =
+                                        [ FilterHelpers.fileFilter "a"
+                                        , FilterHelpers.pathFilter "aa"
+                                        , FilterHelpers.tagFilter "tag1"
+                                        , FilterHelpers.tagFilter "tag2"
+                                        ]
+                                    , filterPolarity = Filter.Deny
+                                    , filterScope = Filter.Both
+                                }
                             )
                         |> Board.columns False DateTimeHelpers.todayDate
                         |> BoardHelpers.thingsInColumn "Others"
@@ -200,7 +219,7 @@ id =
     describe "id"
         [ test "is made up from the prefix and the board name" <|
             \() ->
-                Board.init "d1" exampleTagBoardConfig TaskList.empty
+                Board.init "d1" (BoardConfig.fromConfig exampleTagBoardConfig) TaskList.empty
                     |> Board.id
                     |> Expect.equal "d1:Tag_Board_Name"
         ]
@@ -210,6 +229,19 @@ id =
 -- HELPERS
 
 
-exampleTagBoardConfig : BoardConfig
+exampleTagBoardConfig : BoardConfig.Config
 exampleTagBoardConfig =
-    BoardConfigHelpers.exampleTagBoardConfig
+    { columns =
+        Columns.fromList
+            [ Column.untagged "Untagged"
+            , Column.otherTags "Others" [ "foo" ]
+            , Column.namedTag "foo" "foo"
+            , Column.completed <| CompletedColumn.init "Completed" 2 6
+            ]
+    , filters = [ FilterHelpers.pathFilter "a", FilterHelpers.pathFilter "b", FilterHelpers.tagFilter "t1", FilterHelpers.tagFilter "t2" ]
+    , filterPolarity = Filter.Deny
+    , filterScope = Filter.SubTasksOnly
+    , showColumnTags = True
+    , showFilteredTags = False
+    , name = "Tag Board Name"
+    }

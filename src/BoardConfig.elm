@@ -20,19 +20,12 @@ module BoardConfig exposing
     , filterScope
     , filters
     , fromConfig
-    , mapColumns
     , mapFilters
     , name
     , restrictSpecialColumns
     , setNamesToDefault
     , showColumnTags
     , showFilteredTags
-    , toggleShowColumnTags
-    , toggleShowFilteredTags
-    , toggleTagFilterScope
-    , updateFilterPolarity
-    , updateFilterScope
-    , updateFilters
     , updateName
     )
 
@@ -158,11 +151,6 @@ cleanupColumnNames defaultColumnNames (BoardConfig c) =
     BoardConfig { c | columns = Columns.cleanupNames defaultColumnNames c.columns }
 
 
-mapColumns : (Columns -> Columns) -> BoardConfig -> BoardConfig
-mapColumns fn (BoardConfig c) =
-    BoardConfig { c | columns = fn c.columns }
-
-
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig
 mapFilters fn (BoardConfig c) =
     BoardConfig { c | filters = List.map fn c.filters }
@@ -181,49 +169,6 @@ restrictSpecialColumns (BoardConfig c) =
 setNamesToDefault : DefaultColumnNames -> BoardConfig -> BoardConfig
 setNamesToDefault defaultColumnNames (BoardConfig c) =
     BoardConfig { c | columns = Columns.setNamesToDefault defaultColumnNames c.columns }
-
-
-toggleShowColumnTags : BoardConfig -> BoardConfig
-toggleShowColumnTags (BoardConfig c) =
-    BoardConfig { c | showColumnTags = not c.showColumnTags }
-
-
-toggleShowFilteredTags : BoardConfig -> BoardConfig
-toggleShowFilteredTags (BoardConfig c) =
-    BoardConfig { c | showFilteredTags = not c.showFilteredTags }
-
-
-toggleTagFilterScope : BoardConfig -> BoardConfig
-toggleTagFilterScope (BoardConfig c) =
-    let
-        cycleScope : Scope -> Scope
-        cycleScope scope =
-            case scope of
-                Filter.TopLevelOnly ->
-                    Filter.SubTasksOnly
-
-                Filter.SubTasksOnly ->
-                    Filter.Both
-
-                Filter.Both ->
-                    Filter.TopLevelOnly
-    in
-    BoardConfig { c | filterScope = cycleScope c.filterScope }
-
-
-updateFilterPolarity : String -> BoardConfig -> BoardConfig
-updateFilterPolarity polarity (BoardConfig c) =
-    BoardConfig { c | filterPolarity = Filter.polarityFromString polarity }
-
-
-updateFilterScope : Scope -> BoardConfig -> BoardConfig
-updateFilterScope scope (BoardConfig c) =
-    BoardConfig { c | filterScope = scope }
-
-
-updateFilters : List Filter -> BoardConfig -> BoardConfig
-updateFilters filters_ (BoardConfig c) =
-    BoardConfig { c | filters = filters_ }
 
 
 updateName : String -> BoardConfig -> BoardConfig

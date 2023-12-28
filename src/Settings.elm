@@ -8,19 +8,12 @@ module Settings exposing
     , defaultColumnNames
     , encoder
     , globalSettings
-    , hasAnyBordsConfigured
-      -- , mapGlobalSettings
     , moveBoard
-    , moveColumn
     , restrictSpecialColumns
     , switchToBoard
-      -- , updateBoardConfigs
     , updateCurrentBoard
     , updatePath
     )
-
--- import Form.NewBoardConfig exposing (NewBoardConfigForm)
--- import Form.NewColumnConfig exposing (NewColumnConfigForm)
 
 import BoardConfig exposing (BoardConfig)
 import Column
@@ -94,18 +87,8 @@ globalSettings =
     .globalSettings
 
 
-hasAnyBordsConfigured : Settings -> Bool
-hasAnyBordsConfigured settings =
-    SafeZipper.length settings.boardConfigs /= 0
-
-
 
 -- TRANSFORM
---
---
--- mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
--- mapGlobalSettings fn settings =
---     { settings | globalSettings = fn settings.globalSettings }
 
 
 moveBoard : String -> BeaconPosition -> Settings -> Settings
@@ -128,36 +111,9 @@ moveBoard draggedId beaconPosition settings =
     { settings | boardConfigs = SafeZipper.atIndex movedBoardIndex movedBoardConfigs }
 
 
-moveColumn : String -> BeaconPosition -> Settings -> Settings
-moveColumn draggedId beaconPosition settings =
-    let
-        doMove : Columns -> Columns
-        doMove columns =
-            columns
-                |> Columns.toList
-                |> BeaconPosition.performMove draggedId beaconPosition Column.name
-                |> Columns.fromList
-    in
-    { settings
-        | boardConfigs =
-            SafeZipper.mapSelectedAndRest
-                (BoardConfig.mapColumns doMove)
-                identity
-                settings.boardConfigs
-    }
-
-
 switchToBoard : Int -> Settings -> Settings
 switchToBoard index settings =
     { settings | boardConfigs = SafeZipper.atIndex index settings.boardConfigs }
-
-
-
--- updateBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
--- updateBoardConfigs newConfigs settings =
---     { settings | boardConfigs = newConfigs }
---
---
 
 
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings

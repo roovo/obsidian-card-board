@@ -12,7 +12,6 @@ suite =
     concat
         [ encodeDecode
         , nameFor
-        , updateColumnName
         ]
 
 
@@ -112,51 +111,6 @@ nameFor =
                 { defaultNames | completed = Just "Foo" }
                     |> DefaultColumnNames.nameFor "completed"
                     |> Expect.equal "Foo"
-        ]
-
-
-updateColumnName : Test
-updateColumnName =
-    describe "updateColumnName"
-        [ test "updates a valid column name" <|
-            \() ->
-                DefaultColumnNames.default
-                    |> DefaultColumnNames.updateColumnName "future" "Back to the"
-                    |> Expect.equal
-                        { today = Nothing
-                        , tomorrow = Nothing
-                        , future = Just "Back to the"
-                        , undated = Nothing
-                        , otherTags = Nothing
-                        , untagged = Nothing
-                        , completed = Nothing
-                        }
-        , test "sets a column name to Nothing if it is an empty string" <|
-            \() ->
-                { today = Nothing
-                , tomorrow = Nothing
-                , future = Just "Back to the"
-                , undated = Nothing
-                , otherTags = Nothing
-                , untagged = Nothing
-                , completed = Nothing
-                }
-                    |> DefaultColumnNames.updateColumnName "future" ""
-                    |> Expect.equal
-                        DefaultColumnNames.default
-        , test "does nothing if the column name is not recognised" <|
-            \() ->
-                DefaultColumnNames.default
-                    |> DefaultColumnNames.updateColumnName "xxx" "Back to the"
-                    |> Expect.equal
-                        { today = Nothing
-                        , tomorrow = Nothing
-                        , future = Nothing
-                        , undated = Nothing
-                        , otherTags = Nothing
-                        , untagged = Nothing
-                        , completed = Nothing
-                        }
         ]
 
 

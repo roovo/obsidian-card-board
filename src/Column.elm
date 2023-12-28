@@ -2,23 +2,14 @@ module Column exposing
     ( Column(..)
     , addTaskItem
     , asCompletedColumn
-    , asDatedColumn
-    , asNamedTagColumn
-    , asOtherTagsColumn
     , cardCount
     , cards
     , completed
     , dated
     , decoder
     , encoder
-      -- , fromColumnConfig
     , isCollapsed
     , isCompleted
-    , isDated
-    , isNamedTag
-    , isOtherTags
-    , isUndated
-    , isUntagged
     , name
     , namedTag
     , namedTagTag
@@ -30,16 +21,9 @@ module Column exposing
     , typeString
     , undated
     , untagged
-      -- , updateCompletedColumnLimit
-      -- , updateDatedColumnRangeType
-      -- , updateDatedColumnRangeValueFrom
-      -- , updateDatedColumnRangeValueTo
     , updateName
-      -- , updateNamedTagTag
     , updateOtherTags
     )
-
--- import Form.NewColumnConfig exposing (NewColumnConfigForm)
 
 import Card exposing (Card)
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
@@ -82,50 +66,6 @@ completed =
 dated : DatedColumn -> Column
 dated =
     Dated
-
-
-
--- fromColumnConfig : DefaultColumnNames -> NewColumnConfigForm -> Maybe Column
--- fromColumnConfig defaultColumnNames newColumnConfigForm =
---     let
---         newName : String
---         newName =
---             if String.isEmpty (String.trim newColumnConfigForm.name) then
---                 DefaultColumnNames.nameFor newColumnConfigForm.columnType defaultColumnNames
---
---             else
---                 newColumnConfigForm.name
---     in
---     case newColumnConfigForm.columnType of
---         "completed" ->
---             Just (Completed <| CompletedColumn.init newName 0 10)
---
---         "dated" ->
---             let
---                 todayName : String
---                 todayName =
---                     if String.isEmpty (String.trim newColumnConfigForm.name) then
---                         DefaultColumnNames.nameFor "today" defaultColumnNames
---
---                     else
---                         newColumnConfigForm.name
---             in
---             Just (Dated <| DatedColumn.init todayName (DatedColumn.Before 1))
---
---         "namedTag" ->
---             Just (namedTag newColumnConfigForm.name "")
---
---         "otherTags" ->
---             Just (otherTags newName [])
---
---         "undated" ->
---             Just (undated newName)
---
---         "untagged" ->
---             Just (untagged newName)
---
---         _ ->
---             Nothing
 
 
 namedTag : String -> String -> Column
@@ -210,16 +150,6 @@ asCompletedColumn column =
             Nothing
 
 
-asDatedColumn : Column -> Maybe DatedColumn
-asDatedColumn column =
-    case column of
-        Dated datedColumn ->
-            Just datedColumn
-
-        _ ->
-            Nothing
-
-
 asNamedTagColumn : Column -> Maybe NamedTagColumn
 asNamedTagColumn column =
     case column of
@@ -282,56 +212,6 @@ isCompleted : Column -> Bool
 isCompleted column =
     case column of
         Completed _ ->
-            True
-
-        _ ->
-            False
-
-
-isDated : Column -> Bool
-isDated column =
-    case column of
-        Dated _ ->
-            True
-
-        _ ->
-            False
-
-
-isNamedTag : Column -> Bool
-isNamedTag column =
-    case column of
-        NamedTag _ ->
-            True
-
-        _ ->
-            False
-
-
-isOtherTags : Column -> Bool
-isOtherTags column =
-    case column of
-        OtherTags _ ->
-            True
-
-        _ ->
-            False
-
-
-isUndated : Column -> Bool
-isUndated column =
-    case column of
-        Undated _ ->
-            True
-
-        _ ->
-            False
-
-
-isUntagged : Column -> Bool
-isUntagged column =
-    case column of
-        Untagged _ ->
             True
 
         _ ->
@@ -511,49 +391,6 @@ toggleCollapse column =
             Untagged (UntaggedColumn.toggleCollapse untaggedColumn)
 
 
-
--- updateCompletedColumnLimit : Int -> Column -> Column
--- updateCompletedColumnLimit newLimit column =
---     case column of
---         Completed completedColumn ->
---             Completed (CompletedColumn.updateCompletedCount newLimit completedColumn)
---
---         _ ->
---             column
---
---
--- updateDatedColumnRangeType : String -> Column -> Column
--- updateDatedColumnRangeType rangeType column =
---     case column of
---         Dated datedColumn ->
---             Dated (DatedColumn.updateRangeType rangeType datedColumn)
---
---         _ ->
---             column
---
---
--- updateDatedColumnRangeValueFrom : Int -> Column -> Column
--- updateDatedColumnRangeValueFrom newValue column =
---     case column of
---         Dated datedColumn ->
---             Dated (DatedColumn.updateRangeValueFrom newValue datedColumn)
---
---         _ ->
---             column
---
---
--- updateDatedColumnRangeValueTo : Int -> Column -> Column
--- updateDatedColumnRangeValueTo newValue column =
---     case column of
---         Dated datedColumn ->
---             Dated (DatedColumn.updateRangeValueTo newValue datedColumn)
---
---         _ ->
---             column
---
---
-
-
 updateName : String -> Column -> Column
 updateName newName column =
     case column of
@@ -574,19 +411,6 @@ updateName newName column =
 
         Untagged untaggedColumn ->
             Untagged (UntaggedColumn.updateName newName untaggedColumn)
-
-
-
--- updateNamedTagTag : String -> Column -> Column
--- updateNamedTagTag newTag column =
---     case column of
---         NamedTag namedTagColumn ->
---             NamedTag (NamedTagColumn.updateTag newTag namedTagColumn)
---
---         _ ->
---             column
---
---
 
 
 updateOtherTags : (OtherTagsColumn -> OtherTagsColumn) -> Column -> Column

@@ -3,7 +3,6 @@ module DefaultColumnNames exposing
     , default
     , encoder
     , nameFor
-    , updateColumnName
     , v_0_10_0_decoder
     , v_0_11_0_decoder
     , v_0_7_0_decoder
@@ -128,38 +127,6 @@ encoder =
         , TsEncode.required "untagged" (fromMaybe .untagged) TsEncode.string
         , TsEncode.required "completed" (fromMaybe .completed) TsEncode.string
         ]
-
-
-
--- MODIFICATION
-
-
-updateColumnName : String -> String -> DefaultColumnNames -> DefaultColumnNames
-updateColumnName column newName defaultColumnNames =
-    case column of
-        "today" ->
-            { defaultColumnNames | today = toMaybe newName }
-
-        "tomorrow" ->
-            { defaultColumnNames | tomorrow = toMaybe newName }
-
-        "future" ->
-            { defaultColumnNames | future = toMaybe newName }
-
-        "undated" ->
-            { defaultColumnNames | undated = toMaybe newName }
-
-        "otherTags" ->
-            { defaultColumnNames | otherTags = toMaybe newName }
-
-        "untagged" ->
-            { defaultColumnNames | untagged = toMaybe newName }
-
-        "completed" ->
-            { defaultColumnNames | completed = toMaybe newName }
-
-        _ ->
-            defaultColumnNames
 
 
 

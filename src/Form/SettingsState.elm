@@ -60,11 +60,15 @@ type SettingsState
 
 init : Settings -> SettingsState
 init settings_ =
-    if Settings.hasAnyBordsConfigured settings_ then
-        EditingBoard <| SettingsForm.init settings_
+    let
+        settingsForm =
+            SettingsForm.init settings_
+    in
+    if SettingsForm.hasAnyBordsConfigured settingsForm then
+        EditingBoard settingsForm
 
     else
-        AddingBoard NewBoardForm.default (SettingsForm.init settings_)
+        AddingBoard NewBoardForm.default settingsForm
 
 
 

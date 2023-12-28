@@ -13,9 +13,6 @@ suite =
     concat
         [ default
         , encodeDecode
-        , toggleIgnoreFileNameDate
-        , updateColumnName
-        , updateTaskCompletionFormat
         ]
 
 
@@ -70,87 +67,3 @@ encodeDecode =
                             }
                         )
         ]
-
-
-toggleIgnoreFileNameDate : Test
-toggleIgnoreFileNameDate =
-    describe "toggleIgnoreFileNameDate"
-        [ test "can update a valid column name" <|
-            \() ->
-                GlobalSettings.default
-                    |> GlobalSettings.toggleIgnoreFileNameDate
-                    |> .ignoreFileNameDates
-                    |> Expect.equal True
-        ]
-
-
-updateColumnName : Test
-updateColumnName =
-    describe "updateColumnName"
-        [ test "can update a valid column name" <|
-            \() ->
-                GlobalSettings.default
-                    |> GlobalSettings.updateColumnName "future" "Back to the"
-                    |> .defaultColumnNames
-                    |> Expect.equal
-                        { today = Nothing
-                        , tomorrow = Nothing
-                        , future = Just "Back to the"
-                        , undated = Nothing
-                        , otherTags = Nothing
-                        , untagged = Nothing
-                        , completed = Nothing
-                        }
-        ]
-
-
-updateTaskCompletionFormat : Test
-updateTaskCompletionFormat =
-    describe "updateTaskCompletionFormat"
-        [ test "can update to be NoCompletion format" <|
-            \() ->
-                exampleGlobalSettings
-                    |> GlobalSettings.updateTaskCompletionFormat "NoCompletion"
-                    |> .taskCompletionFormat
-                    |> Expect.equal GlobalSettings.NoCompletion
-        , test "can update to be ObsidianCardBoard format" <|
-            \() ->
-                exampleGlobalSettings
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianCardBoard"
-                    |> .taskCompletionFormat
-                    |> Expect.equal GlobalSettings.ObsidianCardBoard
-        , test "can update to be ObsidianDataview format" <|
-            \() ->
-                exampleGlobalSettings
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianCardBoard"
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianDataview"
-                    |> .taskCompletionFormat
-                    |> Expect.equal GlobalSettings.ObsidianDataview
-        , test "can update to be ObsidianTasks format" <|
-            \() ->
-                exampleGlobalSettings
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianCardBoard"
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianTasks"
-                    |> .taskCompletionFormat
-                    |> Expect.equal GlobalSettings.ObsidianTasks
-        , test "defaults to be ObsidianCardBoard if the string is not recognised" <|
-            \() ->
-                exampleGlobalSettings
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianCardBoard"
-                    |> GlobalSettings.updateTaskCompletionFormat "ObsidianTasks"
-                    |> GlobalSettings.updateTaskCompletionFormat "xxxxxx"
-                    |> .taskCompletionFormat
-                    |> Expect.equal GlobalSettings.ObsidianCardBoard
-        ]
-
-
-
--- HELPERS
-
-
-exampleGlobalSettings : GlobalSettings
-exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , defaultColumnNames = DefaultColumnNames.default
-    , ignoreFileNameDates = False
-    }

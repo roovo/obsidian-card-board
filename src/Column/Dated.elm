@@ -15,9 +15,6 @@ module Column.Dated exposing
     , toList
     , toggleCollapse
     , updateName
-      -- , updateRangeType
-      -- , updateRangeValueFrom
-      -- , updateRangeValueTo
     )
 
 import Date exposing (Date)
@@ -183,58 +180,6 @@ updateName newName (DatedColumn c tth tl) =
 
 
 
--- updateRangeType : String -> DatedColumn -> DatedColumn
--- updateRangeType rangeType ((DatedColumn c tth tl) as datedColumn) =
---     case ( c.range, rangeType ) of
---         ( Before to, "After" ) ->
---             DatedColumn { c | range = After to } tth tl
---
---         ( Before to, "Between" ) ->
---             DatedColumn { c | range = Between { from = to, to = to } } tth tl
---
---         ( After from, "Before" ) ->
---             DatedColumn { c | range = Before from } tth tl
---
---         ( After from, "Between" ) ->
---             DatedColumn { c | range = Between { from = from, to = from } } tth tl
---
---         ( Between fromTo, "Before" ) ->
---             DatedColumn { c | range = Before (min fromTo.from fromTo.to) } tth tl
---
---         ( Between fromTo, "After" ) ->
---             DatedColumn { c | range = After (max fromTo.from fromTo.to) } tth tl
---
---         _ ->
---             datedColumn
---
---
--- updateRangeValueFrom : Int -> DatedColumn -> DatedColumn
--- updateRangeValueFrom newValue (DatedColumn c tth tl) =
---     case c.range of
---         Before value ->
---             DatedColumn { c | range = Before value } tth tl
---
---         After _ ->
---             DatedColumn { c | range = After newValue } tth tl
---
---         Between fromTo ->
---             DatedColumn { c | range = Between { from = newValue, to = fromTo.to } } tth tl
---
---
--- updateRangeValueTo : Int -> DatedColumn -> DatedColumn
--- updateRangeValueTo newValue (DatedColumn c tth tl) =
---     case c.range of
---         Before _ ->
---             DatedColumn { c | range = Before newValue } tth tl
---
---         After value ->
---             DatedColumn { c | range = After value } tth tl
---
---         Between fromTo ->
---             DatedColumn { c | range = Between { from = fromTo.from, to = newValue } } tth tl
---
---
---
 -- PRIVATE
 
 

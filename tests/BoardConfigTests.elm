@@ -7,8 +7,10 @@ import Columns
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Filter
+import Form.BoardConfig as BoardConfigForm
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
+import Form.SafeDecoder as SD
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
@@ -21,78 +23,12 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        -- [ addColumn
         [ collapseColumn
-
-        -- , deleteColumn
-        -- , encodeDecode
-        -- , mapColumns
-        -- , mapFilters
-        -- , setNamesToDefault
-        -- , toggleShowColumnTags
-        -- , toggleShowFilteredTags
-        -- , toggleTagFilterScope
-        -- , updateColumnName
-        -- , updateCompletedColumnLimit
-        -- , updateDatedColumnRangeType
-        -- , updateDatedColumnRangeValueFrom
-        -- , updateDatedColumnRangeValueTo
-        -- , updateFilterPolarity
-        -- , updateFilterScope
-        -- , updateFilters
-        -- , updateName
-        -- , updateNamedTagTag
+        , encodeDecode
+        , mapFilters
+        , setNamesToDefault
+        , updateName
         ]
-
-
-
--- addColumn : Test
--- addColumn =
---     describe "addColumn"
---         [ test "adds an Undated columnn to an empty board" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Undated" "undated")
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "Undated" ]
---         , test "adds an Undated  columnn after an existing Untagged column" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Untagged" "untagged")
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Undated" "undated")
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "Untagged", "Undated" ]
---         , test "adds a non-Completed columnn before the completed column" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Untagged" "untagged")
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Completed" "completed")
---                     |> BoardConfig.addColumn
---                         DefaultColumnNames.default
---                         (NewColumnForm "Undated" "undated")
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "Untagged", "Undated", "Completed" ]
---         ]
---
 
 
 collapseColumn : Test
@@ -100,469 +36,149 @@ collapseColumn =
     describe "collapseColumn"
         [ test "collapses a column" <|
             \() ->
-                -- NewBoardForm "foo" "dateBoard"
-                --     |> BoardConfig.fromNewBoard DefaultColumnNames.default
-                --     |> BoardConfig.collapseColumn 1 True
-                --     |> BoardConfig.columns
-                --     |> Columns.toList
-                --     |> List.map Column.isCollapsed
-                --     |> Expect.equal [ False, True, False, False, False ]
-                True
-                    |> Expect.equal True
+                { columns =
+                    Columns.fromList
+                        [ Column.undated "one"
+                        , Column.untagged "two"
+                        , Column.otherTags "three" []
+                        ]
+                , filters = []
+                , filterPolarity = Filter.Allow
+                , filterScope = Filter.Both
+                , name = ""
+                , showColumnTags = False
+                , showFilteredTags = False
+                }
+                    |> BoardConfig.fromConfig
+                    |> BoardConfig.collapseColumn 1 True
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, True, False ]
+        , test "uncollapses a column" <|
+            \() ->
+                { columns =
+                    Columns.fromList
+                        [ Column.undated "one"
+                        , Column.untagged "two"
+                        , Column.otherTags "three" []
+                        ]
+                , filters = []
+                , filterPolarity = Filter.Allow
+                , filterScope = Filter.Both
+                , name = ""
+                , showColumnTags = False
+                , showFilteredTags = False
+                }
+                    |> BoardConfig.fromConfig
+                    |> BoardConfig.collapseColumn 1 True
+                    |> BoardConfig.collapseColumn 1 False
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> List.map Column.isCollapsed
+                    |> Expect.equal [ False, False, False ]
+        ]
 
-        -- , test "UNcollapses a column" <|
-        --     \() ->
-        --         NewBoardForm "foo" "dateBoard"
-        --             |> BoardConfig.fromNewBoard DefaultColumnNames.default
-        --             |> BoardConfig.collapseColumn 1 True
-        --             |> BoardConfig.collapseColumn 1 False
-        --             |> BoardConfig.columns
-        --             |> Columns.toList
-        --             |> List.map Column.isCollapsed
-        --             |> Expect.equal [ False, False, False, False, False ]
+
+encodeDecode : Test
+encodeDecode =
+    describe "encoding and decoding config"
+        [ test "can decode an encoded string back to the original" <|
+            \() ->
+                BoardConfigHelpers.exampleBoardConfig
+                    |> TsEncode.runExample BoardConfig.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_11_0
+                    |> .decoded
+                    |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
+        ]
+
+
+mapFilters : Test
+mapFilters =
+    describe "mapFilters"
+        [ test "updates the filters" <|
+            \() ->
+                { columns =
+                    Columns.fromList
+                        [ Column.undated "one"
+                        , Column.untagged "two"
+                        , Column.otherTags "three" []
+                        ]
+                , filters = FilterHelpers.exampleFilters
+                , filterPolarity = Filter.Allow
+                , filterScope = Filter.Both
+                , name = ""
+                , showColumnTags = False
+                , showFilteredTags = False
+                }
+                    |> BoardConfig.fromConfig
+                    |> BoardConfig.mapFilters (always Filter.dummy)
+                    |> BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "", "", "" ]
+        ]
+
+
+setNamesToDefault : Test
+setNamesToDefault =
+    describe "setNamesToDefault"
+        [ test "can set standard date board column names to the given defaults" <|
+            \() ->
+                NewBoardForm "foo" "dateBoard"
+                    |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                    |> SD.run BoardConfigForm.safeDecoder
+                    |> Result.map (BoardConfig.setNamesToDefault customColumnNames)
+                    |> Result.map BoardConfig.columns
+                    |> Result.map Columns.toList
+                    |> Result.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
+        , test "can set standard tag board column names to the given defaults" <|
+            \() ->
+                NewBoardForm "foo" "tagBoard"
+                    |> BoardConfigForm.fromNewBoardForm DefaultColumnNames.default
+                    |> SD.run BoardConfigForm.safeDecoder
+                    |> Result.map (BoardConfig.setNamesToDefault customColumnNames)
+                    |> Result.map BoardConfig.columns
+                    |> Result.map Columns.toList
+                    |> Result.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the title for a DateBoard config" <|
+            \() ->
+                { columns = Columns.empty
+                , filters = []
+                , filterPolarity = Filter.Allow
+                , filterScope = Filter.Both
+                , name = ""
+                , showColumnTags = False
+                , showFilteredTags = False
+                }
+                    |> BoardConfig.fromConfig
+                    |> BoardConfig.updateName "new title"
+                    |> BoardConfig.name
+                    |> Expect.equal "new title"
         ]
 
 
 
--- deleteColumn : Test
--- deleteColumn =
---     describe "deleteColumn"
---         [ test "deletes the column at the given index" <|
---             \() ->
---                 NewBoardForm "foo" "dateBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.deleteColumn 1
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "Undated", "Tomorrow", "Future", "Completed" ]
---         , test "does nothing if there is no column at the given index" <|
---             \() ->
---                 NewBoardForm "foo" "dateBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.deleteColumn 10
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "Undated", "Today", "Tomorrow", "Future", "Completed" ]
---         ]
---
--- encodeDecode : Test
--- encodeDecode =
---     describe "encoding and decoding config"
---         [ test "can decode an encoded string back to the original" <|
---             \() ->
---                 BoardConfigHelpers.exampleBoardConfig
---                     |> TsEncode.runExample BoardConfig.encoder
---                     |> .output
---                     |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_11_0
---                     |> .decoded
---                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
---         ]
---
---
---
---
--- mapColumns : Test
--- mapColumns =
---     describe "mapColumns"
---         [ test "updates the columns" <|
---             \() ->
---                 NewBoardForm "foo" "dateBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.mapColumns (always Columns.empty)
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> Expect.equal []
---         ]
---
---
--- mapFilters : Test
--- mapFilters =
---     describe "mapFilters"
---         [ test "updates the filters" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.mapFilters (always Filter.dummy)
---                     |> BoardConfig.filters
---                     |> List.map Filter.value
---                     |> Expect.equal [ "", "", "" ]
---         ]
---
---
--- setNamesToDefault : Test
--- setNamesToDefault =
---     describe "setNamesToDefault"
---         [ test "can set standard date board column names to the given defaults" <|
---             \() ->
---                 NewBoardForm "foo" "dateBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.setNamesToDefault customColumnNames
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "No Date", "This Day", "The Morrow", "Way Out", "Done" ]
---         , test "can set standard tag board column names to the given defaults" <|
---             \() ->
---                 NewBoardForm "foo" "tagBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.setNamesToDefault customColumnNames
---                     |> BoardConfig.columns
---                     |> Columns.toList
---                     |> List.map Column.name
---                     |> Expect.equal [ "No Tags", "Other Taggy-Waggys", "Done" ]
---         ]
---
---
--- toggleShowColumnTags : Test
--- toggleShowColumnTags =
---     describe "toggleShowColumnTags"
---         [ test "toggles showColumnTags" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.toggleShowColumnTags
---                     |> BoardConfig.showColumnTags
---                     |> Expect.equal False
---         ]
---
---
--- toggleShowFilteredTags : Test
--- toggleShowFilteredTags =
---     describe "toggleShowFilteredTags"
---         [ test "toggles showFilteredTags" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.toggleShowFilteredTags
---                     |> BoardConfig.showFilteredTags
---                     |> Expect.equal False
---         ]
---
---
--- toggleTagFilterScope : Test
--- toggleTagFilterScope =
---     describe "toggleTagFilterScope"
---         [ test "toggles Both -> TopLevelOnly" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.filterScope
---                     |> Expect.equal Filter.TopLevelOnly
---         , test "toggles TopLevelOnly -> SubTasksOnly" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.filterScope
---                     |> Expect.equal Filter.SubTasksOnly
---         , test "toggles SubTasksOnly -> Both" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.toggleTagFilterScope
---                     |> BoardConfig.filterScope
---                     |> Expect.equal Filter.Both
---         ]
---
---
---
--- -- updateColumnName : Test
--- -- updateColumnName =
--- --     describe "updateColumnName"
--- --         [ test "updates a column name" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateColumnName 1 "new name"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> List.map Column.name
--- --                     |> Expect.equal [ "Undated", "new name", "Tomorrow", "Future", "Completed" ]
--- --         ]
--- --
--- --
--- --
--- -- updateCompletedColumnLimit : Test
--- -- updateCompletedColumnLimit =
--- --     describe "updateCompletedColumnLimit"
--- --         [ test "updates the limit" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateCompletedColumnLimit 4 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.completedLimit
--- --                     |> Expect.equal 7
--- --         , test "does nothing if given the wrong index" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateCompletedColumnLimit 0 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.completedLimit
--- --                     |> Expect.equal 10
--- --         , test "does nothing if given Nothing" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateCompletedColumnLimit 4 Nothing
--- --                     |> BoardConfig.columns
--- --                     |> Columns.completedLimit
--- --                     |> Expect.equal 10
--- --         ]
--- --
--- --
--- -- updateDatedColumnRangeType : Test
--- -- updateDatedColumnRangeType =
--- --     describe "updateDatedColumnRangeType"
--- --         [ test "updates the limit" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeType 1 "After"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.After 1)
--- --         , test "does nothing if given the wrong index" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeType 0 "After"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Before 1)
--- --         , test "does nothing if given an invalid range type" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeType 1 "Xxxx"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Before 1)
--- --         ]
--- --
--- --
--- -- updateDatedColumnRangeValueFrom : Test
--- -- updateDatedColumnRangeValueFrom =
--- --     describe "updateDatedColumnRangeValueFrom"
--- --         [ test "updates the limit for an After range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueFrom 3 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 3
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.After 7)
--- --         , test "does nothing if given a column with a Before range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueFrom 1 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Before 1)
--- --         , test "updates the from part of a Between range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueFrom 2 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 2
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Between { from = 7, to = 1 })
--- --         , test "does nothing if given Nothing" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueFrom 3 Nothing
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 3
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.After 1)
--- --         ]
--- --
--- --
--- -- updateDatedColumnRangeValueTo : Test
--- -- updateDatedColumnRangeValueTo =
--- --     describe "updateDatedColumnRangeValueTo"
--- --         [ test "updates the limit for a Before range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueTo 1 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Before 7)
--- --         , test "does nothing if given a column with an After range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueTo 3 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 3
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.After 1)
--- --         , test "updates the to part of a Between range" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueTo 2 (Just 7)
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 2
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Between { from = 1, to = 7 })
--- --         , test "does nothing if given Nothing" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "dateBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.updateDatedColumnRangeValueTo 1 Nothing
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> LE.getAt 1
--- --                     |> Maybe.map Column.asDatedColumn
--- --                     |> ME.join
--- --                     |> Maybe.map DatedColumn.range
--- --                     |> Expect.equal (Just <| DatedColumn.Before 1)
--- --         ]
---
---
--- updateFilterPolarity : Test
--- updateFilterPolarity =
---     describe "updateFilterPolarity"
---         [ test "updates the filter polarity" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.updateFilterPolarity "Deny"
---                     |> BoardConfig.filterPolarity
---                     |> Expect.equal Filter.Deny
---         ]
---
---
--- updateFilterScope : Test
--- updateFilterScope =
---     describe "updateFilterScope"
---         [ test "updates the filter scope" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.updateFilterScope Filter.SubTasksOnly
---                     |> BoardConfig.filterScope
---                     |> Expect.equal Filter.SubTasksOnly
---         ]
---
---
--- updateFilters : Test
--- updateFilters =
---     describe "updateFilters"
---         [ test "updates the filters for a DateBoard config" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.updateFilters FilterHelpers.exampleFilters
---                     |> BoardConfig.filters
---                     |> Expect.equal FilterHelpers.exampleFilters
---         ]
---
---
--- updateName : Test
--- updateName =
---     describe "updateName"
---         [ test "updates the title for a DateBoard config" <|
---             \() ->
---                 NewBoardForm "foo" "emptyBoard"
---                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
---                     |> BoardConfig.updateName "new title"
---                     |> BoardConfig.name
---                     |> Expect.equal "new title"
---         ]
---
---
---
--- -- updateNamedTagTag : Test
--- -- updateNamedTagTag =
--- --     describe "updateNamedTagTag"
--- --         [ test "updates the limit" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "tagBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.addColumn
--- --                         DefaultColumnNames.default
--- --                         (NewColumnForm "Tagged" "namedTag")
--- --                     |> BoardConfig.updateNamedTagTag 2 "newTag"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> List.map Column.namedTagTag
--- --                     |> Expect.equal [ Nothing, Nothing, Just "newTag", Nothing ]
--- --         , test "does nothing if given the wrong index" <|
--- --             \() ->
--- --                 NewBoardForm "foo" "tagBoard"
--- --                     |> BoardConfig.fromNewBoard DefaultColumnNames.default
--- --                     |> BoardConfig.addColumn
--- --                         DefaultColumnNames.default
--- --                         (NewColumnForm "Tagged" "namedTag")
--- --                     |> BoardConfig.updateNamedTagTag 3 "newTag"
--- --                     |> BoardConfig.columns
--- --                     |> Columns.toList
--- --                     |> List.map Column.namedTagTag
--- --                     |> Expect.equal [ Nothing, Nothing, Just "", Nothing ]
--- --         ]
--- --
--- --
--- --
--- -- HELPERS
---
---
--- customColumnNames : DefaultColumnNames
--- customColumnNames =
---     { today = Just "This Day"
---     , tomorrow = Just "The Morrow"
---     , future = Just "Way Out"
---     , undated = Just "No Date"
---     , otherTags = Just "Other Taggy-Waggys"
---     , untagged = Just "No Tags"
---     , completed = Just "Done"
---     }
+-- HELPERS
+
+
+customColumnNames : DefaultColumnNames
+customColumnNames =
+    { today = Just "This Day"
+    , tomorrow = Just "The Morrow"
+    , future = Just "Way Out"
+    , undated = Just "No Date"
+    , otherTags = Just "Other Taggy-Waggys"
+    , untagged = Just "No Tags"
+    , completed = Just "Done"
+    }

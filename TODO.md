@@ -1,19 +1,8 @@
-- Form.NewBoardForm.safeDecoder
 - add new board - should I default the name when adding or should I make the highlighted name in the list
   so it isn't narrower than the others?
-- can/should I simplify the beast! - go the whole hog and have a SettingsForm for editing settings
-- improve input boxes for numbers as they are a bit odd due to the fact that
-  they cannot be empty..
-  - dated -> must be integers
-  - completed -> must be +ve integer
-  - tagged -> must be valid tag string
-  - perhaps try
-    https://package.elm-lang.org/packages/arowM/elm-form-decoder/latest/Form-Decoder
-    https://sakurachan.info/posts/2019/form-decoding/
-    https://arowm.github.io/elm-form-decoder/#goat-registerForm
-    https://github.com/arowM/elm-form-decoder/
 - show errors on settings pane ??
-- remove Column.typeString Columns.optionsForSelect Settings.addColumn Column.fromColumnConfig Settings.moveColumn
+
+- tests for loading settings: handle blank column names and restrict to one of each special column type
 
 - allow tags in column definitions to optionaly start with the # character
 - delete confirm dialog (board and column)
