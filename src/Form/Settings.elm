@@ -10,6 +10,7 @@ module Form.Settings exposing
     , init
     , mapCurrentBoard
     , mapCurrentColumnsForm
+    , moveBoard
     , moveColumn
     , safeDecoder
     , switchToBoard
@@ -175,6 +176,26 @@ mapCurrentColumnsForm fn form =
                 identity
                 form.boardConfigForms
     }
+
+
+moveBoard : String -> BeaconPosition -> SettingsForm -> SettingsForm
+moveBoard draggedId beaconPosition settingsForm =
+    let
+        movedBoardConfigForms : SafeZipper BoardConfigForm
+        movedBoardConfigForms =
+            settingsForm
+                |> boardConfigForms
+                |> SafeZipper.toList
+                |> BeaconPosition.performMove draggedId beaconPosition .name
+                |> SafeZipper.fromList
+
+        movedBoardIndex : Int
+        movedBoardIndex =
+            movedBoardConfigForms
+                |> SafeZipper.findIndex (\c -> .name c == draggedId)
+                |> Maybe.withDefault 0
+    in
+    { settingsForm | boardConfigForms = SafeZipper.atIndex movedBoardIndex movedBoardConfigForms }
 
 
 moveColumn : String -> BeaconPosition -> SettingsForm -> SettingsForm

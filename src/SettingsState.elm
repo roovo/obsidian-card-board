@@ -300,8 +300,6 @@ deleteConfirmed settingsState =
     case settingsState of
         DeletingBoard settingsForm_ ->
             let
-                -- newSettings =
-                --     Settings.deleteCurrentBoard settingsForm_
                 newSettingsForm =
                     SettingsForm.deleteCurrentBoard settingsForm_
             in
@@ -384,52 +382,7 @@ editGlobalSettings settingsState =
 
 moveBoard : String -> BeaconPosition -> SettingsState -> SettingsState
 moveBoard draggedId beaconPosition settingsState =
-    -- let
-    --     boardConfigs_ : List BoardConfig
-    --     boardConfigs_ =
-    --         boardConfigs settingsState
-    --             |> SafeZipper.toList
-    --     boardConfigForms_ : List ColumnsForm.Form
-    --     boardConfigForms_ =
-    --         settingsState
-    --             |> settingsForm
-    --             |> SettingsForm.columnsForms
-    --             |> SafeZipper.toList
-    --     paired : List ( BoardConfig, ColumnsForm.Form )
-    --     paired =
-    --         LE.zip boardConfigs_ boardConfigForms_
-    --     boardConfigName : ( BoardConfig, ColumnsForm.Form ) -> String
-    --     boardConfigName =
-    --         BoardConfig.name << Tuple.first
-    --     moved : List ( BoardConfig, ColumnsForm.Form )
-    --     moved =
-    --         BeaconPosition.performMove draggedId beaconPosition boardConfigName paired
-    --     movedIndex : Int
-    --     movedIndex =
-    --         moved
-    --             |> LE.findIndex (\( c, _ ) -> BoardConfig.name c == draggedId)
-    --             |> Maybe.withDefault 0
-    --     movedBoardConfigs : SafeZipper BoardConfig
-    --     movedBoardConfigs =
-    --         moved
-    --             |> List.map Tuple.first
-    --             |> SafeZipper.fromList
-    --     movedBoardConfigForms : SafeZipper ColumnsForm.Form
-    --     movedBoardConfigForms =
-    --         moved
-    --             |> List.map Tuple.second
-    --             |> SafeZipper.fromList
-    --     settingsMapper : Settings -> Settings
-    --     settingsMapper settings_ =
-    --         { settings_ | boardConfigs = SafeZipper.atIndex movedIndex movedBoardConfigs }
-    --     boardConfigsFormMapper : SettingsForm.Form -> SettingsForm.Form
-    --     boardConfigsFormMapper settingsForm_ =
-    --         { settingsForm_ | columnsForms = SafeZipper.atIndex movedIndex movedBoardConfigForms }
-    -- in
-    -- settingsState
-    --     |> mapSettings settingsMapper
-    --     |> mapSettingsForm boardConfigsFormMapper
-    settingsState
+    mapSettingsForm (SettingsForm.moveBoard draggedId beaconPosition) settingsState
 
 
 moveColumn : String -> BeaconPosition -> SettingsState -> SettingsState

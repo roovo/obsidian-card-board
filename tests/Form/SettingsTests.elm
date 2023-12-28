@@ -7,6 +7,7 @@ import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
 import Columns
 import DefaultColumnNames
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Expect
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
@@ -27,6 +28,7 @@ suite =
         , deleteColumn
         , mapCurrentBoard
         , mapCurrentColumnsForm
+        , moveBoard
         , safeDecoder
         ]
 
@@ -152,6 +154,42 @@ mapCurrentColumnsForm =
         --             |> SafeZipper.current
         --             |> Maybe.map .name
         --             |> Expect.equal (Just "new name")
+        ]
+
+
+moveBoard : Test
+moveBoard =
+    describe "moveBoard"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettingsForm | boardConfigForms = SafeZipper.empty }
+                    |> SettingsForm.moveBoard "0" (BeaconPosition.After "0")
+                    |> SettingsForm.boardConfigForms
+                    |> Expect.equal SafeZipper.empty
+        , test "moves a board" <|
+            \() ->
+                { exampleSettingsForm
+                    | boardConfigForms =
+                        SafeZipper.fromList
+                            [ exampleBoardConfigForm1, exampleBoardConfigForm2, exampleBoardConfigForm3 ]
+                }
+                    |> SettingsForm.moveBoard "board 2" (BeaconPosition.Before "board 1")
+                    |> SettingsForm.boardConfigForms
+                    |> SafeZipper.toList
+                    |> List.map .name
+                    |> Expect.equal [ "board 2", "board 1", "board 3" ]
+        , test "sets the moved board as the current board after moving" <|
+            \() ->
+                { exampleSettingsForm
+                    | boardConfigForms =
+                        SafeZipper.fromList
+                            [ exampleBoardConfigForm1, exampleBoardConfigForm2, exampleBoardConfigForm3 ]
+                }
+                    |> SettingsForm.moveBoard "board 2" (BeaconPosition.Before "board 1")
+                    |> SettingsForm.boardConfigForms
+                    |> SafeZipper.current
+                    |> Maybe.map .name
+                    |> Expect.equal (Just "board 2")
         ]
 
 
