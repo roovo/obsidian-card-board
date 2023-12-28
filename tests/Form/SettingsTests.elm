@@ -30,6 +30,9 @@ suite =
         , mapCurrentColumnsForm
         , moveBoard
         , safeDecoder
+        , toggleIgnoreFileNameDate
+        , updateDefaultColumnName
+        , updateTaskCompletionFormat
         ]
 
 
@@ -454,6 +457,84 @@ safeDecoder =
                     |> Result.map .defaultColumnNames
                     |> Result.map (DefaultColumnNames.nameFor "untagged")
                     |> Expect.equal (Ok "Untagged")
+        ]
+
+
+toggleIgnoreFileNameDate : Test
+toggleIgnoreFileNameDate =
+    describe "toggleIgnoreFileNameDate"
+        [ test "toggles the value from True to False" <|
+            \() ->
+                { exampleSettingsForm | ignoreFileNameDates = True }
+                    |> SettingsForm.toggleIgnoreFileNameDate
+                    |> .ignoreFileNameDates
+                    |> Expect.equal False
+        , test "toggles the value from False to False" <|
+            \() ->
+                { exampleSettingsForm | ignoreFileNameDates = False }
+                    |> SettingsForm.toggleIgnoreFileNameDate
+                    |> .ignoreFileNameDates
+                    |> Expect.equal True
+        ]
+
+
+updateDefaultColumnName : Test
+updateDefaultColumnName =
+    describe "updateDefaultColumnName"
+        [ test "updates the today field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "today" "foo"
+                    |> .today
+                    |> Expect.equal "foo"
+        , test "updates the tomorrow field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "tomorrow" "foo"
+                    |> .tomorrow
+                    |> Expect.equal "foo"
+        , test "updates the future field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "future" "foo"
+                    |> .future
+                    |> Expect.equal "foo"
+        , test "updates the undated field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "undated" "foo"
+                    |> .undated
+                    |> Expect.equal "foo"
+        , test "updates the otherTags field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "otherTags" "foo"
+                    |> .otherTags
+                    |> Expect.equal "foo"
+        , test "updates the untagged field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "untagged" "foo"
+                    |> .untagged
+                    |> Expect.equal "foo"
+        , test "updates the completed field" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateDefaultColumnName "completed" "foo"
+                    |> .completed
+                    |> Expect.equal "foo"
+        ]
+
+
+updateTaskCompletionFormat : Test
+updateTaskCompletionFormat =
+    describe "updateTaskCompletionFormat"
+        [ test "updates the format" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateTaskCompletionFormat "new format"
+                    |> .taskCompletionFormat
+                    |> Expect.equal "new format"
         ]
 
 

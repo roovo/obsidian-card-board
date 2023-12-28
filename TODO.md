@@ -1,4 +1,5 @@
 - always add a new column to the end of the board ...less confusing
+- column name placeholder doesnt override customised default column names
 - Form.BoardConfig.columns -> columnsForm
 - bug => collapse some columns then click on the settings icon, close settings and nothing is collapsed
   anymore

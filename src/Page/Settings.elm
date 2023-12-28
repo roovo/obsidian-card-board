@@ -300,7 +300,7 @@ update msg model =
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateColumnName column name)
+                            (SettingsForm.updateDefaultColumnName column name)
                             model.settingsState
                 }
 
@@ -385,7 +385,7 @@ update msg model =
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateTaskCompletionFormat taskCompletionFormat)
+                            (SettingsForm.updateTaskCompletionFormat taskCompletionFormat)
                             model.settingsState
                 }
 
@@ -394,7 +394,7 @@ update msg model =
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            GlobalSettings.toggleIgnoreFileNameDate
+                            SettingsForm.toggleIgnoreFileNameDate
                             model.settingsState
                 }
 

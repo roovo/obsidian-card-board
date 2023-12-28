@@ -68,7 +68,7 @@ init settings_ =
 
 
 
--- UTILITIES
+-- INFO
 
 
 boardConfigs : SettingsState -> SafeZipper BoardConfig
@@ -435,12 +435,11 @@ mapCurrentColumnsForm fn settingsState =
             settingsState
 
 
-mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> SettingsState -> SettingsState
+mapGlobalSettings : (SettingsForm -> SettingsForm) -> SettingsState -> SettingsState
 mapGlobalSettings fn settingsState =
     case settingsState of
         EditingGlobalSettings settingsForm_ ->
-            -- EditingGlobalSettings (Settings.mapGlobalSettings fn settings_) settingsForm_
-            settingsState
+            EditingGlobalSettings (fn settingsForm_)
 
         _ ->
             settingsState
@@ -476,31 +475,3 @@ mapSettingsForm fn settingsState =
 
         EditingGlobalSettings settingsForm_ ->
             EditingGlobalSettings (fn settingsForm_)
-
-
-settingsForm : SettingsState -> SettingsForm
-settingsForm settingsState =
-    case settingsState of
-        AddingBoard _ settingsForm_ ->
-            settingsForm_
-
-        AddingColumn _ settingsForm_ ->
-            settingsForm_
-
-        ClosingPlugin settingsForm_ ->
-            settingsForm_
-
-        ClosingSettings settingsForm_ ->
-            settingsForm_
-
-        DeletingBoard settingsForm_ ->
-            settingsForm_
-
-        DeletingColumn _ settingsForm_ ->
-            settingsForm_
-
-        EditingBoard settingsForm_ ->
-            settingsForm_
-
-        EditingGlobalSettings settingsForm_ ->
-            settingsForm_

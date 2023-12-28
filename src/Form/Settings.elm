@@ -14,6 +14,9 @@ module Form.Settings exposing
     , moveColumn
     , safeDecoder
     , switchToBoard
+    , toggleIgnoreFileNameDate
+    , updateDefaultColumnName
+    , updateTaskCompletionFormat
     )
 
 import BoardConfig exposing (BoardConfig)
@@ -206,6 +209,44 @@ moveColumn draggedId beaconPosition form =
 switchToBoard : Int -> SettingsForm -> SettingsForm
 switchToBoard index form =
     { form | boardConfigForms = SafeZipper.atIndex index form.boardConfigForms }
+
+
+toggleIgnoreFileNameDate : SettingsForm -> SettingsForm
+toggleIgnoreFileNameDate settingsForm =
+    { settingsForm | ignoreFileNameDates = not settingsForm.ignoreFileNameDates }
+
+
+updateDefaultColumnName : String -> String -> SettingsForm -> SettingsForm
+updateDefaultColumnName column newName settingsForm =
+    case column of
+        "today" ->
+            { settingsForm | today = newName }
+
+        "tomorrow" ->
+            { settingsForm | tomorrow = newName }
+
+        "future" ->
+            { settingsForm | future = newName }
+
+        "undated" ->
+            { settingsForm | undated = newName }
+
+        "otherTags" ->
+            { settingsForm | otherTags = newName }
+
+        "untagged" ->
+            { settingsForm | untagged = newName }
+
+        "completed" ->
+            { settingsForm | completed = newName }
+
+        _ ->
+            settingsForm
+
+
+updateTaskCompletionFormat : String -> SettingsForm -> SettingsForm
+updateTaskCompletionFormat newFormat settingsForm =
+    { settingsForm | taskCompletionFormat = newFormat }
 
 
 
