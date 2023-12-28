@@ -1,13 +1,11 @@
 module Form.Column.OtherTags exposing
-    ( Error(..)
-    , OtherTagsColumnForm
+    ( OtherTagsColumnForm
     , init
     , safeDecoder
     , updateName
     )
 
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
-import Form.Input as Input
 import Form.SafeDecoder as SD
 
 
@@ -18,10 +16,6 @@ import Form.SafeDecoder as SD
 type alias OtherTagsColumnForm =
     { name : String
     }
-
-
-type Error
-    = NameRequired
 
 
 

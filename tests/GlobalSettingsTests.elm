@@ -2,7 +2,7 @@ module GlobalSettingsTests exposing (suite)
 
 import DefaultColumnNames
 import Expect
-import GlobalSettings exposing (GlobalSettings)
+import GlobalSettings
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
 import TsJson.Encode as TsEncode

@@ -16,10 +16,10 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Filter exposing (Filter)
-import Form.Column as ColumnForm exposing (ColumnForm)
+import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
-import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
+import Form.NewBoard exposing (NewBoardForm)
+import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Select exposing (Option)
 
@@ -46,6 +46,7 @@ type alias BoardConfigForm =
 fromNewBoardForm : DefaultColumnNames -> NewBoardForm -> BoardConfigForm
 fromNewBoardForm defaultColumnNames newBoardConfigForm =
     let
+        columnsForm : ColumnsForm
         columnsForm =
             case newBoardConfigForm.boardType of
                 "dateBoard" ->
@@ -80,6 +81,7 @@ fromNewBoardForm defaultColumnNames newBoardConfigForm =
 init : BoardConfig -> BoardConfigForm
 init boardConfig =
     let
+        filterPolarity : String
         filterPolarity =
             case BoardConfig.filterPolarity boardConfig of
                 Filter.Allow ->
@@ -88,6 +90,7 @@ init boardConfig =
                 Filter.Deny ->
                     "Deny"
 
+        filterScope : String
         filterScope =
             case BoardConfig.filterScope boardConfig of
                 Filter.TopLevelOnly ->

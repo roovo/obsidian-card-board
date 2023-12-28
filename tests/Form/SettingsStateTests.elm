@@ -8,13 +8,11 @@ import DefaultColumnNames
 import Expect
 import Filter
 import Form.BoardConfig exposing (BoardConfigForm)
-import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.Columns as ColumnsForm exposing (ColumnsForm)
+import Form.Columns as ColumnsForm
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
-import Form.Settings as SettingsForm exposing (SettingsForm)
+import Form.Settings exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
-import GlobalSettings exposing (GlobalSettings)
 import SafeZipper
 import Settings exposing (Settings)
 import Test exposing (..)
@@ -665,6 +663,7 @@ mapBoardBeingEdited =
         [ test "does nothing if it is in the AddingBoard state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
                 in
@@ -674,6 +673,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the AddingColumn state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
                 in
@@ -683,6 +683,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the ClosingPlugin state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
                 in
@@ -692,6 +693,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the ClosingSettings state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
                 in
@@ -701,6 +703,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
                 in
@@ -710,6 +713,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the DeletingColumn state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
                 in
@@ -719,6 +723,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the EditingBoard state and there are no boards" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingBoard exampleSettingsForm
                 in
@@ -728,6 +733,7 @@ mapBoardBeingEdited =
         , test "updates the current board if it is in the EditingBoard state and there is a current board" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
                 in
@@ -744,6 +750,7 @@ mapBoardBeingEdited =
         , test "does nothing if it is in the EditingGlobalSettings state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
                 in
@@ -759,6 +766,7 @@ mapCurrentColumnsForm =
         [ test "does nothing if it is in the AddingBoard state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
                 in
@@ -768,6 +776,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the AddingColumn state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
                 in
@@ -777,6 +786,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the ClosingPlugin state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
                 in
@@ -786,6 +796,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the ClosingSettings state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
                 in
@@ -795,6 +806,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the DeletingBoard state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
                 in
@@ -804,6 +816,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the DeletingColumn state" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
                 in
@@ -813,6 +826,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the EditingBoard state with no boards" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingBoard exampleSettingsForm
                 in
@@ -822,6 +836,7 @@ mapCurrentColumnsForm =
         , test "updates the columns of the current board if it is in the EditingBoard state with a current board" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
                 in
@@ -835,6 +850,7 @@ mapCurrentColumnsForm =
         , test "does nothing if it is in the EditingGlobalSettings state with no boards" <|
             \() ->
                 let
+                    initialState : SettingsState
                     initialState =
                         SettingsState.EditingGlobalSettings exampleSettingsForm
                 in

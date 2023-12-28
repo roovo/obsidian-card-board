@@ -18,10 +18,6 @@ module Form.SafeDecoder exposing
     , run
     )
 
-import Form.Decoder as FD
-
-
-
 -- TYPES
 
 
@@ -238,7 +234,7 @@ field (Decoder f) (Decoder g) =
 
 
 runWithTag : tag -> Decoder a b -> a -> Result Never b
-runWithTag tag d a =
+runWithTag _ d a =
     run d a
 
 

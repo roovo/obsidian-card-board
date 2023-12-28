@@ -10,11 +10,6 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
-import Column exposing (Column)
-import Column.Completed as CompletedColumn
-import Column.Dated as DatedColumn exposing (RelativeDateRange)
-import Column.NamedTag as NamedTagColumn
-import Columns
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
@@ -23,25 +18,22 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons exposing (Icon)
-import Filter exposing (Filter, Polarity)
+import Filter exposing (Filter)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.Column.Dated as DatedColumnForm exposing (DatedColumnForm)
+import Form.Column.Dated exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
-import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
-import Html.Events exposing (onBlur, onClick, onInput)
-import Html.Events.Extra exposing (onChange)
+import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
-import Maybe.Extra as ME
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -116,14 +108,12 @@ type Msg
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
     | ColumnDeleteClicked Int
-    | ColumnNameChanged Int String
     | ColumnSettingsMouseDown ( String, DragTracker.ClientData )
     | DeleteBoardRequested
     | DeleteConfirmed
     | ElementDragged DragData
     | EnteredColumnCompletedLimit Int String
     | EnteredColumnName Int String
-    | BlurredColumnName Int
     | EnteredColumnNamedTagTag Int String
     | EnteredDatedColumnRangeValueFrom Int String
     | EnteredDatedColumnRangeValueTo Int String
@@ -225,20 +215,6 @@ update msg model =
 
         ColumnDeleteClicked index ->
             mapSettingsState (SettingsState.deleteColumnRequested index) model
-
-        ColumnNameChanged columnIndex name ->
-            let
-                foo =
-                    Debug.log "changed name" name
-            in
-            ( model, Cmd.none, Session.NoOp )
-
-        BlurredColumnName columnIndex ->
-            let
-                foo =
-                    Debug.log "blurred name" columnIndex
-            in
-            ( model, Cmd.none, Session.NoOp )
 
         ColumnSettingsMouseDown ( domId, clientData ) ->
             ( { model | session = Session.waitForDrag clientData model.session }
@@ -1313,9 +1289,7 @@ settingsColumnView uniqueId defaultColumnNames index columnForm =
                     [ type_ "text"
                     , placeholder defaultName
                     , value name
-                    , onChange <| ColumnNameChanged index
                     , onInput <| EnteredColumnName index
-                    , onBlur <| BlurredColumnName index
                     ]
                     []
                 ]

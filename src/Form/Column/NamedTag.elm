@@ -1,6 +1,5 @@
 module Form.Column.NamedTag exposing
-    ( Error(..)
-    , NamedTagColumnForm
+    ( NamedTagColumnForm
     , init
     , safeDecoder
     , updateName
@@ -8,9 +7,7 @@ module Form.Column.NamedTag exposing
     )
 
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
-import Form.Input as Input
 import Form.SafeDecoder as SD
-import Tag
 
 
 
@@ -21,12 +18,6 @@ type alias NamedTagColumnForm =
     { name : String
     , tag : String
     }
-
-
-type Error
-    = NameRequired
-    | TagRequired
-    | InvalidTagCharacters
 
 
 

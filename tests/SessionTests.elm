@@ -1,18 +1,13 @@
 module SessionTests exposing (suite)
 
-import BoardConfig
 import DataviewTaskCompletion
 import DragAndDrop.DragData as DragData
 import DragAndDrop.DragTracker as DragTracker
 import Expect
-import Filter
 import GlobalSettings
-import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import SafeZipper
 import Session
-import Settings exposing (Settings)
-import TaskItem
+import Settings
 import TaskList
 import Test exposing (..)
 

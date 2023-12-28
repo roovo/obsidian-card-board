@@ -3,7 +3,7 @@ module ColumnsTests exposing (suite)
 import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn
-import Columns exposing (Columns)
+import Columns
 import DefaultColumnNames
 import Expect
 import Test exposing (..)

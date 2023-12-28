@@ -8,11 +8,9 @@ import Column.OtherTags as OtherTagsColumn
 import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
 import Columns
-import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
-import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.Column.Completed as CompletedColumnForm
-import Form.Column.Dated as DatedColumnForm
+import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD

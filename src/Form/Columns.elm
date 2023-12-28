@@ -17,10 +17,8 @@ module Form.Columns exposing
     )
 
 import Columns exposing (Columns)
-import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Select exposing (Option)

@@ -3,7 +3,6 @@ module Column.CompletedTests exposing (suite)
 import Column.Completed as CompletedColumn
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
-import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser

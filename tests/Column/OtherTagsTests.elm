@@ -3,7 +3,6 @@ module Column.OtherTagsTests exposing (suite)
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
-import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser

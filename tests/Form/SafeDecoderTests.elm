@@ -37,6 +37,7 @@ andThen =
         [ test "chains two decoders" <|
             \() ->
                 let
+                    decoder : SafeDecoder.Decoder String Int
                     decoder =
                         SafeDecoder.andThen
                             (\str ->
@@ -147,6 +148,7 @@ map2 =
         [ test "combines the result of two decoders" <|
             \() ->
                 let
+                    formDecoder : SafeDecoder.Decoder Form Decoded
                     formDecoder =
                         SafeDecoder.map2 Decoded
                             (SafeDecoder.lift .field1 SafeDecoder.identity)
@@ -168,20 +170,6 @@ minBound =
             \() ->
                 SafeDecoder.run (SafeDecoder.minBound 3 10) 20
                     |> Expect.equal (Ok 20)
-        ]
-
-
-minLength : Test
-minLength =
-    describe "minLength"
-        [ test "returns the input if long enough" <|
-            \() ->
-                SafeDecoder.run (SafeDecoder.minLength "eek" 3) "food"
-                    |> Expect.equal (Ok "food")
-        , test "returns the default if too short" <|
-            \() ->
-                SafeDecoder.run (SafeDecoder.minLength "eek" 3) "fo"
-                    |> Expect.equal (Ok "eek")
         ]
 
 

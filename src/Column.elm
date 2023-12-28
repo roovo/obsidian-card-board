@@ -150,26 +150,6 @@ asCompletedColumn column =
             Nothing
 
 
-asNamedTagColumn : Column -> Maybe NamedTagColumn
-asNamedTagColumn column =
-    case column of
-        NamedTag namedTagColumn ->
-            Just namedTagColumn
-
-        _ ->
-            Nothing
-
-
-asOtherTagsColumn : Column -> Maybe OtherTagsColumn
-asOtherTagsColumn column =
-    case column of
-        OtherTags otherTagsColumn ->
-            Just otherTagsColumn
-
-        _ ->
-            Nothing
-
-
 cardCount : Column -> Int
 cardCount column =
     List.length (toList column)

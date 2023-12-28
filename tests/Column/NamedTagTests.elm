@@ -2,7 +2,6 @@ module Column.NamedTagTests exposing (suite)
 
 import Column.NamedTag as NamedTagColumn exposing (NamedTagColumn)
 import Expect
-import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser

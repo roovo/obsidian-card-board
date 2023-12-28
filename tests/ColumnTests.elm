@@ -4,16 +4,13 @@ import Card
 import Column
 import Column.Completed as CompletedColumn
 import Column.Dated as DatedColumn
-import Column.NamedTag as NamedTagColumn
 import Column.OtherTags as OtherTagsColumn
 import Date exposing (Date)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
-import Form.NewColumn exposing (NewColumnForm)
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
-import Maybe.Extra as ME
 import Parser
 import PlacementResult
 import TaskItem exposing (TaskItem)

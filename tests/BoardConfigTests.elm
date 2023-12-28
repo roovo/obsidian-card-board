@@ -2,20 +2,16 @@ module BoardConfigTests exposing (suite)
 
 import BoardConfig
 import Column
-import Column.Dated as DatedColumn
 import Columns
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
 import Filter
 import Form.BoardConfig as BoardConfigForm
 import Form.NewBoard exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
-import List.Extra as LE
-import Maybe.Extra as ME
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 

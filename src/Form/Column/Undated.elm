@@ -1,13 +1,11 @@
 module Form.Column.Undated exposing
-    ( Error(..)
-    , UndatedColumnForm
+    ( UndatedColumnForm
     , init
     , safeDecoder
     , updateName
     )
 
 import Column.Undated as UndatedColumn exposing (UndatedColumn)
-import Form.Input as Input
 import Form.SafeDecoder as SD
 
 
@@ -18,10 +16,6 @@ import Form.SafeDecoder as SD
 type alias UndatedColumnForm =
     { name : String
     }
-
-
-type Error
-    = NameRequired
 
 
 

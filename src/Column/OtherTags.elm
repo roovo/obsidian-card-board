@@ -18,7 +18,6 @@ module Column.OtherTags exposing
     )
 
 import DefaultColumnNames exposing (DefaultColumnNames)
-import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)

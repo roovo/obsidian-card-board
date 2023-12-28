@@ -10,7 +10,7 @@ import Filter
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
-import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
+import Form.NewBoard exposing (NewBoardForm)
 import Form.SafeDecoder as SD
 import Helpers.FilterHelpers as FilterHelpers
 import Test exposing (..)

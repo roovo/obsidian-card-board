@@ -8,7 +8,6 @@
         "direct": {
             "1602/elm-feather": "2.3.5",
             "MaybeJustJames/yaml": "2.1.4",
-            "arowM/elm-form-decoder": "1.4.0",
             "dillonkearns/elm-ts-json": "2.1.1",
             "dividat/elm-semver": "2.0.0",
             "elm/browser": "1.0.2",
@@ -19,7 +18,6 @@
             "elm/regex": "1.0.0",
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
-            "elm-community/html-extra": "3.4.0",
             "elm-community/list-extra": "8.7.0",
             "elm-community/maybe-extra": "5.3.0",
             "elm-community/string-extra": "4.0.1",
@@ -33,22 +31,22 @@
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
+            "elm/project-metadata-utils": "1.0.2",
+            "elm/random": "1.0.0",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.3",
-            "elm-community/dict-extra": "2.4.0"
+            "elm-community/dict-extra": "2.4.0",
+            "elm-explorations/test": "2.1.2",
+            "miniBill/elm-unicode": "1.0.3",
+            "rtfeldman/elm-hex": "1.0.0",
+            "stil4m/elm-syntax": "7.3.2",
+            "stil4m/structured-writer": "1.0.3"
         }
     },
     "test-dependencies": {
         "direct": {
             "elm-explorations/test": "2.1.2"
         },
-        "indirect": {
-            "elm/project-metadata-utils": "1.0.2",
-            "elm/random": "1.0.0",
-            "miniBill/elm-unicode": "1.0.3",
-            "rtfeldman/elm-hex": "1.0.0",
-            "stil4m/elm-syntax": "7.3.2",
-            "stil4m/structured-writer": "1.0.3"
-        }
+        "indirect": {}
     }
 }

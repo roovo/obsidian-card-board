@@ -3,16 +3,14 @@ module Form.SettingsTests exposing (suite)
 import BoardConfig
 import Column
 import Column.Completed as CompletedColumn
-import Column.Undated as UndatedColumn
-import Column.Untagged as UntaggedColumn
 import Columns
 import DefaultColumnNames
-import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
-import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.BoardConfig exposing (BoardConfigForm)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm
-import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
+import Form.NewBoard exposing (NewBoardForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings

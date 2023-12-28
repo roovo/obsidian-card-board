@@ -1,7 +1,5 @@
 module Form.Column.Completed exposing
     ( CompletedColumnForm
-    , Error(..)
-    , LimitError(..)
     , init
     , safeDecoder
     , updateLimit
@@ -9,7 +7,6 @@ module Form.Column.Completed exposing
     )
 
 import Column.Completed as CompletedColumn exposing (CompletedColumn)
-import Form.Input as Input
 import Form.SafeDecoder as SD
 
 
@@ -21,17 +18,6 @@ type alias CompletedColumnForm =
     { name : String
     , limit : String
     }
-
-
-type Error
-    = NameRequired
-    | LimitError LimitError
-    | LimitRequired
-
-
-type LimitError
-    = InvalidInt
-    | NotPositive
 
 
 

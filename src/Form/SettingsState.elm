@@ -23,17 +23,15 @@ module Form.SettingsState exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
-import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
-import Form.Columns as ColumnsForm exposing (ColumnsForm)
+import Form.Columns exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Select exposing (Option)
 import Form.Settings as SettingsForm exposing (SettingsForm)
-import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
@@ -61,6 +59,7 @@ type SettingsState
 init : Settings -> SettingsState
 init settings_ =
     let
+        settingsForm : SettingsForm
         settingsForm =
             SettingsForm.init settings_
     in
@@ -131,7 +130,7 @@ addBoardConfirmed defaultColumnNames settingsState =
 addBoardRequested : SettingsState -> SettingsState
 addBoardRequested settingsState =
     case settingsState of
-        AddingBoard _ settingsForm_ ->
+        AddingBoard _ _ ->
             settingsState
 
         AddingColumn _ settingsForm_ ->
@@ -259,7 +258,7 @@ deleteBoardRequested settingsState =
         ClosingSettings settingsForm_ ->
             DeletingBoard settingsForm_
 
-        DeletingBoard settingsForm_ ->
+        DeletingBoard _ ->
             settingsState
 
         DeletingColumn _ settingsForm_ ->
@@ -305,6 +304,7 @@ deleteConfirmed settingsState =
     case settingsState of
         DeletingBoard settingsForm_ ->
             let
+                newSettingsForm : SettingsForm
                 newSettingsForm =
                     SettingsForm.deleteCurrentBoard settingsForm_
             in
@@ -381,7 +381,7 @@ editGlobalSettings settingsState =
         EditingBoard settingsForm_ ->
             EditingGlobalSettings settingsForm_
 
-        EditingGlobalSettings settingsForm_ ->
+        EditingGlobalSettings _ ->
             settingsState
 
 

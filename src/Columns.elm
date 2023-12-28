@@ -3,7 +3,6 @@ module Columns exposing
     , addTaskList
     , cleanupNames
     , collapseColumn
-    , completedLimit
     , decoder
     , empty
     , encoder
@@ -90,16 +89,6 @@ encoder =
 
 
 -- INFO
-
-
-completedLimit : Columns -> Int
-completedLimit columns =
-    case columns of
-        WithCompleted _ completedColumn ->
-            CompletedColumn.limit completedColumn
-
-        WithoutCompleted _ ->
-            0
 
 
 namedTagColumnTags : Columns -> List String

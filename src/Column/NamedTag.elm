@@ -16,9 +16,7 @@ module Column.NamedTag exposing
     , updateName
     )
 
-import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
-import Tag
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode

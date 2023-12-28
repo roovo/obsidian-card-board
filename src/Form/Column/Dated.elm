@@ -1,8 +1,5 @@
 module Form.Column.Dated exposing
     ( DatedColumnForm
-    , Error(..)
-    , RangeTypeError(..)
-    , RangeValueError(..)
     , init
     , safeDecoder
     , updateFrom
@@ -12,16 +9,7 @@ module Form.Column.Dated exposing
     )
 
 import Column.Dated as DatedColumn exposing (DatedColumn, RelativeDateRange)
-import DecodeHelpers
-import DefaultColumnNames exposing (DefaultColumnNames)
-import Form.Input as Input
 import Form.SafeDecoder as SD
-import PlacementResult exposing (PlacementResult)
-import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
-import TsJson.Decode as TsDecode
-import TsJson.Decode.Pipeline as TsDecode
-import TsJson.Encode as TsEncode
 
 
 
@@ -34,24 +22,6 @@ type alias DatedColumnForm =
     , rangeType : String
     , to : String
     }
-
-
-type Error
-    = NameRequired
-    | RangeFromValueRequired
-    | RangeToValueRequired
-    | RangeTypeError RangeTypeError
-    | RangeTypeRequired
-    | RangeValueFromError RangeValueError
-    | RangeValueToError RangeValueError
-
-
-type RangeTypeError
-    = Invalid
-
-
-type RangeValueError
-    = InvalidInt
 
 
 type RangeType
@@ -73,6 +43,7 @@ type alias Range =
 init : DatedColumn -> DatedColumnForm
 init datedColumn =
     let
+        rangeType : String
         rangeType =
             case DatedColumn.range datedColumn of
                 DatedColumn.After _ ->
@@ -84,6 +55,7 @@ init datedColumn =
                 DatedColumn.Between _ ->
                     "Between"
 
+        from : String
         from =
             case DatedColumn.range datedColumn of
                 DatedColumn.After from_ ->
@@ -95,6 +67,7 @@ init datedColumn =
                 DatedColumn.Between fromTo ->
                     String.fromInt fromTo.from
 
+        to : String
         to =
             case DatedColumn.range datedColumn of
                 DatedColumn.After _ ->

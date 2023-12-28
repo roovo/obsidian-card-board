@@ -3,7 +3,6 @@ module Column.UntaggedTests exposing (suite)
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
-import Form.Decoder as FD
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser

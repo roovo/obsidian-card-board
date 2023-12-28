@@ -149,21 +149,3 @@ taskCompletionFormatEncoder =
         |> TsEncode.variantLiteral (JE.string "ObsidianDataview")
         |> TsEncode.variantLiteral (JE.string "ObsidianTasks")
         |> TsEncode.buildUnion
-
-
-taskCompletionFormatFromString : String -> TaskCompletionFormat
-taskCompletionFormatFromString source =
-    if source == "ObsidianCardBoard" then
-        ObsidianCardBoard
-
-    else if source == "ObsidianTasks" then
-        ObsidianTasks
-
-    else if source == "ObsidianDataview" then
-        ObsidianDataview
-
-    else if source == "NoCompletion" then
-        NoCompletion
-
-    else
-        ObsidianCardBoard

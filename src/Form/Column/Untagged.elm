@@ -1,13 +1,11 @@
 module Form.Column.Untagged exposing
-    ( Error(..)
-    , UntaggedColumnForm
+    ( UntaggedColumnForm
     , init
     , safeDecoder
     , updateName
     )
 
 import Column.Untagged as UntaggedColumn exposing (UntaggedColumn)
-import Form.Input as Input
 import Form.SafeDecoder as SD
 
 
@@ -18,10 +16,6 @@ import Form.SafeDecoder as SD
 type alias UntaggedColumnForm =
     { name : String
     }
-
-
-type Error
-    = NameRequired
 
 
 

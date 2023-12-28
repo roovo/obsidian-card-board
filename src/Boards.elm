@@ -4,7 +4,6 @@ module Boards exposing
     , cards
     , currentIndex
     , init
-    , length
     , names
     )
 
@@ -62,11 +61,6 @@ cards ignoreFileNameDates today boards_ =
 currentIndex : Boards -> Maybe Int
 currentIndex (Boards _ config _) =
     SafeZipper.selectedIndex config
-
-
-length : Boards -> Int
-length (Boards _ config _) =
-    SafeZipper.length config
 
 
 names : Boards -> SafeZipper String

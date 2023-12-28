@@ -1,6 +1,5 @@
 module Form.Column exposing
     ( ColumnForm(..)
-    , Error(..)
     , init
     , isCompleted
     , isOtherTags
@@ -40,15 +39,6 @@ type ColumnForm
     | OtherTagsColumnForm Bool OtherTagsColumnForm
     | UndatedColumnForm Bool UndatedColumnForm
     | UntaggedColumnForm Bool UntaggedColumnForm
-
-
-type Error
-    = CompletedColumnError CompletedColumnForm.Error
-    | DatedColumnError DatedColumnForm.Error
-    | NamedTagColumnError NamedTagColumnForm.Error
-    | OtherTagsColumnError OtherTagsColumnForm.Error
-    | UndatedColumnError UndatedColumnForm.Error
-    | UntaggedColumnError UntaggedColumnForm.Error
 
 
 
@@ -217,22 +207,22 @@ placeholder defaultColumnNames form =
 typeString : ColumnForm -> String
 typeString form =
     case form of
-        CompletedColumnForm _ subform ->
+        CompletedColumnForm _ _ ->
             "Completed"
 
-        DatedColumnForm _ subform ->
+        DatedColumnForm _ _ ->
             "Dated"
 
-        NamedTagColumnForm _ subform ->
+        NamedTagColumnForm _ _ ->
             "Tagged"
 
-        OtherTagsColumnForm _ subform ->
+        OtherTagsColumnForm _ _ ->
             "Other Tags"
 
-        UndatedColumnForm _ subform ->
+        UndatedColumnForm _ _ ->
             "Undated"
 
-        UntaggedColumnForm _ subform ->
+        UntaggedColumnForm _ _ ->
             "Untagged"
 
 
@@ -314,25 +304,3 @@ updateNamedTagTag newName form =
 
 
 -- PRIVATE
-
-
-isCollapsed : ColumnForm -> Bool
-isCollapsed form =
-    case form of
-        CompletedColumnForm isCollapsed_ _ ->
-            isCollapsed_
-
-        DatedColumnForm isCollapsed_ _ ->
-            isCollapsed_
-
-        NamedTagColumnForm isCollapsed_ _ ->
-            isCollapsed_
-
-        OtherTagsColumnForm isCollapsed_ _ ->
-            isCollapsed_
-
-        UndatedColumnForm isCollapsed_ _ ->
-            isCollapsed_
-
-        UntaggedColumnForm isCollapsed_ _ ->
-            isCollapsed_

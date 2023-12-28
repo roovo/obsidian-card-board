@@ -1,14 +1,9 @@
 module SettingsTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
-import Column
-import Columns
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
-import Filter
-import Form.NewBoard exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -245,18 +240,6 @@ uniqueBoardNames =
 
 
 -- HELPERS
-
-
-exampleBoardConfig : BoardConfig.Config
-exampleBoardConfig =
-    { columns = Columns.empty
-    , filters = []
-    , filterPolarity = Filter.Allow
-    , filterScope = Filter.Both
-    , name = ""
-    , showColumnTags = False
-    , showFilteredTags = False
-    }
 
 
 exampleGlobalSettings : GlobalSettings

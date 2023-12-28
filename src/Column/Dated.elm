@@ -1,5 +1,6 @@
 module Column.Dated exposing
     ( DatedColumn
+    , Range
     , RelativeDateRange(..)
     , addTaskItem
     , decoder
@@ -20,7 +21,6 @@ module Column.Dated exposing
 import Date exposing (Date)
 import DecodeHelpers
 import DefaultColumnNames exposing (DefaultColumnNames)
-import Form.Decoder as FD
 import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)

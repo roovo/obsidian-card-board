@@ -16,8 +16,6 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Column
-import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter

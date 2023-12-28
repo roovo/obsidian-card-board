@@ -20,17 +20,14 @@ module Form.Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
-import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.Decoder as FD
 import Form.NewBoard exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
-import GlobalSettings
+import GlobalSettings exposing (GlobalSettings)
 import Maybe.Extra as ME
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
@@ -61,9 +58,11 @@ type alias SettingsForm =
 init : Settings -> SettingsForm
 init settings =
     let
+        boardConfigForms_ : SafeZipper BoardConfigForm
         boardConfigForms_ =
             SafeZipper.map BoardConfigForm.init (Settings.boardConfigs settings)
 
+        taskCompletionFormat_ : String
         taskCompletionFormat_ =
             case Settings.globalSettings settings |> .taskCompletionFormat of
                 GlobalSettings.NoCompletion ->
@@ -78,9 +77,11 @@ init settings =
                 GlobalSettings.ObsidianTasks ->
                     "ObsidianTasks"
 
+        globalSettings_ : GlobalSettings
         globalSettings_ =
             Settings.globalSettings settings
 
+        defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
             globalSettings_.defaultColumnNames
     in
@@ -323,6 +324,7 @@ settingsBuilder :
     -> Settings
 settingsBuilder bc com fut ifn ots tcf tod tom und unt =
     let
+        defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
             { today = tod
             , tomorrow = tom
@@ -333,6 +335,7 @@ settingsBuilder bc com fut ifn ots tcf tod tom und unt =
             , completed = com
             }
 
+        globalSettings : GlobalSettings
         globalSettings =
             { taskCompletionFormat = tcf
             , defaultColumnNames = defaultColumnNames_

@@ -1,14 +1,13 @@
 module BoardTests exposing (suite)
 
 import Board
-import BoardConfig exposing (BoardConfig)
+import BoardConfig
 import Card
 import Column
 import Column.Completed as CompletedColumn
 import Columns
 import Expect
 import Filter
-import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.BoardHelpers as BoardHelpers
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import Helpers.FilterHelpers as FilterHelpers

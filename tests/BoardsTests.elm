@@ -1,14 +1,9 @@
 module BoardsTests exposing (suite)
 
-import Board
-import BoardConfig exposing (BoardConfig)
 import Boards
-import DefaultColumnNames
 import Expect
-import Form.NewBoard exposing (NewBoardForm)
 import Helpers.TaskListHelpers as TaskListHelpers
 import SafeZipper
-import TaskList
 import Test exposing (..)
 
 
