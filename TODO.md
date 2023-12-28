@@ -1,7 +1,5 @@
 - tests for loading settings: handle blank column names and restrict to one of each special column type
 
-- allow tags in column definitions to optionaly start with the # character
-
 - delete confirm dialog (board and column)
     - actually say what is being deleted
     - add space between buttons

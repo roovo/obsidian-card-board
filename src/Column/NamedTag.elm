@@ -146,8 +146,17 @@ updateName newName (NamedTagColumn c tth tl) =
 
 
 belongs : String -> TaskItem -> Bool
-belongs t =
-    TaskItem.hasThisTag t
+belongs =
+    TaskItem.hasThisTag << removeLeadingHash
+
+
+removeLeadingHash : String -> String
+removeLeadingHash t =
+    if String.startsWith "#" t then
+        String.dropLeft 1 t
+
+    else
+        t
 
 
 config : NamedTagColumn -> Config

@@ -25,8 +25,6 @@ suite =
         , toList
         , toggleCollapse
         , updateName
-
-        -- , updateTag
         ]
 
 
@@ -36,6 +34,13 @@ addTaskItem =
         [ test "Places an incomplete task item with no sub-tasks and a matching tag" <|
             \() ->
                 NamedTagColumn.init "" "atag"
+                    |> NamedTagColumn.addTaskItem (taskItem "- [ ] foo #atag")
+                    |> Tuple.mapFirst NamedTagColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+        , test "is happy even if the column's tag starts with a # character" <|
+            \() ->
+                NamedTagColumn.init "" "#atag"
                     |> NamedTagColumn.addTaskItem (taskItem "- [ ] foo #atag")
                     |> Tuple.mapFirst NamedTagColumn.toList
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -57,6 +62,13 @@ addTaskItem =
         , test "Places an incomplete task item with no tags and an incomplete sub-task with a matching tag (amongst others)" <|
             \() ->
                 NamedTagColumn.init "" "btag"
+                    |> NamedTagColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag #btag #ctag")
+                    |> Tuple.mapFirst NamedTagColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+        , test "Places an incomplete task item with no tags and an incomplete sub-task with a matching tag even if the column's tag starts with a #" <|
+            \() ->
+                NamedTagColumn.init "" "#btag"
                     |> NamedTagColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag #btag #ctag")
                     |> Tuple.mapFirst NamedTagColumn.toList
                     |> Tuple.mapFirst (List.map TaskItem.title)
@@ -83,6 +95,12 @@ addTaskItem =
         , test "CompletedInThisColumn a completed task item with a matching tag and no sub-tasks" <|
             \() ->
                 NamedTagColumn.init "" "atag"
+                    |> NamedTagColumn.addTaskItem (taskItem "- [x] foo #atag")
+                    |> Tuple.mapFirst NamedTagColumn.toList
+                    |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+        , test "CompletedInThisColumn a completed task item with a matching tag and no sub-tasks even if the column's tag starts with a #" <|
+            \() ->
+                NamedTagColumn.init "" "#atag"
                     |> NamedTagColumn.addTaskItem (taskItem "- [x] foo #atag")
                     |> Tuple.mapFirst NamedTagColumn.toList
                     |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
@@ -348,19 +366,6 @@ updateName =
 
 
 
--- updateTag : Test
--- updateTag =
---     describe "updateTag"
---         [ test "updates the name" <|
---             \() ->
---                 NamedTagColumn.init "A Column Name" "atag"
---                     |> NamedTagColumn.updateTag "newTag"
---                     |> NamedTagColumn.tag
---                     |> Expect.equal "newTag"
---         ]
---
---
---
 -- HELPERS
 
 
