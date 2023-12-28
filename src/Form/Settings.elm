@@ -149,24 +149,12 @@ addBoard defaultColumnNames_ configToAdd form =
 
 addColumn : NewColumnForm -> SettingsForm -> SettingsForm
 addColumn configToAdd form =
-    { form
-        | boardConfigForms =
-            SafeZipper.mapSelectedAndRest
-                (BoardConfigForm.addColumn configToAdd)
-                identity
-                form.boardConfigForms
-    }
+    mapCurrentColumnsForm (ColumnsForm.addColumn configToAdd) form
 
 
 deleteColumn : Int -> SettingsForm -> SettingsForm
 deleteColumn index form =
-    { form
-        | boardConfigForms =
-            SafeZipper.mapSelectedAndRest
-                (BoardConfigForm.deleteColumn index)
-                identity
-                form.boardConfigForms
-    }
+    mapCurrentColumnsForm (ColumnsForm.deleteColumn index) form
 
 
 deleteCurrentBoard : SettingsForm -> SettingsForm
@@ -192,14 +180,7 @@ mapCurrentColumnsForm fn form =
 
 moveColumn : String -> BeaconPosition -> SettingsForm -> SettingsForm
 moveColumn draggedId beaconPosition form =
-    -- { form
-    --     | boardConfigForms =
-    --         SafeZipper.mapSelectedAndRest
-    --             (ColumnsForm.moveColumn draggedId beaconPosition)
-    --             identity
-    --             form.boardConfigForms
-    -- }
-    form
+    mapCurrentColumnsForm (ColumnsForm.moveColumn draggedId beaconPosition) form
 
 
 switchToBoard : Int -> SettingsForm -> SettingsForm
@@ -208,13 +189,6 @@ switchToBoard index form =
 
 
 
--- updateCurrentColumnsForm : (ColumnsForm.Form -> ColumnsForm.Form) -> SettingsForm -> SettingsForm
--- updateCurrentColumnsForm fn form =
---     { form | boardConfigForms = SafeZipper.mapSelectedAndRest fn identity form.boardConfigForms }
---
---
---
---
 -- PRIVATE
 
 

@@ -8,6 +8,7 @@ import Column.OtherTags as OtherTagsColumn
 import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
 import Columns
+import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Expect
 import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Column.Completed as CompletedColumnForm
@@ -28,6 +29,7 @@ suite =
         , empty
         , find
         , init
+        , moveColumn
         , optionsForSelect
         , safeDecoder
         , updateColumnName
@@ -185,6 +187,30 @@ init =
                         , ColumnForm.UndatedColumnForm { name = "foo" }
                         , ColumnForm.UntaggedColumnForm { name = "foo" }
                         ]
+        ]
+
+
+moveColumn : Test
+moveColumn =
+    describe "moveColumn"
+        [ test "does nothing if there are no columns" <|
+            \() ->
+                ColumnsForm.init Columns.empty
+                    |> ColumnsForm.moveColumn "0" (BeaconPosition.After "0")
+                    |> .columnForms
+                    |> Expect.equal []
+        , test "moves a column" <|
+            \() ->
+                Columns.fromList
+                    [ Column.Completed <| CompletedColumn.init "one" 0 5
+                    , Column.Dated <| DatedColumn.init "two" (DatedColumn.Before 7)
+                    , Column.NamedTag <| NamedTagColumn.init "three" "aTag"
+                    ]
+                    |> ColumnsForm.init
+                    |> ColumnsForm.moveColumn "one" (BeaconPosition.After "two")
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "two", "one", "three" ]
         ]
 
 

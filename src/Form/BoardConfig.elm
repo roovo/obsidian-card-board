@@ -1,7 +1,5 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
-    , addColumn
-    , deleteColumn
     , init
     , mapColumnsForm
     , optionsForSelect
@@ -104,16 +102,6 @@ optionsForSelect newColumnForm boardConfigForm =
 
 
 -- MODIFICATION
-
-
-addColumn : NewColumnForm -> BoardConfigForm -> BoardConfigForm
-addColumn newColumnForm boardConfigForm =
-    { boardConfigForm | columns = ColumnsForm.addColumn newColumnForm boardConfigForm.columns }
-
-
-deleteColumn : Int -> BoardConfigForm -> BoardConfigForm
-deleteColumn index boardConfigForm =
-    { boardConfigForm | columns = ColumnsForm.deleteColumn index boardConfigForm.columns }
 
 
 mapColumnsForm : (ColumnsForm -> ColumnsForm) -> BoardConfigForm -> BoardConfigForm
