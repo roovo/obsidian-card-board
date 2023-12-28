@@ -34,8 +34,7 @@ suite =
         , deleteColumnRequested
         , deleteConfirmed
         , editBoardAt
-
-        -- , editGlobalSettings
+        , editGlobalSettings
         , init
         , mapBoardBeingAdded
         , mapBoardBeingEdited
@@ -593,51 +592,50 @@ editBoardAt =
         ]
 
 
-
--- editGlobalSettings : Test
--- editGlobalSettings =
---     describe "editGlobalSettings"
---         [ test "AddingBoard -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "AddingColumn -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.AddingColumn (NewColumnForm "" "") Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "ClosingPlugin -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "ClosingSettings -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "DeletingBoard -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "DeletingColumn -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "EditingBoard -> EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         , test "does nothing to EditingGlobalSettings" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.editGlobalSettings
---                     |> Expect.equal (SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty)
---         ]
+editGlobalSettings : Test
+editGlobalSettings =
+    describe "editGlobalSettings"
+        [ test "AddingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardForm.default exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "AddingColumn -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.AddingColumn (NewColumnForm "" "") exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "ClosingPlugin -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.ClosingPlugin exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "ClosingSettings -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.ClosingSettings exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "DeletingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.DeletingBoard exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "DeletingColumn -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.DeletingColumn 1 exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "EditingBoard -> EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        , test "does nothing to EditingGlobalSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings exampleSettingsForm
+                    |> SettingsState.editGlobalSettings
+                    |> Expect.equal (SettingsState.EditingGlobalSettings exampleSettingsForm)
+        ]
 
 
 init : Test

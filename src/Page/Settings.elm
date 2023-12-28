@@ -587,8 +587,7 @@ view model =
             boardSettingsView settingsForm model.multiSelect dragTracker
 
         SettingsState.EditingGlobalSettings settingsForm ->
-            -- globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
-            Html.text ""
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
 
 
 modalAddBoard : NewBoardForm -> Html Msg
@@ -858,15 +857,13 @@ boardSettingsView settingsForm multiselect dragTracker =
 
 globalSettingsView : DataviewTaskCompletion -> SettingsForm -> DragTracker -> Html Msg
 globalSettingsView dataviewTaskCompletion settingsForm dragTracker =
-    -- settingsForm
-    --     |> Settings.globalSettings
-    --     |> globalSettingsForm dataviewTaskCompletion
-    --     |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
-    Html.text ""
+    settingsForm
+        |> globalSettingsForm dataviewTaskCompletion
+        |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion gs =
+globalSettingsForm : DataviewTaskCompletion -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion settingsForm =
     let
         dataViewExample : String
         dataViewExample =
@@ -882,7 +879,7 @@ globalSettingsForm dataviewTaskCompletion gs =
 
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
-            if gs.ignoreFileNameDates then
+            if settingsForm.ignoreFileNameDates then
                 " is-enabled"
 
             else
@@ -955,16 +952,16 @@ globalSettingsForm dataviewTaskCompletion gs =
                     ]
                 ]
             , Html.div [ class "setting-item-control" ]
-                [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+                [ taskCompletionFormatSelect settingsForm.taskCompletionFormat ]
             ]
          ]
-            ++ columNamesForm gs.defaultColumnNames
+            ++ columNamesForm settingsForm
         )
     ]
 
 
-columNamesForm : DefaultColumnNames -> List (Html Msg)
-columNamesForm defaultColumnNames =
+columNamesForm : SettingsForm -> List (Html Msg)
+columNamesForm settingsForm =
     [ Html.div [ class "setting-item setting-item-heading" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
@@ -985,7 +982,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Today"
-                , value (Maybe.withDefault "" defaultColumnNames.today)
+                , value settingsForm.today
                 , onInput (EnteredDefaultColumnName "today")
                 ]
                 []
@@ -1002,7 +999,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Tomorrow"
-                , value (Maybe.withDefault "" defaultColumnNames.tomorrow)
+                , value settingsForm.tomorrow
                 , onInput (EnteredDefaultColumnName "tomorrow")
                 ]
                 []
@@ -1019,7 +1016,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Future"
-                , value (Maybe.withDefault "" defaultColumnNames.future)
+                , value settingsForm.future
                 , onInput (EnteredDefaultColumnName "future")
                 ]
                 []
@@ -1036,7 +1033,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Undated"
-                , value (Maybe.withDefault "" defaultColumnNames.undated)
+                , value settingsForm.undated
                 , onInput (EnteredDefaultColumnName "undated")
                 ]
                 []
@@ -1053,7 +1050,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Other Tags"
-                , value (Maybe.withDefault "" defaultColumnNames.otherTags)
+                , value settingsForm.otherTags
                 , onInput (EnteredDefaultColumnName "otherTags")
                 ]
                 []
@@ -1070,7 +1067,7 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Untagged"
-                , value (Maybe.withDefault "" defaultColumnNames.untagged)
+                , value settingsForm.untagged
                 , onInput (EnteredDefaultColumnName "untagged")
                 ]
                 []
@@ -1087,22 +1084,13 @@ columNamesForm defaultColumnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Completed"
-                , value (Maybe.withDefault "" defaultColumnNames.completed)
+                , value settingsForm.completed
                 , onInput (EnteredDefaultColumnName "completed")
                 ]
                 []
             ]
         ]
     ]
-
-
-
--- boardSettingsForm
---     (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
---     (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
---     settingsForm
---     multiselect
---     dragTracker
 
 
 boardSettingsForm : Maybe BoardConfigForm -> Maybe Int -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
@@ -1521,25 +1509,14 @@ rangeInputsView index datedColumnForm =
             ]
 
 
-taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
+taskCompletionFormatSelect : String -> Html Msg
 taskCompletionFormatSelect taskCompletionFormat =
     Html.select
         [ class "dropdown"
         , onInput TaskCompletionFormatSelected
         ]
         (case taskCompletionFormat of
-            GlobalSettings.NoCompletion ->
-                [ Html.option [ value "NoCompletion", selected True ]
-                    [ Html.text "None" ]
-                , Html.option [ value "ObsidianCardBoard" ]
-                    [ Html.text "CardBoard" ]
-                , Html.option [ value "ObsidianDataview" ]
-                    [ Html.text "Dataview" ]
-                , Html.option [ value "ObsidianTasks" ]
-                    [ Html.text "Tasks" ]
-                ]
-
-            GlobalSettings.ObsidianCardBoard ->
+            "ObsidianCardBoard" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard", selected True ]
@@ -1550,7 +1527,7 @@ taskCompletionFormatSelect taskCompletionFormat =
                     [ Html.text "Tasks" ]
                 ]
 
-            GlobalSettings.ObsidianDataview ->
+            "ObsidianDataview" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard" ]
@@ -1561,7 +1538,7 @@ taskCompletionFormatSelect taskCompletionFormat =
                     [ Html.text "Tasks" ]
                 ]
 
-            GlobalSettings.ObsidianTasks ->
+            "ObsidianTasks" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard" ]
@@ -1569,6 +1546,17 @@ taskCompletionFormatSelect taskCompletionFormat =
                 , Html.option [ value "ObsidianDataview" ]
                     [ Html.text "Dataview" ]
                 , Html.option [ value "ObsidianTasks", selected True ]
+                    [ Html.text "Tasks" ]
+                ]
+
+            _ ->
+                [ Html.option [ value "NoCompletion", selected True ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
                     [ Html.text "Tasks" ]
                 ]
         )
