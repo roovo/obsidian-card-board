@@ -50,18 +50,18 @@ fromNewBoardForm defaultColumnNames newBoardConfigForm =
             case newBoardConfigForm.boardType of
                 "dateBoard" ->
                     ColumnsForm
-                        [ ColumnForm.UndatedColumnForm { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
-                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
-                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
-                        , ColumnForm.DatedColumnForm { name = DefaultColumnNames.nameFor "future" defaultColumnNames, rangeType = "After", from = "1", to = "" }
-                        , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                        [ ColumnForm.UndatedColumnForm False { name = DefaultColumnNames.nameFor "undated" defaultColumnNames }
+                        , ColumnForm.DatedColumnForm False { name = DefaultColumnNames.nameFor "today" defaultColumnNames, rangeType = "Before", from = "", to = "1" }
+                        , ColumnForm.DatedColumnForm False { name = DefaultColumnNames.nameFor "tomorrow" defaultColumnNames, rangeType = "Between", from = "1", to = "1" }
+                        , ColumnForm.DatedColumnForm False { name = DefaultColumnNames.nameFor "future" defaultColumnNames, rangeType = "After", from = "1", to = "" }
+                        , ColumnForm.CompletedColumnForm False { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
                         ]
 
                 "tagBoard" ->
                     ColumnsForm
-                        [ ColumnForm.UntaggedColumnForm { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
-                        , ColumnForm.OtherTagsColumnForm { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
-                        , ColumnForm.CompletedColumnForm { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
+                        [ ColumnForm.UntaggedColumnForm False { name = DefaultColumnNames.nameFor "untagged" defaultColumnNames }
+                        , ColumnForm.OtherTagsColumnForm False { name = DefaultColumnNames.nameFor "otherTags" defaultColumnNames }
+                        , ColumnForm.CompletedColumnForm False { name = DefaultColumnNames.nameFor "completed" defaultColumnNames, limit = "10" }
                         ]
 
                 _ ->

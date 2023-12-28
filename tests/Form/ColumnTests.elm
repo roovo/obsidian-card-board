@@ -35,33 +35,75 @@ init =
         [ test "initialises from a Completed column" <|
             \() ->
                 (Column.Completed <| CompletedColumn.init "foo" 0 7)
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.CompletedColumnForm { name = "foo", limit = "7" })
+                    |> Expect.equal (ColumnForm.CompletedColumnForm False { name = "foo", limit = "7" })
+        , test "initialises from a collapsed Completed column" <|
+            \() ->
+                (Column.Completed <| CompletedColumn.init "foo" 0 7)
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.CompletedColumnForm True { name = "foo", limit = "7" })
         , test "initialises from a Dated column" <|
             \() ->
                 (Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7))
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" })
+                    |> Expect.equal (ColumnForm.DatedColumnForm False { name = "foo", rangeType = "Before", from = "", to = "7" })
+        , test "initialises from a collaped Dated column" <|
+            \() ->
+                (Column.Dated <| DatedColumn.init "foo" (DatedColumn.Before 7))
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.DatedColumnForm True { name = "foo", rangeType = "Before", from = "", to = "7" })
         , test "initialises from a NamedTag column" <|
             \() ->
                 (Column.NamedTag <| NamedTagColumn.init "foo" "aTag")
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" })
+                    |> Expect.equal (ColumnForm.NamedTagColumnForm False { name = "foo", tag = "aTag" })
+        , test "initialises from a collaped NamedTag column" <|
+            \() ->
+                (Column.NamedTag <| NamedTagColumn.init "foo" "aTag")
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.NamedTagColumnForm True { name = "foo", tag = "aTag" })
         , test "initialises from an OtherTags column" <|
             \() ->
                 (Column.OtherTags <| OtherTagsColumn.init "foo" [])
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.OtherTagsColumnForm { name = "foo" })
+                    |> Expect.equal (ColumnForm.OtherTagsColumnForm False { name = "foo" })
+        , test "initialises from a collaped OtherTags column" <|
+            \() ->
+                (Column.OtherTags <| OtherTagsColumn.init "foo" [])
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.OtherTagsColumnForm True { name = "foo" })
         , test "initialises from an Undated column" <|
             \() ->
                 (Column.Undated <| UndatedColumn.init "foo")
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.UndatedColumnForm { name = "foo" })
+                    |> Expect.equal (ColumnForm.UndatedColumnForm False { name = "foo" })
+        , test "initialises from a collaped Undated column" <|
+            \() ->
+                (Column.Undated <| UndatedColumn.init "foo")
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.UndatedColumnForm True { name = "foo" })
         , test "initialises from an Untagged column" <|
             \() ->
                 (Column.Untagged <| UntaggedColumn.init "foo")
+                    |> Column.setCollapse False
                     |> ColumnForm.init
-                    |> Expect.equal (ColumnForm.UntaggedColumnForm { name = "foo" })
+                    |> Expect.equal (ColumnForm.UntaggedColumnForm False { name = "foo" })
+        , test "initialises from a collaped Untagged column" <|
+            \() ->
+                (Column.Untagged <| UntaggedColumn.init "foo")
+                    |> Column.setCollapse True
+                    |> ColumnForm.init
+                    |> Expect.equal (ColumnForm.UntaggedColumnForm True { name = "foo" })
         ]
 
 
@@ -110,64 +152,100 @@ name =
 safeDecoder : Test
 safeDecoder =
     describe "safeDecoder"
-        [ test "decodes a valid Completed SubForm" <|
+        [ test "decodes a valid Completed form" <|
             \() ->
-                ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
+                ColumnForm.CompletedColumnForm False { name = "foo", limit = "4" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.completed (CompletedColumn.init "foo" 0 4))
+        , test "decodes a valid collapsed Completed form" <|
+            \() ->
+                ColumnForm.CompletedColumnForm True { name = "foo", limit = "4" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid Completed form" <|
             \() ->
-                ColumnForm.CompletedColumnForm { name = "", limit = "" }
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.completed (CompletedColumn.init "" 0 10))
         , test "decodes a valid Dated form" <|
             \() ->
-                ColumnForm.DatedColumnForm { name = "foo", rangeType = "After", from = "2", to = "" }
+                ColumnForm.DatedColumnForm False { name = "foo", rangeType = "After", from = "2", to = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.dated (DatedColumn.init "foo" (DatedColumn.After 2)))
+        , test "decodes a valid collapsed Dated form" <|
+            \() ->
+                ColumnForm.DatedColumnForm True { name = "foo", rangeType = "After", from = "2", to = "" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid Dated form" <|
             \() ->
-                ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "2", to = "" }
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "Before", from = "2", to = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.dated (DatedColumn.init "" (DatedColumn.Before 0)))
         , test "decodes a valid NamedTag form" <|
             \() ->
-                ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
+                ColumnForm.NamedTagColumnForm False { name = "foo", tag = "aTag" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.namedTag "foo" "aTag")
+        , test "decodes a valid collapsed NamedTag form" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm True { name = "foo", tag = "aTag" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid NamedTag form" <|
             \() ->
-                ColumnForm.NamedTagColumnForm { name = "", tag = "" }
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.namedTag "" "")
         , test "decodes a valid OtherTags form" <|
             \() ->
-                ColumnForm.OtherTagsColumnForm { name = "foo" }
+                ColumnForm.OtherTagsColumnForm False { name = "foo" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.otherTags "foo" [])
+        , test "decodes a valid collapsed OtherTags form" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm True { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid OtherTags form" <|
             \() ->
-                ColumnForm.OtherTagsColumnForm { name = "" }
+                ColumnForm.OtherTagsColumnForm False { name = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.otherTags "" [])
         , test "decodes a valid Undated form" <|
             \() ->
-                ColumnForm.UndatedColumnForm { name = "foo" }
+                ColumnForm.UndatedColumnForm False { name = "foo" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.undated "foo")
+        , test "decodes a valid collapsed Undated form" <|
+            \() ->
+                ColumnForm.UndatedColumnForm True { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid Undated form" <|
             \() ->
-                ColumnForm.UndatedColumnForm { name = "" }
+                ColumnForm.UndatedColumnForm False { name = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.undated "")
         , test "decodes a valid Untagged form" <|
             \() ->
-                ColumnForm.UntaggedColumnForm { name = "foo" }
+                ColumnForm.UntaggedColumnForm False { name = "foo" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.untagged "foo")
+        , test "decodes a valid collapsed Untagged form" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm True { name = "foo" }
+                    |> SD.run ColumnForm.safeDecoder
+                    |> Result.map Column.isCollapsed
+                    |> Expect.equal (Ok True)
         , test "allows an invalid Untagged form" <|
             \() ->
-                ColumnForm.UntaggedColumnForm { name = "" }
+                ColumnForm.UntaggedColumnForm False { name = "" }
                     |> SD.run ColumnForm.safeDecoder
                     |> Expect.equal (Ok <| Column.untagged "")
         ]

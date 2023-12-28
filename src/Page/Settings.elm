@@ -1385,7 +1385,7 @@ settingsColumnDraggedView isDragging columnForm dragTracker =
 settingsColumnControlView : Int -> ColumnForm -> Html Msg
 settingsColumnControlView index columnForm =
     case columnForm of
-        ColumnForm.CompletedColumnForm completedForm ->
+        ColumnForm.CompletedColumnForm _ completedForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Limit: "
                 , Html.input
@@ -1398,13 +1398,13 @@ settingsColumnControlView index columnForm =
                     []
                 ]
 
-        ColumnForm.DatedColumnForm datedForm ->
+        ColumnForm.DatedColumnForm _ datedForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
                 ([ rangeSelectView index datedForm ]
                     ++ rangeInputsView index datedForm
                 )
 
-        ColumnForm.NamedTagColumnForm namedTagForm ->
+        ColumnForm.NamedTagColumnForm _ namedTagForm ->
             Html.div [ class "cardboard-settings-column-item-controls" ]
                 [ Html.text <| "Tag: "
                 , Html.input

@@ -34,12 +34,12 @@ import Form.SafeDecoder as SD
 
 
 type ColumnForm
-    = CompletedColumnForm CompletedColumnForm
-    | DatedColumnForm DatedColumnForm
-    | NamedTagColumnForm NamedTagColumnForm
-    | OtherTagsColumnForm OtherTagsColumnForm
-    | UndatedColumnForm UndatedColumnForm
-    | UntaggedColumnForm UntaggedColumnForm
+    = CompletedColumnForm Bool CompletedColumnForm
+    | DatedColumnForm Bool DatedColumnForm
+    | NamedTagColumnForm Bool NamedTagColumnForm
+    | OtherTagsColumnForm Bool OtherTagsColumnForm
+    | UndatedColumnForm Bool UndatedColumnForm
+    | UntaggedColumnForm Bool UntaggedColumnForm
 
 
 type Error
@@ -59,22 +59,22 @@ init : Column -> ColumnForm
 init column =
     case column of
         Column.Completed completedColumn ->
-            CompletedColumnForm <| CompletedColumnForm.init completedColumn
+            CompletedColumnForm (Column.isCollapsed column) <| CompletedColumnForm.init completedColumn
 
         Column.Dated datedColumn ->
-            DatedColumnForm <| DatedColumnForm.init datedColumn
+            DatedColumnForm (Column.isCollapsed column) <| DatedColumnForm.init datedColumn
 
         Column.NamedTag namedTagColumn ->
-            NamedTagColumnForm <| NamedTagColumnForm.init namedTagColumn
+            NamedTagColumnForm (Column.isCollapsed column) <| NamedTagColumnForm.init namedTagColumn
 
         Column.OtherTags otherTagsColumn ->
-            OtherTagsColumnForm <| OtherTagsColumnForm.init otherTagsColumn
+            OtherTagsColumnForm (Column.isCollapsed column) <| OtherTagsColumnForm.init otherTagsColumn
 
         Column.Undated undatedColumn ->
-            UndatedColumnForm <| UndatedColumnForm.init undatedColumn
+            UndatedColumnForm (Column.isCollapsed column) <| UndatedColumnForm.init undatedColumn
 
         Column.Untagged untaggedColumn ->
-            UntaggedColumnForm <| UntaggedColumnForm.init untaggedColumn
+            UntaggedColumnForm (Column.isCollapsed column) <| UntaggedColumnForm.init untaggedColumn
 
 
 
@@ -87,35 +87,41 @@ safeDecoder =
         subformDecoder : ColumnForm -> Result Never Column
         subformDecoder form =
             case form of
-                CompletedColumnForm subform ->
+                CompletedColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run CompletedColumnForm.safeDecoder
                         |> Result.map Column.Completed
+                        |> Result.map (Column.setCollapse isCollapsed_)
 
-                DatedColumnForm subform ->
+                DatedColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run DatedColumnForm.safeDecoder
                         |> Result.map Column.Dated
+                        |> Result.map (Column.setCollapse isCollapsed_)
 
-                NamedTagColumnForm subform ->
+                NamedTagColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run NamedTagColumnForm.safeDecoder
                         |> Result.map Column.NamedTag
+                        |> Result.map (Column.setCollapse isCollapsed_)
 
-                OtherTagsColumnForm subform ->
+                OtherTagsColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run OtherTagsColumnForm.safeDecoder
                         |> Result.map Column.OtherTags
+                        |> Result.map (Column.setCollapse isCollapsed_)
 
-                UndatedColumnForm subform ->
+                UndatedColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run UndatedColumnForm.safeDecoder
                         |> Result.map Column.Undated
+                        |> Result.map (Column.setCollapse isCollapsed_)
 
-                UntaggedColumnForm subform ->
+                UntaggedColumnForm isCollapsed_ subform ->
                     subform
                         |> SD.run UntaggedColumnForm.safeDecoder
                         |> Result.map Column.Untagged
+                        |> Result.map (Column.setCollapse isCollapsed_)
     in
     SD.custom subformDecoder
 
@@ -127,7 +133,7 @@ safeDecoder =
 isCompleted : ColumnForm -> Bool
 isCompleted form =
     case form of
-        CompletedColumnForm _ ->
+        CompletedColumnForm _ _ ->
             True
 
         _ ->
@@ -137,7 +143,7 @@ isCompleted form =
 isOtherTags : ColumnForm -> Bool
 isOtherTags form =
     case form of
-        OtherTagsColumnForm _ ->
+        OtherTagsColumnForm _ _ ->
             True
 
         _ ->
@@ -147,7 +153,7 @@ isOtherTags form =
 isUndated : ColumnForm -> Bool
 isUndated form =
     case form of
-        UndatedColumnForm _ ->
+        UndatedColumnForm _ _ ->
             True
 
         _ ->
@@ -157,7 +163,7 @@ isUndated form =
 isUntagged : ColumnForm -> Bool
 isUntagged form =
     case form of
-        UntaggedColumnForm _ ->
+        UntaggedColumnForm _ _ ->
             True
 
         _ ->
@@ -167,66 +173,66 @@ isUntagged form =
 name : ColumnForm -> String
 name form =
     case form of
-        CompletedColumnForm subform ->
+        CompletedColumnForm _ subform ->
             subform.name
 
-        DatedColumnForm subform ->
+        DatedColumnForm _ subform ->
             subform.name
 
-        NamedTagColumnForm subform ->
+        NamedTagColumnForm _ subform ->
             subform.name
 
-        OtherTagsColumnForm subform ->
+        OtherTagsColumnForm _ subform ->
             subform.name
 
-        UndatedColumnForm subform ->
+        UndatedColumnForm _ subform ->
             subform.name
 
-        UntaggedColumnForm subform ->
+        UntaggedColumnForm _ subform ->
             subform.name
 
 
 placeholder : DefaultColumnNames -> ColumnForm -> String
 placeholder defaultColumnNames form =
     case form of
-        CompletedColumnForm _ ->
+        CompletedColumnForm _ _ ->
             DefaultColumnNames.nameFor "completed" defaultColumnNames
 
-        DatedColumnForm _ ->
+        DatedColumnForm _ _ ->
             ""
 
-        NamedTagColumnForm _ ->
+        NamedTagColumnForm _ _ ->
             ""
 
-        OtherTagsColumnForm _ ->
+        OtherTagsColumnForm _ _ ->
             DefaultColumnNames.nameFor "otherTags" defaultColumnNames
 
-        UndatedColumnForm _ ->
+        UndatedColumnForm _ _ ->
             DefaultColumnNames.nameFor "undated" defaultColumnNames
 
-        UntaggedColumnForm _ ->
+        UntaggedColumnForm _ _ ->
             DefaultColumnNames.nameFor "untagged" defaultColumnNames
 
 
 typeString : ColumnForm -> String
 typeString form =
     case form of
-        CompletedColumnForm subform ->
+        CompletedColumnForm _ subform ->
             "Completed"
 
-        DatedColumnForm subform ->
+        DatedColumnForm _ subform ->
             "Dated"
 
-        NamedTagColumnForm subform ->
+        NamedTagColumnForm _ subform ->
             "Tagged"
 
-        OtherTagsColumnForm subform ->
+        OtherTagsColumnForm _ subform ->
             "Other Tags"
 
-        UndatedColumnForm subform ->
+        UndatedColumnForm _ subform ->
             "Undated"
 
-        UntaggedColumnForm subform ->
+        UntaggedColumnForm _ subform ->
             "Untagged"
 
 
@@ -237,8 +243,8 @@ typeString form =
 updateCompletedColumnLimit : String -> ColumnForm -> ColumnForm
 updateCompletedColumnLimit newLimit form =
     case form of
-        CompletedColumnForm subform ->
-            CompletedColumnForm <| CompletedColumnForm.updateLimit newLimit subform
+        CompletedColumnForm isCollapsed_ subform ->
+            CompletedColumnForm isCollapsed_ <| CompletedColumnForm.updateLimit newLimit subform
 
         _ ->
             form
@@ -247,8 +253,8 @@ updateCompletedColumnLimit newLimit form =
 updateDatedColumnRangeType : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeType newType form =
     case form of
-        DatedColumnForm subform ->
-            DatedColumnForm <| DatedColumnForm.updateRangeType newType subform
+        DatedColumnForm isCollapsed_ subform ->
+            DatedColumnForm isCollapsed_ <| DatedColumnForm.updateRangeType newType subform
 
         _ ->
             form
@@ -257,8 +263,8 @@ updateDatedColumnRangeType newType form =
 updateDatedColumnRangeValueFrom : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeValueFrom newValue form =
     case form of
-        DatedColumnForm subform ->
-            DatedColumnForm <| DatedColumnForm.updateFrom newValue subform
+        DatedColumnForm isCollapsed_ subform ->
+            DatedColumnForm isCollapsed_ <| DatedColumnForm.updateFrom newValue subform
 
         _ ->
             form
@@ -267,8 +273,8 @@ updateDatedColumnRangeValueFrom newValue form =
 updateDatedColumnRangeValueTo : String -> ColumnForm -> ColumnForm
 updateDatedColumnRangeValueTo newValue form =
     case form of
-        DatedColumnForm subform ->
-            DatedColumnForm <| DatedColumnForm.updateTo newValue subform
+        DatedColumnForm isCollapsed_ subform ->
+            DatedColumnForm isCollapsed_ <| DatedColumnForm.updateTo newValue subform
 
         _ ->
             form
@@ -277,30 +283,56 @@ updateDatedColumnRangeValueTo newValue form =
 updateName : String -> ColumnForm -> ColumnForm
 updateName newName form =
     case form of
-        CompletedColumnForm subform ->
-            CompletedColumnForm <| CompletedColumnForm.updateName newName subform
+        CompletedColumnForm isCollapsed_ subform ->
+            CompletedColumnForm isCollapsed_ <| CompletedColumnForm.updateName newName subform
 
-        DatedColumnForm subform ->
-            DatedColumnForm <| DatedColumnForm.updateName newName subform
+        DatedColumnForm isCollapsed_ subform ->
+            DatedColumnForm isCollapsed_ <| DatedColumnForm.updateName newName subform
 
-        NamedTagColumnForm subform ->
-            NamedTagColumnForm <| NamedTagColumnForm.updateName newName subform
+        NamedTagColumnForm isCollapsed_ subform ->
+            NamedTagColumnForm isCollapsed_ <| NamedTagColumnForm.updateName newName subform
 
-        OtherTagsColumnForm subform ->
-            OtherTagsColumnForm <| OtherTagsColumnForm.updateName newName subform
+        OtherTagsColumnForm isCollapsed_ subform ->
+            OtherTagsColumnForm isCollapsed_ <| OtherTagsColumnForm.updateName newName subform
 
-        UndatedColumnForm subform ->
-            UndatedColumnForm <| UndatedColumnForm.updateName newName subform
+        UndatedColumnForm isCollapsed_ subform ->
+            UndatedColumnForm isCollapsed_ <| UndatedColumnForm.updateName newName subform
 
-        UntaggedColumnForm subform ->
-            UntaggedColumnForm <| UntaggedColumnForm.updateName newName subform
+        UntaggedColumnForm isCollapsed_ subform ->
+            UntaggedColumnForm isCollapsed_ <| UntaggedColumnForm.updateName newName subform
 
 
 updateNamedTagTag : String -> ColumnForm -> ColumnForm
 updateNamedTagTag newName form =
     case form of
-        NamedTagColumnForm subform ->
-            NamedTagColumnForm <| NamedTagColumnForm.updateTag newName subform
+        NamedTagColumnForm isCollapsed_ subform ->
+            NamedTagColumnForm isCollapsed_ <| NamedTagColumnForm.updateTag newName subform
 
         _ ->
             form
+
+
+
+-- PRIVATE
+
+
+isCollapsed : ColumnForm -> Bool
+isCollapsed form =
+    case form of
+        CompletedColumnForm isCollapsed_ _ ->
+            isCollapsed_
+
+        DatedColumnForm isCollapsed_ _ ->
+            isCollapsed_
+
+        NamedTagColumnForm isCollapsed_ _ ->
+            isCollapsed_
+
+        OtherTagsColumnForm isCollapsed_ _ ->
+            isCollapsed_
+
+        UndatedColumnForm isCollapsed_ _ ->
+            isCollapsed_
+
+        UntaggedColumnForm isCollapsed_ _ ->
+            isCollapsed_

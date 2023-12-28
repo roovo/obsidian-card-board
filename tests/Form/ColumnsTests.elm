@@ -51,7 +51,7 @@ addColumn =
                     |> Expect.equal [ "foo" ]
         , test "adds an Undated columnn after an existing Untagged column" <|
             \() ->
-                { columnForms = [ ColumnForm.UntaggedColumnForm { name = "foo" } ] }
+                { columnForms = [ ColumnForm.UntaggedColumnForm False { name = "foo" } ] }
                     |> ColumnsForm.addColumn (NewColumnForm "bar" "Undated")
                     |> .columnForms
                     |> List.map ColumnForm.name
@@ -59,8 +59,8 @@ addColumn =
         , test "adds a non-Completed columnn after the completed column" <|
             \() ->
                 { columnForms =
-                    [ ColumnForm.UntaggedColumnForm { name = "foo" }
-                    , ColumnForm.CompletedColumnForm { name = "bar", limit = "5" }
+                    [ ColumnForm.UntaggedColumnForm False { name = "foo" }
+                    , ColumnForm.CompletedColumnForm False { name = "bar", limit = "5" }
                     ]
                 }
                     |> ColumnsForm.addColumn (NewColumnForm "baz" "Undated")
@@ -92,8 +92,8 @@ find =
         , test "returns Nothing if there are Columns but none which match the test" <|
             \() ->
                 { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
-                    , ColumnForm.DatedColumnForm { name = "bar", rangeType = "Before", from = "", to = "7" }
+                    [ ColumnForm.CompletedColumnForm False { name = "foo", limit = "4" }
+                    , ColumnForm.DatedColumnForm False { name = "bar", rangeType = "Before", from = "", to = "7" }
                     ]
                 }
                     |> ColumnsForm.find (\c -> ColumnForm.name c == "baz")
@@ -101,12 +101,12 @@ find =
         , test "returns Just the ColumnForm if there is a matching Column" <|
             \() ->
                 { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
-                    , ColumnForm.DatedColumnForm { name = "bar", rangeType = "Before", from = "", to = "7" }
+                    [ ColumnForm.CompletedColumnForm False { name = "foo", limit = "4" }
+                    , ColumnForm.DatedColumnForm False { name = "bar", rangeType = "Before", from = "", to = "7" }
                     ]
                 }
                     |> ColumnsForm.find (\c -> ColumnForm.name c == "foo")
-                    |> Expect.equal (Just <| ColumnForm.CompletedColumnForm { name = "foo", limit = "4" })
+                    |> Expect.equal (Just <| ColumnForm.CompletedColumnForm False { name = "foo", limit = "4" })
         ]
 
 
@@ -132,12 +132,12 @@ init =
                     |> ColumnsForm.init
                     |> .columnForms
                     |> Expect.equal
-                        [ ColumnForm.CompletedColumnForm { name = "foo", limit = "5" }
-                        , ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" }
-                        , ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
-                        , ColumnForm.OtherTagsColumnForm { name = "foo" }
-                        , ColumnForm.UndatedColumnForm { name = "foo" }
-                        , ColumnForm.UntaggedColumnForm { name = "foo" }
+                        [ ColumnForm.CompletedColumnForm False { name = "foo", limit = "5" }
+                        , ColumnForm.DatedColumnForm False { name = "foo", rangeType = "Before", from = "", to = "7" }
+                        , ColumnForm.NamedTagColumnForm False { name = "foo", tag = "aTag" }
+                        , ColumnForm.OtherTagsColumnForm False { name = "foo" }
+                        , ColumnForm.UndatedColumnForm False { name = "foo" }
+                        , ColumnForm.UntaggedColumnForm False { name = "foo" }
                         ]
         ]
 
@@ -369,12 +369,12 @@ safeDecoder =
         , test "decodes a list of one of each Column type" <|
             \() ->
                 { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "4" }
-                    , ColumnForm.DatedColumnForm { name = "foo", rangeType = "Before", from = "", to = "7" }
-                    , ColumnForm.NamedTagColumnForm { name = "foo", tag = "aTag" }
-                    , ColumnForm.OtherTagsColumnForm { name = "foo" }
-                    , ColumnForm.UndatedColumnForm { name = "foo" }
-                    , ColumnForm.UntaggedColumnForm { name = "foo" }
+                    [ ColumnForm.CompletedColumnForm False { name = "foo", limit = "4" }
+                    , ColumnForm.DatedColumnForm False { name = "foo", rangeType = "Before", from = "", to = "7" }
+                    , ColumnForm.NamedTagColumnForm False { name = "foo", tag = "aTag" }
+                    , ColumnForm.OtherTagsColumnForm False { name = "foo" }
+                    , ColumnForm.UndatedColumnForm False { name = "foo" }
+                    , ColumnForm.UntaggedColumnForm False { name = "foo" }
                     ]
                 }
                     |> SD.run ColumnsForm.safeDecoder
@@ -392,8 +392,8 @@ safeDecoder =
         , test "decodes if given invalid data" <|
             \() ->
                 { columnForms =
-                    [ ColumnForm.CompletedColumnForm { name = "foo", limit = "p" }
-                    , ColumnForm.DatedColumnForm { name = "", rangeType = "Before", from = "", to = "plop" }
+                    [ ColumnForm.CompletedColumnForm False { name = "foo", limit = "p" }
+                    , ColumnForm.DatedColumnForm False { name = "", rangeType = "Before", from = "", to = "plop" }
                     ]
                 }
                     |> SD.run ColumnsForm.safeDecoder
@@ -471,7 +471,7 @@ updateCompletedColumnLimit =
                     |> ColumnsForm.updateCompletedColumnLimit 0 "newLimit"
                     |> .columnForms
                     |> LE.getAt 0
-                    |> Expect.equal (Just <| ColumnForm.CompletedColumnForm { name = "foo", limit = "newLimit" })
+                    |> Expect.equal (Just <| ColumnForm.CompletedColumnForm False { name = "foo", limit = "newLimit" })
         ]
 
 
@@ -505,7 +505,7 @@ updateDatedColumnRangeType =
                     |> ColumnsForm.updateDatedColumnRangeType 1 "newType"
                     |> .columnForms
                     |> LE.getAt 1
-                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "newType", from = "7", to = "" })
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm False { name = "bar", rangeType = "newType", from = "7", to = "" })
         ]
 
 
@@ -539,7 +539,7 @@ updateDatedColumnRangeValueFrom =
                     |> ColumnsForm.updateDatedColumnRangeValueFrom 1 "newValue"
                     |> .columnForms
                     |> LE.getAt 1
-                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "After", from = "newValue", to = "" })
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm False { name = "bar", rangeType = "After", from = "newValue", to = "" })
         ]
 
 
@@ -573,7 +573,7 @@ updateDatedColumnRangeValueTo =
                     |> ColumnsForm.updateDatedColumnRangeValueTo 1 "newValue"
                     |> .columnForms
                     |> LE.getAt 1
-                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm { name = "bar", rangeType = "Before", from = "", to = "newValue" })
+                    |> Expect.equal (Just <| ColumnForm.DatedColumnForm False { name = "bar", rangeType = "Before", from = "", to = "newValue" })
         ]
 
 
@@ -607,5 +607,5 @@ updateNamedTagTag =
                     |> ColumnsForm.updateNamedTagTag 1 "newTagName"
                     |> .columnForms
                     |> LE.getAt 1
-                    |> Expect.equal (Just <| ColumnForm.NamedTagColumnForm { name = "bar", tag = "newTagName" })
+                    |> Expect.equal (Just <| ColumnForm.NamedTagColumnForm False { name = "bar", tag = "newTagName" })
         ]

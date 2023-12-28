@@ -41,22 +41,22 @@ safeDecoder =
         \form ->
             case form.columnType of
                 "Completed" ->
-                    Ok <| Just (ColumnForm.CompletedColumnForm { name = form.name, limit = "10" })
+                    Ok <| Just (ColumnForm.CompletedColumnForm False { name = form.name, limit = "10" })
 
                 "Dated" ->
-                    Ok <| Just (ColumnForm.DatedColumnForm { name = form.name, rangeType = "Before", from = "", to = "" })
+                    Ok <| Just (ColumnForm.DatedColumnForm False { name = form.name, rangeType = "Before", from = "", to = "" })
 
                 "NamedTag" ->
-                    Ok <| Just (ColumnForm.NamedTagColumnForm { name = form.name, tag = "" })
+                    Ok <| Just (ColumnForm.NamedTagColumnForm False { name = form.name, tag = "" })
 
                 "OtherTags" ->
-                    Ok <| Just (ColumnForm.OtherTagsColumnForm { name = form.name })
+                    Ok <| Just (ColumnForm.OtherTagsColumnForm False { name = form.name })
 
                 "Undated" ->
-                    Ok <| Just (ColumnForm.UndatedColumnForm { name = form.name })
+                    Ok <| Just (ColumnForm.UndatedColumnForm False { name = form.name })
 
                 "Untagged" ->
-                    Ok <| Just (ColumnForm.UntaggedColumnForm { name = form.name })
+                    Ok <| Just (ColumnForm.UntaggedColumnForm False { name = form.name })
 
                 _ ->
                     Ok <| Nothing

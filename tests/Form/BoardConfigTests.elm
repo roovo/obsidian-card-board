@@ -127,8 +127,8 @@ init =
                     |> .columnsForm
                     |> Expect.equal
                         { columnForms =
-                            [ ColumnForm.UndatedColumnForm { name = "foo" }
-                            , ColumnForm.UntaggedColumnForm { name = "bar" }
+                            [ ColumnForm.UndatedColumnForm False { name = "foo" }
+                            , ColumnForm.UntaggedColumnForm False { name = "bar" }
                             ]
                         }
         , test "initialises the filters from the board config" <|
