@@ -351,14 +351,6 @@ ul.card-board-column-list > li.card-board-card::before {
   cursor: pointer;
 }
 
-.card-board-view .modal-content {
-  display: grid;
-  grid: "select form"
-        / 200px auto;
-  overflow: hidden;
-  margin-top: 0;
-}
-
 .setting-items-inner {
   position: relative;
   height: auto;
@@ -434,6 +426,8 @@ ul.card-board-column-list > li.card-board-card::before {
   display: grid;
   grid-gap: 1.5em;
   padding-top: 1.3em;
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .form-item {

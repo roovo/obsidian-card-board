@@ -34,6 +34,7 @@ import Html.Events.Extra.Mouse exposing (onDown)
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
+import Maybe.Extra as ME
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
@@ -550,13 +551,21 @@ view model =
         SettingsState.DeletingBoard settingsForm ->
             Html.div []
                 [ boardSettingsView settingsForm model.multiSelect dragTracker
-                , modalConfirmDelete
+                , modalConfirmDeleteBoard (settingsForm |> SettingsForm.boardConfigForms |> SafeZipper.current)
                 ]
 
-        SettingsState.DeletingColumn _ settingsForm ->
+        SettingsState.DeletingColumn index settingsForm ->
             Html.div []
                 [ boardSettingsView settingsForm model.multiSelect dragTracker
-                , modalConfirmDelete
+                , modalConfirmDeleteColumn
+                    (settingsForm
+                        |> SettingsForm.boardConfigForms
+                        |> SafeZipper.current
+                        |> Maybe.map .columnsForm
+                        |> Maybe.map .columnForms
+                        |> Maybe.map (LE.getAt index)
+                        |> ME.join
+                    )
                 ]
 
         SettingsState.EditingBoard settingsForm ->
@@ -611,18 +620,18 @@ modalAddBoard newBoardConfigForm =
                             )
                         ]
                     ]
-                , Html.div [ class "dialog-buttons" ]
-                    [ Html.button
-                        [ onClick <| ModalCancelClicked
-                        ]
-                        [ Html.text "Cancel"
-                        ]
-                    , Html.button
-                        [ class "mod-cta"
-                        , onClick <| AddBoardConfirmed
-                        ]
-                        [ Html.text "Add"
-                        ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ class "mod-cta"
+                    , onClick <| AddBoardConfirmed
+                    ]
+                    [ Html.text "Add"
+                    ]
+                , Html.button
+                    [ onClick <| ModalCancelClicked
+                    ]
+                    [ Html.text "Cancel"
                     ]
                 ]
             ]
@@ -681,51 +690,140 @@ modalAddColumn newColumnConfigForm settingsForm =
                             )
                         ]
                     ]
-                , Html.div [ class "dialog-buttons" ]
-                    [ Html.button
-                        [ onClick <| ModalCancelClicked
-                        ]
-                        [ Html.text "Cancel"
-                        ]
-                    , Html.button
-                        [ class "mod-cta"
-                        , onClick <| AddColumnConfirmed
-                        ]
-                        [ Html.text "Add"
-                        ]
-                    ]
                 ]
-            ]
-        ]
-
-
-modalConfirmDelete : Html Msg
-modalConfirmDelete =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
-                ]
-                []
-            , Html.div [ class "modal-title" ]
-                [ Html.text "Confirm Deletion" ]
-            , Html.div [ class "dialog-buttons" ]
+            , Html.div [ class "modal-button-container" ]
                 [ Html.button
-                    [ onClick <| ModalCancelClicked
+                    [ class "mod-cta"
+                    , onClick <| AddColumnConfirmed
                     ]
-                    [ Html.text "Do not delete"
+                    [ Html.text "Add"
                     ]
                 , Html.button
-                    [ class "mod-warning"
-                    , onClick <| DeleteConfirmed
+                    [ onClick <| ModalCancelClicked
                     ]
-                    [ Html.text "Go ahead"
+                    [ Html.text "Cancel"
                     ]
                 ]
             ]
         ]
+
+
+modalConfirmDeleteBoard : Maybe BoardConfigForm -> Html Msg
+modalConfirmDeleteBoard boardConfigForm =
+    case boardConfigForm of
+        Just configForm ->
+            let
+                nameString : String
+                nameString =
+                    if String.length configForm.name == 0 then
+                        "this un-named board"
+
+                    else
+                        "the board named " ++ configForm.name
+            in
+            Html.div [ class "modal-container" ]
+                [ Html.div
+                    [ class "modal-bg"
+                    , style "opacity" "0.85"
+                    ]
+                    []
+                , Html.div [ class "modal" ]
+                    [ Html.div
+                        [ class "modal-close-button"
+                        , onClick ModalCloseClicked
+                        ]
+                        []
+                    , Html.div [ class "modal-title" ]
+                        [ Html.text "Delete Board" ]
+                    , Html.div [ class "modal-content" ]
+                        [ Html.p [ class "mod-warning" ]
+                            [ Html.text <|
+                                "This will delete "
+                                    ++ nameString
+                                    ++ ".  It will not affect any other boards or any files in your vault."
+                            ]
+                        ]
+                    , Html.div [ class "modal-button-container" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteConfirmed
+                            ]
+                            [ Html.text "Delete"
+                            ]
+                        , Html.button
+                            [ onClick <| ModalCancelClicked
+                            ]
+                            [ Html.text "Cancel"
+                            ]
+                        ]
+                    ]
+                ]
+
+        Nothing ->
+            Html.text ""
+
+
+modalConfirmDeleteColumn : Maybe ColumnForm -> Html Msg
+modalConfirmDeleteColumn columnForm =
+    case columnForm of
+        Just form ->
+            let
+                formName : String
+                formName =
+                    ColumnForm.name form
+
+                nameString : String
+                nameString =
+                    if String.length formName == 0 then
+                        "this un-named " ++ typeString ++ " column"
+
+                    else
+                        "the " ++ typeString ++ " column named " ++ formName
+
+                typeString : String
+                typeString =
+                    ColumnForm.typeString form
+            in
+            Html.div [ class "modal-container" ]
+                [ Html.div
+                    [ class "modal-bg"
+                    , style "opacity" "0.85"
+                    ]
+                    []
+                , Html.div [ class "modal" ]
+                    [ Html.div
+                        [ class "modal-close-button"
+                        , onClick ModalCloseClicked
+                        ]
+                        []
+                    , Html.div [ class "modal-title" ]
+                        [ Html.text "Delete Column" ]
+                    , Html.div [ class "modal-content" ]
+                        [ Html.p [ class "mod-warning" ]
+                            [ Html.text <|
+                                "This will delete "
+                                    ++ nameString
+                                    ++ ".  It will not affect any other boards, columns, or any files in your vault."
+                            ]
+                        ]
+                    , Html.div [ class "modal-button-container" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteConfirmed
+                            ]
+                            [ Html.text "Delete"
+                            ]
+                        , Html.button
+                            [ onClick <| ModalCancelClicked
+                            ]
+                            [ Html.text "Cancel"
+                            ]
+                        ]
+                    ]
+                ]
+
+        Nothing ->
+            Html.text ""
 
 
 settingsSurroundView : CurrentSection -> SafeZipper BoardConfigForm -> DragTracker -> List (Html Msg) -> Html Msg
