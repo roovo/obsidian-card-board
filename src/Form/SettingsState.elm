@@ -1,4 +1,4 @@
-module SettingsState exposing
+module Form.SettingsState exposing
     ( SettingsState(..)
     , addBoardConfirmed
     , addBoardRequested

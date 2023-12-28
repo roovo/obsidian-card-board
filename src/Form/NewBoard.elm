@@ -35,8 +35,6 @@ default =
 
 
 
--- safeDecoder : SD.Decoder NewBoardForm BoardConfigForm.Form
--- safeDecoder =
 -- INFO
 
 

@@ -1,5 +1,3 @@
-- move multiselect into the form?
-- move SettingsState into the Form folder?
 - Form.NewBoardForm.safeDecoder
 - add new board - should I default the name when adding or should I make the highlighted name in the list
   so it isn't narrower than the others?

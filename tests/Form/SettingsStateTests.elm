@@ -1,4 +1,4 @@
-module SettingsStateTests exposing (suite)
+module Form.SettingsStateTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
 import Column
@@ -13,10 +13,10 @@ import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.Settings as SettingsForm exposing (SettingsForm)
+import Form.SettingsState as SettingsState exposing (SettingsState)
 import GlobalSettings exposing (GlobalSettings)
 import SafeZipper
 import Settings exposing (Settings)
-import SettingsState exposing (SettingsState)
 import Test exposing (..)
 
 

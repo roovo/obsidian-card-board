@@ -31,6 +31,7 @@ import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.Settings as SettingsForm exposing (SettingsForm)
+import Form.SettingsState as SettingsState exposing (SettingsState)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
@@ -45,7 +46,6 @@ import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
 import Settings exposing (Settings)
-import SettingsState exposing (SettingsState)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
