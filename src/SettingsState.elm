@@ -212,10 +212,11 @@ cancelCurrentState : SettingsState -> SettingsState
 cancelCurrentState settingsState =
     case settingsState of
         AddingBoard _ settingsForm_ ->
-            -- if SettingsForm.hasAnyBordsConfigured settingsForm_ then
-            --     init settingsForm_
-            -- else
-            ClosingPlugin settingsForm_
+            if SettingsForm.hasAnyBordsConfigured settingsForm_ then
+                EditingBoard settingsForm_
+
+            else
+                ClosingPlugin settingsForm_
 
         AddingColumn _ settingsForm_ ->
             EditingBoard settingsForm_

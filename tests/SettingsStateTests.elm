@@ -29,7 +29,7 @@ suite =
         , addColumnRequested
 
         -- , boardConfigs
-        -- , cancelCurrentState
+        , cancelCurrentState
         , deleteBoardRequested
         , deleteColumnRequested
         , deleteConfirmed
@@ -302,66 +302,58 @@ addColumnRequested =
 --         ]
 --
 --
--- cancelCurrentState : Test
--- cancelCurrentState =
---     describe "cancelCurrentState"
---         [ test "AddingBoard -> ClosingPlugin if the board list is empty" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
---         , test "AddingBoard -> EditingBoard if the board list is NOT empty" <|
---             \() ->
---                 SettingsState.AddingBoard NewBoardForm.default (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal
---                         (SettingsState.EditingBoard
---                             (settingsFromBoardConfigs
---                                 [ exampleBoardConfig ]
---                             )
---                             { columnsForms =
---                                 SafeZipper.fromList
---                                     [ { columnForms = [ ColumnForm.NamedTagColumnForm { name = "foo", tag = "bar" } ] } ]
---                             }
---                         )
---         , test "AddingColumn -> EditingBoard" <|
---             \() ->
---                 SettingsState.AddingColumn (NewColumnForm "" "") (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.EditingBoard (settingsFromBoardConfigs [ exampleBoardConfig ]) SettingsForm.empty)
---         , test "ClosingPlugin -> ClosingPlugin" <|
---             \() ->
---                 SettingsState.ClosingPlugin Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.ClosingPlugin Settings.default SettingsForm.empty)
---         , test "ClosingSettings -> ClosingSettings" <|
---             \() ->
---                 SettingsState.ClosingSettings Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
---         , test "DeletingBoard -> EditingBoard" <|
---             \() ->
---                 SettingsState.DeletingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
---         , test "DeletingColumn -> EditingBoard" <|
---             \() ->
---                 SettingsState.DeletingColumn 1 Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.EditingBoard Settings.default SettingsForm.empty)
---         , test "EditingBoard -> ClosingSettings" <|
---             \() ->
---                 SettingsState.EditingBoard Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
---         , test "EditingGlobalSettings -> ClosingSettings" <|
---             \() ->
---                 SettingsState.EditingGlobalSettings Settings.default SettingsForm.empty
---                     |> SettingsState.cancelCurrentState
---                     |> Expect.equal (SettingsState.ClosingSettings Settings.default SettingsForm.empty)
---         ]
---
---
+
+
+cancelCurrentState : Test
+cancelCurrentState =
+    describe "cancelCurrentState"
+        [ test "AddingBoard -> ClosingPlugin if the board list is empty" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardForm.default exampleSettingsForm
+                    |> SettingsState.cancelCurrentState
+                    |> isInClosingPluginState
+                    |> Expect.equal True
+        , test "AddingBoard -> EditingBoard if the board list is NOT empty" <|
+            \() ->
+                SettingsState.AddingBoard NewBoardForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "AddingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.AddingColumn NewColumnForm.default exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "ClosingPlugin -> ClosingPlugin" <|
+            \() ->
+                SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.ClosingPlugin exampleSettingsFormWithThreeBoards)
+        , test "ClosingSettings -> ClosingSettings" <|
+            \() ->
+                SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards)
+        , test "DeletingBoard -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "DeletingColumn -> EditingBoard" <|
+            \() ->
+                SettingsState.DeletingColumn 0 exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.EditingBoard exampleSettingsFormWithThreeBoards)
+        , test "EditingBoard -> ClosingSettings" <|
+            \() ->
+                SettingsState.EditingBoard exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards)
+        , test "EditingGlobalSettings -> ClosingSettings" <|
+            \() ->
+                SettingsState.EditingGlobalSettings exampleSettingsFormWithThreeBoards
+                    |> SettingsState.cancelCurrentState
+                    |> Expect.equal (SettingsState.ClosingSettings exampleSettingsFormWithThreeBoards)
+        ]
 
 
 deleteBoardRequested : Test
@@ -1135,6 +1127,16 @@ isInAddingBoardState : SettingsState -> Bool
 isInAddingBoardState settingsState =
     case settingsState of
         SettingsState.AddingBoard _ _ ->
+            True
+
+        _ ->
+            False
+
+
+isInClosingPluginState : SettingsState -> Bool
+isInClosingPluginState settingsState =
+    case settingsState of
+        SettingsState.ClosingPlugin _ ->
             True
 
         _ ->
