@@ -126,8 +126,11 @@ boardConfigForms form =
 
 
 defaultColumnNames : SettingsForm -> DefaultColumnNames
-defaultColumnNames form =
-    DefaultColumnNames.default
+defaultColumnNames settingsForm =
+    settingsForm
+        |> SD.run safeDecoder
+        |> Result.map Settings.defaultColumnNames
+        |> Result.withDefault DefaultColumnNames.default
 
 
 hasAnyBordsConfigured : SettingsForm -> Bool

@@ -25,6 +25,7 @@ suite : Test
 suite =
     concat
         [ addBoard
+        , defaultColumnNames
         , deleteColumn
         , mapCurrentBoard
         , mapCurrentColumnsForm
@@ -63,6 +64,54 @@ addBoard =
                     |> SafeZipper.current
                     |> Maybe.map .name
                     |> Expect.equal (Just "foo")
+        ]
+
+
+defaultColumnNames : Test
+defaultColumnNames =
+    describe "defaultColumnNames"
+        [ test "uses the today value" <|
+            \() ->
+                { exampleSettingsForm | today = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "today"
+                    |> Expect.equal "foo"
+        , test "uses the tomorrow value" <|
+            \() ->
+                { exampleSettingsForm | tomorrow = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "tomorrow"
+                    |> Expect.equal "foo"
+        , test "uses the future value" <|
+            \() ->
+                { exampleSettingsForm | future = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "future"
+                    |> Expect.equal "foo"
+        , test "uses the undated value" <|
+            \() ->
+                { exampleSettingsForm | undated = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "undated"
+                    |> Expect.equal "foo"
+        , test "uses the otherTags value" <|
+            \() ->
+                { exampleSettingsForm | otherTags = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "otherTags"
+                    |> Expect.equal "foo"
+        , test "uses the untagged value" <|
+            \() ->
+                { exampleSettingsForm | untagged = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "untagged"
+                    |> Expect.equal "foo"
+        , test "uses the completed value" <|
+            \() ->
+                { exampleSettingsForm | completed = "foo" }
+                    |> SettingsForm.defaultColumnNames
+                    |> DefaultColumnNames.nameFor "completed"
+                    |> Expect.equal "foo"
         ]
 
 
