@@ -1,6 +1,5 @@
 module Form.Columns exposing
     ( ColumnsForm
-    , OptionsForSelect
     , addColumn
     , decoder
     , deleteColumn
@@ -25,9 +24,11 @@ import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm exposing (ColumnForm)
 import Form.Decoder as FD
 import Form.NewBoard exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
+import Form.Select exposing (Option)
 import List.Extra as LE
+import Maybe.Extra as ME
 
 
 
@@ -36,13 +37,6 @@ import List.Extra as LE
 
 type alias ColumnsForm =
     { columnForms : List ColumnForm }
-
-
-type alias OptionsForSelect =
-    { isSelected : Bool
-    , text : String
-    , value : String
-    }
 
 
 
@@ -112,7 +106,7 @@ find fn form =
     LE.find fn form.columnForms
 
 
-optionsForSelect : ColumnsForm -> NewColumnForm -> List OptionsForSelect
+optionsForSelect : ColumnsForm -> NewColumnForm -> List Option
 optionsForSelect form newColumnConfigForm =
     let
         alreadyHasCompleted : Bool
@@ -139,7 +133,7 @@ optionsForSelect form newColumnConfigForm =
                 |> .columnForms
                 |> List.any ColumnForm.isUntagged
 
-        completed : List OptionsForSelect
+        completed : List Option
         completed =
             if alreadyHasCompleted then
                 []
@@ -147,11 +141,11 @@ optionsForSelect form newColumnConfigForm =
             else
                 [ { isSelected = newColumnConfigForm.columnType == "completed"
                   , text = "Completed"
-                  , value = "completed"
+                  , value = "Completed"
                   }
                 ]
 
-        otherTags : List OptionsForSelect
+        otherTags : List Option
         otherTags =
             if alreadyHasOtherTags then
                 []
@@ -159,11 +153,11 @@ optionsForSelect form newColumnConfigForm =
             else
                 [ { isSelected = newColumnConfigForm.columnType == "otherTags"
                   , text = "Other Tags"
-                  , value = "otherTags"
+                  , value = "OtherTags"
                   }
                 ]
 
-        undated : List OptionsForSelect
+        undated : List Option
         undated =
             if alreadyHasUndated then
                 []
@@ -171,11 +165,11 @@ optionsForSelect form newColumnConfigForm =
             else
                 [ { isSelected = newColumnConfigForm.columnType == "undated"
                   , text = "Undated"
-                  , value = "undated"
+                  , value = "Undated"
                   }
                 ]
 
-        untagged : List OptionsForSelect
+        untagged : List Option
         untagged =
             if alreadyHasUntagged then
                 []
@@ -183,22 +177,22 @@ optionsForSelect form newColumnConfigForm =
             else
                 [ { isSelected = newColumnConfigForm.columnType == "untagged"
                   , text = "Untagged"
-                  , value = "untagged"
+                  , value = "Untagged"
                   }
                 ]
 
-        allColumns : List OptionsForSelect
+        allColumns : List Option
         allColumns =
             completed
                 ++ [ { isSelected = newColumnConfigForm.columnType == "dated"
                      , text = "Dated"
-                     , value = "dated"
+                     , value = "Dated"
                      }
                    ]
                 ++ otherTags
                 ++ [ { isSelected = newColumnConfigForm.columnType == "namedTag"
                      , text = "Tagged"
-                     , value = "namedTag"
+                     , value = "NamedTag"
                      }
                    ]
                 ++ undated
@@ -217,35 +211,40 @@ optionsForSelect form newColumnConfigForm =
 
 
 addColumn : NewColumnForm -> ColumnsForm -> ColumnsForm
-addColumn newColumnConfigForm form =
-    -- let
-    --     allColumns : List ColumnForm.Form
-    --     allColumns =
-    --         form.columnForms
-    --     completedPosition : Maybe Int
-    --     completedPosition =
-    --         LE.findIndex ColumnForm.isCompleted allColumns
-    --     newColumn : List ColumnForm.Form
-    --     newColumn =
-    --         ColumnForm.fromColumnConfig newColumnConfigForm
-    --             |> Maybe.map List.singleton
-    --             |> Maybe.withDefault []
-    -- in
-    -- (case completedPosition of
-    --     Just position ->
-    --         let
-    --             ( preCompleted, completedPlus ) =
-    --                 LE.splitAt position allColumns
-    --         in
-    --         if List.length completedPlus == 1 then
-    --             preCompleted ++ newColumn ++ completedPlus
-    --         else
-    --             allColumns ++ newColumn
-    --     Nothing ->
-    --         allColumns ++ newColumn
-    -- )
-    --     |> ColumnsForm
-    form
+addColumn newColumnForm columnsForm =
+    let
+        allColumns : List ColumnForm
+        allColumns =
+            columnsForm.columnForms
+
+        completedPosition : Maybe Int
+        completedPosition =
+            LE.findIndex ColumnForm.isCompleted allColumns
+
+        newColumn : List ColumnForm
+        newColumn =
+            SD.run NewColumnForm.safeDecoder newColumnForm
+                |> Result.toMaybe
+                |> ME.join
+                |> Maybe.map List.singleton
+                |> Maybe.withDefault []
+    in
+    (case completedPosition of
+        Just position ->
+            let
+                ( preCompleted, completedPlus ) =
+                    LE.splitAt position allColumns
+            in
+            if List.length completedPlus == 1 then
+                preCompleted ++ newColumn ++ completedPlus
+
+            else
+                allColumns ++ newColumn
+
+        Nothing ->
+            allColumns ++ newColumn
+    )
+        |> ColumnsForm
 
 
 deleteColumn : Int -> ColumnsForm -> ColumnsForm

@@ -2,7 +2,6 @@ module Form.Column exposing
     ( ColumnForm(..)
     , Error(..)
     , decoder
-      -- , fromColumnConfig
     , init
     , isCompleted
     , isOtherTags
@@ -19,8 +18,6 @@ module Form.Column exposing
     , updateName
     , updateNamedTagTag
     )
-
--- import Form.NewColumnConfig exposing (NewColumnConfigForm)
 
 import Column exposing (Column)
 import DefaultColumnNames exposing (DefaultColumnNames)
@@ -58,30 +55,6 @@ type Error
 
 
 -- CONSTRUCTION
--- fromColumnConfig : NewColumnConfigForm -> Maybe ColumnForm
--- fromColumnConfig newColumnConfigForm =
---     case newColumnConfigForm.columnType of
---         "Completed" ->
---             Just (CompletedColumnForm { name = newColumnConfigForm.name, limit = "10" })
---
---         "Dated" ->
---             Just (DatedColumnForm { name = newColumnConfigForm.name, rangeType = "Before", from = "", to = "" })
---
---         "NamedTag" ->
---             Just (NamedTagColumnForm { name = newColumnConfigForm.name, tag = "" })
---
---         "OtherTags" ->
---             Just (OtherTagsColumnForm { name = newColumnConfigForm.name })
---
---         "Undated" ->
---             Just (UndatedColumnForm { name = newColumnConfigForm.name })
---
---         "Untagged" ->
---             Just (UntaggedColumnForm { name = newColumnConfigForm.name })
---
---         _ ->
---             Nothing
---
 
 
 init : Column -> ColumnForm

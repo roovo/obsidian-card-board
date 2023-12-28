@@ -688,12 +688,12 @@ modalAddColumn newColumnConfigForm settingsForm =
                             , onInput NewColumnTypeSelected
                             ]
                             (ColumnsForm.optionsForSelect
-                                -- (settingsForm
-                                --     |> SettingsForm.columnsForms
-                                --     |> SafeZipper.current
-                                --     |> Maybe.withDefault ColumnsForm.empty
-                                -- )
-                                ColumnsForm.empty
+                                (settingsForm
+                                    |> SettingsForm.boardConfigForms
+                                    |> SafeZipper.current
+                                    |> Maybe.map .columns
+                                    |> Maybe.withDefault ColumnsForm.empty
+                                )
                                 newColumnConfigForm
                                 |> List.map
                                     (\c ->

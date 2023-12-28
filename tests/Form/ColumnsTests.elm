@@ -23,7 +23,8 @@ import Test exposing (..)
 suite : Test
 suite =
     concat
-        [ decoder
+        [ addColumn
+        , decoder
         , empty
         , find
         , init
@@ -35,6 +36,37 @@ suite =
         , updateDatedColumnRangeValueFrom
         , updateDatedColumnRangeValueTo
         , updateNamedTagTag
+        ]
+
+
+addColumn : Test
+addColumn =
+    describe "addColumn"
+        [ test "adds an Undated columnn to an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.empty
+                    |> ColumnsForm.addColumn (NewColumnForm "foo" "Undated")
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo" ]
+        , test "adds an Undated columnn after an existing Untagged column" <|
+            \() ->
+                { columnForms = [ ColumnForm.UntaggedColumnForm { name = "foo" } ] }
+                    |> ColumnsForm.addColumn (NewColumnForm "bar" "Undated")
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "adds a non-Completed columnn before the completed column" <|
+            \() ->
+                { columnForms =
+                    [ ColumnForm.UntaggedColumnForm { name = "foo" }
+                    , ColumnForm.CompletedColumnForm { name = "bar", limit = "5" }
+                    ]
+                }
+                    |> ColumnsForm.addColumn (NewColumnForm "baz" "Undated")
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal [ "foo", "baz", "bar" ]
         ]
 
 
@@ -165,27 +197,27 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Completed"
-                          , value = "completed"
+                          , value = "Completed"
                           }
                         , { isSelected = False
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = False
                           , text = "Other Tags"
-                          , value = "otherTags"
+                          , value = "OtherTags"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = False
                           , text = "Undated"
-                          , value = "undated"
+                          , value = "Undated"
                           }
                         , { isSelected = False
                           , text = "Untagged"
-                          , value = "untagged"
+                          , value = "Untagged"
                           }
                         ]
         , test "selects the first item if the selection isn't valid" <|
@@ -194,27 +226,27 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Completed"
-                          , value = "completed"
+                          , value = "Completed"
                           }
                         , { isSelected = False
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = False
                           , text = "Other Tags"
-                          , value = "otherTags"
+                          , value = "OtherTags"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = False
                           , text = "Undated"
-                          , value = "undated"
+                          , value = "Undated"
                           }
                         , { isSelected = False
                           , text = "Untagged"
-                          , value = "untagged"
+                          , value = "Untagged"
                           }
                         ]
         , test "returns all options except Completed if there is a completed column" <|
@@ -230,23 +262,23 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = True
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = False
                           , text = "Other Tags"
-                          , value = "otherTags"
+                          , value = "OtherTags"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = False
                           , text = "Undated"
-                          , value = "undated"
+                          , value = "Undated"
                           }
                         , { isSelected = False
                           , text = "Untagged"
-                          , value = "untagged"
+                          , value = "Untagged"
                           }
                         ]
         , test "returns all options except otherTags if there is an otherTags column" <|
@@ -262,23 +294,23 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"
-                          , value = "completed"
+                          , value = "Completed"
                           }
                         , { isSelected = True
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = False
                           , text = "Undated"
-                          , value = "undated"
+                          , value = "Undated"
                           }
                         , { isSelected = False
                           , text = "Untagged"
-                          , value = "untagged"
+                          , value = "Untagged"
                           }
                         ]
         , test "returns all options except undated if there is an undated column" <|
@@ -294,23 +326,23 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"
-                          , value = "completed"
+                          , value = "Completed"
                           }
                         , { isSelected = False
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = True
                           , text = "Other Tags"
-                          , value = "otherTags"
+                          , value = "OtherTags"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = False
                           , text = "Untagged"
-                          , value = "untagged"
+                          , value = "Untagged"
                           }
                         ]
         , test "returns all options except untagged if there is an untagged column" <|
@@ -326,23 +358,23 @@ optionsForSelect =
                     |> Expect.equal
                         [ { isSelected = False
                           , text = "Completed"
-                          , value = "completed"
+                          , value = "Completed"
                           }
                         , { isSelected = False
                           , text = "Dated"
-                          , value = "dated"
+                          , value = "Dated"
                           }
                         , { isSelected = False
                           , text = "Other Tags"
-                          , value = "otherTags"
+                          , value = "OtherTags"
                           }
                         , { isSelected = False
                           , text = "Tagged"
-                          , value = "namedTag"
+                          , value = "NamedTag"
                           }
                         , { isSelected = True
                           , text = "Undated"
-                          , value = "undated"
+                          , value = "Undated"
                           }
                         ]
         ]

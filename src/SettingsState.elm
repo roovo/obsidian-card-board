@@ -26,11 +26,12 @@ import BoardConfig exposing (BoardConfig)
 import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
-import Form.BoardConfig exposing (BoardConfigForm)
-import Form.Columns as ColumnsForm exposing (ColumnsForm, OptionsForSelect)
+import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
+import Form.Select exposing (Option)
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import GlobalSettings exposing (GlobalSettings)
 import List.Extra as LE
@@ -155,8 +156,7 @@ addColumnConfirmed : SettingsState -> SettingsState
 addColumnConfirmed settingsState =
     case settingsState of
         AddingColumn c settingsForm_ ->
-            SettingsForm.addColumn c settingsForm_
-                |> (\f -> EditingBoard f)
+            EditingBoard <| SettingsForm.addColumn c settingsForm_
 
         _ ->
             settingsState
@@ -164,55 +164,48 @@ addColumnConfirmed settingsState =
 
 addColumnRequested : SettingsState -> SettingsState
 addColumnRequested settingsState =
-    -- let
-    --     columns : ColumnsForm.Form
-    --     columns =
-    --         settingsState
-    --             |> settingsForm
-    --             |> SettingsForm.columnsForms
-    --             |> SafeZipper.current
-    --             |> Maybe.withDefault ColumnsForm.empty
-    --     optionsForSelect : List OptionsForSelect
-    --     optionsForSelect =
-    --         ColumnsForm.optionsForSelect columns (NewColumnForm "" "")
-    --     selectedOption : String
-    --     selectedOption =
-    --         optionsForSelect
-    --             |> LE.find .isSelected
-    --             |> Maybe.map .value
-    --             |> Maybe.withDefault "dated"
-    -- in
+    let
+        boardConfigForm : SettingsForm -> Maybe BoardConfigForm
+        boardConfigForm settingsForm_ =
+            settingsForm_
+                |> SettingsForm.boardConfigForms
+                |> SafeZipper.current
+
+        optionsForSelect : SettingsForm -> List Option
+        optionsForSelect settingsForm_ =
+            BoardConfigForm.optionsForSelect (NewColumnForm "" "") (boardConfigForm settingsForm_)
+
+        selectedOption : SettingsForm -> String
+        selectedOption settingsForm_ =
+            optionsForSelect settingsForm_
+                |> LE.find .isSelected
+                |> Maybe.map .value
+                |> Maybe.withDefault "dated"
+    in
     case settingsState of
         AddingBoard _ settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         AddingColumn _ settingsForm_ ->
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         ClosingPlugin settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         ClosingSettings settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         DeletingBoard settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         DeletingColumn _ settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         EditingBoard settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
         EditingGlobalSettings settingsForm_ ->
-            -- AddingColumn (NewColumnForm "" selectedOption) settingsForm_
-            settingsState
+            AddingColumn (NewColumnForm "" <| selectedOption settingsForm_) settingsForm_
 
 
 cancelCurrentState : SettingsState -> SettingsState

@@ -149,14 +149,13 @@ addBoard defaultColumnNames_ configToAdd form =
 
 addColumn : NewColumnForm -> SettingsForm -> SettingsForm
 addColumn configToAdd form =
-    -- { form
-    --     | boardConfigForms =
-    --         SafeZipper.mapSelectedAndRest
-    --             (ColumnsForm.addColumn configToAdd)
-    --             identity
-    --             form.boardConfigForms
-    -- }
-    form
+    { form
+        | boardConfigForms =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfigForm.addColumn configToAdd)
+                identity
+                form.boardConfigForms
+    }
 
 
 deleteColumn : Int -> SettingsForm -> SettingsForm

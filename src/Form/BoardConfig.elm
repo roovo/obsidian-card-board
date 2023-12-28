@@ -1,8 +1,10 @@
 module Form.BoardConfig exposing
     ( BoardConfigForm
+    , addColumn
     , deleteColumn
     , init
     , mapColumnsForm
+    , optionsForSelect
     , safeDecoder
     , toggleShowColumnTags
     , toggleShowFilteredTags
@@ -17,7 +19,9 @@ import DefaultColumnNames
 import Filter exposing (Filter)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
+import Form.Select exposing (Option)
 
 
 
@@ -85,7 +89,26 @@ safeDecoder =
 
 
 
+-- INFO
+
+
+optionsForSelect : NewColumnForm -> Maybe BoardConfigForm -> List Option
+optionsForSelect newColumnForm boardConfigForm =
+    case boardConfigForm of
+        Just configForm ->
+            ColumnsForm.optionsForSelect configForm.columns newColumnForm
+
+        Nothing ->
+            []
+
+
+
 -- MODIFICATION
+
+
+addColumn : NewColumnForm -> BoardConfigForm -> BoardConfigForm
+addColumn newColumnForm boardConfigForm =
+    { boardConfigForm | columns = ColumnsForm.addColumn newColumnForm boardConfigForm.columns }
 
 
 deleteColumn : Int -> BoardConfigForm -> BoardConfigForm
