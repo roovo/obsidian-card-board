@@ -1,9 +1,13 @@
 module SettingsTests exposing (suite)
 
 import BoardConfig exposing (BoardConfig)
+import Column
+import Column.Completed as CompletedColumn
+import Columns
 import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
+import Filter
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -96,9 +100,19 @@ currentVersion =
 decoder : Test
 decoder =
     describe "decoder"
-        [ test "gives boards with no names the name Unnamed" <|
+        [ test "cleans up board names" <|
             \() ->
-                exampleSettingsWithMissingBoardNames
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName ""
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " "
+                        , exampleTagBoardConfig |> BoardConfig.updateName " foo  "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "foo"
+                        ]
+                , globalSettings = exampleGlobalSettings
+                , version = Settings.currentVersion
+                }
                     |> TsEncode.runExample Settings.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder Settings.decoder
@@ -107,7 +121,48 @@ decoder =
                     |> Result.withDefault SafeZipper.empty
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
-                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
+                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "foo", "foo.4" ]
+        , test "cleans up columns" <|
+            \() ->
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ BoardConfig.BoardConfig
+                            { columns =
+                                Columns.fromList
+                                    [ Column.untagged "Untagged"
+                                    , Column.untagged "Untagged too"
+                                    , Column.otherTags "Others" [ "foo" ]
+                                    , Column.namedTag "foo" "foo"
+                                    , Column.namedTag " foo" "foo"
+                                    , Column.namedTag "" "foo"
+                                    , Column.namedTag "  " "foo"
+                                    , Column.completed <| CompletedColumn.init "Completed" 2 6
+                                    , Column.completed <| CompletedColumn.init "Completed too" 2 6
+                                    ]
+                            , filters = []
+                            , filterPolarity = Filter.Deny
+                            , filterScope = Filter.SubTasksOnly
+                            , showColumnTags = True
+                            , showFilteredTags = False
+                            , name = "Tag Board Name"
+                            }
+                        ]
+                , globalSettings = exampleGlobalSettings
+                , version = Settings.currentVersion
+                }
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.head
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "Untagged", "Others", "foo", "foo.3", "Unnamed", "Unnamed.5", "Completed" ]
         ]
 
 
@@ -307,20 +362,6 @@ exampleSettingsWithDuplicateBoardNames =
             , exampleTagBoardConfig |> BoardConfig.updateName "B name"
             , exampleTagBoardConfig |> BoardConfig.updateName "A name"
             , exampleTagBoardConfig |> BoardConfig.updateName "A name"
-            ]
-    , globalSettings = exampleGlobalSettings
-    , version = Settings.currentVersion
-    }
-
-
-exampleSettingsWithMissingBoardNames : Settings.Settings
-exampleSettingsWithMissingBoardNames =
-    { boardConfigs =
-        SafeZipper.fromList
-            [ exampleTagBoardConfig |> BoardConfig.updateName ""
-            , exampleTagBoardConfig |> BoardConfig.updateName "B name"
-            , exampleTagBoardConfig |> BoardConfig.updateName " "
-            , exampleTagBoardConfig |> BoardConfig.updateName "   "
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion

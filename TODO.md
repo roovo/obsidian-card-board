@@ -1,5 +1,3 @@
-- tests for loading settings: handle blank column names and restrict to one of each special column type
-
 - readme: explain each column type in turn
 
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
