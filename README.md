@@ -43,8 +43,8 @@ board.  You can choose between 3 board start types:
   your tasks or in front matter for this to work).
 - **Empty board**: has no pre-defined columns.
 
-You can add/delete/edit/re-order columns in the settings pane, and can place
-whatever columns you wish on any board.
+These are just to get you started.  You can add/edit/re-order/delete columns
+for these (or any board) in the settings pane.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
@@ -62,7 +62,7 @@ What appears on the card depends on what your task looks like:
 - Anything that is indented under a task will appear in the body of the task.
   - Indented tasks will appear as subtasks (all subtasks are grouped together).
   - Indented text will appear as notes.
-- `#tags` in front matter or on the line of the task (or any subtasks) will
+- `#tags` in front matter or on the line of the task will
   appear at the top of the card.
 - Due date (if given) will appear at the bottom of the card.
 
@@ -94,7 +94,7 @@ to the task:
 ```
 
 See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
-a format compatible with other plugins.
+a format compatible with other plugins (or choose not to add any completion text).
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -184,7 +184,7 @@ Which will set the color to yellow for all cards with a tag `#status/doing`. Thi
 override any date based highlighting.  If you use nested tags, you will need to replace
 the `/` character with a `-` (as in the example above).  If the card has multiple tags
 which you have set different colors for, the last one read from your snippets will take
-priority.  Tag based colors will be applied for tags even if they are [hidden](#hiding-tags).
+priority.  Tag based colors will be applied for tags even if the tags are [hidden](#hiding-tags).
 
 ## Boards
 Boards are simply a collection of columns, which are defined either by:
@@ -249,6 +249,10 @@ Each of these use relative dates, where 0 means today, so:
 - `Before 0` means before today (overdue)
 - `After 1` means after tomorrow
 
+The only other date based column you can include is an _Undated_ column, which will
+include all tasks which have no due date.  You cannot have more than one _Undated_
+column on a board.
+
 ### Tag columns
 If you give your tasks tags, you can use these to set up tag columns.  So if you
 have the tags `#status/backlog`, `#status/triaged`, `status/blocked`, `#status/doing`,
@@ -256,7 +260,8 @@ you can define a board that shows tasks tagged with these in separate columns:
 
 ![tag board settings](/images/tagBoardSettings.png?raw=true)
 
-Note that you should not inclue the `#` character at the start of the tag in the settings.
+You do not need to inclue the `#` character at the start of the tag when defining
+which tag shold be used for a column.
 
 
 #### Sub-tasks
@@ -285,24 +290,33 @@ you can show/hide them in the settings.  If you choose not to show the column ta
 this will hide all the tags used in the settings wherever cards are on the board.
 Only tags that exactly match those used in the settings will be hidden.
 
-#### Completed tasks
-If you choose to show completed tasks on your board, you will only see
-completed tasks that would have appeared in one of the other columns had it not been
-completed, so it only contains tasks that *belong* on the board.
+The other types of tag based columns are:
 
-If you have columns based on tags and a task is shown in a column due to tags on
+- Other Tags: which will include any tasks with tags which are
+  not in one of the defined tag-based columns.
+- Untagged: for any tasks which have no tags.
+
+You cannot have more that one of each of these on a board.
+
+### Completed column
+You can include a complted column on your board. This will only include
+completed tasks that would have appeared in one of the other columns had it not been
+completed, so it only contains tasks that _belong_ on the board.
+
+Where you have columns based on tags and a task is shown in a column due to tags on
 sub-tasks it will only show in that column if those subtasks are incomplete.
-So the following task is shown only in the Barney column as the Wilma sub-task
+So the following task is shown only in the _Barney_ column as the _Wilma_ sub-task
 is complete:
 
 ![wilma_barney](/images/wilma_barney.png?raw=true)
 
 This does mean that a card can appear in the completed column even if
-the top level task is not complete, e.g for the above example if the barney task is
-marked as complete the card will move to the Completed column:
+the top level task is not complete, e.g for the above example if the _Barney_ task is
+marked as complete the card will move to the _Completed_ column:
 
 ![wilma_barney_completed](/images/wilma_barney_completed.png?raw=true)
 
+You cannot have more than one Completed column on a board.
 
 ### Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3

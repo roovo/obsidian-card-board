@@ -1,5 +1,3 @@
-- readme: explain each column type in turn
-
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
