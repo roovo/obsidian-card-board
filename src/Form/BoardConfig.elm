@@ -3,7 +3,7 @@ module Form.BoardConfig exposing
     , fromNewBoardForm
     , init
     , mapColumnsForm
-    , optionsForSelect
+      -- , optionsForSelect
     , safeDecoder
     , toggleShowColumnTags
     , toggleShowFilteredTags
@@ -19,9 +19,7 @@ import Filter exposing (Filter)
 import Form.Column as ColumnForm
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
 import Form.SafeDecoder as SD
-import Form.Select exposing (Option)
 
 
 
@@ -127,19 +125,6 @@ safeDecoder =
 
 
 -- INFO
-
-
-optionsForSelect : NewColumnForm -> Maybe BoardConfigForm -> List Option
-optionsForSelect newColumnForm boardConfigForm =
-    case boardConfigForm of
-        Just configForm ->
-            ColumnsForm.optionsForSelect configForm.columnsForm newColumnForm
-
-        Nothing ->
-            []
-
-
-
 -- MODIFICATION
 
 

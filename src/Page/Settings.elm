@@ -671,7 +671,7 @@ modalAddColumn newColumnConfigForm settingsForm =
                             [ class "dropdown"
                             , onInput NewColumnTypeSelected
                             ]
-                            (ColumnsForm.optionsForSelect
+                            (NewColumnForm.optionsForSelect
                                 (settingsForm
                                     |> SettingsForm.boardConfigForms
                                     |> SafeZipper.current

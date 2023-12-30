@@ -11,8 +11,7 @@ import Columns
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
 import Form.Column as ColumnForm
-import Form.Columns as ColumnsForm exposing (ColumnsForm)
-import Form.NewColumn exposing (NewColumnForm)
+import Form.Columns as ColumnsForm
 import Form.SafeDecoder as SD
 import List.Extra as LE
 import Test exposing (..)
@@ -26,7 +25,6 @@ suite =
         , find
         , init
         , moveColumn
-        , optionsForSelect
         , safeDecoder
         , updateColumnName
         , updateCompletedColumnLimit
@@ -40,28 +38,37 @@ suite =
 addColumn : Test
 addColumn =
     describe "addColumn"
-        [ test "adds an Undated columnn to an empty ColumnsForm" <|
+        [ test "does nothing if there is no column to add (it's Nothing)" <|
             \() ->
-                ColumnsForm.empty
-                    |> ColumnsForm.addColumn (NewColumnForm "foo" "Undated")
+                ColumnsForm.addColumn Nothing ColumnsForm.empty
+                    |> .columnForms
+                    |> List.map ColumnForm.name
+                    |> Expect.equal []
+        , test "adds an Undated columnn to an empty ColumnsForm" <|
+            \() ->
+                ColumnsForm.addColumn
+                    (Just <| ColumnForm.UndatedColumnForm False { name = "foo" })
+                    ColumnsForm.empty
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo" ]
         , test "adds an Undated columnn after an existing Untagged column" <|
             \() ->
-                { columnForms = [ ColumnForm.UntaggedColumnForm False { name = "foo" } ] }
-                    |> ColumnsForm.addColumn (NewColumnForm "bar" "Undated")
+                ColumnsForm.addColumn
+                    (Just <| ColumnForm.UndatedColumnForm False { name = "bar" })
+                    { columnForms = [ ColumnForm.UntaggedColumnForm False { name = "foo" } ] }
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo", "bar" ]
         , test "adds a non-Completed columnn after the completed column" <|
             \() ->
-                { columnForms =
-                    [ ColumnForm.UntaggedColumnForm False { name = "foo" }
-                    , ColumnForm.CompletedColumnForm False { name = "bar", limit = "5" }
-                    ]
-                }
-                    |> ColumnsForm.addColumn (NewColumnForm "baz" "Undated")
+                ColumnsForm.addColumn
+                    (Just <| ColumnForm.UndatedColumnForm False { name = "baz" })
+                    { columnForms =
+                        [ ColumnForm.UntaggedColumnForm False { name = "foo" }
+                        , ColumnForm.CompletedColumnForm False { name = "bar", limit = "5" }
+                        ]
+                    }
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "foo", "bar", "baz" ]
@@ -161,198 +168,6 @@ moveColumn =
                     |> .columnForms
                     |> List.map ColumnForm.name
                     |> Expect.equal [ "two", "one", "three" ]
-        ]
-
-
-optionsForSelect : Test
-optionsForSelect =
-    describe "optionsForSelect"
-        [ test "returns all options if there is an empty columnsForm" <|
-            \() ->
-                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnForm "" "completed")
-                    |> Expect.equal
-                        [ { isSelected = True
-                          , text = "Completed"
-                          , value = "Completed"
-                          }
-                        , { isSelected = False
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = False
-                          , text = "Other Tags"
-                          , value = "OtherTags"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = False
-                          , text = "Undated"
-                          , value = "Undated"
-                          }
-                        , { isSelected = False
-                          , text = "Untagged"
-                          , value = "Untagged"
-                          }
-                        ]
-        , test "selects the first item if the selection isn't valid" <|
-            \() ->
-                ColumnsForm.optionsForSelect ColumnsForm.empty (NewColumnForm "" "xxx")
-                    |> Expect.equal
-                        [ { isSelected = True
-                          , text = "Completed"
-                          , value = "Completed"
-                          }
-                        , { isSelected = False
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = False
-                          , text = "Other Tags"
-                          , value = "OtherTags"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = False
-                          , text = "Undated"
-                          , value = "Undated"
-                          }
-                        , { isSelected = False
-                          , text = "Untagged"
-                          , value = "Untagged"
-                          }
-                        ]
-        , test "returns all options except Completed if there is a completed column" <|
-            \() ->
-                let
-                    columnsForm : ColumnsForm
-                    columnsForm =
-                        Columns.fromList
-                            [ Column.completed <| CompletedColumn.init "" 0 10 ]
-                            |> ColumnsForm.init
-                in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "dated")
-                    |> Expect.equal
-                        [ { isSelected = True
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = False
-                          , text = "Other Tags"
-                          , value = "OtherTags"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = False
-                          , text = "Undated"
-                          , value = "Undated"
-                          }
-                        , { isSelected = False
-                          , text = "Untagged"
-                          , value = "Untagged"
-                          }
-                        ]
-        , test "returns all options except otherTags if there is an otherTags column" <|
-            \() ->
-                let
-                    columnsForm : ColumnsForm
-                    columnsForm =
-                        Columns.fromList
-                            [ Column.otherTags "" [] ]
-                            |> ColumnsForm.init
-                in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "dated")
-                    |> Expect.equal
-                        [ { isSelected = False
-                          , text = "Completed"
-                          , value = "Completed"
-                          }
-                        , { isSelected = True
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = False
-                          , text = "Undated"
-                          , value = "Undated"
-                          }
-                        , { isSelected = False
-                          , text = "Untagged"
-                          , value = "Untagged"
-                          }
-                        ]
-        , test "returns all options except undated if there is an undated column" <|
-            \() ->
-                let
-                    columnsForm : ColumnsForm
-                    columnsForm =
-                        Columns.fromList
-                            [ Column.undated "" ]
-                            |> ColumnsForm.init
-                in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "otherTags")
-                    |> Expect.equal
-                        [ { isSelected = False
-                          , text = "Completed"
-                          , value = "Completed"
-                          }
-                        , { isSelected = False
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = True
-                          , text = "Other Tags"
-                          , value = "OtherTags"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = False
-                          , text = "Untagged"
-                          , value = "Untagged"
-                          }
-                        ]
-        , test "returns all options except untagged if there is an untagged column" <|
-            \() ->
-                let
-                    columnsForm : ColumnsForm
-                    columnsForm =
-                        Columns.fromList
-                            [ Column.untagged "" ]
-                            |> ColumnsForm.init
-                in
-                ColumnsForm.optionsForSelect columnsForm (NewColumnForm "" "undated")
-                    |> Expect.equal
-                        [ { isSelected = False
-                          , text = "Completed"
-                          , value = "Completed"
-                          }
-                        , { isSelected = False
-                          , text = "Dated"
-                          , value = "Dated"
-                          }
-                        , { isSelected = False
-                          , text = "Other Tags"
-                          , value = "OtherTags"
-                          }
-                        , { isSelected = False
-                          , text = "Tagged"
-                          , value = "NamedTag"
-                          }
-                        , { isSelected = True
-                          , text = "Undated"
-                          , value = "Undated"
-                          }
-                        ]
         ]
 
 

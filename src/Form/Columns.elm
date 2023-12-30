@@ -6,7 +6,6 @@ module Form.Columns exposing
     , find
     , init
     , moveColumn
-    , optionsForSelect
     , safeDecoder
     , updateColumnName
     , updateCompletedColumnLimit
@@ -19,11 +18,8 @@ module Form.Columns exposing
 import Columns exposing (Columns)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.Column as ColumnForm exposing (ColumnForm)
-import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
-import Form.Select exposing (Option)
 import List.Extra as LE
-import Maybe.Extra as ME
 
 
 
@@ -71,122 +67,18 @@ find fn form =
     LE.find fn form.columnForms
 
 
-optionsForSelect : ColumnsForm -> NewColumnForm -> List Option
-optionsForSelect form newColumnConfigForm =
-    let
-        alreadyHasCompleted : Bool
-        alreadyHasCompleted =
-            form
-                |> .columnForms
-                |> List.any ColumnForm.isCompleted
-
-        alreadyHasOtherTags : Bool
-        alreadyHasOtherTags =
-            form
-                |> .columnForms
-                |> List.any ColumnForm.isOtherTags
-
-        alreadyHasUndated : Bool
-        alreadyHasUndated =
-            form
-                |> .columnForms
-                |> List.any ColumnForm.isUndated
-
-        alreadyHasUntagged : Bool
-        alreadyHasUntagged =
-            form
-                |> .columnForms
-                |> List.any ColumnForm.isUntagged
-
-        completed : List Option
-        completed =
-            if alreadyHasCompleted then
-                []
-
-            else
-                [ { isSelected = newColumnConfigForm.columnType == "completed"
-                  , text = "Completed"
-                  , value = "Completed"
-                  }
-                ]
-
-        otherTags : List Option
-        otherTags =
-            if alreadyHasOtherTags then
-                []
-
-            else
-                [ { isSelected = newColumnConfigForm.columnType == "otherTags"
-                  , text = "Other Tags"
-                  , value = "OtherTags"
-                  }
-                ]
-
-        undated : List Option
-        undated =
-            if alreadyHasUndated then
-                []
-
-            else
-                [ { isSelected = newColumnConfigForm.columnType == "undated"
-                  , text = "Undated"
-                  , value = "Undated"
-                  }
-                ]
-
-        untagged : List Option
-        untagged =
-            if alreadyHasUntagged then
-                []
-
-            else
-                [ { isSelected = newColumnConfigForm.columnType == "untagged"
-                  , text = "Untagged"
-                  , value = "Untagged"
-                  }
-                ]
-
-        allColumns : List Option
-        allColumns =
-            completed
-                ++ [ { isSelected = newColumnConfigForm.columnType == "dated"
-                     , text = "Dated"
-                     , value = "Dated"
-                     }
-                   ]
-                ++ otherTags
-                ++ [ { isSelected = newColumnConfigForm.columnType == "namedTag"
-                     , text = "Tagged"
-                     , value = "NamedTag"
-                     }
-                   ]
-                ++ undated
-                ++ untagged
-    in
-    if List.any .isSelected allColumns then
-        allColumns
-
-    else
-        allColumns
-            |> LE.updateAt 0 (\ofs -> { ofs | isSelected = True })
-
-
 
 -- MODIFICATION
 
 
-addColumn : NewColumnForm -> ColumnsForm -> ColumnsForm
-addColumn newColumnForm columnsForm =
-    let
-        newColumn : List ColumnForm
-        newColumn =
-            SD.run NewColumnForm.safeDecoder newColumnForm
-                |> Result.toMaybe
-                |> ME.join
-                |> Maybe.map List.singleton
-                |> Maybe.withDefault []
-    in
-    ColumnsForm <| columnsForm.columnForms ++ newColumn
+addColumn : Maybe ColumnForm -> ColumnsForm -> ColumnsForm
+addColumn columnForm columnsForm =
+    case columnForm of
+        Just form ->
+            ColumnsForm <| columnsForm.columnForms ++ [ form ]
+
+        Nothing ->
+            columnsForm
 
 
 deleteColumn : Int -> ColumnsForm -> ColumnsForm

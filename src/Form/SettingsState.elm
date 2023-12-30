@@ -25,10 +25,10 @@ module Form.SettingsState exposing
 import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
-import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.BoardConfig exposing (BoardConfigForm)
 import Form.Columns exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Select exposing (Option)
 import Form.Settings as SettingsForm exposing (SettingsForm)
@@ -168,15 +168,21 @@ addColumnConfirmed settingsState =
 addColumnRequested : SettingsState -> SettingsState
 addColumnRequested settingsState =
     let
-        boardConfigForm : SettingsForm -> Maybe BoardConfigForm
-        boardConfigForm settingsForm_ =
+        columnsForm : SettingsForm -> Maybe ColumnsForm
+        columnsForm settingsForm_ =
             settingsForm_
                 |> SettingsForm.boardConfigForms
                 |> SafeZipper.current
+                |> Maybe.map .columnsForm
 
         optionsForSelect : SettingsForm -> List Option
         optionsForSelect settingsForm_ =
-            BoardConfigForm.optionsForSelect (NewColumnForm "" "") (boardConfigForm settingsForm_)
+            case columnsForm settingsForm_ of
+                Just form ->
+                    NewColumnForm.optionsForSelect form (NewColumnForm "" "")
+
+                Nothing ->
+                    []
 
         selectedOption : SettingsForm -> String
         selectedOption settingsForm_ =

@@ -7,6 +7,7 @@ import Column.NamedTag as NamedTagColumn
 import Column.OtherTags as OtherTagsColumn
 import Column.Undated as UndatedColumn
 import Column.Untagged as UntaggedColumn
+import DefaultColumnNames
 import Expect
 import Form.Column as ColumnForm
 import Form.SafeDecoder as SD
@@ -18,8 +19,15 @@ suite =
     concat
         [ init
         , name
+        , placeholder
         , safeDecoder
         , typeString
+        , updateCompletedColumnLimit
+        , updateDatedColumnRangeType
+        , updateDatedColumnRangeValueFrom
+        , updateDatedColumnRangeValueTo
+        , updateName
+        , updateNamedTagTag
         ]
 
 
@@ -140,6 +148,42 @@ name =
                     |> ColumnForm.init
                     |> ColumnForm.name
                     |> Expect.equal "foo"
+        ]
+
+
+placeholder : Test
+placeholder =
+    describe "placeholder"
+        [ test "returns the default name for a completed column" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal "Completed"
+        , test "returns an empty string for a dated column" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal ""
+        , test "returns an empty string for a dded tagated column" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal ""
+        , test "returns the default name for an other tags column" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal "Other Tags"
+        , test "returns the default name for an undated column" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal "Undated"
+        , test "returns the default name for an untagged column" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.placeholder DefaultColumnNames.default
+                    |> Expect.equal "Untagged"
         ]
 
 
@@ -284,4 +328,258 @@ typeString =
                     |> ColumnForm.init
                     |> ColumnForm.typeString
                     |> Expect.equal "Untagged"
+        ]
+
+
+updateCompletedColumnLimit : Test
+updateCompletedColumnLimit =
+    describe "updateCompletedColumnLimit"
+        [ test "updates the column limit of a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False
+                            { name = "", limit = "foo" }
+                        )
+        , test "does nothing to a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" })
+        , test "does nothing to a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "", tag = "" })
+        , test "does nothing to a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "" })
+        , test "does nothing to a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "" })
+        , test "does nothing to a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateCompletedColumnLimit "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "" })
+        ]
+
+
+updateDatedColumnRangeType : Test
+updateDatedColumnRangeType =
+    describe "updateDatedColumnRangeType"
+        [ test "does nothig to a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False { name = "", limit = "" })
+        , test "updates the range type for a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "", rangeType = "foo", from = "", to = "" })
+        , test "does nothing to a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "", tag = "" })
+        , test "does nothing to a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "" })
+        , test "does nothing to a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "" })
+        , test "does nothing to a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeType "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "" })
+        ]
+
+
+updateDatedColumnRangeValueFrom : Test
+updateDatedColumnRangeValueFrom =
+    describe "updateDatedColumnRangeValueFrom"
+        [ test "does nothig to a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False { name = "", limit = "" })
+        , test "updates the range type for a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "foo", to = "" })
+        , test "does nothing to a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "", tag = "" })
+        , test "does nothing to a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "" })
+        , test "does nothing to a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "" })
+        , test "does nothing to a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueFrom "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "" })
+        ]
+
+
+updateDatedColumnRangeValueTo : Test
+updateDatedColumnRangeValueTo =
+    describe "updateDatedColumnRangeValueTo"
+        [ test "does nothig to a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False { name = "", limit = "" })
+        , test "updates the range type for a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "foo" })
+        , test "does nothing to a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "", tag = "" })
+        , test "does nothing to a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "" })
+        , test "does nothing to a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "" })
+        , test "does nothing to a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateDatedColumnRangeValueTo "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "" })
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name of a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False { name = "foo", limit = "" })
+        , test "updates the name of a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "foo", rangeType = "", from = "", to = "" })
+        , test "updates the name of a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "foo", tag = "" })
+        , test "updates the name of a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "foo" })
+        , test "updates the name of a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "foo" })
+        , test "updates the name of a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateName "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "foo" })
+        ]
+
+
+updateNamedTagTag : Test
+updateNamedTagTag =
+    describe "updateNamedTagTag"
+        [ test "does nothig to a CompletedColumnForm" <|
+            \() ->
+                ColumnForm.CompletedColumnForm False { name = "", limit = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.CompletedColumnForm False { name = "", limit = "" })
+        , test "does nothing to a DatedColumnForm" <|
+            \() ->
+                ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.DatedColumnForm False { name = "", rangeType = "", from = "", to = "" })
+        , test "updates the tag of a NamedTagColumnForm" <|
+            \() ->
+                ColumnForm.NamedTagColumnForm False { name = "", tag = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.NamedTagColumnForm False { name = "", tag = "foo" })
+        , test "does nothing to a OtherTagsColumnForm" <|
+            \() ->
+                ColumnForm.OtherTagsColumnForm False { name = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.OtherTagsColumnForm False { name = "" })
+        , test "does nothing to a UndatedColumnForm" <|
+            \() ->
+                ColumnForm.UndatedColumnForm False { name = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.UndatedColumnForm False { name = "" })
+        , test "does nothing to a UntaggedColumnForm" <|
+            \() ->
+                ColumnForm.UntaggedColumnForm False { name = "" }
+                    |> ColumnForm.updateNamedTagTag "foo"
+                    |> Expect.equal
+                        (ColumnForm.UntaggedColumnForm False { name = "" })
         ]

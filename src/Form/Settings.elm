@@ -23,9 +23,10 @@ import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Column exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard exposing (NewBoardForm)
-import Form.NewColumn exposing (NewColumnForm)
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import GlobalSettings exposing (GlobalSettings)
 import Maybe.Extra as ME
@@ -156,7 +157,13 @@ addBoard defaultColumnNames_ configToAdd form =
 
 addColumn : NewColumnForm -> SettingsForm -> SettingsForm
 addColumn configToAdd form =
-    mapCurrentColumnsForm (ColumnsForm.addColumn configToAdd) form
+    let
+        columnFormToAdd : Maybe ColumnForm
+        columnFormToAdd =
+            SD.run NewColumnForm.safeDecoder configToAdd
+                |> Result.withDefault Nothing
+    in
+    mapCurrentColumnsForm (ColumnsForm.addColumn columnFormToAdd) form
 
 
 deleteColumn : Int -> SettingsForm -> SettingsForm

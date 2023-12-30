@@ -338,7 +338,7 @@ Filters are applied before tasks are placed onto a board:
 Plugin settings are accessible from the plugin view itself, via the settings icon
 above the board to the left of the tabs.  You can:
 
-- Create new boards (using the + icon next to _BOARDS_).
+- Create new boards (using the + icon next to the _Boards_ heading).
 - Configure your boards.
 - Customize the default names of the built-in columns.
 - Add/remove/edit/reorder columns.

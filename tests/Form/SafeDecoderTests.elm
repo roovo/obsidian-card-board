@@ -18,6 +18,7 @@ suite =
         , map
         , map2
         , minBound
+        , minLength
         ]
 
 
@@ -170,6 +171,20 @@ minBound =
             \() ->
                 SafeDecoder.run (SafeDecoder.minBound 3 10) 20
                     |> Expect.equal (Ok 20)
+        ]
+
+
+minLength : Test
+minLength =
+    describe "minLength"
+        [ test "returns the default if outside the bounds" <|
+            \() ->
+                SafeDecoder.run (SafeDecoder.minLength "foo" 3) "a"
+                    |> Expect.equal (Ok "foo")
+        , test "returns the input if inside the bounds" <|
+            \() ->
+                SafeDecoder.run (SafeDecoder.minLength "foo" 3) "aaa"
+                    |> Expect.equal (Ok "aaa")
         ]
 
 

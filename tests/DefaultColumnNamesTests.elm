@@ -76,6 +76,11 @@ nameFor =
                 DefaultColumnNames.default
                     |> DefaultColumnNames.nameFor "completed"
                     |> Expect.equal "Completed"
+        , test "default for an un-recognised column is ''" <|
+            \() ->
+                DefaultColumnNames.default
+                    |> DefaultColumnNames.nameFor "xxxxx"
+                    |> Expect.equal ""
         , test "can set the value for today" <|
             \() ->
                 { defaultNames | today = Just "Foo" }

@@ -25,8 +25,6 @@ suite =
         , addBoardRequested
         , addColumnConfirmed
         , addColumnRequested
-
-        -- , boardConfigs
         , cancelCurrentState
         , deleteBoardRequested
         , deleteColumnRequested
