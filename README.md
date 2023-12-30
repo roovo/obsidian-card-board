@@ -16,7 +16,7 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 ## New
 - Boards can have a mixture of date and tag based columns.
-- Columns can be re-ordered by dragging them on the settings pane.
+- Columns can be re-ordered (by dragging them on the settings pane).
 - More flexible date based columns based on relative dates.
 - Ability to use css snippets to
   [set card hightlight color](#customising-card-highlight-color) based on tags.
@@ -36,7 +36,7 @@ When installed, you can launch the plugin:
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
 If you have no boards defined, you should get a dialog asking you to add a new
-board.  You can choose between 3 board start types:
+board.  You can choose between 3 board types:
 
 - **Date based**: looks like the main screenshot above.
 - **Tag based**: uses tags to define the columns (you need to include tags on
@@ -44,7 +44,7 @@ board.  You can choose between 3 board start types:
 - **Empty board**: has no pre-defined columns.
 
 These are just to get you started.  You can add/edit/re-order/delete columns
-for these (or any board) in the settings pane.
+for these (or any board) via the plugin's settings.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
@@ -86,15 +86,15 @@ It will look something like this on a card on your board:
 
 ### Marking a task as complete
 If you mark an task as complete on the board it will be marked as completed in the markdown
-(and vice-versa).  If you mark as complete on the board, a completion timestamp is appended
-to the task:
+file (and vice-versa).  If you mark as complete on the board, a completion timestamp
+is appended to the task:
 
 ```
 - [x] Task title @completed(2021-10-30T13:57:48)
 ```
 
 See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
-a format compatible with other plugins (or choose not to add any completion text).
+a format compatible with other plugins (or to choose not to add any completion text).
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -244,6 +244,7 @@ settings:
 This shows the 3 types of date based columns you can use: `Before`, `Between`, and `After`.
 Each of these use relative dates, where 0 means today, so:
 
+- `Between -1 and -1` means yesterday
 - `Between 0 and 0` means today
 - `Between 1 and 1` means tomorrow
 - `Before 0` means before today (overdue)
@@ -265,10 +266,11 @@ which tag shold be used for a column.
 
 
 #### Sub-tasks
-Tasks which have sub-tasks with matching tags will also appear on the board.
+Tasks with sub-tasks that have matching tags will also appear on the board.
 
 #### Subtags
-If you specify a tag with a trailing `/` then the column will contain all subtags of the tag.
+If you specify a tag with a trailing `/` in the settings for the column,
+then the column will contain all subtags of the tag.
 
 #### Front Matter Tags
 If you want to give all the tasks on a page the same tag, you can put it in the
@@ -287,13 +289,13 @@ tags: [ project1 ]
 #### Hiding Tags
 If you don't want to see the tags used to configure the board's columns on the cards,
 you can show/hide them in the settings.  If you choose not to show the column tags,
-this will hide all the tags used in the settings wherever cards are on the board.
+this will hide the tags defined for columns wherever cards are on the board.
 Only tags that exactly match those used in the settings will be hidden.
 
 The other types of tag based columns are:
 
-- Other Tags: which will include any tasks with tags which are
-  not in one of the defined tag-based columns.
+- Other Tags: include any tasks with tags that are not in one of
+  the defined tag-based columns.
 - Untagged: for any tasks which have no tags.
 
 You cannot have more that one of each of these on a board.
@@ -301,7 +303,7 @@ You cannot have more that one of each of these on a board.
 ### Completed column
 You can include a complted column on your board. This will only include
 completed tasks that would have appeared in one of the other columns had it not been
-completed, so it only contains tasks that _belong_ on the board.
+completed; so it only contains tasks that _belong_ on the board.
 
 Where you have columns based on tags and a task is shown in a column due to tags on
 sub-tasks it will only show in that column if those subtasks are incomplete.
