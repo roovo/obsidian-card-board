@@ -339,13 +339,13 @@
     "globalSettings": {
       "taskCompletionFormat": "ObsidianCardBoard",
       "defaultColumnNames": {
-        "today": "",
-        "tomorrow": "",
-        "future": "",
-        "undated": "",
-        "otherTags": "",
-        "untagged": "",
-        "completed": "DONE"
+        "today": "TODAY",
+        "tomorrow": "TOMORROW",
+        "future": "FUTURE",
+        "undated": "UNDATED",
+        "otherTags": "OTHERS",
+        "untagged": "UNTAGGED",
+        "completed": "COMPLETED"
       },
       "ignoreFileNameDates": false
     }
