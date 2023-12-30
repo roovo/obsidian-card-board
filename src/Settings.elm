@@ -165,11 +165,11 @@ enforceUniqueBoardNames : Settings -> Settings
 enforceUniqueBoardNames settings =
     let
         helper : Int -> BoardConfig -> ( List String, SafeZipper BoardConfig ) -> ( List String, SafeZipper BoardConfig )
-        helper index config ( names, cs ) =
+        helper index config ( accumulatedNames, cs ) =
             let
                 uniqueName : String
                 uniqueName =
-                    if List.member (String.replace " " "_" <| BoardConfig.name config) names then
+                    if List.member (String.replace " " "_" <| BoardConfig.name config) accumulatedNames then
                         BoardConfig.name config ++ "." ++ String.fromInt index
 
                     else
@@ -179,18 +179,27 @@ enforceUniqueBoardNames settings =
                 safeConfig =
                     BoardConfig.updateName uniqueName config
 
-                ts : List String
-                ts =
-                    String.replace " " "_" uniqueName :: names
+                newAccumulator : List String
+                newAccumulator =
+                    String.replace " " "_" uniqueName :: accumulatedNames
             in
-            ( ts, SafeZipper.add safeConfig cs )
+            ( newAccumulator, SafeZipper.add safeConfig cs )
 
-        withUniqueBoardNames : SafeZipper BoardConfig
-        withUniqueBoardNames =
-            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) settings.boardConfigs
+        trimName : BoardConfig -> BoardConfig
+        trimName boardConfig =
+            BoardConfig.updateName (String.trim (BoardConfig.name boardConfig)) boardConfig
+
+        withUniqueBoardNames : SafeZipper BoardConfig -> SafeZipper BoardConfig
+        withUniqueBoardNames startConfigs =
+            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) startConfigs
                 |> Tuple.second
     in
-    { settings | boardConfigs = withUniqueBoardNames }
+    { settings
+        | boardConfigs =
+            settings.boardConfigs
+                |> SafeZipper.map trimName
+                |> withUniqueBoardNames
+    }
 
 
 replaceMissingBoardNames : Settings -> Settings

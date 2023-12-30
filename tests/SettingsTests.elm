@@ -17,30 +17,12 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ blankBoardNames
-        , cleanupNames
+        [ cleanupNames
         , currentVersion
+        , decoder
         , encodeDecode
         , moveBoard
         , uniqueBoardNames
-        ]
-
-
-blankBoardNames : Test
-blankBoardNames =
-    describe "handling boards with no names"
-        [ test "gives boards with no names the name Unnamed" <|
-            \() ->
-                exampleSettingsWithMissingBoardNames
-                    |> TsEncode.runExample Settings.encoder
-                    |> .output
-                    |> DecodeHelpers.runDecoder Settings.decoder
-                    |> .decoded
-                    |> Result.map .boardConfigs
-                    |> Result.withDefault SafeZipper.empty
-                    |> SafeZipper.toList
-                    |> List.map BoardConfig.name
-                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
         ]
 
 
@@ -65,12 +47,38 @@ cleanupNames =
                     |> Expect.equal (Just 2)
         , test "gives boards with no names the name Unnamed" <|
             \() ->
-                exampleSettingsWithMissingBoardNames
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName ""
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "   "
+                        ]
+                , globalSettings = GlobalSettings.default
+                , version = Settings.currentVersion
+                }
                     |> Settings.cleanupNames
                     |> .boardConfigs
                     |> SafeZipper.toList
                     |> List.map BoardConfig.name
                     |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
+        , test "suffixes duplicate board names with the column number" <|
+            \() ->
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName "foo"
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " foo "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "   foo"
+                        ]
+                , globalSettings = GlobalSettings.default
+                , version = Settings.currentVersion
+                }
+                    |> Settings.cleanupNames
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "foo", "B name", "foo.2", "foo.3" ]
         ]
 
 
@@ -82,6 +90,24 @@ currentVersion =
                 Settings.currentVersion
                     |> Semver.print
                     |> Expect.equal "0.11.0"
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "gives boards with no names the name Unnamed" <|
+            \() ->
+                exampleSettingsWithMissingBoardNames
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
         ]
 
 

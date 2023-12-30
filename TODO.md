@@ -6,8 +6,6 @@
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
 
-- can I animate tab moving so it isn't instantaneous? (look at settings page checkboxes)
-
 - touch events - iPad ??
 - show errors on settings pane ??
 

@@ -51,13 +51,13 @@ cleanupNames =
                     |> Columns.toList
                     |> List.map Column.name
                     |> Expect.equal [ "Unnamed", "Unnamed.1", "Unnamed.2", "Unnamed.3" ]
-        , test "appends the index to re-used named" <|
+        , test "appends the index to duplicate names" <|
             \() ->
                 [ Column.completed <| CompletedColumn.init "eek" 1 10
                 , Column.otherTags "" []
                 , Column.undated "eek"
-                , Column.untagged "eek"
-                , Column.namedTag "eek" "aTag"
+                , Column.untagged " eek"
+                , Column.namedTag " eek   " "aTag"
                 , Column.dated <| DatedColumn.init "eek" (DatedColumn.After 1)
                 ]
                     |> Columns.fromList

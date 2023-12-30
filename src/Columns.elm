@@ -115,7 +115,7 @@ cleanupNames defaultColumnNames columns =
     let
         defaultNameIfBlank : Column -> Column
         defaultNameIfBlank column =
-            if String.isEmpty (String.trim <| Column.name column) then
+            if String.isEmpty (Column.name column) then
                 Column.setNameToDefault defaultColumnNames column
 
             else
@@ -123,11 +123,15 @@ cleanupNames defaultColumnNames columns =
 
         fillBlankName : Column -> Column
         fillBlankName column =
-            if String.isEmpty (String.trim <| Column.name column) then
+            if String.isEmpty (Column.name column) then
                 Column.updateName "Unnamed" column
 
             else
                 column
+
+        trimName : Column -> Column
+        trimName column =
+            Column.updateName (String.trim <| Column.name column) column
 
         uniqueNameHelper : Int -> Column -> ( List String, List Column ) -> ( List String, List Column )
         uniqueNameHelper index column ( namesAcc, columnsAcc ) =
@@ -152,6 +156,7 @@ cleanupNames defaultColumnNames columns =
     in
     columns
         |> toList
+        |> List.map trimName
         |> List.map defaultNameIfBlank
         |> List.map fillBlankName
         |> LE.indexedFoldl uniqueNameHelper ( [], [] )
