@@ -191,6 +191,12 @@ Boards are simply a collection of columns, which are defined either by:
   - Dates (with daily/periodic notes support).
   - Tags (uses `#tags` to define the column).
 
+### Adding boards
+
+![add new board](/images/addNewBoard.png?raw=true)
+
+Use the `+` icon on the settings dialog.
+
 ### Reordering boards
 Boards can be reordered by dragging their tabs on the main view or dragging their
 name in the list on the settings pane.
