@@ -1,15 +1,27 @@
 module Column.NamedTag exposing
     ( NamedTagColumn
     , addTaskItem
-    , asColumn
+    , asInputString
+    , decoder
+    , encoder
     , init
+    , isCollapsed
+    , name
+    , setCollapse
+    , setTagsToHide
+    , tag
+    , tagsToHide
+    , toList
+    , toggleCollapse
+    , updateName
     )
 
-import Column exposing (Column)
-import Filter
-import TagBoardConfig exposing (TagBoardConfig)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -17,14 +29,13 @@ import TaskList exposing (TaskList)
 
 
 type NamedTagColumn
-    = NamedTagColumn Config
+    = NamedTagColumn Config (List String) TaskList
 
 
 type alias Config =
-    { name : String
+    { collapsed : Bool
+    , name : String
     , tag : String
-    , taskList : TaskList
-    , tagsToHide : List String
     }
 
 
@@ -32,68 +43,102 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoardConfig -> TagBoardConfig.ColumnConfig -> NamedTagColumn
-init tagBoardConfig columnConfig =
-    let
-        columnTagsToHide : List String
-        columnTagsToHide =
-            if tagBoardConfig.showColumnTags then
-                []
-
-            else
-                tagBoardConfig
-                    |> .columns
-                    |> List.map .tag
-
-        filterTagsToHide : List String
-        filterTagsToHide =
-            if tagBoardConfig.showFilteredTags then
-                []
-
-            else
-                tagBoardConfig
-                    |> .filters
-                    |> List.filter (\f -> Filter.filterType f == "Tags")
-                    |> List.map Filter.value
-    in
-    NamedTagColumn
-        { name = columnConfig.displayTitle
-        , tag = columnConfig.tag
-        , taskList = TaskList.empty
-        , tagsToHide = columnTagsToHide ++ filterTagsToHide
-        }
+init : String -> String -> NamedTagColumn
+init name_ tag_ =
+    NamedTagColumn { collapsed = False, name = name_, tag = tag_ } [] TaskList.empty
 
 
-addTaskItem : TaskItem -> NamedTagColumn -> ( NamedTagColumn, Column.PlacementResult )
-addTaskItem taskItem ((NamedTagColumn c) as namedTagColumn) =
-    let
-        columnTag : String
-        columnTag =
-            tag namedTagColumn
-    in
-    if belongs columnTag taskItem then
-        if isCompleted columnTag taskItem then
-            ( namedTagColumn, Column.CompletedInThisColumn )
 
-        else
-            ( NamedTagColumn { c | taskList = TaskList.add taskItem c.taskList }, Column.Placed )
+-- DECODE / ENCODE
 
-    else
-        ( namedTagColumn, Column.DoesNotBelong )
+
+decoder : TsDecode.Decoder NamedTagColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "name" TsDecode.string
+        |> TsDecode.required "tag" TsDecode.string
+    )
+        |> TsDecode.map (\c -> NamedTagColumn c [] TaskList.empty)
+
+
+encoder : TsEncode.Encoder NamedTagColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
 -- INFO
 
 
-asColumn : NamedTagColumn -> Column TaskItem
-asColumn namedTagColumn =
-    config namedTagColumn
-        |> .taskList
+asInputString : NamedTagColumn -> String
+asInputString (NamedTagColumn c _ _) =
+    "#" ++ c.tag ++ " " ++ c.name
+
+
+isCollapsed : NamedTagColumn -> Bool
+isCollapsed (NamedTagColumn c _ _) =
+    c.collapsed
+
+
+name : NamedTagColumn -> String
+name (NamedTagColumn c _ _) =
+    c.name
+
+
+tag : NamedTagColumn -> String
+tag (NamedTagColumn c _ _) =
+    c.tag
+
+
+tagsToHide : NamedTagColumn -> List String
+tagsToHide (NamedTagColumn _ tth _) =
+    tth
+
+
+toList : NamedTagColumn -> List TaskItem
+toList (NamedTagColumn _ _ tl) =
+    tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init True (name namedTagColumn) (tagsToHide namedTagColumn)
+
+
+
+-- MODIFICATION
+
+
+addTaskItem : TaskItem -> NamedTagColumn -> ( NamedTagColumn, PlacementResult )
+addTaskItem taskItem ((NamedTagColumn c tth tl) as namedTagColumn) =
+    if belongs c.tag taskItem then
+        if isCompleted c.tag taskItem then
+            ( namedTagColumn, PlacementResult.CompletedInThisColumn )
+
+        else
+            ( NamedTagColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
+
+    else
+        ( namedTagColumn, PlacementResult.DoesNotBelong )
+
+
+setCollapse : Bool -> NamedTagColumn -> NamedTagColumn
+setCollapse isCollapsed_ (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | collapsed = isCollapsed_ } tth tl
+
+
+setTagsToHide : List String -> NamedTagColumn -> NamedTagColumn
+setTagsToHide tags (NamedTagColumn c _ tl) =
+    NamedTagColumn c tags tl
+
+
+toggleCollapse : NamedTagColumn -> NamedTagColumn
+toggleCollapse (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateName : String -> NamedTagColumn -> NamedTagColumn
+updateName newName (NamedTagColumn c tth tl) =
+    NamedTagColumn { c | name = newName } tth tl
 
 
 
@@ -101,31 +146,34 @@ asColumn namedTagColumn =
 
 
 belongs : String -> TaskItem -> Bool
-belongs t =
-    TaskItem.hasThisTag t
+belongs =
+    TaskItem.hasThisTag << removeLeadingHash
+
+
+removeLeadingHash : String -> String
+removeLeadingHash t =
+    if String.startsWith "#" t then
+        String.dropLeft 1 t
+
+    else
+        t
 
 
 config : NamedTagColumn -> Config
-config (NamedTagColumn c) =
+config (NamedTagColumn c _ _) =
     c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        , TsEncode.required "tag" .tag TsEncode.string
+        ]
 
 
 isCompleted : String -> TaskItem -> Bool
 isCompleted t taskItem =
     TaskItem.isCompleted taskItem
         || (TaskItem.hasSubtasks taskItem && TaskItem.allSubtasksWithMatchingTagCompleted t taskItem)
-
-
-name : NamedTagColumn -> String
-name =
-    .name << config
-
-
-tag : NamedTagColumn -> String
-tag =
-    .tag << config
-
-
-tagsToHide : NamedTagColumn -> List String
-tagsToHide =
-    .tagsToHide << config

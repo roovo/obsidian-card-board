@@ -6,15 +6,11 @@ module Board exposing
     )
 
 import BoardConfig exposing (BoardConfig)
-import Card exposing (Card)
-import CollapsedColumns exposing (CollapsedColumns)
 import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
+import Columns
 import Date exposing (Date)
-import DateBoardColumns exposing (DateBoardColumns)
 import Filter exposing (Filter, Polarity, Scope)
-import TagBoardColumns exposing (TagBoardColumns)
-import TaskItem exposing (TaskItem)
+import TaskItem
 import TaskList exposing (TaskList)
 
 
@@ -23,79 +19,66 @@ import TaskList exposing (TaskList)
 
 
 type Board
-    = Board String ColumnNames BoardConfig TaskList
+    = Board String BoardConfig TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : String -> ColumnNames -> BoardConfig -> TaskList -> Board
-init uniqueId columnNames config taskList =
-    Board uniqueId columnNames config taskList
+init : String -> BoardConfig -> TaskList -> Board
+init uniqueId config taskList =
+    Board uniqueId config taskList
 
 
 
 -- INFO
 
 
-columns : Bool -> Date -> Board -> List (Column Card)
-columns ignoreFileNameDates today ((Board _ columnNames config taskList) as board) =
-    case config of
-        BoardConfig.DateBoardConfig dateBoardConfig ->
-            let
-                emptyDateBoardColumns : DateBoardColumns
-                emptyDateBoardColumns =
-                    DateBoardColumns.init today columnNames dateBoardConfig
-            in
-            taskList
-                |> filterTaskList config
-                |> configureDueDates ignoreFileNameDates
-                |> TaskList.foldl DateBoardColumns.addTaskItem emptyDateBoardColumns
-                |> DateBoardColumns.columns
-                |> convertToCards (id board)
-                |> collapseColumns config
-
-        BoardConfig.TagBoardConfig tagBoardConfig ->
-            let
-                emptyTagBoardColumns : TagBoardColumns
-                emptyTagBoardColumns =
-                    TagBoardColumns.init columnNames tagBoardConfig
-            in
-            taskList
-                |> filterTaskList config
-                |> configureDueDates ignoreFileNameDates
-                |> TaskList.foldl TagBoardColumns.addTaskItem emptyTagBoardColumns
-                |> TagBoardColumns.columns
-                |> convertToCards (id board)
-                |> collapseColumns config
+columns : Bool -> Date -> Board -> List Column
+columns ignoreFileNameDates today (Board _ config taskList) =
+    taskList
+        |> filterTaskList config
+        |> configureDueDates ignoreFileNameDates
+        |> Columns.addTaskList today (tagsToHide config) (BoardConfig.columns config)
+        |> Columns.toList
 
 
 id : Board -> String
-id (Board uniqueId _ config _) =
-    uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.title config)
+id (Board uniqueId config _) =
+    uniqueId ++ ":" ++ String.replace " " "_" (BoardConfig.name config)
 
 
 
 -- PRIVATE
 
 
-collapseColumns : BoardConfig -> List (Column Card) -> List (Column Card)
-collapseColumns config cols =
+applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
+applyFilters taskList polarity scope filters =
     let
-        collapsedColumns : CollapsedColumns
-        collapsedColumns =
-            BoardConfig.collapsedColumns config
+        operator : Bool -> Bool
+        operator =
+            case polarity of
+                Filter.Allow ->
+                    identity
 
-        performCollapse : Int -> Column Card -> Column Card
-        performCollapse index col =
-            if CollapsedColumns.columnIsCollapsed index collapsedColumns then
-                Column.collapseState True col
+                Filter.Deny ->
+                    not
 
-            else
-                Column.collapseState False col
+        filterMode : (a -> Bool) -> List a -> Bool
+        filterMode =
+            case polarity of
+                Filter.Allow ->
+                    List.any
+
+                Filter.Deny ->
+                    List.all
     in
-    List.indexedMap performCollapse cols
+    if List.isEmpty filters then
+        taskList
+
+    else
+        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
 
 
 configureDueDates : Bool -> TaskList -> TaskList
@@ -139,46 +122,26 @@ filterByTag polarity scope filters taskList =
         |> applyFilters taskList polarity scope
 
 
-applyFilters : TaskList -> Polarity -> Scope -> List Filter -> TaskList
-applyFilters taskList polarity scope filters =
+tagsToHide : BoardConfig -> List String
+tagsToHide boardConfig =
     let
-        operator : Bool -> Bool
-        operator =
-            case polarity of
-                Filter.Allow ->
-                    identity
+        columnTagsToHide : List String
+        columnTagsToHide =
+            if BoardConfig.showColumnTags boardConfig then
+                []
 
-                Filter.Deny ->
-                    not
+            else
+                Columns.namedTagColumnTags <| BoardConfig.columns boardConfig
 
-        filterMode : (a -> Bool) -> List a -> Bool
-        filterMode =
-            case polarity of
-                Filter.Allow ->
-                    List.any
+        filterTagsToHide : List String
+        filterTagsToHide =
+            if BoardConfig.showFilteredTags boardConfig then
+                []
 
-                Filter.Deny ->
-                    List.all
+            else
+                boardConfig
+                    |> BoardConfig.filters
+                    |> List.filter (\f -> Filter.filterType f == "Tags")
+                    |> List.map Filter.value
     in
-    if List.isEmpty filters then
-        taskList
-
-    else
-        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
-
-
-convertToCards : String -> List (Column TaskItem) -> List (Column Card)
-convertToCards boardId columnList =
-    let
-        cardIdPrefix : Int -> String
-        cardIdPrefix columnIndex =
-            boardId ++ ":" ++ String.fromInt columnIndex
-
-        placeCardsInColumn : Int -> Column TaskItem -> Column Card
-        placeCardsInColumn columnIndex column =
-            Column.items column
-                |> List.map (Card.fromTaskItem (cardIdPrefix columnIndex) (Column.tagsToHide column))
-                |> Column.init True (Column.name column) (Column.tagsToHide column)
-    in
-    columnList
-        |> List.indexedMap placeCardsInColumn
+    columnTagsToHide ++ filterTagsToHide

@@ -1,335 +1,299 @@
 module Column.OtherTagsTests exposing (suite)
 
-import Column
 import Column.OtherTags as OtherTagsColumn exposing (OtherTagsColumn)
-import ColumnNames exposing (ColumnNames)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import Expect
+import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser
-import TagBoardConfig exposing (TagBoardConfig)
+import PlacementResult
 import TaskItem exposing (TaskItem)
 import Test exposing (..)
+import TsJson.Encode as TsEncode
 
 
 suite : Test
 suite =
     concat
         [ addTaskItem
-        , asColumn
+        , decoder
+        , encoder
         , init
-        , isEnabled
-        , name
+        , otherTags
+        , setCollapse
+        , setNameToDefault
+        , setOtherTags
+        , setTagsToHide
+        , toList
+        , toggleCollapse
+        , updateName
         ]
 
 
 addTaskItem : Test
 addTaskItem =
     describe "addTaskItem"
-        [ describe "with nothing completed"
-            [ describe "with no tag columns specified"
-                [ test "Placed (Q: _none_) - [ ] foo #atag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "Placed (Q: _none_) - [ ] foo\n  - [ ] bar #atag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "DoesNotBelong (Q: _none_) - [ ] foo #atag (if includeOthers is False)" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig | includeOthers = False }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                , test "DoesNotBelong (Q: _none_) - [ ] foo" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                , test "DoesNotBelong (Q: _none_) - [ ] foo\n  - [ ] bar" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                ]
-            , describe "with a tag column specified"
-                [ test "Placed (Q: xtag) - [ ] foo #atag" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig
-                                | columns = [ { tag = "xtag", displayTitle = "" } ]
-                            }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "Placed (Q: xtag) - [ ] foo\n  - [ ] bar #atag" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig
-                                | columns = [ { tag = "xtag", displayTitle = "" } ]
-                            }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "Placed (Q: xtag) - [ ] foo\n  - [ ] bar #atag\n  - [ ] baz #xtag" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig
-                                | columns = [ { tag = "xtag", displayTitle = "" } ]
-                            }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag\n  - [ ] baz #xtag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "DoesNotBelong (Q: xtag) - [ ] foo #xtag" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig
-                                | columns = [ { tag = "xtag", displayTitle = "" } ]
-                            }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #xtag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                , test "DoesNotBelong (Q: xtag) - [ ] foo\n  - [ ] bar #xtag" <|
-                    \() ->
-                        OtherTagsColumn.init
-                            { defaultTagBoardConfig
-                                | columns = [ { tag = "xtag", displayTitle = "" } ]
-                            }
-                            defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #xtag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                ]
-            ]
-        , describe "with completed tasks"
-            [ describe "with no tag columns specified"
-                [ test "CompletedInThisColumn (Q: _none_) - [x] foo #atag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.CompletedInThisColumn )
-                , test "CompletedInThisColumn (Q: _none_) - [x] foo\n  - [ ] bar #atag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo\n  - [ ] bar #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.CompletedInThisColumn )
-                , test "CompletedInThisColumn (Q: _none_) - [ ] foo\n  - [x] bar #atag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar #atag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.CompletedInThisColumn )
-                , test "Placed (Q: _none_) - [ ] foo\n  - [x] bar #atag\n  - [ ] baz #btag" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar #atag\n  - [ ] baz #btag")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [ "foo" ], Column.Placed )
-                , test "DoesNotBelong (Q: _none_) - [x] foo" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                , test "DoesNotBelong (Q: _none_) - [x] foo\n  - [ ] bar" <|
-                    \() ->
-                        OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                            |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo\n  - [ ] bar")
-                            |> Tuple.mapFirst OtherTagsColumn.asColumn
-                            |> Tuple.mapFirst Column.items
-                            |> Tuple.mapFirst (List.map TaskItem.title)
-                            |> Expect.equal ( [], Column.DoesNotBelong )
-                ]
-            , describe "with a tag column specified"
-                [ describe "with the top level task completed"
-                    [ test "CompletedInThisColumn (Q: xtag) - [x] foo #atag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #atag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [], Column.CompletedInThisColumn )
-                    , test "CompletedInThisColumn (Q: xtag) - [x] foo\n  - [ ] bar #atag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo\n  - [ ] bar #atag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [], Column.CompletedInThisColumn )
-                    ]
-                , describe "with only subtasks completed"
-                    [ test "CompletedInThisColumn (Q: xtag) - [ ] foo\n  - [x] bar #atag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar #atag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [], Column.CompletedInThisColumn )
-                    , test "Placed (Q: xtag) - [ ] foo\n  - [x] bar #atag\n  - [ ] baz #btag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar #atag\n  - [ ] baz #btag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [ "foo" ], Column.Placed )
-                    , test "Placed (Q: xtag) - [ ] foo\n  - [ ] bar #atag\n  - [x] baz #xtag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [ ] bar #atag\n  - [x] baz #xtag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [ "foo" ], Column.Placed )
-                    , test "DoesNotBelong (Q: xtag) - [ ] foo\n  - [x] bar #xtag" <|
-                        \() ->
-                            OtherTagsColumn.init
-                                { defaultTagBoardConfig
-                                    | columns = [ { tag = "xtag", displayTitle = "" } ]
-                                }
-                                defaultColumnNames
-                                |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo\n  - [x] bar #xtag")
-                                |> Tuple.mapFirst OtherTagsColumn.asColumn
-                                |> Tuple.mapFirst Column.items
-                                |> Tuple.mapFirst (List.map TaskItem.title)
-                                |> Expect.equal ( [], Column.DoesNotBelong )
-                    ]
-                ]
-            ]
+        [ test "places an incomplete tagged card when no otherTags have been configured" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+        , test "DOES NOT place an incomplete tagged card when otherTags INCLUDES the current one" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag", "aTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+        , test "DOES NOT place a completed tagged card when no otherTags have been configured" <|
+            \() ->
+                OtherTagsColumn.init "" []
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+        , test "DOES NOT place a completed tagged card when otherTags which don't include the current one have been configured" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+        , test "DOES NOT place a completed tagged card when otherTags INCLUDES the current one" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTa", "aTag", "bTag", "aTagger", "aTag/subtag", "aTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
         ]
 
 
-asColumn : Test
-asColumn =
-    describe "asColumn"
-        [ test "sorts the Column TaskItems by due date then (case insensitive) title" <|
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes collapsed field" <|
             \() ->
-                OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                    |> justAdd (taskItem "- [ ] f #atag @due(2022-01-01)")
-                    |> justAdd (taskItem "- [ ] d #atag @due(2022-01-02)")
-                    |> justAdd (taskItem "- [ ] E #atag @due(2022-01-01)")
-                    |> justAdd (taskItem "- [ ] c #atag @due(2022-01-02)")
-                    |> justAdd (taskItem "- [ ] a #atag @due(2022-01-03)")
-                    |> justAdd (taskItem "- [ ] B #atag @due(2022-01-03)")
-                    |> OtherTagsColumn.asColumn
-                    |> Column.items
-                    |> List.map TaskItem.title
-                    |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok True)
+        , test "decodes name field" <|
+            \() ->
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.name
+                    |> Expect.equal (Ok "a name")
+        , test "decode result has no taskItems" <|
+            \() ->
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.toList
+                    |> Expect.equal (Ok [])
+        , test "decode result has no tagsToHide" <|
+            \() ->
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.tagsToHide
+                    |> Expect.equal (Ok [])
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes a decoded column" <|
+            \() ->
+                let
+                    encodedString : String
+                    encodedString =
+                        """{"collapsed":false,"name":"a name"}"""
+                in
+                encodedString
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map (TsEncode.runExample OtherTagsColumn.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok encodedString)
         ]
 
 
 init : Test
 init =
     describe "init"
-        [ test "initializes with an empty TaskList" <|
+        [ test "initializes with no cards" <|
             \() ->
-                OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                    |> OtherTagsColumn.asColumn
-                    |> Column.isEmpty
-                    |> Expect.equal True
-        ]
-
-
-isEnabled : Test
-isEnabled =
-    describe "asColumn.isEnabled"
-        [ test "returns True if the config.includeOthers is True" <|
+                OtherTagsColumn.init "" []
+                    |> OtherTagsColumn.toList
+                    |> List.length
+                    |> Expect.equal 0
+        , test "initializes with no tagsToHide" <|
             \() ->
-                OtherTagsColumn.init { defaultTagBoardConfig | includeOthers = True } defaultColumnNames
-                    |> OtherTagsColumn.asColumn
-                    |> Column.isEnabled
-                    |> Expect.equal True
-        , test "returns False if the config.includeOthers is False" <|
+                OtherTagsColumn.init "" []
+                    |> OtherTagsColumn.tagsToHide
+                    |> Expect.equal []
+        , test "sets the column name" <|
             \() ->
-                OtherTagsColumn.init { defaultTagBoardConfig | includeOthers = False } defaultColumnNames
-                    |> OtherTagsColumn.asColumn
-                    |> Column.isEnabled
+                OtherTagsColumn.init "A Column Name" []
+                    |> OtherTagsColumn.name
+                    |> Expect.equal "A Column Name"
+        , test "is not collapsed" <|
+            \() ->
+                OtherTagsColumn.init "A Column Name" []
+                    |> OtherTagsColumn.isCollapsed
                     |> Expect.equal False
         ]
 
 
-name : Test
-name =
-    describe "asColumn.name"
-        [ test "defaults to 'Others'" <|
+otherTags : Test
+otherTags =
+    describe "otherTags"
+        [ test "returns the other tags" <|
             \() ->
-                OtherTagsColumn.init defaultTagBoardConfig defaultColumnNames
-                    |> OtherTagsColumn.asColumn
-                    |> Column.name
-                    |> Expect.equal "Others"
-        , test "can be customized" <|
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.otherTags
+                    |> Expect.equal [ "aTag" ]
+        ]
+
+
+setCollapse : Test
+setCollapse =
+    describe "setCollapse"
+        [ test "sets a collapsed column to be collapsed" <|
             \() ->
-                OtherTagsColumn.init defaultTagBoardConfig { defaultColumnNames | others = Just "foo" }
-                    |> OtherTagsColumn.asColumn
-                    |> Column.name
-                    |> Expect.equal "foo"
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map (OtherTagsColumn.setCollapse True)
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok True)
+        , test "sets an uncollapsed column to be collapsed" <|
+            \() ->
+                """{"collapsed":false,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map (OtherTagsColumn.setCollapse True)
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok True)
+        , test "sets a collapsed column to be uncollapsed" <|
+            \() ->
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map (OtherTagsColumn.setCollapse False)
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok False)
+        , test "sets an uncollapsed column to be uncollapsed" <|
+            \() ->
+                """{"collapsed":false,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map (OtherTagsColumn.setCollapse False)
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok False)
+        ]
+
+
+setNameToDefault : Test
+setNameToDefault =
+    describe "setNameToDefault"
+        [ test "updates the name" <|
+            \() ->
+                OtherTagsColumn.init "A Column Name" []
+                    |> OtherTagsColumn.setNameToDefault exampleColumnNames
+                    |> OtherTagsColumn.name
+                    |> Expect.equal "Other Tags"
+        ]
+
+
+setOtherTags : Test
+setOtherTags =
+    describe "setOtherTags"
+        [ test "doesn't place TaskItem if other tags include the tag" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+        , test "places TaskItem if I use setOtherTags to change other tags to something else" <|
+            \() ->
+                OtherTagsColumn.init "" [ "aTag" ]
+                    |> OtherTagsColumn.setOtherTags [ "bTag" ]
+                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                    |> Tuple.mapFirst OtherTagsColumn.toList
+                    |> Tuple.mapFirst (List.map TaskItem.title)
+                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+        ]
+
+
+setTagsToHide : Test
+setTagsToHide =
+    describe "setTagsToHide"
+        [ test "sets the tags" <|
+            \() ->
+                OtherTagsColumn.init "" []
+                    |> OtherTagsColumn.setTagsToHide [ "tag 1", "tag 2" ]
+                    |> OtherTagsColumn.tagsToHide
+                    |> Expect.equal [ "tag 1", "tag 2" ]
+        ]
+
+
+toList : Test
+toList =
+    describe "toList"
+        [ test "sorts by due date and title (not case sensitive)" <|
+            \() ->
+                OtherTagsColumn.init "" []
+                    |> justAdd (taskItem "- [ ] f #atag @due(2022-01-01)")
+                    |> justAdd (taskItem "- [ ] d #atag @due(2022-01-02)")
+                    |> justAdd (taskItem "- [ ] E #atag @due(2022-01-01)")
+                    |> justAdd (taskItem "- [ ] c #atag @due(2022-01-02)")
+                    |> justAdd (taskItem "- [ ] a #atag @due(2022-01-03)")
+                    |> justAdd (taskItem "- [ ] B #atag @due(2022-01-03)")
+                    |> OtherTagsColumn.toList
+                    |> List.map TaskItem.title
+                    |> Expect.equal [ "E", "f", "c", "d", "a", "B" ]
+        ]
+
+
+toggleCollapse : Test
+toggleCollapse =
+    describe "toggleCollapse"
+        [ test "toggles a collapsed column to be uncollapsed" <|
+            \() ->
+                """{"collapsed":true,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.toggleCollapse
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok False)
+        , test "toggles an uncollapsed column to be collapsed" <|
+            \() ->
+                """{"collapsed":false,"name":"a name"}"""
+                    |> DecodeHelpers.runDecoder OtherTagsColumn.decoder
+                    |> .decoded
+                    |> Result.map OtherTagsColumn.toggleCollapse
+                    |> Result.map OtherTagsColumn.isCollapsed
+                    |> Expect.equal (Ok True)
+        ]
+
+
+updateName : Test
+updateName =
+    describe "updateName"
+        [ test "updates the name" <|
+            \() ->
+                OtherTagsColumn.init "A Column Name" []
+                    |> OtherTagsColumn.updateName "new name"
+                    |> OtherTagsColumn.name
+                    |> Expect.equal "new name"
         ]
 
 
@@ -337,19 +301,12 @@ name =
 -- HELPERS
 
 
-defaultColumnNames : ColumnNames
-defaultColumnNames =
-    ColumnNames.default
-
-
-defaultTagBoardConfig : TagBoardConfig
-defaultTagBoardConfig =
-    let
-        default : TagBoardConfig
-        default =
-            TagBoardConfig.default
-    in
-    { default | includeOthers = True }
+exampleColumnNames : DefaultColumnNames
+exampleColumnNames =
+    """{"today":"This Day","tomorrow":"The Morrow","future":"Way Out","undated":"No Date","otherTags":"Other Tags","untagged":"No Tags","completed":"Is Done"}"""
+        |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
+        |> .decoded
+        |> Result.withDefault DefaultColumnNames.default
 
 
 justAdd : TaskItem -> OtherTagsColumn -> OtherTagsColumn

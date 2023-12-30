@@ -1,28 +1,25 @@
 module Settings exposing
     ( Settings
-    , addBoard
     , boardConfigs
-    , cleanupTitles
+    , cleanupNames
     , currentVersion
     , decoder
     , default
-    , deleteCurrentBoard
+    , defaultColumnNames
     , encoder
     , globalSettings
-    , hasAnyBordsConfigured
-    , mapGlobalSettings
     , moveBoard
+    , restrictSpecialColumns
     , switchToBoard
-    , updateBoardConfigs
     , updateCurrentBoard
     , updatePath
     )
 
 import BoardConfig exposing (BoardConfig)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
 import GlobalSettings exposing (GlobalSettings)
-import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Semver
 import TsJson.Decode as TsDecode
@@ -57,13 +54,14 @@ boardConfigs =
     .boardConfigs
 
 
-cleanupTitles : Settings -> Settings
-cleanupTitles settings =
+cleanupNames : Settings -> Settings
+cleanupNames settings =
     case SafeZipper.currentIndex settings.boardConfigs of
         Just index ->
             settings
-                |> replaceMissingBoardTitles
-                |> enforceUniqueBoardTitles
+                |> replaceMissingBoardNames
+                |> enforceUniqueBoardNames
+                |> cleanupColumnNames (defaultColumnNames settings)
                 |> boardConfigs
                 |> SafeZipper.atIndex index
                 |> (\cs -> { settings | boardConfigs = cs })
@@ -72,9 +70,14 @@ cleanupTitles settings =
             settings
 
 
+defaultColumnNames : Settings -> DefaultColumnNames
+defaultColumnNames =
+    .defaultColumnNames << globalSettings
+
+
 currentVersion : Semver.Version
 currentVersion =
-    Semver.version 0 10 0 [] []
+    Semver.version 0 11 0 [] []
 
 
 globalSettings : Settings -> GlobalSettings
@@ -82,119 +85,33 @@ globalSettings =
     .globalSettings
 
 
-hasAnyBordsConfigured : Settings -> Bool
-hasAnyBordsConfigured settings =
-    SafeZipper.length settings.boardConfigs /= 0
-
-
 
 -- TRANSFORM
 
 
-addBoard : BoardConfig -> Settings -> Settings
-addBoard configToAdd settings =
-    { settings | boardConfigs = SafeZipper.last <| SafeZipper.add configToAdd settings.boardConfigs }
-
-
-deleteCurrentBoard : Settings -> Settings
-deleteCurrentBoard settings =
-    { settings | boardConfigs = SafeZipper.deleteCurrent settings.boardConfigs }
-
-
-mapGlobalSettings : (GlobalSettings -> GlobalSettings) -> Settings -> Settings
-mapGlobalSettings fn settings =
-    { settings | globalSettings = fn settings.globalSettings }
-
-
 moveBoard : String -> BeaconPosition -> Settings -> Settings
 moveBoard draggedId beaconPosition settings =
-    if BeaconPosition.uniqueId beaconPosition == draggedId then
-        let
-            boardList : List BoardConfig
-            boardList =
-                boardConfigs settings
-                    |> SafeZipper.toList
-        in
-        case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.uniqueId beaconPosition) boardList of
-            Nothing ->
-                settings
+    let
+        movedBoardConfigs : SafeZipper BoardConfig
+        movedBoardConfigs =
+            settings
+                |> boardConfigs
+                |> SafeZipper.toList
+                |> BeaconPosition.performMove draggedId beaconPosition BoardConfig.name
+                |> SafeZipper.fromList
 
-            Just boardIndex ->
-                { settings
-                    | boardConfigs =
-                        SafeZipper.fromList boardList
-                            |> SafeZipper.atIndex boardIndex
-                }
-
-    else
-        let
-            boardList : List BoardConfig
-            boardList =
-                boardConfigs settings
-                    |> SafeZipper.toList
-
-            found : Maybe BoardConfig
-            found =
-                List.filter (\c -> BoardConfig.title c == draggedId) boardList
-                    |> List.head
-
-            afterRemoving : List BoardConfig
-            afterRemoving =
-                List.filter (\c -> BoardConfig.title c /= draggedId) boardList
-
-            insertConfig : BoardConfig -> Result String ( List BoardConfig, Int )
-            insertConfig foundConfig =
-                case LE.findIndex (\c -> BoardConfig.title c == BeaconPosition.uniqueId beaconPosition) afterRemoving of
-                    Nothing ->
-                        Err ""
-
-                    Just beaconIndex ->
-                        case beaconPosition of
-                            BeaconPosition.After _ ->
-                                Ok
-                                    ( List.concat
-                                        [ List.take (beaconIndex + 1) afterRemoving
-                                        , [ foundConfig ]
-                                        , List.drop (beaconIndex + 1) afterRemoving
-                                        ]
-                                    , beaconIndex + 1
-                                    )
-
-                            BeaconPosition.Before _ ->
-                                Ok
-                                    ( List.concat
-                                        [ List.take beaconIndex afterRemoving
-                                        , [ foundConfig ]
-                                        , List.drop beaconIndex afterRemoving
-                                        ]
-                                    , beaconIndex
-                                    )
-        in
-        case found of
-            Nothing ->
-                settings
-
-            Just foundConfig ->
-                case insertConfig foundConfig of
-                    Err _ ->
-                        settings
-
-                    Ok ( newList, movedBoardIndex ) ->
-                        { settings
-                            | boardConfigs =
-                                SafeZipper.fromList newList
-                                    |> SafeZipper.atIndex movedBoardIndex
-                        }
+        movedBoardIndex : Int
+        movedBoardIndex =
+            movedBoardConfigs
+                |> SafeZipper.findIndex (\c -> BoardConfig.name c == draggedId)
+                |> Maybe.withDefault 0
+    in
+    { settings | boardConfigs = SafeZipper.atIndex movedBoardIndex movedBoardConfigs }
 
 
 switchToBoard : Int -> Settings -> Settings
 switchToBoard index settings =
     { settings | boardConfigs = SafeZipper.atIndex index settings.boardConfigs }
-
-
-updateBoardConfigs : SafeZipper BoardConfig -> Settings -> Settings
-updateBoardConfigs newConfigs settings =
-    { settings | boardConfigs = newConfigs }
 
 
 updateCurrentBoard : (BoardConfig -> BoardConfig) -> Settings -> Settings
@@ -228,7 +145,8 @@ decoder : TsDecode.Decoder Settings
 decoder =
     TsDecode.field "version" TsDecode.string
         |> TsDecode.andThen versionedSettingsDecoder
-        |> TsDecode.map cleanupTitles
+        |> TsDecode.map restrictSpecialColumns
+        |> TsDecode.map cleanupNames
 
 
 
@@ -243,50 +161,79 @@ dataEncoder =
         ]
 
 
-enforceUniqueBoardTitles : Settings -> Settings
-enforceUniqueBoardTitles settings =
+enforceUniqueBoardNames : Settings -> Settings
+enforceUniqueBoardNames settings =
     let
         helper : Int -> BoardConfig -> ( List String, SafeZipper BoardConfig ) -> ( List String, SafeZipper BoardConfig )
-        helper index config ( titles, cs ) =
+        helper index config ( accumulatedNames, cs ) =
             let
-                uniqueTitle : String
-                uniqueTitle =
-                    if List.member (String.replace " " "_" <| BoardConfig.title config) titles then
-                        BoardConfig.title config ++ "." ++ String.fromInt index
+                uniqueName : String
+                uniqueName =
+                    if List.member (String.replace " " "_" <| BoardConfig.name config) accumulatedNames then
+                        BoardConfig.name config ++ "." ++ String.fromInt index
 
                     else
-                        BoardConfig.title config
+                        BoardConfig.name config
 
                 safeConfig : BoardConfig
                 safeConfig =
-                    BoardConfig.updateTitle uniqueTitle config
+                    BoardConfig.updateName uniqueName config
 
-                ts : List String
-                ts =
-                    String.replace " " "_" uniqueTitle :: titles
+                newAccumulator : List String
+                newAccumulator =
+                    String.replace " " "_" uniqueName :: accumulatedNames
             in
-            ( ts, SafeZipper.add safeConfig cs )
+            ( newAccumulator, SafeZipper.add safeConfig cs )
 
-        withUniqueBoardTitles : SafeZipper BoardConfig
-        withUniqueBoardTitles =
-            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) settings.boardConfigs
+        trimName : BoardConfig -> BoardConfig
+        trimName boardConfig =
+            BoardConfig.updateName (String.trim (BoardConfig.name boardConfig)) boardConfig
+
+        withUniqueBoardNames : SafeZipper BoardConfig -> SafeZipper BoardConfig
+        withUniqueBoardNames startConfigs =
+            SafeZipper.indexedFoldl helper ( [], SafeZipper.empty ) startConfigs
                 |> Tuple.second
     in
-    { settings | boardConfigs = withUniqueBoardTitles }
+    { settings
+        | boardConfigs =
+            settings.boardConfigs
+                |> SafeZipper.map trimName
+                |> withUniqueBoardNames
+    }
 
 
-replaceMissingBoardTitles : Settings -> Settings
-replaceMissingBoardTitles settings =
+replaceMissingBoardNames : Settings -> Settings
+replaceMissingBoardNames settings =
     let
-        withNoMissingTitles : BoardConfig -> BoardConfig
-        withNoMissingTitles config =
-            if String.isEmpty (String.trim <| BoardConfig.title config) then
-                BoardConfig.updateTitle "Untitled" config
+        withNoMissingNames : BoardConfig -> BoardConfig
+        withNoMissingNames config =
+            if String.isEmpty (String.trim <| BoardConfig.name config) then
+                BoardConfig.updateName "Unnamed" config
 
             else
                 config
     in
-    { settings | boardConfigs = SafeZipper.map withNoMissingTitles settings.boardConfigs }
+    { settings | boardConfigs = SafeZipper.map withNoMissingNames settings.boardConfigs }
+
+
+cleanupColumnNames : DefaultColumnNames -> Settings -> Settings
+cleanupColumnNames defaultColumnNames_ settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.map
+                (BoardConfig.cleanupColumnNames defaultColumnNames_)
+                settings.boardConfigs
+    }
+
+
+restrictSpecialColumns : Settings -> Settings
+restrictSpecialColumns settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.map
+                BoardConfig.restrictSpecialColumns
+                settings.boardConfigs
+    }
 
 
 semverEncoder : TsEncode.Encoder Semver.Version
@@ -298,8 +245,11 @@ semverEncoder =
 versionedSettingsDecoder : TsDecode.AndThenContinuation (String -> TsDecode.Decoder Settings)
 versionedSettingsDecoder =
     TsDecode.andThenInit
-        (\v_0_10_0 v_0_9_0 v_0_8_0 v_0_7_0 v_0_6_0 v_0_5_0 v_0_4_0 v_0_3_0 v_0_2_0 v_0_1_0 unsupportedVersion version_ ->
+        (\v_0_11_0 v_0_10_0 v_0_9_0 v_0_8_0 v_0_7_0 v_0_6_0 v_0_5_0 v_0_4_0 v_0_3_0 v_0_2_0 v_0_1_0 unsupportedVersion version_ ->
             case version_ of
+                "0.11.0" ->
+                    v_0_11_0
+
                 "0.10.0" ->
                     v_0_10_0
 
@@ -333,6 +283,7 @@ versionedSettingsDecoder =
                 _ ->
                     unsupportedVersion
         )
+        |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_11_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_10_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_9_0_Decoder)
         |> TsDecode.andThenDecoder (TsDecode.field "data" v_0_8_0_Decoder)
@@ -346,86 +297,156 @@ versionedSettingsDecoder =
         |> TsDecode.andThenDecoder (TsDecode.field "data" unsupportedVersionDecoder)
 
 
+v_0_11_0_Decoder : TsDecode.Decoder Settings
+v_0_11_0_Decoder =
+    TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_11_0))
+            )
+        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_11_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed currentVersion)
+
+
 v_0_10_0_Decoder : TsDecode.Decoder Settings
 v_0_10_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_10_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_10_0))
+            )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_10_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_9_0_Decoder : TsDecode.Decoder Settings
 v_0_9_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_9_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_9_0))
+            )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_9_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_8_0_Decoder : TsDecode.Decoder Settings
 v_0_8_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_6_0)))
-        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_8_0))
+            )
+        |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_8_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_7_0_Decoder : TsDecode.Decoder Settings
 v_0_7_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_7_0))
+            )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_7_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_6_0_Decoder : TsDecode.Decoder Settings
 v_0_6_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_6_0))
+            )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_6_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_5_0_Decoder : TsDecode.Decoder Settings
 v_0_5_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_5_0))
+            )
         |> TsDecode.andMap (TsDecode.field "globalSettings" GlobalSettings.v_0_5_0_decoder)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_4_0_Decoder : TsDecode.Decoder Settings
 v_0_4_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_4_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_4_0))
+            )
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_3_0_Decoder : TsDecode.Decoder Settings
 v_0_3_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_3_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_3_0))
+            )
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_2_0_Decoder : TsDecode.Decoder Settings
 v_0_2_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_2_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_2_0))
+            )
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 v_0_1_0_Decoder : TsDecode.Decoder Settings
 v_0_1_0_Decoder =
-    TsDecode.succeed Settings
-        |> TsDecode.andMap (TsDecode.field "boardConfigs" (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_1_0)))
+    (TsDecode.succeed Settings
+        |> TsDecode.andMap
+            (TsDecode.field "boardConfigs"
+                (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_1_0))
+            )
         |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
+    )
+        |> TsDecode.map setNamesToDefault
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings
 unsupportedVersionDecoder =
     TsDecode.fail "Unsupported settings file version"
+
+
+setNamesToDefault : Settings -> Settings
+setNamesToDefault settings =
+    { settings
+        | boardConfigs =
+            SafeZipper.map (BoardConfig.setNamesToDefault settings.globalSettings.defaultColumnNames)
+                settings.boardConfigs
+    }

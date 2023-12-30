@@ -1,15 +1,27 @@
 module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
-    , asColumn
+    , decoder
+    , encoder
     , init
+    , isCollapsed
+    , name
+    , setCollapse
+    , setNameToDefault
+    , setTagsToHide
+    , tagsToHide
+    , toList
+    , toggleCollapse
+    , updateName
     )
 
-import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
-import TagBoardConfig exposing (TagBoardConfig)
+import DefaultColumnNames exposing (DefaultColumnNames)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -17,13 +29,12 @@ import TaskList exposing (TaskList)
 
 
 type UntaggedColumn
-    = UntaggedColumn Config
+    = UntaggedColumn Config (List String) TaskList
 
 
 type alias Config =
-    { enabled : Bool
+    { collapsed : Bool
     , name : String
-    , taskList : TaskList
     }
 
 
@@ -31,66 +42,110 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : TagBoardConfig -> ColumnNames -> UntaggedColumn
-init tagboardConfig columnNames =
-    UntaggedColumn
-        { enabled = tagboardConfig.includeUntagged
-        , name = ColumnNames.nameFor "untagged" columnNames
-        , taskList = TaskList.empty
-        }
+init : String -> UntaggedColumn
+init name_ =
+    UntaggedColumn { collapsed = False, name = name_ } [] TaskList.empty
 
 
-addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, Column.PlacementResult )
-addTaskItem taskItem ((UntaggedColumn c) as untaggedColumn) =
-    if isEnabled untaggedColumn && belongs taskItem then
-        if isCompleted taskItem then
-            ( untaggedColumn, Column.CompletedInThisColumn )
 
-        else
-            ( UntaggedColumn { c | taskList = TaskList.add taskItem c.taskList }, Column.Placed )
+-- DECODE / ENCODE
 
-    else
-        ( untaggedColumn, Column.DoesNotBelong )
+
+decoder : TsDecode.Decoder UntaggedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "name" TsDecode.string
+    )
+        |> TsDecode.map (\c -> UntaggedColumn c [] TaskList.empty)
+
+
+encoder : TsEncode.Encoder UntaggedColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
 -- INFO
 
 
-asColumn : UntaggedColumn -> Column TaskItem
-asColumn untaggedColumn =
-    config untaggedColumn
-        |> .taskList
+name : UntaggedColumn -> String
+name =
+    .name << config
+
+
+toList : UntaggedColumn -> List TaskItem
+toList (UntaggedColumn _ _ tl) =
+    tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.sortBy TaskItem.dueRataDie
-        |> Column.init (isEnabled untaggedColumn) (name untaggedColumn) []
+
+
+isCollapsed : UntaggedColumn -> Bool
+isCollapsed =
+    .collapsed << config
+
+
+tagsToHide : UntaggedColumn -> List String
+tagsToHide (UntaggedColumn _ tth _) =
+    tth
+
+
+
+-- MODIFICATION
+
+
+addTaskItem : TaskItem -> UntaggedColumn -> ( UntaggedColumn, PlacementResult )
+addTaskItem taskItem ((UntaggedColumn c tth tl) as untaggedColumn) =
+    if not <| TaskItem.hasTags taskItem then
+        if TaskItem.isCompleted taskItem then
+            ( untaggedColumn, PlacementResult.CompletedInThisColumn )
+
+        else
+            ( UntaggedColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
+
+    else
+        ( untaggedColumn, PlacementResult.DoesNotBelong )
+
+
+setCollapse : Bool -> UntaggedColumn -> UntaggedColumn
+setCollapse isCollapsed_ (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | collapsed = isCollapsed_ } tth tl
+
+
+setNameToDefault : DefaultColumnNames -> UntaggedColumn -> UntaggedColumn
+setNameToDefault defaultColumnNames (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | name = DefaultColumnNames.nameFor "untagged" defaultColumnNames } tth tl
+
+
+setTagsToHide : List String -> UntaggedColumn -> UntaggedColumn
+setTagsToHide tags (UntaggedColumn c _ tl) =
+    UntaggedColumn c tags tl
+
+
+toggleCollapse : UntaggedColumn -> UntaggedColumn
+toggleCollapse (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateName : String -> UntaggedColumn -> UntaggedColumn
+updateName newName (UntaggedColumn c tth tl) =
+    UntaggedColumn { c | name = newName } tth tl
 
 
 
 -- PRIVATE
 
 
-belongs : TaskItem -> Bool
-belongs =
-    not << TaskItem.hasTags
-
-
 config : UntaggedColumn -> Config
-config (UntaggedColumn c) =
+config (UntaggedColumn c _ _) =
     c
 
 
-isCompleted : TaskItem -> Bool
-isCompleted taskItem =
-    TaskItem.isCompleted taskItem
-
-
-isEnabled : UntaggedColumn -> Bool
-isEnabled =
-    .enabled << config
-
-
-name : UntaggedColumn -> String
-name =
-    .name << config
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        ]

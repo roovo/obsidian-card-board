@@ -1,7 +1,9 @@
-- why isn't grab cursor working over "draggables"?
-- tidy typescript
-- can I animate tab moving so it isn't instantaneous?
+- bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
+  as expected!  However, if I also have an other tags column, this card appears here too
+  - not expected
+
 - touch events - iPad ??
+- show errors on settings pane ??
 
 # Cleanups
 - simplify parsing as per typing tutor
@@ -13,9 +15,6 @@
   but no other tags then it appears in the others column.  It feels like
   it should really be in the untagged column.
 - check coverage and add tests
-- are there any failure cases for TagBoard.columnConfigsParser?
-- tabs are not very visible
-- I have only have one issue: When opening CardBoard, it always open in a new split pane on the right, even if no file is open. I would prefer to have it open in full width like when opening Graph view. Can I suggest this fix ?
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:
     https://github.com/kometenstaub/linked-data-helper/blob/3bbee6aa49bcabd2dab0b8f86bccd2de81ed92e6/src/interfaces.ts#L26
@@ -42,9 +41,6 @@
   are there any sensible options I can give them if I do?
   - gets stuck on "Loading tasks..." if flags parsing fails
   - I could use State if I added a State.Failed
-- do I want the last board who's settings I've edited to the one shown when closing settings?
-- allow boards to be ordered (in settings somehow - perhaps use this as a first exploration
-  into drag and drop?)
 - when jumping to the todo using the edit link perhaps I could highlight the complete
   taskItem block (if is has indented content).  Will have to explore the setEphemeralState
   code to see if I can do this using line numbers or whether I need to track characters..
@@ -79,7 +75,6 @@
 - do I want a way of flagging cards?
 - could make column ordering more efficient (e.g. TagBoard completed tasks)
 - context menu to set due date to today
-- don't display all completed tasks - can get quite long!
 - filter cards on board (e.g. by tag)
 - sort order for columns?
 

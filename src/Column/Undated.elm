@@ -1,16 +1,27 @@
 module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
-    , asColumn
+    , decoder
+    , encoder
     , init
+    , isCollapsed
+    , name
+    , setCollapse
+    , setNameToDefault
+    , setTagsToHide
+    , tagsToHide
+    , toList
+    , toggleCollapse
+    , updateName
     )
 
-import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
-import DateBoardConfig exposing (DateBoardConfig)
-import Filter
+import DefaultColumnNames exposing (DefaultColumnNames)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -18,14 +29,12 @@ import TaskList exposing (TaskList)
 
 
 type UndatedColumn
-    = UndatedColumn Config
+    = UndatedColumn Config (List String) TaskList
 
 
 type alias Config =
-    { enabled : Bool
+    { collapsed : Bool
     , name : String
-    , taskList : TaskList
-    , tagsToHide : List String
     }
 
 
@@ -33,76 +42,31 @@ type alias Config =
 -- CONSTRUCTION
 
 
-init : DateBoardConfig -> ColumnNames -> UndatedColumn
-init dateBoardConfig columnNames =
-    let
-        filterTagsToHide : List String
-        filterTagsToHide =
-            if dateBoardConfig.showFilteredTags then
-                []
-
-            else
-                dateBoardConfig
-                    |> .filters
-                    |> List.filter (\f -> Filter.filterType f == "Tags")
-                    |> List.map Filter.value
-    in
-    UndatedColumn
-        { enabled = dateBoardConfig.includeUndated
-        , name = ColumnNames.nameFor "undated" columnNames
-        , taskList = TaskList.empty
-        , tagsToHide = filterTagsToHide
-        }
+init : String -> UndatedColumn
+init name_ =
+    UndatedColumn { collapsed = False, name = name_ } [] TaskList.empty
 
 
-addTaskItem : TaskItem -> UndatedColumn -> ( UndatedColumn, Column.PlacementResult )
-addTaskItem taskItem ((UndatedColumn c) as undatedColumn) =
-    if isEnabled undatedColumn && belongs taskItem then
-        if isCompleted taskItem then
-            ( undatedColumn, Column.CompletedInThisColumn )
 
-        else
-            ( UndatedColumn { c | taskList = TaskList.add taskItem c.taskList }, Column.Placed )
+-- DECODE / ENCODE
 
-    else
-        ( undatedColumn, Column.DoesNotBelong )
+
+decoder : TsDecode.Decoder UndatedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "name" TsDecode.string
+    )
+        |> TsDecode.map (\c -> UndatedColumn c [] TaskList.empty)
+
+
+encoder : TsEncode.Encoder UndatedColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
 -- INFO
-
-
-asColumn : UndatedColumn -> Column TaskItem
-asColumn undatedColumn =
-    config undatedColumn
-        |> .taskList
-        |> TaskList.topLevelTasks
-        |> List.sortBy (String.toLower << TaskItem.title)
-        |> Column.init (isEnabled undatedColumn) (name undatedColumn) (tagsToHide undatedColumn)
-
-
-
--- PRIVATE
-
-
-belongs : TaskItem -> Bool
-belongs =
-    not << TaskItem.isDated
-
-
-config : UndatedColumn -> Config
-config (UndatedColumn c) =
-    c
-
-
-isCompleted : TaskItem -> Bool
-isCompleted taskItem =
-    TaskItem.isCompleted taskItem
-
-
-isEnabled : UndatedColumn -> Bool
-isEnabled =
-    .enabled << config
 
 
 name : UndatedColumn -> String
@@ -110,6 +74,77 @@ name =
     .name << config
 
 
+toList : UndatedColumn -> List TaskItem
+toList (UndatedColumn _ _ tl) =
+    tl
+        |> TaskList.topLevelTasks
+        |> List.sortBy (String.toLower << TaskItem.title)
+
+
+isCollapsed : UndatedColumn -> Bool
+isCollapsed =
+    .collapsed << config
+
+
 tagsToHide : UndatedColumn -> List String
-tagsToHide =
-    .tagsToHide << config
+tagsToHide (UndatedColumn _ tth _) =
+    tth
+
+
+
+-- MODIFICATION
+
+
+addTaskItem : TaskItem -> UndatedColumn -> ( UndatedColumn, PlacementResult )
+addTaskItem taskItem ((UndatedColumn c tth tl) as undatedColumn) =
+    if not <| TaskItem.isDated taskItem then
+        if TaskItem.isCompleted taskItem then
+            ( undatedColumn, PlacementResult.CompletedInThisColumn )
+
+        else
+            ( UndatedColumn c tth (TaskList.add taskItem tl), PlacementResult.Placed )
+
+    else
+        ( undatedColumn, PlacementResult.DoesNotBelong )
+
+
+setCollapse : Bool -> UndatedColumn -> UndatedColumn
+setCollapse isCollapsed_ (UndatedColumn c tth tl) =
+    UndatedColumn { c | collapsed = isCollapsed_ } tth tl
+
+
+setNameToDefault : DefaultColumnNames -> UndatedColumn -> UndatedColumn
+setNameToDefault defaultColumnNames (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = DefaultColumnNames.nameFor "undated" defaultColumnNames } tth tl
+
+
+setTagsToHide : List String -> UndatedColumn -> UndatedColumn
+setTagsToHide tags (UndatedColumn c _ tl) =
+    UndatedColumn c tags tl
+
+
+toggleCollapse : UndatedColumn -> UndatedColumn
+toggleCollapse (UndatedColumn c tth tl) =
+    UndatedColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateName : String -> UndatedColumn -> UndatedColumn
+updateName newName (UndatedColumn c tth tl) =
+    UndatedColumn { c | name = newName } tth tl
+
+
+
+-- PRIVATE
+
+
+config : UndatedColumn -> Config
+config (UndatedColumn c _ _) =
+    c
+
+
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "name" .name TsEncode.string
+        ]

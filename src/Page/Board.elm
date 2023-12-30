@@ -8,7 +8,6 @@ import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
-import ColumnNames exposing (ColumnNames)
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -72,7 +71,7 @@ update msg session =
 
                 DragData.Stop ->
                     ( Session.stopTrackingDragable session
-                    , Cmd.none
+                    , InteropPorts.updateSettings <| Session.settings session
                     , Session.NoOp
                     )
 
@@ -182,12 +181,7 @@ view session =
         let
             boards : Boards
             boards =
-                Boards.init (Session.uniqueId session) columnNames (Session.boardConfigs session) (Session.taskList session)
-
-            columnNames : ColumnNames
-            columnNames =
-                Session.globalSettings session
-                    |> .columnNames
+                Boards.init (Session.uniqueId session) (Session.boardConfigs session) (Session.taskList session)
 
             currentBoardIndex : Maybe Int
             currentBoardIndex =
@@ -255,13 +249,13 @@ view session =
 
 tabHeaders : Bool -> Maybe Int -> Boards -> List (Html Msg)
 tabHeaders isDragging currentBoardIndex boards =
-    Boards.titles boards
+    Boards.names boards
         |> SafeZipper.indexedMapSelectedAndRest (selectedTabHeader isDragging) (tabHeader isDragging currentBoardIndex)
         |> SafeZipper.toList
 
 
 tabHeader : Bool -> Maybe Int -> Int -> String -> Html Msg
-tabHeader isDragging currentBoardIndex tabIndex title =
+tabHeader isDragging currentBoardIndex tabIndex name =
     let
         headerClass : String
         headerClass =
@@ -274,32 +268,32 @@ tabHeader isDragging currentBoardIndex tabIndex title =
     Html.div
         [ id domId
         , class ("workspace-tab-header" ++ headerClass)
-        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label" name)
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , onClick <| TabSelected tabIndex
         , onDown
             (\e ->
                 TabHeaderMouseDown <|
                     ( domId
-                    , { uniqueId = title
+                    , { uniqueId = name
                       , clientPos = Coords.fromFloatTuple e.clientPos
                       , offsetPos = Coords.fromFloatTuple e.offsetPos
                       }
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
-                [ Html.text <| title ]
+                [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After title)
+        , beacon (BeaconPosition.After name)
         ]
 
 
 selectedTabHeader : Bool -> Int -> String -> Html Msg
-selectedTabHeader isDragging tabIndex title =
+selectedTabHeader isDragging tabIndex name =
     let
         domId : String
         domId =
@@ -308,7 +302,7 @@ selectedTabHeader isDragging tabIndex title =
     Html.div
         [ class "workspace-tab-header is-active"
         , id domId
-        , attributeIf (not isDragging) (attribute "aria-label" title)
+        , attributeIf (not isDragging) (attribute "aria-label" name)
         , attributeIf isDragging (attribute "aria-label" "")
         , attributeIf (not isDragging) (attribute "aria-label-delay" "50")
         , attributeIf isDragging (style "opacity" "0.0")
@@ -316,20 +310,20 @@ selectedTabHeader isDragging tabIndex title =
             (\e ->
                 TabHeaderMouseDown <|
                     ( domId
-                    , { uniqueId = title
+                    , { uniqueId = name
                       , clientPos = Coords.fromFloatTuple e.clientPos
                       , offsetPos = Coords.fromFloatTuple e.offsetPos
                       }
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before title)
+        [ beacon (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
-                [ Html.text <| title ]
+                [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After title)
+        , beacon (BeaconPosition.After name)
         ]
 
 
@@ -404,7 +398,7 @@ boardView ignoreFileNameDates today board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView index today column)
+                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
             )
         ]
 
@@ -420,13 +414,13 @@ selectedBoardView ignoreFileNameDates today board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView index today column)
+                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
             )
         ]
 
 
-columnView : Int -> Date -> Column Card -> Html Msg
-columnView columnIndex today column =
+columnView : String -> Int -> Date -> Column -> Html Msg
+columnView boardId columnIndex today column =
     let
         columnCollapsedAria : String
         columnCollapsedAria =
@@ -455,7 +449,7 @@ columnView columnIndex today column =
         columnCountString : String
         columnCountString =
             if Column.isCollapsed column then
-                "(" ++ (String.fromInt <| List.length <| Column.items column) ++ ")"
+                "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
 
             else
                 ""
@@ -474,7 +468,7 @@ columnView columnIndex today column =
                 [ Html.text <| columnCountString ]
             ]
         , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView today) (Column.items column))
+            (List.map (cardView today) (Column.cards boardId column))
         ]
 
 

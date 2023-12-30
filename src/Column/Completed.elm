@@ -1,18 +1,30 @@
 module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
-    , asColumn
-    , forDateBoard
-    , forTagBoard
+    , decoder
+    , encoder
+    , index
+    , init
+    , isCollapsed
+    , limit
+    , name
+    , setCollapse
+    , setIndex
+    , setNameToDefault
+    , setTagsToHide
+    , tagsToHide
+    , toList
+    , toggleCollapse
+    , updateName
     )
 
-import Column exposing (Column, PlacementResult)
-import ColumnNames exposing (ColumnNames)
-import DateBoardConfig exposing (DateBoardConfig)
-import Filter
-import TagBoardConfig exposing (TagBoardConfig)
+import DefaultColumnNames exposing (DefaultColumnNames)
+import PlacementResult exposing (PlacementResult)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
+import TsJson.Decode as TsDecode
+import TsJson.Decode.Pipeline as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -20,14 +32,14 @@ import TaskList exposing (TaskList)
 
 
 type CompletedColumn
-    = CompletedColumn Config
+    = CompletedColumn Config (List String) TaskList
 
 
 type alias Config =
-    { completedCount : Int
+    { collapsed : Bool
+    , index : Int
+    , limit : Int
     , name : String
-    , taskList : TaskList
-    , tagsToHide : List String
     }
 
 
@@ -35,126 +47,140 @@ type alias Config =
 -- CONSTRUCTION
 
 
-forDateBoard : DateBoardConfig -> ColumnNames -> CompletedColumn
-forDateBoard dateBoardConfig columnNames =
-    let
-        filterTagsToHide : List String
-        filterTagsToHide =
-            if dateBoardConfig.showFilteredTags then
-                []
-
-            else
-                dateBoardConfig
-                    |> .filters
-                    |> List.filter (\f -> Filter.filterType f == "Tags")
-                    |> List.map Filter.value
-    in
-    CompletedColumn
-        { completedCount = dateBoardConfig.completedCount
-        , name = ColumnNames.nameFor "completed" columnNames
-        , taskList = TaskList.empty
-        , tagsToHide = filterTagsToHide
-        }
+init : String -> Int -> Int -> CompletedColumn
+init name_ index_ limit_ =
+    CompletedColumn { collapsed = False, index = index_, limit = limit_, name = name_ } [] TaskList.empty
 
 
-forTagBoard : TagBoardConfig -> ColumnNames -> CompletedColumn
-forTagBoard tagBoardConfig columnNames =
-    let
-        columnTags : List String
-        columnTags =
-            tagBoardConfig
-                |> .columns
-                |> List.map .tag
 
-        columnTagsToHide : List String
-        columnTagsToHide =
-            if tagBoardConfig.showColumnTags then
-                []
-
-            else
-                columnTags
-
-        filterTagsToHide : List String
-        filterTagsToHide =
-            if tagBoardConfig.showFilteredTags then
-                []
-
-            else
-                tagBoardConfig
-                    |> .filters
-                    |> List.filter (\f -> Filter.filterType f == "Tags")
-                    |> List.map Filter.value
-    in
-    CompletedColumn
-        { completedCount = tagBoardConfig.completedCount
-        , name = ColumnNames.nameFor "completed" columnNames
-        , taskList = TaskList.empty
-        , tagsToHide = columnTagsToHide ++ filterTagsToHide
-        }
+-- DECODE / ENCODE
 
 
-addTaskItem : List PlacementResult -> TaskItem -> CompletedColumn -> CompletedColumn
-addTaskItem placementResults taskItem ((CompletedColumn c) as completedColumn) =
-    let
-        filteredPlacements : List PlacementResult
-        filteredPlacements =
-            placementResults
-                |> List.filter (\r -> r /= Column.DoesNotBelong)
+decoder : TsDecode.Decoder CompletedColumn
+decoder =
+    (TsDecode.succeed Config
+        |> TsDecode.required "collapsed" TsDecode.bool
+        |> TsDecode.required "index" TsDecode.int
+        |> TsDecode.required "limit" TsDecode.int
+        |> TsDecode.required "name" TsDecode.string
+    )
+        |> TsDecode.map (\c -> CompletedColumn c [] TaskList.empty)
 
-        shouldBeAdded : Bool
-        shouldBeAdded =
-            filteredPlacements
-                |> List.all (\r -> r == Column.CompletedInThisColumn)
-                |> (&&) (not <| List.isEmpty filteredPlacements)
-    in
-    if shouldBeAdded then
-        CompletedColumn { c | taskList = TaskList.add taskItem c.taskList }
 
-    else
-        completedColumn
+encoder : TsEncode.Encoder CompletedColumn
+encoder =
+    TsEncode.map config configEncoder
 
 
 
 -- INFO
 
 
-asColumn : CompletedColumn -> Column TaskItem
-asColumn completedColumn =
-    config completedColumn
-        |> .taskList
+index : CompletedColumn -> Int
+index (CompletedColumn c _ _) =
+    c.index
+
+
+isCollapsed : CompletedColumn -> Bool
+isCollapsed (CompletedColumn c _ _) =
+    c.collapsed
+
+
+limit : CompletedColumn -> Int
+limit (CompletedColumn c _ _) =
+    c.limit
+
+
+name : CompletedColumn -> String
+name (CompletedColumn c _ _) =
+    c.name
+
+
+tagsToHide : CompletedColumn -> List String
+tagsToHide (CompletedColumn _ tth _) =
+    tth
+
+
+toList : CompletedColumn -> List TaskItem
+toList (CompletedColumn c _ tl) =
+    tl
         |> TaskList.topLevelTasks
         |> List.sortBy (String.toLower << TaskItem.title)
         |> List.reverse
         |> List.sortBy TaskItem.completedPosix
         |> List.reverse
-        |> List.take (completedCount completedColumn)
-        |> Column.init (isEnabled completedColumn) (name completedColumn) (tagsToHide completedColumn)
+        |> List.take c.limit
+
+
+
+-- MANIPULATION
+
+
+addTaskItem : List PlacementResult -> TaskItem -> CompletedColumn -> CompletedColumn
+addTaskItem placementResults taskItem ((CompletedColumn c tth tl) as completedColumn) =
+    let
+        filteredPlacements : List PlacementResult
+        filteredPlacements =
+            placementResults
+                |> List.filter (\r -> r /= PlacementResult.DoesNotBelong)
+
+        shouldBeAdded : Bool
+        shouldBeAdded =
+            filteredPlacements
+                |> List.all (\r -> r == PlacementResult.CompletedInThisColumn)
+                |> (&&) (not <| List.isEmpty filteredPlacements)
+    in
+    if shouldBeAdded then
+        CompletedColumn c tth (TaskList.add taskItem tl)
+
+    else
+        completedColumn
+
+
+setCollapse : Bool -> CompletedColumn -> CompletedColumn
+setCollapse isCollapsed_ (CompletedColumn c tth tl) =
+    CompletedColumn { c | collapsed = isCollapsed_ } tth tl
+
+
+setIndex : Int -> CompletedColumn -> CompletedColumn
+setIndex newIndex (CompletedColumn c tth tl) =
+    CompletedColumn { c | index = newIndex } tth tl
+
+
+setNameToDefault : DefaultColumnNames -> CompletedColumn -> CompletedColumn
+setNameToDefault defaultColumnNames (CompletedColumn c tth tl) =
+    CompletedColumn { c | name = DefaultColumnNames.nameFor "completed" defaultColumnNames } tth tl
+
+
+setTagsToHide : List String -> CompletedColumn -> CompletedColumn
+setTagsToHide tags (CompletedColumn c _ tl) =
+    CompletedColumn c tags tl
+
+
+toggleCollapse : CompletedColumn -> CompletedColumn
+toggleCollapse (CompletedColumn c tth tl) =
+    CompletedColumn { c | collapsed = not c.collapsed } tth tl
+
+
+updateName : String -> CompletedColumn -> CompletedColumn
+updateName newName (CompletedColumn c tth tl) =
+    CompletedColumn { c | name = newName } tth tl
 
 
 
 -- PRIVATE
 
 
-completedCount : CompletedColumn -> Int
-completedCount =
-    .completedCount << config
-
-
 config : CompletedColumn -> Config
-config (CompletedColumn c) =
+config (CompletedColumn c _ _) =
     c
 
 
-isEnabled : CompletedColumn -> Bool
-isEnabled =
-    not << (==) 0 << completedCount
-
-
-name : CompletedColumn -> String
-name =
-    .name << config
-
-
-tagsToHide : CompletedColumn -> List String
-tagsToHide =
-    .tagsToHide << config
+configEncoder : TsEncode.Encoder Config
+configEncoder =
+    TsEncode.object
+        [ TsEncode.required "collapsed" .collapsed TsEncode.bool
+        , TsEncode.required "index" .index TsEncode.int
+        , TsEncode.required "limit" .limit TsEncode.int
+        , TsEncode.required "name" .name TsEncode.string
+        ]

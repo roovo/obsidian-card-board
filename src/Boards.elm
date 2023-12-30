@@ -4,15 +4,13 @@ module Boards exposing
     , cards
     , currentIndex
     , init
-    , length
-    , titles
+    , names
     )
 
 import Board exposing (Board)
 import BoardConfig exposing (BoardConfig)
 import Card exposing (Card)
-import Column
-import ColumnNames exposing (ColumnNames)
+import Column exposing (Column)
 import Date exposing (Date)
 import SafeZipper exposing (SafeZipper)
 import TaskList exposing (TaskList)
@@ -23,16 +21,16 @@ import TaskList exposing (TaskList)
 
 
 type Boards
-    = Boards String ColumnNames (SafeZipper BoardConfig) TaskList
+    = Boards String (SafeZipper BoardConfig) TaskList
 
 
 
 -- CONSTRUCTION
 
 
-init : String -> ColumnNames -> SafeZipper BoardConfig -> TaskList -> Boards
-init uniqueId columnNames configs taskList =
-    Boards uniqueId columnNames configs taskList
+init : String -> SafeZipper BoardConfig -> TaskList -> Boards
+init uniqueId configs taskList =
+    Boards uniqueId configs taskList
 
 
 
@@ -40,50 +38,45 @@ init uniqueId columnNames configs taskList =
 
 
 boardZipper : Boards -> SafeZipper Board
-boardZipper (Boards uniqueId columnNames configs taskList) =
-    SafeZipper.map (board uniqueId columnNames taskList) configs
-
-
-titles : Boards -> SafeZipper String
-titles (Boards _ _ configs _) =
-    SafeZipper.map tabTitle configs
+boardZipper (Boards uniqueId configs taskList) =
+    SafeZipper.map (board uniqueId taskList) configs
 
 
 cards : Bool -> Date -> Boards -> List Card
 cards ignoreFileNameDates today boards_ =
+    let
+        cardsForBoard : String -> List Column -> List (List Card)
+        cardsForBoard boardId columns =
+            List.map (Column.cards boardId) columns
+    in
     boards_
         |> boardZipper
         |> SafeZipper.toList
-        |> List.map (Board.columns ignoreFileNameDates today)
+        |> List.map (\b -> ( Board.id b, Board.columns ignoreFileNameDates today b ))
+        |> List.map (\( bid, cs ) -> cardsForBoard bid cs)
         |> List.concat
-        |> List.map Column.items
         |> List.concat
 
 
 currentIndex : Boards -> Maybe Int
-currentIndex (Boards _ _ config _) =
+currentIndex (Boards _ config _) =
     SafeZipper.selectedIndex config
 
 
-length : Boards -> Int
-length (Boards _ _ config _) =
-    SafeZipper.length config
+names : Boards -> SafeZipper String
+names (Boards _ configs _) =
+    SafeZipper.map tabName configs
 
 
 
 -- PRIVATE
 
 
-tabTitle : BoardConfig -> String
-tabTitle config =
-    case config of
-        BoardConfig.DateBoardConfig dateBoardConfig ->
-            dateBoardConfig.title
-
-        BoardConfig.TagBoardConfig tagBoardConfig ->
-            tagBoardConfig.title
+tabName : BoardConfig -> String
+tabName =
+    BoardConfig.name
 
 
-board : String -> ColumnNames -> TaskList -> BoardConfig -> Board
-board uniqueId columnNames taskList config =
-    Board.init uniqueId columnNames config taskList
+board : String -> TaskList -> BoardConfig -> Board
+board uniqueId taskList config =
+    Board.init uniqueId config taskList

@@ -1,16 +1,19 @@
 module SettingsTests exposing (suite)
 
-import BoardConfig
-import ColumnNames
+import BoardConfig exposing (BoardConfig)
+import Column
+import Column.Completed as CompletedColumn
+import Columns
+import DefaultColumnNames
 import DragAndDrop.BeaconPosition as BeaconPosition
 import Expect
+import Filter
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.BoardConfigHelpers as BoardConfigHelpers
 import Helpers.DecodeHelpers as DecodeHelpers
 import SafeZipper
 import Semver
 import Settings
-import TagBoardConfig exposing (TagBoardConfig)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -18,21 +21,98 @@ import TsJson.Encode as TsEncode
 suite : Test
 suite =
     concat
-        [ blankBoardTitles
-        , cleanupTitles
+        [ cleanupNames
         , currentVersion
+        , decoder
         , encodeDecode
         , moveBoard
-        , uniqueBoardTitles
+        , uniqueBoardNames
         ]
 
 
-blankBoardTitles : Test
-blankBoardTitles =
-    describe "handling boards with no titles"
-        [ test "gives boards with no titles the title Untitled" <|
+cleanupNames : Test
+cleanupNames =
+    describe "cleanupNames"
+        [ test "appends the index number of the board onto the end of a non-unique name" <|
             \() ->
-                exampleSettingsWithMissingBoardNames
+                exampleSettingsWithDuplicateBoardNames
+                    |> Settings.cleanupNames
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "A name", "B name", "A name.2", "A name.3" ]
+        , test "maintians the current index when unique-ing" <|
+            \() ->
+                exampleSettingsWithDuplicateBoardNames
+                    |> Settings.switchToBoard 2
+                    |> Settings.cleanupNames
+                    |> .boardConfigs
+                    |> SafeZipper.currentIndex
+                    |> Expect.equal (Just 2)
+        , test "gives boards with no names the name Unnamed" <|
+            \() ->
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName ""
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "   "
+                        ]
+                , globalSettings = GlobalSettings.default
+                , version = Settings.currentVersion
+                }
+                    |> Settings.cleanupNames
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "Unnamed.3" ]
+        , test "suffixes duplicate board names with the column number" <|
+            \() ->
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName "foo"
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " foo "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "   foo"
+                        ]
+                , globalSettings = GlobalSettings.default
+                , version = Settings.currentVersion
+                }
+                    |> Settings.cleanupNames
+                    |> .boardConfigs
+                    |> SafeZipper.toList
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "foo", "B name", "foo.2", "foo.3" ]
+        ]
+
+
+currentVersion : Test
+currentVersion =
+    describe "currentVersion"
+        [ test "is 0.11.0" <|
+            \() ->
+                Settings.currentVersion
+                    |> Semver.print
+                    |> Expect.equal "0.11.0"
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "cleans up board names" <|
+            \() ->
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ exampleTagBoardConfig |> BoardConfig.updateName ""
+                        , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+                        , exampleTagBoardConfig |> BoardConfig.updateName " "
+                        , exampleTagBoardConfig |> BoardConfig.updateName " foo  "
+                        , exampleTagBoardConfig |> BoardConfig.updateName "foo"
+                        ]
+                , globalSettings = exampleGlobalSettings
+                , version = Settings.currentVersion
+                }
                     |> TsEncode.runExample Settings.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder Settings.decoder
@@ -40,49 +120,49 @@ blankBoardTitles =
                     |> Result.map .boardConfigs
                     |> Result.withDefault SafeZipper.empty
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
-                    |> Expect.equal [ "Untitled", "B title", "Untitled.2", "Untitled.3" ]
-        ]
-
-
-cleanupTitles : Test
-cleanupTitles =
-    describe "cleanupTitles"
-        [ test "appends the index number of the board onto the end of a non-unique name" <|
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "Unnamed", "B name", "Unnamed.2", "foo", "foo.4" ]
+        , test "cleans up columns" <|
             \() ->
-                exampleSettingsWithDuplicatgeBoardNames
-                    |> Settings.cleanupTitles
-                    |> .boardConfigs
+                { boardConfigs =
+                    SafeZipper.fromList
+                        [ BoardConfig.BoardConfig
+                            { columns =
+                                Columns.fromList
+                                    [ Column.untagged "Untagged"
+                                    , Column.untagged "Untagged too"
+                                    , Column.otherTags "Others" [ "foo" ]
+                                    , Column.namedTag "foo" "foo"
+                                    , Column.namedTag " foo" "foo"
+                                    , Column.namedTag "" "foo"
+                                    , Column.namedTag "  " "foo"
+                                    , Column.completed <| CompletedColumn.init "Completed" 2 6
+                                    , Column.completed <| CompletedColumn.init "Completed too" 2 6
+                                    ]
+                            , filters = []
+                            , filterPolarity = Filter.Deny
+                            , filterScope = Filter.SubTasksOnly
+                            , showColumnTags = True
+                            , showFilteredTags = False
+                            , name = "Tag Board Name"
+                            }
+                        ]
+                , globalSettings = exampleGlobalSettings
+                , version = Settings.currentVersion
+                }
+                    |> TsEncode.runExample Settings.encoder
+                    |> .output
+                    |> DecodeHelpers.runDecoder Settings.decoder
+                    |> .decoded
+                    |> Result.map .boardConfigs
+                    |> Result.withDefault SafeZipper.empty
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
-                    |> Expect.equal [ "A title", "B title", "A title.2", "A title.3" ]
-        , test "maintians the current index when unique-ing" <|
-            \() ->
-                exampleSettingsWithDuplicatgeBoardNames
-                    |> Settings.switchToBoard 2
-                    |> Settings.cleanupTitles
-                    |> .boardConfigs
-                    |> SafeZipper.currentIndex
-                    |> Expect.equal (Just 2)
-        , test "gives boards with no titles the title Untitled" <|
-            \() ->
-                exampleSettingsWithMissingBoardNames
-                    |> Settings.cleanupTitles
-                    |> .boardConfigs
-                    |> SafeZipper.toList
-                    |> List.map BoardConfig.title
-                    |> Expect.equal [ "Untitled", "B title", "Untitled.2", "Untitled.3" ]
-        ]
-
-
-currentVersion : Test
-currentVersion =
-    describe "currentVersion"
-        [ test "is 0.10.0" <|
-            \() ->
-                Settings.currentVersion
-                    |> Semver.print
-                    |> Expect.equal "0.10.0"
+                    |> List.head
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "Untagged", "Others", "foo", "foo.3", "Unnamed", "Unnamed.5", "Completed" ]
         ]
 
 
@@ -124,7 +204,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "2")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "2", "3", "4" ]
         , test "moves a board to the previous position using Before" <|
             \() ->
@@ -132,7 +212,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.Before "1")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "2", "1", "3", "4" ]
         , test "moves a board to the previous position using After" <|
             \() ->
@@ -140,7 +220,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "0")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "2", "1", "3", "4" ]
         , test "moves a board to the next position using Before" <|
             \() ->
@@ -148,7 +228,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.Before "4")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "3", "2", "4" ]
         , test "moves a board to the next position using After" <|
             \() ->
@@ -156,7 +236,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "3")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "3", "2", "4" ]
         , test "moves a board to the first position using Before" <|
             \() ->
@@ -164,7 +244,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.Before "0")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "2", "0", "1", "3", "4" ]
         , test "moves a board to the last position using After" <|
             \() ->
@@ -172,7 +252,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "4")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "3", "4", "2" ]
         , test "sets the index to the moved board after moving" <|
             \() ->
@@ -180,7 +260,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "3")
                     |> Settings.boardConfigs
                     |> SafeZipper.current
-                    |> Maybe.map BoardConfig.title
+                    |> Maybe.map BoardConfig.name
                     |> Expect.equal (Just "2")
         , test "sets the index to the moved board after moving even if position is the same" <|
             \() ->
@@ -188,7 +268,7 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "2")
                     |> Settings.boardConfigs
                     |> SafeZipper.current
-                    |> Maybe.map BoardConfig.title
+                    |> Maybe.map BoardConfig.name
                     |> Expect.equal (Just "2")
         , test "returns the same list if the board to be moved does not exist" <|
             \() ->
@@ -196,7 +276,7 @@ moveBoard =
                     |> Settings.moveBoard "x" (BeaconPosition.After "2")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "2", "3", "4" ]
         , test "returns the same list if the position to be moved to does not exist" <|
             \() ->
@@ -204,17 +284,17 @@ moveBoard =
                     |> Settings.moveBoard "2" (BeaconPosition.After "x")
                     |> Settings.boardConfigs
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
+                    |> List.map BoardConfig.name
                     |> Expect.equal [ "0", "1", "2", "3", "4" ]
         ]
 
 
-uniqueBoardTitles : Test
-uniqueBoardTitles =
-    describe "ensuring that board titles are unique after decoding"
+uniqueBoardNames : Test
+uniqueBoardNames =
+    describe "ensuring that board names are unique after decoding"
         [ test "appends the index number of the board onto the end of a non-unique name" <|
             \() ->
-                exampleSettingsWithDuplicatgeBoardNames
+                exampleSettingsWithDuplicateBoardNames
                     |> TsEncode.runExample Settings.encoder
                     |> .output
                     |> DecodeHelpers.runDecoder Settings.decoder
@@ -222,8 +302,8 @@ uniqueBoardTitles =
                     |> Result.map .boardConfigs
                     |> Result.withDefault SafeZipper.empty
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
-                    |> Expect.equal [ "A title", "B title", "A title.2", "A title.3" ]
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "A name", "B name", "A name.2", "A name.3" ]
         , test "treats underscores and spaces as the same" <|
             \() ->
                 exampleWithUnderscores
@@ -234,8 +314,8 @@ uniqueBoardTitles =
                     |> Result.map .boardConfigs
                     |> Result.withDefault SafeZipper.empty
                     |> SafeZipper.toList
-                    |> List.map BoardConfig.title
-                    |> Expect.equal [ "A title", "B title", "A_title.2", "A title.3" ]
+                    |> List.map BoardConfig.name
+                    |> Expect.equal [ "A name", "B name", "A_name.2", "A name.3" ]
         ]
 
 
@@ -245,19 +325,15 @@ uniqueBoardTitles =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.ObsidianTasks
-    , columnNames = ColumnNames.default
+    { taskCompletionFormat = GlobalSettings.NoCompletion
+    , defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
     }
 
 
 exampleSettings : Settings.Settings
 exampleSettings =
-    { boardConfigs =
-        SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig BoardConfigHelpers.exampleTagBoardConfig
-            , BoardConfig.DateBoardConfig BoardConfigHelpers.exampleDateBoardConfig
-            ]
+    { boardConfigs = SafeZipper.fromList []
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
     }
@@ -267,39 +343,25 @@ exampleSettingsWithConsecutiveNames : Settings.Settings
 exampleSettingsWithConsecutiveNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "0" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "1" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "2" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "3" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "4" }
+            [ exampleTagBoardConfig |> BoardConfig.updateName "0"
+            , exampleTagBoardConfig |> BoardConfig.updateName "1"
+            , exampleTagBoardConfig |> BoardConfig.updateName "2"
+            , exampleTagBoardConfig |> BoardConfig.updateName "3"
+            , exampleTagBoardConfig |> BoardConfig.updateName "4"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
     }
 
 
-exampleSettingsWithDuplicatgeBoardNames : Settings.Settings
-exampleSettingsWithDuplicatgeBoardNames =
+exampleSettingsWithDuplicateBoardNames : Settings.Settings
+exampleSettingsWithDuplicateBoardNames =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            ]
-    , globalSettings = exampleGlobalSettings
-    , version = Settings.currentVersion
-    }
-
-
-exampleSettingsWithMissingBoardNames : Settings.Settings
-exampleSettingsWithMissingBoardNames =
-    { boardConfigs =
-        SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = " " }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "   " }
+            [ exampleTagBoardConfig |> BoardConfig.updateName "A name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "A name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "A name"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
@@ -310,16 +372,16 @@ exampleWithUnderscores : Settings.Settings
 exampleWithUnderscores =
     { boardConfigs =
         SafeZipper.fromList
-            [ BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "B title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A_title" }
-            , BoardConfig.TagBoardConfig { exampleTagBoardConfig | title = "A title" }
+            [ exampleTagBoardConfig |> BoardConfig.updateName "A name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "B name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "A_name"
+            , exampleTagBoardConfig |> BoardConfig.updateName "A name"
             ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
     }
 
 
-exampleTagBoardConfig : TagBoardConfig
+exampleTagBoardConfig : BoardConfig
 exampleTagBoardConfig =
     BoardConfigHelpers.exampleTagBoardConfig

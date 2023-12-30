@@ -10,30 +10,38 @@ module Page.Settings exposing
 
 import AssocList as Dict exposing (Dict)
 import BoardConfig exposing (BoardConfig)
-import ColumnNames exposing (ColumnNames)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
 import DragAndDrop.DragData as DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
-import FeatherIcons
-import Filter exposing (Filter, Polarity)
-import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
+import FeatherIcons exposing (Icon)
+import Filter exposing (Filter)
+import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
+import Form.Column as ColumnForm exposing (ColumnForm)
+import Form.Column.Dated exposing (DatedColumnForm)
+import Form.Columns as ColumnsForm exposing (ColumnsForm)
+import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
+import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
+import Form.Settings as SettingsForm exposing (SettingsForm)
+import Form.SettingsState as SettingsState exposing (SettingsState)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Html.Events.Extra.Mouse exposing (onDown)
-import Html.Keyed
 import InteropPorts
 import Json.Encode as JE
 import List.Extra as LE
+import Maybe.Extra as ME
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
 import Session exposing (Session)
 import Settings exposing (Settings)
-import SettingsState exposing (SettingsState)
 import State exposing (State)
+import Svg
+import Svg.Attributes as Svg
 
 
 
@@ -95,38 +103,50 @@ multiSelectConfig =
 type Msg
     = AddBoardClicked
     | AddBoardConfirmed
+    | AddColumnClicked
+    | AddColumnConfirmed
     | BackspacePressed
     | BoardNameClicked Int
     | BoardNameMouseDown ( String, DragTracker.ClientData )
-    | BoardTypeSelected String
+    | ColumnDeleteClicked Int
+    | ColumnSettingsMouseDown ( String, DragTracker.ClientData )
     | DeleteBoardRequested
-    | DeleteBoardConfirmed
+    | DeleteConfirmed
     | ElementDragged DragData
-    | EnteredColumName String String
-    | EnteredCompletedCount String
-    | EnteredNewBoardTitle String
-    | EnteredTags String
-    | EnteredTitle String
+    | EnteredColumnCompletedLimit Int String
+    | EnteredColumnName Int String
+    | EnteredColumnNamedTagTag Int String
+    | EnteredDatedColumnRangeValueFrom Int String
+    | EnteredDatedColumnRangeValueTo Int String
+    | EnteredDefaultColumnName String String
+    | EnteredNewBoardName String
+    | EnteredNewColumnName String
+    | EnteredName String
     | FilterCandidatesReceived (List Filter)
     | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
     | ModalCloseClicked
+    | NewBoardTypeSelected String
+    | NewColumnTypeSelected String
     | PathsRequested Int String
     | PolaritySelected String
+    | ScopeSelected String
+    | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleIgnoreFileNameDate
-    | ToggleIncludeOthers
-    | ToggleIncludeUndated
-    | ToggleIncludeUntagged
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
-    | ToggleTagFilterScope
 
 
-dragType : String
-dragType =
+boardNameDragType : String
+boardNameDragType =
     "card-board-settings-board-name"
+
+
+columnSettingsDragType : String
+columnSettingsDragType =
+    "card-board-settings-column-settings"
 
 
 switchSettingsState : (SettingsState -> SettingsState) -> Model -> Model
@@ -139,7 +159,7 @@ switchSettingsState fn model =
         newSettingsState : SettingsState
         newSettingsState =
             model.settingsState
-                |> SettingsState.mapBoardBeingEdited (BoardConfig.updateFilters currentSelectedFilters)
+                |> SettingsState.mapBoardBeingEdited (\bc -> { bc | filters = currentSelectedFilters })
                 |> fn
 
         newFilters : Dict String Filter
@@ -159,7 +179,28 @@ update msg model =
             mapSettingsState SettingsState.addBoardRequested model
 
         AddBoardConfirmed ->
-            wrap <| switchSettingsState SettingsState.confirmAddBoard model
+            let
+                defaultColumnNames : DefaultColumnNames
+                defaultColumnNames =
+                    model
+                        |> toSession
+                        |> Session.settings
+                        |> Settings.globalSettings
+                        |> .defaultColumnNames
+            in
+            wrap <|
+                switchSettingsState
+                    (SettingsState.addBoardConfirmed defaultColumnNames)
+                    model
+
+        AddColumnClicked ->
+            mapSettingsState SettingsState.addColumnRequested model
+
+        AddColumnConfirmed ->
+            wrap <|
+                switchSettingsState
+                    SettingsState.addColumnConfirmed
+                    model
 
         BackspacePressed ->
             wrap { model | multiSelect = MultiSelect.deleteHighlightedItem model.multiSelect }
@@ -169,25 +210,39 @@ update msg model =
 
         BoardNameMouseDown ( domId, clientData ) ->
             ( { model | session = Session.waitForDrag clientData model.session }
-            , InteropPorts.trackDraggable dragType clientData.clientPos domId
+            , InteropPorts.trackDraggable boardNameDragType clientData.clientPos domId
             , Session.NoOp
             )
 
-        BoardTypeSelected boardType ->
-            mapBoardBeingAdded (BoardConfig.updateBoardType boardType) model
+        ColumnDeleteClicked index ->
+            mapSettingsState (SettingsState.deleteColumnRequested index) model
+
+        ColumnSettingsMouseDown ( domId, clientData ) ->
+            ( { model | session = Session.waitForDrag clientData model.session }
+            , InteropPorts.trackDraggable columnSettingsDragType clientData.clientPos domId
+            , Session.NoOp
+            )
 
         DeleteBoardRequested ->
             mapSettingsState SettingsState.deleteBoardRequested model
 
-        DeleteBoardConfirmed ->
-            wrap <| switchSettingsState SettingsState.confirmDeleteBoard model
+        DeleteConfirmed ->
+            wrap <| switchSettingsState SettingsState.deleteConfirmed model
 
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    if dragData.dragType == dragType then
+                    if dragData.dragType == boardNameDragType then
                         ( model
                             |> updateBoardOrder (Session.dragTracker model.session) dragData
+                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
+                    else if dragData.dragType == columnSettingsDragType then
+                        ( model
+                            |> updateColumnOrder (Session.dragTracker model.session) dragData
                             |> (\m -> { m | session = Session.moveDragable dragData m.session })
                         , Cmd.none
                         , Session.NoOp
@@ -202,26 +257,38 @@ update msg model =
                     , Session.NoOp
                     )
 
-        EnteredColumName column name ->
+        EnteredColumnCompletedLimit columnIndex limit ->
+            mapCurrentColumnsForm (ColumnsForm.updateCompletedColumnLimit columnIndex limit) model
+
+        EnteredColumnName columnIndex name ->
+            mapCurrentColumnsForm (ColumnsForm.updateColumnName columnIndex name) model
+
+        EnteredColumnNamedTagTag columnIndex tag ->
+            mapCurrentColumnsForm (ColumnsForm.updateNamedTagTag columnIndex tag) model
+
+        EnteredDatedColumnRangeValueFrom index value ->
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeValueFrom index value) model
+
+        EnteredDatedColumnRangeValueTo index value ->
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeValueTo index value) model
+
+        EnteredDefaultColumnName column name ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateColumnName column name)
+                            (SettingsForm.updateDefaultColumnName column name)
                             model.settingsState
                 }
 
-        EnteredCompletedCount value ->
-            mapBoardBeingEdited (BoardConfig.updateCompletedCount (String.toInt value)) model
+        EnteredNewBoardName name ->
+            mapBoardBeingAdded (NewBoardForm.updateName name) model
 
-        EnteredNewBoardTitle title ->
-            mapBoardBeingAdded (BoardConfig.updateTitle title) model
+        EnteredNewColumnName name ->
+            mapColumnBeingAdded (NewColumnForm.updateName name) model
 
-        EnteredTags tags ->
-            mapBoardBeingEdited (BoardConfig.updateTags tags) model
-
-        EnteredTitle title ->
-            mapBoardBeingEdited (BoardConfig.updateTitle title) model
+        EnteredName name ->
+            mapBoardBeingEdited (BoardConfigForm.updateName name) model
 
         FilterCandidatesReceived filterCandidates ->
             let
@@ -256,6 +323,12 @@ update msg model =
         ModalCloseClicked ->
             handleClose model
 
+        NewBoardTypeSelected boardType ->
+            mapBoardBeingAdded (NewBoardForm.updateBoardType boardType) model
+
+        NewColumnTypeSelected columnType ->
+            mapColumnBeingAdded (NewColumnForm.updateColumnType columnType) model
+
         PathsRequested _ _ ->
             let
                 cmd : Cmd Msg
@@ -276,14 +349,20 @@ update msg model =
             )
 
         PolaritySelected polarity ->
-            mapBoardBeingEdited (BoardConfig.updateFilterPolarity polarity) model
+            mapBoardBeingEdited (BoardConfigForm.updateFilterPolarity polarity) model
+
+        ScopeSelected scope ->
+            mapBoardBeingEdited (BoardConfigForm.updateFilterScope scope) model
+
+        SelectedDatedColumnRangeType index rangeType ->
+            mapCurrentColumnsForm (ColumnsForm.updateDatedColumnRangeType index rangeType) model
 
         TaskCompletionFormatSelected taskCompletionFormat ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            (GlobalSettings.updateTaskCompletionFormat taskCompletionFormat)
+                            (SettingsForm.updateTaskCompletionFormat taskCompletionFormat)
                             model.settingsState
                 }
 
@@ -292,27 +371,15 @@ update msg model =
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            GlobalSettings.toggleIgnoreFileNameDate
+                            SettingsForm.toggleIgnoreFileNameDate
                             model.settingsState
                 }
 
-        ToggleIncludeOthers ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeOthers model
-
-        ToggleIncludeUndated ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeUndated model
-
-        ToggleIncludeUntagged ->
-            mapBoardBeingEdited BoardConfig.toggleIncludeUntagged model
-
         ToggleShowColumnTags ->
-            mapBoardBeingEdited BoardConfig.toggleShowColumnTags model
+            mapBoardBeingEdited BoardConfigForm.toggleShowColumnTags model
 
         ToggleShowFilteredTags ->
-            mapBoardBeingEdited BoardConfig.toggleShowFilteredTags model
-
-        ToggleTagFilterScope ->
-            mapBoardBeingEdited BoardConfig.toggleTagFilterScope model
+            mapBoardBeingEdited BoardConfigForm.toggleShowFilteredTags model
 
 
 selectedItemLabel : Filter -> String
@@ -357,6 +424,8 @@ handleClose model =
         newSettings : Settings
         newSettings =
             SettingsState.settings newModel.settingsState
+                |> Settings.restrictSpecialColumns
+                |> Settings.cleanupNames
     in
     case newModel.settingsState of
         SettingsState.ClosingPlugin _ ->
@@ -383,14 +452,24 @@ mapSettingsState fn model =
     wrap { model | settingsState = fn model.settingsState }
 
 
-mapBoardBeingAdded : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapBoardBeingAdded : (NewBoardForm -> NewBoardForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingAdded fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingAdded fn model.settingsState }
 
 
-mapBoardBeingEdited : (BoardConfig -> BoardConfig) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapColumnBeingAdded : (NewColumnForm -> NewColumnForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapColumnBeingAdded fn model =
+    wrap { model | settingsState = SettingsState.mapColumnBeingAdded fn model.settingsState }
+
+
+mapBoardBeingEdited : (BoardConfigForm -> BoardConfigForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
 mapBoardBeingEdited fn model =
     wrap { model | settingsState = SettingsState.mapBoardBeingEdited fn model.settingsState }
+
+
+mapCurrentColumnsForm : (ColumnsForm -> ColumnsForm) -> Model -> ( Model, Cmd Msg, Session.Msg )
+mapCurrentColumnsForm fn model =
+    wrap { model | settingsState = SettingsState.mapCurrentColumnsForm fn model.settingsState }
 
 
 updateBoardOrder : DragTracker -> DragData -> Model -> Model
@@ -405,6 +484,24 @@ updateBoardOrder dragTracker { cursor, beacons } model =
                     { model
                         | settingsState =
                             SettingsState.moveBoard clientData.uniqueId position model.settingsState
+                    }
+
+        _ ->
+            model
+
+
+updateColumnOrder : DragTracker -> DragData -> Model -> Model
+updateColumnOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    { model
+                        | settingsState =
+                            SettingsState.moveColumn clientData.uniqueId position model.settingsState
                     }
 
         _ ->
@@ -433,10 +530,16 @@ view model =
             Session.dragTracker model.session
     in
     case model.settingsState of
-        SettingsState.AddingBoard newConfig settings ->
+        SettingsState.AddingBoard newConfig settingsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
                 , modalAddBoard newConfig
+                ]
+
+        SettingsState.AddingColumn newConfig settingsForm ->
+            Html.div []
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
+                , modalAddColumn newConfig settingsForm
                 ]
 
         SettingsState.ClosingPlugin _ ->
@@ -445,23 +548,35 @@ view model =
         SettingsState.ClosingSettings _ ->
             Html.text ""
 
-        SettingsState.DeletingBoard settings ->
+        SettingsState.DeletingBoard settingsForm ->
             Html.div []
-                [ boardSettingsView (Settings.boardConfigs settings) model.multiSelect dragTracker
-                , modalConfirmDelete
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
+                , modalConfirmDeleteBoard (settingsForm |> SettingsForm.boardConfigForms |> SafeZipper.current)
                 ]
 
-        SettingsState.EditingBoard settings ->
-            boardSettingsView (Settings.boardConfigs settings)
-                model.multiSelect
-                dragTracker
+        SettingsState.DeletingColumn index settingsForm ->
+            Html.div []
+                [ boardSettingsView settingsForm model.multiSelect dragTracker
+                , modalConfirmDeleteColumn
+                    (settingsForm
+                        |> SettingsForm.boardConfigForms
+                        |> SafeZipper.current
+                        |> Maybe.map .columnsForm
+                        |> Maybe.map .columnForms
+                        |> Maybe.map (LE.getAt index)
+                        |> ME.join
+                    )
+                ]
 
-        SettingsState.EditingGlobalSettings settings ->
-            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settings dragTracker
+        SettingsState.EditingBoard settingsForm ->
+            boardSettingsView settingsForm model.multiSelect dragTracker
+
+        SettingsState.EditingGlobalSettings settingsForm ->
+            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
 
 
-modalAddBoard : BoardConfig -> Html Msg
-modalAddBoard newConfig =
+modalAddBoard : NewBoardForm -> Html Msg
+modalAddBoard newBoardConfigForm =
     Html.div [ class "modal-container" ]
         [ Html.div [ class "modal-bg" ] []
         , Html.div [ class "modal" ]
@@ -471,16 +586,79 @@ modalAddBoard newConfig =
                 ]
                 []
             , Html.div [ class "modal-title" ]
-                [ Html.text "Add new board" ]
+                [ Html.text "Add board" ]
             , Html.div [ class "modal-form" ]
                 [ Html.div [ class "form-item" ]
                     [ Html.div [ class "form-item-name" ]
-                        [ Html.text "Title" ]
+                        [ Html.text "Name" ]
                     , Html.div [ class "form-item-control" ]
                         [ Html.input
                             [ type_ "text"
-                            , value <| BoardConfig.title newConfig
-                            , onInput EnteredNewBoardTitle
+                            , value <| newBoardConfigForm.name
+                            , onInput EnteredNewBoardName
+                            ]
+                            []
+                        ]
+                    ]
+                , Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Start type" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.select
+                            [ class "dropdown"
+                            , onInput NewBoardTypeSelected
+                            ]
+                            (NewBoardForm.optionsForSelect newBoardConfigForm
+                                |> List.map
+                                    (\c ->
+                                        Html.option
+                                            [ value c.value
+                                            , selected c.isSelected
+                                            ]
+                                            [ Html.text c.text ]
+                                    )
+                            )
+                        ]
+                    ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ class "mod-cta"
+                    , onClick <| AddBoardConfirmed
+                    ]
+                    [ Html.text "Add"
+                    ]
+                , Html.button
+                    [ onClick <| ModalCancelClicked
+                    ]
+                    [ Html.text "Cancel"
+                    ]
+                ]
+            ]
+        ]
+
+
+modalAddColumn : NewColumnForm -> SettingsForm -> Html Msg
+modalAddColumn newColumnConfigForm settingsForm =
+    Html.div [ class "modal-container" ]
+        [ Html.div [ class "modal-bg" ] []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Add column" ]
+            , Html.div [ class "modal-form" ]
+                [ Html.div [ class "form-item" ]
+                    [ Html.div [ class "form-item-name" ]
+                        [ Html.text "Name" ]
+                    , Html.div [ class "form-item-control" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| newColumnConfigForm.name
+                            , onInput EnteredNewColumnName
                             ]
                             []
                         ]
@@ -491,79 +669,174 @@ modalAddBoard newConfig =
                     , Html.div [ class "form-item-control" ]
                         [ Html.select
                             [ class "dropdown"
-                            , onInput BoardTypeSelected
+                            , onInput NewColumnTypeSelected
                             ]
-                            [ Html.option
-                                [ value "dateBoard"
-                                , selected <| BoardConfig.isForDateBoard newConfig
-                                ]
-                                [ Html.text "Date board" ]
-                            , Html.option
-                                [ value "tagBoard"
-                                , selected <| BoardConfig.isForTagBoard newConfig
-                                ]
-                                [ Html.text "Tag board" ]
-                            ]
-                        ]
-                    ]
-                , Html.div [ class "dialog-buttons" ]
-                    [ Html.button
-                        [ onClick <| ModalCancelClicked
-                        ]
-                        [ Html.text "Cancel"
-                        ]
-                    , Html.button
-                        [ class "mod-cta"
-                        , onClick <| AddBoardConfirmed
-                        ]
-                        [ Html.text "Add"
+                            (NewColumnForm.optionsForSelect
+                                (settingsForm
+                                    |> SettingsForm.boardConfigForms
+                                    |> SafeZipper.current
+                                    |> Maybe.map .columnsForm
+                                    |> Maybe.withDefault ColumnsForm.empty
+                                )
+                                newColumnConfigForm
+                                |> List.map
+                                    (\c ->
+                                        Html.option
+                                            [ value c.value
+                                            , selected c.isSelected
+                                            ]
+                                            [ Html.text c.text ]
+                                    )
+                            )
                         ]
                     ]
                 ]
-            ]
-        ]
-
-
-modalConfirmDelete : Html Msg
-modalConfirmDelete =
-    Html.div [ class "modal-container" ]
-        [ Html.div [ class "modal-bg" ] []
-        , Html.div [ class "modal" ]
-            [ Html.div
-                [ class "modal-close-button"
-                , onClick ModalCloseClicked
-                ]
-                []
-            , Html.div [ class "modal-title" ]
-                [ Html.text "Confirm Deletion" ]
-            , Html.div [ class "dialog-buttons" ]
+            , Html.div [ class "modal-button-container" ]
                 [ Html.button
-                    [ onClick <| ModalCancelClicked
+                    [ class "mod-cta"
+                    , onClick <| AddColumnConfirmed
                     ]
-                    [ Html.text "Do not delete"
+                    [ Html.text "Add"
                     ]
                 , Html.button
-                    [ class "mod-warning"
-                    , onClick <| DeleteBoardConfirmed
+                    [ onClick <| ModalCancelClicked
                     ]
-                    [ Html.text "Go ahead"
+                    [ Html.text "Cancel"
                     ]
                 ]
             ]
         ]
 
 
-settingsSurroundView : CurrentSection -> SafeZipper BoardConfig -> DragTracker -> List (Html Msg) -> Html Msg
-settingsSurroundView currentSection configs dragTracker formContents =
+modalConfirmDeleteBoard : Maybe BoardConfigForm -> Html Msg
+modalConfirmDeleteBoard boardConfigForm =
+    case boardConfigForm of
+        Just configForm ->
+            let
+                nameString : String
+                nameString =
+                    if String.length configForm.name == 0 then
+                        "this un-named board"
+
+                    else
+                        "the board named " ++ configForm.name
+            in
+            Html.div [ class "modal-container" ]
+                [ Html.div
+                    [ class "modal-bg"
+                    , style "opacity" "0.85"
+                    ]
+                    []
+                , Html.div [ class "modal" ]
+                    [ Html.div
+                        [ class "modal-close-button"
+                        , onClick ModalCloseClicked
+                        ]
+                        []
+                    , Html.div [ class "modal-title" ]
+                        [ Html.text "Delete Board" ]
+                    , Html.div [ class "modal-content" ]
+                        [ Html.p [ class "mod-warning" ]
+                            [ Html.text <|
+                                "This will delete "
+                                    ++ nameString
+                                    ++ ".  It will not affect any other boards or any files in your vault."
+                            ]
+                        ]
+                    , Html.div [ class "modal-button-container" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteConfirmed
+                            ]
+                            [ Html.text "Delete"
+                            ]
+                        , Html.button
+                            [ onClick <| ModalCancelClicked
+                            ]
+                            [ Html.text "Cancel"
+                            ]
+                        ]
+                    ]
+                ]
+
+        Nothing ->
+            Html.text ""
+
+
+modalConfirmDeleteColumn : Maybe ColumnForm -> Html Msg
+modalConfirmDeleteColumn columnForm =
+    case columnForm of
+        Just form ->
+            let
+                formName : String
+                formName =
+                    ColumnForm.name form
+
+                nameString : String
+                nameString =
+                    if String.length formName == 0 then
+                        "this un-named " ++ typeString ++ " column"
+
+                    else
+                        "the " ++ typeString ++ " column named " ++ formName
+
+                typeString : String
+                typeString =
+                    ColumnForm.typeString form
+            in
+            Html.div [ class "modal-container" ]
+                [ Html.div
+                    [ class "modal-bg"
+                    , style "opacity" "0.85"
+                    ]
+                    []
+                , Html.div [ class "modal" ]
+                    [ Html.div
+                        [ class "modal-close-button"
+                        , onClick ModalCloseClicked
+                        ]
+                        []
+                    , Html.div [ class "modal-title" ]
+                        [ Html.text "Delete Column" ]
+                    , Html.div [ class "modal-content" ]
+                        [ Html.p [ class "mod-warning" ]
+                            [ Html.text <|
+                                "This will delete "
+                                    ++ nameString
+                                    ++ ".  It will not affect any other boards, columns, or any files in your vault."
+                            ]
+                        ]
+                    , Html.div [ class "modal-button-container" ]
+                        [ Html.button
+                            [ class "mod-warning"
+                            , onClick <| DeleteConfirmed
+                            ]
+                            [ Html.text "Delete"
+                            ]
+                        , Html.button
+                            [ onClick <| ModalCancelClicked
+                            ]
+                            [ Html.text "Cancel"
+                            ]
+                        ]
+                    ]
+                ]
+
+        Nothing ->
+            Html.text ""
+
+
+settingsSurroundView : CurrentSection -> SafeZipper BoardConfigForm -> DragTracker -> List (Html Msg) -> Html Msg
+settingsSurroundView currentSection boardConfigForms dragTracker formContents =
     let
-        boardMapFn : Int -> BoardConfig -> Html Msg
+        boardMapFn : Int -> BoardConfigForm -> Html Msg
         boardMapFn =
             case currentSection of
                 Options ->
-                    settingTitleView
+                    settingNameView
 
                 Boards ->
-                    settingTitleSelectedView isDragging
+                    settingNameSelectedView isDragging
 
         globalSettingsClass : String
         globalSettingsClass =
@@ -576,7 +849,7 @@ settingsSurroundView currentSection configs dragTracker formContents =
 
         isDragging : Bool
         isDragging =
-            DragTracker.isDragging dragTracker && draggedType == Just dragType
+            DragTracker.isDragging dragTracker && draggedType == Just boardNameDragType
 
         draggedType : Maybe String
         draggedType =
@@ -626,12 +899,12 @@ settingsSurroundView currentSection configs dragTracker formContents =
                                 ]
                             ]
                         , Html.div [ class "vertical-tab-header-group-items" ]
-                            (configs
-                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingTitleView
+                            (boardConfigForms
+                                |> SafeZipper.indexedMapSelectedAndRest boardMapFn settingNameView
                                 |> SafeZipper.toList
                                 |> (\hs ->
                                         List.append hs
-                                            [ settingTitleDraggedView isDragging (SafeZipper.current configs) dragTracker ]
+                                            [ settingNameDraggedView isDragging (SafeZipper.current boardConfigForms) dragTracker ]
                                    )
                             )
                         ]
@@ -645,22 +918,26 @@ settingsSurroundView currentSection configs dragTracker formContents =
         ]
 
 
-boardSettingsView : SafeZipper BoardConfig -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView boardConfigs multiselect dragTracker =
-    boardSettingsForm (SafeZipper.current boardConfigs) (SafeZipper.currentIndex boardConfigs) multiselect
-        |> settingsSurroundView Boards boardConfigs dragTracker
+boardSettingsView : SettingsForm -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
+boardSettingsView settingsForm multiselect dragTracker =
+    boardSettingsForm
+        (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
+        (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
+        (SettingsForm.defaultColumnNames settingsForm)
+        multiselect
+        dragTracker
+        |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> Settings -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion settings dragTracker =
-    settings
-        |> Settings.globalSettings
+globalSettingsView : DataviewTaskCompletion -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion settingsForm dragTracker =
+    settingsForm
         |> globalSettingsForm dataviewTaskCompletion
-        |> settingsSurroundView Options (Settings.boardConfigs settings) dragTracker
+        |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> GlobalSettings -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion gs =
+globalSettingsForm : DataviewTaskCompletion -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion settingsForm =
     let
         dataViewExample : String
         dataViewExample =
@@ -676,7 +953,7 @@ globalSettingsForm dataviewTaskCompletion gs =
 
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
-            if gs.ignoreFileNameDates then
+            if settingsForm.ignoreFileNameDates then
                 " is-enabled"
 
             else
@@ -749,20 +1026,20 @@ globalSettingsForm dataviewTaskCompletion gs =
                     ]
                 ]
             , Html.div [ class "setting-item-control" ]
-                [ taskCompletionFormatSelect gs.taskCompletionFormat ]
+                [ taskCompletionFormatSelect settingsForm.taskCompletionFormat ]
             ]
          ]
-            ++ columNamesForm gs.columnNames
+            ++ columNamesForm settingsForm
         )
     ]
 
 
-columNamesForm : ColumnNames -> List (Html Msg)
-columNamesForm columnNames =
+columNamesForm : SettingsForm -> List (Html Msg)
+columNamesForm settingsForm =
     [ Html.div [ class "setting-item setting-item-heading" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Column Names" ]
+                [ Html.text "Default Column Names" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Customise names used for auto-generated columns." ]
             ]
@@ -779,8 +1056,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Today"
-                , value (Maybe.withDefault "" columnNames.today)
-                , onInput (EnteredColumName "today")
+                , value settingsForm.today
+                , onInput (EnteredDefaultColumnName "today")
                 ]
                 []
             ]
@@ -796,8 +1073,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Tomorrow"
-                , value (Maybe.withDefault "" columnNames.tomorrow)
-                , onInput (EnteredColumName "tomorrow")
+                , value settingsForm.tomorrow
+                , onInput (EnteredDefaultColumnName "tomorrow")
                 ]
                 []
             ]
@@ -813,8 +1090,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Future"
-                , value (Maybe.withDefault "" columnNames.future)
-                , onInput (EnteredColumName "future")
+                , value settingsForm.future
+                , onInput (EnteredDefaultColumnName "future")
                 ]
                 []
             ]
@@ -830,8 +1107,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Undated"
-                , value (Maybe.withDefault "" columnNames.undated)
-                , onInput (EnteredColumName "undated")
+                , value settingsForm.undated
+                , onInput (EnteredDefaultColumnName "undated")
                 ]
                 []
             ]
@@ -839,16 +1116,16 @@ columNamesForm columnNames =
     , Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Others" ]
+                [ Html.text "Other Tags" ]
             , Html.div [ class "setting-item-description" ]
                 [ Html.text "Tasks with other tags (Tag boards)." ]
             ]
         , Html.div [ class "setting-item-control" ]
             [ Html.input
                 [ type_ "text"
-                , placeholder "Others"
-                , value (Maybe.withDefault "" columnNames.others)
-                , onInput (EnteredColumName "others")
+                , placeholder "Other Tags"
+                , value settingsForm.otherTags
+                , onInput (EnteredDefaultColumnName "otherTags")
                 ]
                 []
             ]
@@ -864,8 +1141,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Untagged"
-                , value (Maybe.withDefault "" columnNames.untagged)
-                , onInput (EnteredColumName "untagged")
+                , value settingsForm.untagged
+                , onInput (EnteredDefaultColumnName "untagged")
                 ]
                 []
             ]
@@ -881,8 +1158,8 @@ columNamesForm columnNames =
             [ Html.input
                 [ type_ "text"
                 , placeholder "Completed"
-                , value (Maybe.withDefault "" columnNames.completed)
-                , onInput (EnteredColumName "completed")
+                , value settingsForm.completed
+                , onInput (EnteredDefaultColumnName "completed")
                 ]
                 []
             ]
@@ -890,211 +1167,34 @@ columNamesForm columnNames =
     ]
 
 
-boardSettingsForm : Maybe BoardConfig -> Maybe Int -> MultiSelect.Model Msg Filter -> List (Html Msg)
-boardSettingsForm boardConfig boardIndex multiselect =
-    case ( boardConfig, boardIndex ) of
-        ( Just (BoardConfig.DateBoardConfig config), Just _ ) ->
+boardSettingsForm : Maybe BoardConfigForm -> Maybe Int -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
+boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect dragTracker =
+    case ( boardConfigForm, boardIndex ) of
+        ( Just configForm, Just _ ) ->
             let
-                includeUndatedStyle : String
-                includeUndatedStyle =
-                    if config.includeUndated then
-                        " is-enabled"
+                draggedColumn : Maybe ColumnForm
+                draggedColumn =
+                    ColumnsForm.find (\f -> Just (ColumnForm.name f) == draggedUniqueId) configForm.columnsForm
+
+                draggedType : Maybe String
+                draggedType =
+                    DragTracker.dragType dragTracker
+
+                draggedUniqueId : Maybe String
+                draggedUniqueId =
+                    if isDragging then
+                        DragTracker.uniqueId dragTracker
 
                     else
-                        ""
+                        Nothing
+
+                isDragging : Bool
+                isDragging =
+                    DragTracker.isDragging dragTracker && draggedType == Just columnSettingsDragType
 
                 showFilteredTagsStyle : String
                 showFilteredTagsStyle =
-                    if config.showFilteredTags then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                tagFilterScopeStyle : String
-                tagFilterScopeStyle =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            ""
-
-                        Filter.SubTasksOnly ->
-                            " is-mid-enabled"
-
-                        Filter.Both ->
-                            " is-enabled"
-
-                tagFilterScopeText : String
-                tagFilterScopeText =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            "Top level"
-
-                        Filter.SubTasksOnly ->
-                            "Sub-tasks"
-
-                        Filter.Both ->
-                            "Both"
-            in
-            [ Html.div [ class "setting-items-inner" ]
-                [ Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Title" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "The name of this board" ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value config.title
-                            , onInput EnteredTitle
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item setting-item-heading" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Filters" ]
-                        , Html.div [ class "setting-item-description" ] []
-                        ]
-                    , Html.div [ class "setting-item-control" ] []
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Definitions" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Filter tasks by files, paths, and/or tags." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ MultiSelect.view multiselect
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Polarity" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Use the filters as an Allow or Deny list." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ polaritySelect config.filterPolarity ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Tag filter scope" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div []
-                            [ Html.text tagFilterScopeText ]
-                        , Html.div
-                            [ class <| "checkbox-container" ++ tagFilterScopeStyle
-                            , onClick ToggleTagFilterScope
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Show tag filters on cards" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Turn this on to show the tags used in filters on cards on this board." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ showFilteredTagsStyle
-                            , onClick ToggleShowFilteredTags
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item setting-item-heading" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Columns" ]
-                        , Html.div [ class "setting-item-description" ] []
-                        ]
-                    , Html.div [ class "setting-item-control" ] []
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Include undated" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "Whether to include a column for tasks with no due date." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.div
-                            [ class <| "checkbox-container" ++ includeUndatedStyle
-                            , onClick ToggleIncludeUndated
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item" ]
-                    [ Html.div [ class "setting-item-info" ]
-                        [ Html.div [ class "setting-item-name" ]
-                            [ Html.text "Completed count" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                        ]
-                    , Html.div [ class "setting-item-control" ]
-                        [ Html.input
-                            [ type_ "text"
-                            , value <| String.fromInt config.completedCount
-                            , onInput EnteredCompletedCount
-                            ]
-                            []
-                        ]
-                    ]
-                , Html.div [ class "setting-item dialog-buttons" ]
-                    [ Html.button
-                        [ class "mod-warning"
-                        , onClick <| DeleteBoardRequested
-                        ]
-                        [ Html.text "Delete this board"
-                        ]
-                    ]
-                ]
-            ]
-
-        ( Just (BoardConfig.TagBoardConfig config), Just index ) ->
-            let
-                hasUntaggedWarning : Bool
-                hasUntaggedWarning =
-                    let
-                        hasAnyTagFilters : Bool
-                        hasAnyTagFilters =
-                            (Dict.values <| MultiSelect.selectedItems multiselect)
-                                |> Filter.ofType "tagFilter"
-                                |> (not << List.isEmpty)
-                    in
-                    config.filterPolarity == Filter.Allow && hasAnyTagFilters
-
-                includeOthersStyle : String
-                includeOthersStyle =
-                    if config.includeOthers then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                includeUntaggedStyle : String
-                includeUntaggedStyle =
-                    if config.includeUntagged then
-                        " is-enabled"
-
-                    else
-                        ""
-
-                showFilteredTagsStyle : String
-                showFilteredTagsStyle =
-                    if config.showFilteredTags then
+                    if configForm.showFilteredTags then
                         " is-enabled"
 
                     else
@@ -1102,70 +1202,27 @@ boardSettingsForm boardConfig boardIndex multiselect =
 
                 showColumnTagsStyle : String
                 showColumnTagsStyle =
-                    if config.showColumnTags then
+                    if configForm.showColumnTags then
                         " is-enabled"
 
                     else
                         ""
-
-                tagFilterScopeStyle : String
-                tagFilterScopeStyle =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            ""
-
-                        Filter.SubTasksOnly ->
-                            " is-mid-enabled"
-
-                        Filter.Both ->
-                            " is-enabled"
-
-                tagFilterScopeText : String
-                tagFilterScopeText =
-                    case config.filterScope of
-                        Filter.TopLevelOnly ->
-                            "Top level"
-
-                        Filter.SubTasksOnly ->
-                            "Sub-tasks"
-
-                        Filter.Both ->
-                            "Both"
-
-                tagText : String
-                tagText =
-                    config.columns
-                        |> List.map (\c -> "#" ++ c.tag ++ " " ++ c.displayTitle)
-                        |> String.join "\n"
-
-                untaggedWarningClass : String
-                untaggedWarningClass =
-                    if hasUntaggedWarning then
-                        " has-error"
-
-                    else
-                        ""
-
-                untaggedWarningText : List (Html Msg)
-                untaggedWarningText =
-                    if hasUntaggedWarning then
-                        [ Html.div [ class "has-error" ] [ Html.text "Will never contain any tasks as you have configured tag filters in Allow mode." ] ]
-
-                    else
-                        []
             in
-            [ Html.div [ class "setting-item" ]
+            [ Html.div
+                [ class "setting-item"
+                , attributeIf isDragging (style "cursor" "grabbing")
+                ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Title" ]
+                        [ Html.text "Name" ]
                     , Html.div [ class "setting-item-description" ]
                         [ Html.text "The name of this board" ]
                     ]
                 , Html.div [ class "setting-item-control" ]
                     [ Html.input
                         [ type_ "text"
-                        , value config.title
-                        , onInput EnteredTitle
+                        , value <| configForm.name
+                        , onInput EnteredName
                         ]
                         []
                     ]
@@ -1197,7 +1254,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         [ Html.text "Use the filters defined above as an Allow or Deny list." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ polaritySelect config.filterPolarity ]
+                    [ polaritySelect <| configForm.filterPolarity ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1207,14 +1264,7 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         [ Html.text "Apply tag filters to just the top level tasks, to just sub-tasks, or to both." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ Html.div []
-                        [ Html.text tagFilterScopeText ]
-                    , Html.div
-                        [ class <| "checkbox-container" ++ tagFilterScopeStyle
-                        , onClick ToggleTagFilterScope
-                        ]
-                        []
-                    ]
+                    [ scopeSelect <| configForm.filterScope ]
                 ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
@@ -1240,30 +1290,22 @@ boardSettingsForm boardConfig boardIndex multiselect =
                 , Html.div [ class "setting-item-control" ] []
                 ]
             , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Definitions" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.div []
-                            [ Html.text "The tags to use to define board columns." ]
-                        , Html.div []
-                            [ Html.text
-                                ("Each line should be a tag followed by the column heading.  "
-                                    ++ "Add a trailing / to the tag to include tasks with any subtags in the column too.  "
-                                    ++ "If you do not specify the heading it will be auto-generated from the tag."
-                                )
-                            ]
-                        ]
-                    ]
-                , Html.Keyed.node "div"
-                    [ class "setting-item-control" ]
-                    [ ( String.fromInt index
-                      , Html.textarea
-                            [ onInput EnteredTags
-                            , placeholder "#tag1 Column heading\n#tag2/\n#tag3/subtag\ntag4"
-                            ]
-                            [ Html.text tagText ]
-                      )
+                [ Html.div [ class "cardboard-settings-columns-list" ]
+                    ((configForm.columnsForm
+                        |> .columnForms
+                        |> List.indexedMap (settingsColumnView draggedUniqueId defaultColumnNames)
+                     )
+                        |> (\hs ->
+                                List.append hs
+                                    [ settingsColumnDraggedView isDragging draggedColumn dragTracker ]
+                           )
+                    )
+                ]
+            , Html.div [ class "cardboard-settings-columns-button" ]
+                [ Html.div [ class "setting-item-control" ]
+                    [ Html.button
+                        [ onClick AddColumnClicked ]
+                        [ Html.text "Add Column" ]
                     ]
                 ]
             , Html.div [ class "setting-item" ]
@@ -1281,58 +1323,10 @@ boardSettingsForm boardConfig boardIndex multiselect =
                         []
                     ]
                 ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Include others" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.text "Whether to include a column for tasks with tags other than those specified." ]
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.div
-                        [ class <| "checkbox-container" ++ includeOthersStyle
-                        , onClick ToggleIncludeOthers
-                        ]
-                        []
-                    ]
-                ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    ([ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Include untagged" ]
-                     , Html.div [ class "setting-item-description" ]
-                        [ Html.text "Whether to include a column for tasks with no tags." ]
-                     ]
-                        ++ untaggedWarningText
-                    )
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.div
-                        [ class <| "checkbox-container" ++ includeUntaggedStyle ++ untaggedWarningClass
-                        , onClick ToggleIncludeUntagged
-                        ]
-                        []
-                    ]
-                ]
-            , Html.div [ class "setting-item" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Completed count" ]
-                    , Html.div [ class "setting-item-description" ]
-                        [ Html.text "How many completed tasks to show.  Set to zero to disable the completed column altogether." ]
-                    ]
-                , Html.div [ class "setting-item-control" ]
-                    [ Html.input
-                        [ type_ "text"
-                        , value <| String.fromInt config.completedCount
-                        , onInput EnteredCompletedCount
-                        ]
-                        []
-                    ]
-                ]
             , Html.div [ class "setting-item dialog-buttons" ]
                 [ Html.button
                     [ class "mod-warning"
-                    , onClick <| DeleteBoardRequested
+                    , onClick DeleteBoardRequested
                     ]
                     [ Html.text "Delete this board"
                     ]
@@ -1343,25 +1337,258 @@ boardSettingsForm boardConfig boardIndex multiselect =
             [ Html.text "" ]
 
 
-taskCompletionFormatSelect : TaskCompletionFormat -> Html Msg
+settingsColumnView : Maybe String -> DefaultColumnNames -> Int -> ColumnForm -> Html Msg
+settingsColumnView uniqueId defaultColumnNames index columnForm =
+    let
+        domId : String
+        domId =
+            "card-board-setting-column-settings:" ++ String.fromInt index
+
+        isBeingDragged : Bool
+        isBeingDragged =
+            uniqueId == Just name
+
+        name : String
+        name =
+            ColumnForm.name columnForm
+
+        defaultName : String
+        defaultName =
+            ColumnForm.placeholder defaultColumnNames columnForm
+    in
+    Html.div []
+        [ columnSettingsBeacon (BeaconPosition.Before name)
+        , Html.div
+            [ id domId
+            , class "cardboard-settings-column-item"
+            , attributeIf isBeingDragged (style "opacity" "0.0")
+            ]
+            [ Html.div
+                [ class "cardboard-settings-column-item-detail card-board-dragable"
+                , onDown
+                    (\e ->
+                        ColumnSettingsMouseDown <|
+                            ( domId
+                            , { uniqueId = name
+                              , clientPos = Coords.fromFloatTuple e.clientPos
+                              , offsetPos = Coords.fromFloatTuple e.offsetPos
+                              }
+                            )
+                    )
+                ]
+                [ FeatherIcons.toHtml
+                    []
+                    dragIcon
+                ]
+            , Html.div [ class "cardboard-settings-column-item-type" ]
+                [ Html.text <| ColumnForm.typeString columnForm ]
+            , Html.div [ class "cardboard-settings-column-item-detail" ]
+                [ Html.input
+                    [ type_ "text"
+                    , placeholder defaultName
+                    , value name
+                    , onInput <| EnteredColumnName index
+                    ]
+                    []
+                ]
+            , settingsColumnControlView index columnForm
+            , Html.div
+                [ class "cardboard-settings-column-item-button"
+                , onClick <| ColumnDeleteClicked index
+                ]
+                [ FeatherIcons.xCircle
+                    |> FeatherIcons.withSize 1
+                    |> FeatherIcons.withSizeUnit "em"
+                    |> FeatherIcons.toHtml []
+                ]
+            ]
+        , columnSettingsBeacon (BeaconPosition.After name)
+        ]
+
+
+settingsColumnDraggedView : Bool -> Maybe ColumnForm -> DragTracker -> Html Msg
+settingsColumnDraggedView isDragging columnForm dragTracker =
+    case ( isDragging, columnForm, dragTracker ) of
+        ( True, Just draggedColumnForm, DragTracker.Dragging clientData domData ) ->
+            Html.div []
+                [ Html.div
+                    [ class "cardboard-settings-column-item"
+                    , style "position" "fixed"
+                    , style "top"
+                        (String.fromFloat
+                            (clientData.clientPos.y - domData.offset.y - clientData.offsetPos.y)
+                            ++ "px"
+                        )
+                    , style "left"
+                        (String.fromFloat
+                            (domData.draggedNodeStartRect.x - domData.offset.x)
+                            ++ "px"
+                        )
+                    , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                    , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
+                    , style "cursor" "grabbing"
+                    , style "opacity" "0.85"
+                    ]
+                    [ FeatherIcons.toHtml [] dragIcon
+                    , Html.div [ class "cardboard-settings-column-item-type" ]
+                        [ Html.text <| ColumnForm.typeString draggedColumnForm ]
+                    , Html.div [ class "cardboard-settings-column-item-detail" ]
+                        [ Html.input
+                            [ type_ "text"
+                            , value <| ColumnForm.name draggedColumnForm
+                            ]
+                            []
+                        ]
+                    , settingsColumnControlView 0 draggedColumnForm
+                    , Html.div
+                        [ class "cardboard-settings-column-item-button" ]
+                        [ FeatherIcons.xCircle
+                            |> FeatherIcons.withSize 1
+                            |> FeatherIcons.withSizeUnit "em"
+                            |> FeatherIcons.toHtml []
+                        ]
+                    ]
+                ]
+
+        _ ->
+            Html.text ""
+
+
+settingsColumnControlView : Int -> ColumnForm -> Html Msg
+settingsColumnControlView index columnForm =
+    case columnForm of
+        ColumnForm.CompletedColumnForm _ completedForm ->
+            Html.div [ class "cardboard-settings-column-item-controls" ]
+                [ Html.text <| "Limit: "
+                , Html.input
+                    [ type_ "text"
+                    , placeholder "10"
+                    , value completedForm.limit
+                    , attribute "size" "3"
+                    , onInput <| EnteredColumnCompletedLimit index
+                    ]
+                    []
+                ]
+
+        ColumnForm.DatedColumnForm _ datedForm ->
+            Html.div [ class "cardboard-settings-column-item-controls" ]
+                ([ rangeSelectView index datedForm ]
+                    ++ rangeInputsView index datedForm
+                )
+
+        ColumnForm.NamedTagColumnForm _ namedTagForm ->
+            Html.div [ class "cardboard-settings-column-item-controls" ]
+                [ Html.text <| "Tag: "
+                , Html.input
+                    [ type_ "text"
+                    , value <| namedTagForm.tag
+                    , onInput <| EnteredColumnNamedTagTag index
+                    ]
+                    []
+                ]
+
+        _ ->
+            Html.div [ class "cardboard-settings-column-item-controls" ]
+                [ Html.text "" ]
+
+
+rangeSelectView : Int -> DatedColumnForm -> Html Msg
+rangeSelectView index datedColumnForm =
+    case datedColumnForm.rangeType of
+        "After" ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After", selected True ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+        "Between" ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before" ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between", selected True ]
+                    [ Html.text "Between" ]
+                ]
+
+        _ ->
+            Html.select
+                [ class "dropdown"
+                , onInput <| SelectedDatedColumnRangeType index
+                ]
+                [ Html.option [ value "Before", selected True ]
+                    [ Html.text "Before" ]
+                , Html.option [ value "After" ]
+                    [ Html.text "After" ]
+                , Html.option [ value "Between" ]
+                    [ Html.text "Between" ]
+                ]
+
+
+rangeInputsView : Int -> DatedColumnForm -> List (Html Msg)
+rangeInputsView index datedColumnForm =
+    case datedColumnForm.rangeType of
+        "After" ->
+            [ Html.input
+                [ type_ "text"
+                , placeholder "0"
+                , value datedColumnForm.from
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueFrom index
+                ]
+                []
+            ]
+
+        "Between" ->
+            [ Html.input
+                [ type_ "text"
+                , placeholder "0"
+                , value datedColumnForm.from
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueFrom index
+                ]
+                []
+            , Html.span [] [ Html.text "and" ]
+            , Html.input
+                [ type_ "text"
+                , placeholder "0"
+                , value datedColumnForm.to
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueTo index
+                ]
+                []
+            ]
+
+        _ ->
+            [ Html.input
+                [ type_ "text"
+                , placeholder "0"
+                , value datedColumnForm.to
+                , attribute "size" "3"
+                , onInput <| EnteredDatedColumnRangeValueTo index
+                ]
+                []
+            ]
+
+
+taskCompletionFormatSelect : String -> Html Msg
 taskCompletionFormatSelect taskCompletionFormat =
     Html.select
         [ class "dropdown"
         , onInput TaskCompletionFormatSelected
         ]
         (case taskCompletionFormat of
-            GlobalSettings.NoCompletion ->
-                [ Html.option [ value "NoCompletion", selected True ]
-                    [ Html.text "None" ]
-                , Html.option [ value "ObsidianCardBoard" ]
-                    [ Html.text "CardBoard" ]
-                , Html.option [ value "ObsidianDataview" ]
-                    [ Html.text "Dataview" ]
-                , Html.option [ value "ObsidianTasks" ]
-                    [ Html.text "Tasks" ]
-                ]
-
-            GlobalSettings.ObsidianCardBoard ->
+            "ObsidianCardBoard" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard", selected True ]
@@ -1372,7 +1599,7 @@ taskCompletionFormatSelect taskCompletionFormat =
                     [ Html.text "Tasks" ]
                 ]
 
-            GlobalSettings.ObsidianDataview ->
+            "ObsidianDataview" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard" ]
@@ -1383,7 +1610,7 @@ taskCompletionFormatSelect taskCompletionFormat =
                     [ Html.text "Tasks" ]
                 ]
 
-            GlobalSettings.ObsidianTasks ->
+            "ObsidianTasks" ->
                 [ Html.option [ value "NoCompletion" ]
                     [ Html.text "None" ]
                 , Html.option [ value "ObsidianCardBoard" ]
@@ -1393,24 +1620,71 @@ taskCompletionFormatSelect taskCompletionFormat =
                 , Html.option [ value "ObsidianTasks", selected True ]
                     [ Html.text "Tasks" ]
                 ]
+
+            _ ->
+                [ Html.option [ value "NoCompletion", selected True ]
+                    [ Html.text "None" ]
+                , Html.option [ value "ObsidianCardBoard" ]
+                    [ Html.text "CardBoard" ]
+                , Html.option [ value "ObsidianDataview" ]
+                    [ Html.text "Dataview" ]
+                , Html.option [ value "ObsidianTasks" ]
+                    [ Html.text "Tasks" ]
+                ]
         )
 
 
-polaritySelect : Polarity -> Html Msg
+scopeSelect : String -> Html Msg
+scopeSelect scope =
+    Html.select
+        [ class "dropdown"
+        , onInput ScopeSelected
+        ]
+        (case scope of
+            "TopLevelOnly" ->
+                [ Html.option [ value "TopLevelOnly", selected True ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly" ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both" ]
+                    [ Html.text "Both" ]
+                ]
+
+            "SubTasksOnly" ->
+                [ Html.option [ value "TopLevelOnly" ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly", selected True ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both" ]
+                    [ Html.text "Both" ]
+                ]
+
+            _ ->
+                [ Html.option [ value "TopLevelOnly" ]
+                    [ Html.text "Top Level" ]
+                , Html.option [ value "SubTasksOnly" ]
+                    [ Html.text "Sub-tasks" ]
+                , Html.option [ value "Both", selected True ]
+                    [ Html.text "Both" ]
+                ]
+        )
+
+
+polaritySelect : String -> Html Msg
 polaritySelect polarity =
     Html.select
         [ class "dropdown"
         , onInput PolaritySelected
         ]
         (case polarity of
-            Filter.Allow ->
+            "Allow" ->
                 [ Html.option [ value "Allow", selected True ]
                     [ Html.text "Allow" ]
                 , Html.option [ value "Deny" ]
                     [ Html.text "Deny" ]
                 ]
 
-            Filter.Deny ->
+            _ ->
                 [ Html.option [ value "Allow" ]
                     [ Html.text "Allow" ]
                 , Html.option [ value "Deny", selected True ]
@@ -1419,76 +1693,76 @@ polaritySelect polarity =
         )
 
 
-settingTitleView : Int -> BoardConfig -> Html Msg
-settingTitleView index boardConfig =
+settingNameView : Int -> BoardConfigForm -> Html Msg
+settingNameView index boardConfigForm =
     let
         domId : String
         domId =
             "card-board-setting-board-name:" ++ String.fromInt index
 
-        title : String
-        title =
-            BoardConfig.title boardConfig
+        name : String
+        name =
+            boardConfigForm.name
     in
     Html.div []
-        [ beacon (BeaconPosition.Before title)
+        [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
-            , class "vertical-tab-nav-item"
+            , class "vertical-tab-nav-item card-board-dragable"
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
                     BoardNameMouseDown <|
                         ( domId
-                        , { uniqueId = title
+                        , { uniqueId = name
                           , clientPos = Coords.fromFloatTuple e.clientPos
                           , offsetPos = Coords.fromFloatTuple e.offsetPos
                           }
                         )
                 )
             ]
-            [ Html.text title ]
-        , beacon (BeaconPosition.After title)
+            [ Html.text name ]
+        , boardNameBeacon (BeaconPosition.After name)
         ]
 
 
-settingTitleSelectedView : Bool -> Int -> BoardConfig -> Html Msg
-settingTitleSelectedView isDragging index boardConfig =
+settingNameSelectedView : Bool -> Int -> BoardConfigForm -> Html Msg
+settingNameSelectedView isDragging index boardConfigForm =
     let
         domId : String
         domId =
             "card-board-setting-board-name:" ++ String.fromInt index
 
-        title : String
-        title =
-            BoardConfig.title boardConfig
+        name : String
+        name =
+            boardConfigForm.name
     in
     Html.div []
-        [ beacon (BeaconPosition.Before title)
+        [ boardNameBeacon (BeaconPosition.Before name)
         , Html.div
             [ id domId
-            , class "vertical-tab-nav-item is-active"
+            , class "vertical-tab-nav-item card-board-dragable is-active"
             , attributeIf isDragging (style "opacity" "0.0")
             , onClick <| BoardNameClicked index
             , onDown
                 (\e ->
                     BoardNameMouseDown <|
                         ( domId
-                        , { uniqueId = title
+                        , { uniqueId = name
                           , clientPos = Coords.fromFloatTuple e.clientPos
                           , offsetPos = Coords.fromFloatTuple e.offsetPos
                           }
                         )
                 )
             ]
-            [ Html.text title ]
-        , beacon (BeaconPosition.After title)
+            [ Html.text name ]
+        , boardNameBeacon (BeaconPosition.After name)
         ]
 
 
-settingTitleDraggedView : Bool -> Maybe BoardConfig -> DragTracker -> Html Msg
-settingTitleDraggedView isDragging boardConfig dragTracker =
-    case ( isDragging, boardConfig, dragTracker ) of
+settingNameDraggedView : Bool -> Maybe BoardConfigForm -> DragTracker -> Html Msg
+settingNameDraggedView isDragging boardConfigForm dragTracker =
+    case ( isDragging, boardConfigForm, dragTracker ) of
         ( True, Just config, DragTracker.Dragging clientData domData ) ->
             Html.div []
                 [ Html.div
@@ -1510,25 +1784,11 @@ settingTitleDraggedView isDragging boardConfig dragTracker =
                     , style "cursor" "grabbing"
                     , style "opacity" "0.85"
                     ]
-                    [ Html.text (BoardConfig.title config) ]
+                    [ Html.text config.name ]
                 ]
 
         _ ->
             Html.text ""
-
-
-beaconType : String
-beaconType =
-    "data-" ++ dragType ++ "-beacon"
-
-
-beacon : BeaconPosition -> Html Msg
-beacon beaconPosition =
-    Html.span
-        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
-        , style "font-size" "0"
-        ]
-        []
 
 
 
@@ -1542,3 +1802,45 @@ attributeIf condition attribute =
 
     else
         class ""
+
+
+boardNameBeaconType : String
+boardNameBeaconType =
+    "data-" ++ boardNameDragType ++ "-beacon"
+
+
+boardNameBeacon : BeaconPosition -> Html Msg
+boardNameBeacon beaconPosition =
+    Html.span
+        [ attribute boardNameBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
+
+
+columnSettingsBeaconType : String
+columnSettingsBeaconType =
+    "data-" ++ columnSettingsDragType ++ "-beacon"
+
+
+columnSettingsBeacon : BeaconPosition -> Html Msg
+columnSettingsBeacon beaconPosition =
+    Html.span
+        [ attribute columnSettingsBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
+
+
+dragIcon : Icon
+dragIcon =
+    [ Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "6", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "6", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "14", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "14", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "10", Svg.y "22", Svg.width "4", Svg.height "4" ] []
+    , Svg.rect [ Svg.fill "black", Svg.x "18", Svg.y "22", Svg.width "4", Svg.height "4" ] []
+    ]
+        |> FeatherIcons.customIcon
+        |> FeatherIcons.withSize 22
+        |> FeatherIcons.withViewBox "0 0 32 32"

@@ -7,6 +7,7 @@ module DragAndDrop.DragTracker exposing
     , isDragging
     , moveDragable
     , stopTracking
+    , uniqueId
     , waitForDrag
     )
 
@@ -72,6 +73,19 @@ isDragging dragTracker =
 
         Dragging _ _ ->
             True
+
+
+uniqueId : DragTracker -> Maybe String
+uniqueId dragTracker =
+    case dragTracker of
+        NotDragging ->
+            Nothing
+
+        Waiting clientData ->
+            Just clientData.uniqueId
+
+        Dragging clientData _ ->
+            Just clientData.uniqueId
 
 
 

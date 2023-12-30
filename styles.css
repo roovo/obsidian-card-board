@@ -262,16 +262,6 @@ ul.card-board-column-list > li.card-board-card::before {
   font-size: 1em;
 }
 
-.checkbox-container.is-mid-enabled {
-  background-color: var(--interactive-accent-hover);
-}
-.checkbox-container.is-mid-enabled:after {
-  transform: translate3d(calc((var(--toggle-width) - var(--toggle-thumb-width) - var(--toggle-border-width)) / 2), 0, 0);
-}
-.checkbox-container.is-mid-enabled:active:after {
-  left: -4px;
-}
-
 .card-board-card-title {
   grid-area: title;
   margin: 0 0.2em;
@@ -361,17 +351,56 @@ ul.card-board-column-list > li.card-board-card::before {
   cursor: pointer;
 }
 
-.card-board-view .modal-content {
-  display: grid;
-  grid: "select form"
-        / 200px auto;
-  overflow: hidden;
-  margin-top: 0;
-}
-
 .setting-items-inner {
   position: relative;
   height: auto;
+}
+
+.cardboard-settings-columns-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+
+.cardboard-settings-column-item {
+  display: grid;
+  grid-template-columns: 2em 5em 1fr 1fr 1.5em;
+  align-items: center;
+  gap: var(--size-4-2);
+  border: var(--border-width) solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+  width: 100%;
+  padding: var(--size-4-1) var(--size-4-2);
+  margin-bottom: 0.4em;
+}
+
+.cardboard-settings-column-item-button {
+  display: grid;
+  align-items: center;
+  cursor: pointer;
+}
+
+.cardboard-settings-column-item-detail {
+  display: grid;
+  align-items: center;
+}
+
+.cardboard-settings-column-item-type {
+  font-size: 0.7em;
+}
+
+.cardboard-settings-column-item-controls {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cardboard-settings-columns-button {
+  padding-bottom: 0.75em;
 }
 
 .vertical-tab-header-group-title-icon {
@@ -384,15 +413,21 @@ ul.card-board-column-list > li.card-board-card::before {
   width: 80%;
 }
 
+.card-board-view .card-board-dragable {
+  cursor: grab;
+}
+
 .card-board-view .vertical-tab-nav-item {
   padding-right: 1.5em;
-  cursor: grab;
+  min-height: 1.9em;
 }
 
 .modal-form {
   display: grid;
   grid-gap: 1.5em;
   padding-top: 1.3em;
+  padding-bottom: 1.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .form-item {
