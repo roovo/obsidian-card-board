@@ -6,21 +6,47 @@
     - every second
         - Time.every 1000 Tick => updates posix time in Session
     - Session holds
-        - TImeWIthZone:
+        - TimeWithZone:
             zone - set at startup (offset from utc)
             time - posix (in ms) - updated every second
     - completion text when marking as complete: TaskItem.toToggledString
       (using rtfeldman/elm-iso8601-date-string - note that this does not handle time zones)
     - when parsing tasks, completion timestamp is saved as a posix time
-      parsing is done in TaskPaperTag.completedTagParser
+      parsing is done in TaskPaperTag.completedTagParser & ParserHelper.timeParser
+      which uses elm-iso8601 (which should support TZ offset)
 
 
 - is there anything I can do about compibility (i.e. if settings are changed,
   what happens with the interpretation of existing completed tasks)
+  yes - use a string with the offset at the end:
+
+  2023-12-31T13:15:00          - assume that this is in UTC for backwards compatibility
+  2023-12-31T13:15:00Z
+  2023-12-31T06:15:01−07:00
+  2023-12-31T13:15:01+00:00
+  2023-12-31T20:15:01+07:00
+
+  I should be able to parse all of these to a Posix time for use in the app
+
 - do I want to always include the TZ offset in the written timestamp so I
   know when a task was done relative to UTC whatever the settings?
+  - if I make it optional then it is up to the end user, the code will use
+    the offset if it is there and not if it isn't
+
 - what functionality do the Time based elm libraries I am using offer,
   will I need to look around for anything else?
+  - looks like I should be OKay for parsing - will need to add some tests to find out
+  - questions
+    - if I change time zone, what is the offset saved in TimeWithZone?
+        Bangalore: Zone 330 []
+        New York: Zone -300 []
+        Paris: Zone 60 []
+    - can I use this to generate an ISO8601 string version in local time
+      with the correct offset?
+      - base it on https://github.com/f0i/iso8601/blob/1.1.2/src/Iso8601.elm
+        with addition for the TZ offset on the end
+
+
 - add the setting(s)
 - use the setting(s) when marking a task as complete
 - ensure that sensible things happen when ordering the completed column
