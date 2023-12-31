@@ -5,6 +5,7 @@ module GlobalSettings exposing
     , encoder
     , v_0_10_0_decoder
     , v_0_11_0_decoder
+    , v_0_12_0_decoder
     , v_0_5_0_decoder
     , v_0_6_0_decoder
     , v_0_7_0_decoder
@@ -58,15 +59,15 @@ encoder =
         [ TsEncode.required "defaultColumnNames" .defaultColumnNames DefaultColumnNames.encoder
         , TsEncode.required "ignoreFileNameDates" .ignoreFileNameDates TsEncode.bool
         , TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
-        , TsEncode.required "taskCompletionInLocalTime" .ignoreFileNameDates TsEncode.bool
-        , TsEncode.required "taskCompletionWithUtcOffset" .ignoreFileNameDates TsEncode.bool
+        , TsEncode.required "taskCompletionInLocalTime" .taskCompletionInLocalTime TsEncode.bool
+        , TsEncode.required "taskCompletionWithUtcOffset" .taskCompletionWithUtcOffset TsEncode.bool
         ]
 
 
 v_0_12_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_12_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_11_0_decoder)
+        |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_12_0_decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "taskCompletionInLocalTime" TsDecode.bool)

@@ -177,7 +177,6 @@ export type CardBoardPluginSettingsPostV11 = {
       name : string
     })[];
     globalSettings : {
-      taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
       defaultColumnNames : {
         today : string;
         tomorrow : string;
@@ -188,6 +187,9 @@ export type CardBoardPluginSettingsPostV11 = {
         completed : string;
       }
       ignoreFileNameDates : boolean;
+      taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
+      taskCompletionInLocalTime : boolean;
+      taskCompletionWithUtcOffset : boolean;
     }
   };
   version : string

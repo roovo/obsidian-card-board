@@ -89,11 +89,11 @@ cleanupNames =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.11.0" <|
+        [ test "is 0.12.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.11.0"
+                    |> Expect.equal "0.12.0"
         ]
 
 

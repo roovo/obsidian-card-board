@@ -53,7 +53,7 @@ encodeDecode =
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_11_0_decoder
+                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_12_0_decoder
                     |> .decoded
                     |> Expect.equal
                         (Ok
