@@ -145,6 +145,9 @@
   the hover for all edit buttons.  Can I be smarter?  Only matters really if performance
   issues.
 - can I use github runners to build?
+  - https://github.com/elm-tooling/elm-tooling-cli/blob/main/.github/workflows/example.yml
+  - https://elm-tooling.github.io/elm-tooling-cli/ci/
+  - https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/adding-a-workflow-status-badge
 - where to use fuzz testing
 - review awful typescript code!
 - return something to elm if I fail to re-write a TODO due to the line having changed so I can
