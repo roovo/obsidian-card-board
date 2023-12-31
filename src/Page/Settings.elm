@@ -958,6 +958,22 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
 
             else
                 ""
+
+        taskCompletionInLocalTimeStyle : String
+        taskCompletionInLocalTimeStyle =
+            if settingsForm.taskCompletionInLocalTime then
+                " is-enabled"
+
+            else
+                ""
+
+        taskCompletionWithUtcOffsetStyle : String
+        taskCompletionWithUtcOffsetStyle =
+            if settingsForm.taskCompletionWithUtcOffset then
+                " is-enabled"
+
+            else
+                ""
     in
     [ Html.div [ class "setting-items-inner" ]
         ([ Html.div [ class "setting-item setting-item-heading" ]
@@ -986,7 +1002,7 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
          , Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Task completion format" ]
+                    [ Html.text "Task Completion" ]
                 , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ] []
@@ -1027,6 +1043,38 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ taskCompletionFormatSelect settingsForm.taskCompletionFormat ]
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Use local time" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "UTC will be used otherwise." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ taskCompletionInLocalTimeStyle
+
+                    -- , onClick ToggleTaskCompletionInLocalTime
+                    ]
+                    []
+                ]
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Include UTC offset" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "..... need some blurb here ....." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ taskCompletionWithUtcOffsetStyle
+
+                    -- , onClick ToggleTaskCompletionInLocalTime
+                    ]
+                    []
+                ]
             ]
          ]
             ++ columNamesForm settingsForm

@@ -52,10 +52,16 @@
     - handle old settings versions
     - update settings with typescript too
     - add to Forms
+    - update from the settings page
 - use the setting(s) when marking a task as complete
 - ensure that sensible things happen when ordering the completed column
 - do I want to offer some sort of conversion function to update completion
   timestamps across the vault (very unlikely)
+- review the wording on the settings page.
+- does the selection of local/utc effect dataview and tasks completion
+  formats too? (as it will affect the date as well as the time).  If
+  this is true, ensure the behaviour is correct and the wording on the
+  settings dialog is correct.
 
 
 ---
