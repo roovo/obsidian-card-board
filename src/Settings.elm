@@ -393,7 +393,7 @@ v_0_4_0_Decoder =
             (TsDecode.field "boardConfigs"
                 (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_4_0))
             )
-        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
+        |> TsDecode.andMap (TsDecode.succeed globalSettingsDefault)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
         |> TsDecode.map setNamesToDefault
@@ -406,7 +406,7 @@ v_0_3_0_Decoder =
             (TsDecode.field "boardConfigs"
                 (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_3_0))
             )
-        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
+        |> TsDecode.andMap (TsDecode.succeed globalSettingsDefault)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
         |> TsDecode.map setNamesToDefault
@@ -419,7 +419,7 @@ v_0_2_0_Decoder =
             (TsDecode.field "boardConfigs"
                 (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_2_0))
             )
-        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
+        |> TsDecode.andMap (TsDecode.succeed globalSettingsDefault)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
         |> TsDecode.map setNamesToDefault
@@ -432,10 +432,20 @@ v_0_1_0_Decoder =
             (TsDecode.field "boardConfigs"
                 (TsDecode.map SafeZipper.fromList (TsDecode.list BoardConfig.decoder_v_0_1_0))
             )
-        |> TsDecode.andMap (TsDecode.succeed GlobalSettings.default)
+        |> TsDecode.andMap (TsDecode.succeed globalSettingsDefault)
         |> TsDecode.andMap (TsDecode.succeed currentVersion)
     )
         |> TsDecode.map setNamesToDefault
+
+
+globalSettingsDefault : GlobalSettings
+globalSettingsDefault =
+    { defaultColumnNames = DefaultColumnNames.default
+    , ignoreFileNameDates = False
+    , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+    , taskCompletionInLocalTime = False
+    , taskCompletionWithUtcOffset = False
+    }
 
 
 unsupportedVersionDecoder : TsDecode.Decoder Settings

@@ -23,9 +23,11 @@ default =
             \() ->
                 GlobalSettings.default
                     |> Expect.equal
-                        { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                        , defaultColumnNames = DefaultColumnNames.default
+                        { defaultColumnNames = DefaultColumnNames.default
                         , ignoreFileNameDates = False
+                        , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                        , taskCompletionInLocalTime = True
+                        , taskCompletionWithUtcOffset = True
                         }
         ]
 
@@ -35,8 +37,7 @@ encodeDecode =
     describe "encoding and decoding GlobalSettings"
         [ test "can decode an encoded string back to the original" <|
             \() ->
-                { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                , defaultColumnNames =
+                { defaultColumnNames =
                     { today = Just "Do Today"
                     , tomorrow = Nothing
                     , future = Just "The Future"
@@ -46,6 +47,9 @@ encodeDecode =
                     , completed = Just "Done"
                     }
                 , ignoreFileNameDates = True
+                , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                , taskCompletionInLocalTime = False
+                , taskCompletionWithUtcOffset = False
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
@@ -53,8 +57,7 @@ encodeDecode =
                     |> .decoded
                     |> Expect.equal
                         (Ok
-                            { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                            , defaultColumnNames =
+                            { defaultColumnNames =
                                 { today = Just "Do Today"
                                 , tomorrow = Nothing
                                 , future = Just "The Future"
@@ -64,6 +67,9 @@ encodeDecode =
                                 , completed = Just "Done"
                                 }
                             , ignoreFileNameDates = True
+                            , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                            , taskCompletionInLocalTime = False
+                            , taskCompletionWithUtcOffset = False
                             }
                         )
         ]

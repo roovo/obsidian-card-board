@@ -344,9 +344,11 @@ settingsBuilder bc com fut ifn ots tcf tod tom und unt =
 
         globalSettings : GlobalSettings
         globalSettings =
-            { taskCompletionFormat = tcf
-            , defaultColumnNames = defaultColumnNames_
+            { defaultColumnNames = defaultColumnNames_
             , ignoreFileNameDates = ifn
+            , taskCompletionFormat = tcf
+            , taskCompletionInLocalTime = False
+            , taskCompletionWithUtcOffset = False
             }
     in
     { boardConfigs = bc

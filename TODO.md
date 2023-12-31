@@ -48,6 +48,10 @@
 
 
 - add the setting(s)
+    - add fields to GlobalSettings
+    - handle old settings versions
+    - update settings with typescript too
+    - add to Forms
 - use the setting(s) when marking a task as complete
 - ensure that sensible things happen when ordering the completed column
 - do I want to offer some sort of conversion function to update completion

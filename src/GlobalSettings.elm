@@ -30,17 +30,21 @@ type TaskCompletionFormat
 
 
 type alias GlobalSettings =
-    { taskCompletionFormat : TaskCompletionFormat
-    , defaultColumnNames : DefaultColumnNames
+    { defaultColumnNames : DefaultColumnNames
     , ignoreFileNameDates : Bool
+    , taskCompletionFormat : TaskCompletionFormat
+    , taskCompletionInLocalTime : Bool
+    , taskCompletionWithUtcOffset : Bool
     }
 
 
 default : GlobalSettings
 default =
-    { taskCompletionFormat = ObsidianCardBoard
-    , defaultColumnNames = DefaultColumnNames.default
+    { defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
+    , taskCompletionFormat = ObsidianCardBoard
+    , taskCompletionInLocalTime = True
+    , taskCompletionWithUtcOffset = True
     }
 
 
@@ -51,65 +55,91 @@ default =
 encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
-        [ TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
-        , TsEncode.required "defaultColumnNames" .defaultColumnNames DefaultColumnNames.encoder
+        [ TsEncode.required "defaultColumnNames" .defaultColumnNames DefaultColumnNames.encoder
         , TsEncode.required "ignoreFileNameDates" .ignoreFileNameDates TsEncode.bool
+        , TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
+        , TsEncode.required "taskCompletionInLocalTime" .ignoreFileNameDates TsEncode.bool
+        , TsEncode.required "taskCompletionWithUtcOffset" .ignoreFileNameDates TsEncode.bool
         ]
+
+
+v_0_12_0_decoder : TsDecode.Decoder GlobalSettings
+v_0_12_0_decoder =
+    TsDecode.succeed GlobalSettings
+        |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_11_0_decoder)
+        |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionInLocalTime" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionWithUtcOffset" TsDecode.bool)
 
 
 v_0_11_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_11_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_11_0_decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_10_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_10_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_10_0_decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_9_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_9_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_9_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_8_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_8_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_8_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_7_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_7_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "columnNames" DefaultColumnNames.v_0_7_0_decoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_6_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_6_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.succeed DefaultColumnNames.default)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 
 v_0_5_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_5_0_decoder =
     TsDecode.succeed GlobalSettings
-        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.succeed DefaultColumnNames.default)
+        |> TsDecode.andMap (TsDecode.succeed False)
+        |> TsDecode.andMap (TsDecode.field "taskUpdateFormat" taskCompletionFormatDecoder)
+        |> TsDecode.andMap (TsDecode.succeed False)
         |> TsDecode.andMap (TsDecode.succeed False)
 
 

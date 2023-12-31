@@ -325,9 +325,11 @@ uniqueBoardNames =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.NoCompletion
-    , defaultColumnNames = DefaultColumnNames.default
+    { defaultColumnNames = DefaultColumnNames.default
     , ignoreFileNameDates = False
+    , taskCompletionFormat = GlobalSettings.NoCompletion
+    , taskCompletionInLocalTime = False
+    , taskCompletionWithUtcOffset = False
     }
 
 
