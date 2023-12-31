@@ -45,6 +45,8 @@ type alias SettingsForm =
     , ignoreFileNameDates : Bool
     , otherTags : String
     , taskCompletionFormat : String
+    , taskCompletionInLocalTime : Bool
+    , taskCompletionWithUtcOffset : Bool
     , today : String
     , tomorrow : String
     , undated : String
@@ -92,6 +94,8 @@ init settings =
     , ignoreFileNameDates = globalSettings_.ignoreFileNameDates
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
     , taskCompletionFormat = taskCompletionFormat_
+    , taskCompletionInLocalTime = globalSettings_.taskCompletionInLocalTime
+    , taskCompletionWithUtcOffset = globalSettings_.taskCompletionWithUtcOffset
     , today = Maybe.withDefault "" defaultColumnNames_.today
     , tomorrow = Maybe.withDefault "" defaultColumnNames_.tomorrow
     , undated = Maybe.withDefault "" defaultColumnNames_.undated
@@ -105,13 +109,15 @@ init settings =
 
 safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
-    SD.map10 settingsBuilder
+    SD.map12 settingsBuilder
         boardConfigFormsDecoder
         completedDecoder
         futureDecoder
         ignoreFileNameDatesDecoder
         otherTagsDecoder
         taskCompletionFormatDecoder
+        taskCompletionInLocalTimeDecoder
+        taskCompletionWithUtcOffsetDecoder
         todayDecoder
         tomorrowDecoder
         undatedDecoder
@@ -324,12 +330,14 @@ settingsBuilder :
     -> Bool
     -> Maybe String
     -> GlobalSettings.TaskCompletionFormat
+    -> Bool
+    -> Bool
     -> Maybe String
     -> Maybe String
     -> Maybe String
     -> Maybe String
     -> Settings
-settingsBuilder bc com fut ifn ots tcf tod tom und unt =
+settingsBuilder bc com fut ifn ots tcf clt cwu tod tom und unt =
     let
         defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
@@ -347,8 +355,8 @@ settingsBuilder bc com fut ifn ots tcf tod tom und unt =
             { defaultColumnNames = defaultColumnNames_
             , ignoreFileNameDates = ifn
             , taskCompletionFormat = tcf
-            , taskCompletionInLocalTime = False
-            , taskCompletionWithUtcOffset = False
+            , taskCompletionInLocalTime = clt
+            , taskCompletionWithUtcOffset = cwu
             }
     in
     { boardConfigs = bc
@@ -375,6 +383,18 @@ taskCompletionFormatDecoder =
                     Ok <| GlobalSettings.ObsidianCardBoard
     )
         |> SD.lift .taskCompletionFormat
+
+
+taskCompletionInLocalTimeDecoder : SD.Decoder SettingsForm Bool
+taskCompletionInLocalTimeDecoder =
+    SD.identity
+        |> SD.lift .taskCompletionInLocalTime
+
+
+taskCompletionWithUtcOffsetDecoder : SD.Decoder SettingsForm Bool
+taskCompletionWithUtcOffsetDecoder =
+    SD.identity
+        |> SD.lift .taskCompletionWithUtcOffset
 
 
 todayDecoder : SD.Decoder SettingsForm (Maybe String)

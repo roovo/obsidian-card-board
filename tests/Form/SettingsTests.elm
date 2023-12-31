@@ -377,6 +377,34 @@ safeDecoder =
                     |> Result.map Settings.globalSettings
                     |> Result.map .taskCompletionFormat
                     |> Expect.equal (Ok <| GlobalSettings.ObsidianCardBoard)
+        , test "decodes a False taskCompletionInLocalTime" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = False }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionInLocalTime
+                    |> Expect.equal (Ok False)
+        , test "decodes a True taskCompletionInLocalTime" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = True }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionInLocalTime
+                    |> Expect.equal (Ok True)
+        , test "decodes a False taskCompletionWithUtcOffset" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionWithUtcOffset = False }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionWithUtcOffset
+                    |> Expect.equal (Ok False)
+        , test "decodes a True taskCompletionWithUtcOffset" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionWithUtcOffset = True }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionWithUtcOffset
+                    |> Expect.equal (Ok True)
         , test "decodes a today string as Just the string" <|
             \() ->
                 { exampleSettingsForm | today = "foo" }
@@ -566,6 +594,8 @@ exampleSettingsForm =
     , ignoreFileNameDates = False
     , otherTags = ""
     , taskCompletionFormat = ""
+    , taskCompletionInLocalTime = False
+    , taskCompletionWithUtcOffset = False
     , today = ""
     , tomorrow = ""
     , undated = ""
