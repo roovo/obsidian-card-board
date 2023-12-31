@@ -15,6 +15,8 @@ module Form.Settings exposing
     , safeDecoder
     , switchToBoard
     , toggleIgnoreFileNameDate
+    , toggleTaskCompletionInLocalTime
+    , toggleTaskCompletionWithUtcOffset
     , updateDefaultColumnName
     , updateTaskCompletionFormat
     )
@@ -231,6 +233,16 @@ switchToBoard index form =
 toggleIgnoreFileNameDate : SettingsForm -> SettingsForm
 toggleIgnoreFileNameDate settingsForm =
     { settingsForm | ignoreFileNameDates = not settingsForm.ignoreFileNameDates }
+
+
+toggleTaskCompletionInLocalTime : SettingsForm -> SettingsForm
+toggleTaskCompletionInLocalTime settingsForm =
+    { settingsForm | taskCompletionInLocalTime = not settingsForm.taskCompletionInLocalTime }
+
+
+toggleTaskCompletionWithUtcOffset : SettingsForm -> SettingsForm
+toggleTaskCompletionWithUtcOffset settingsForm =
+    { settingsForm | taskCompletionWithUtcOffset = not settingsForm.taskCompletionWithUtcOffset }
 
 
 updateDefaultColumnName : String -> String -> SettingsForm -> SettingsForm

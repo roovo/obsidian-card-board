@@ -29,6 +29,8 @@ suite =
         , moveBoard
         , safeDecoder
         , toggleIgnoreFileNameDate
+        , toggleTaskCompletionInLocalTime
+        , toggleTaskCompletionWithUtcOffset
         , updateDefaultColumnName
         , updateTaskCompletionFormat
         ]
@@ -518,6 +520,42 @@ toggleIgnoreFileNameDate =
                 { exampleSettingsForm | ignoreFileNameDates = False }
                     |> SettingsForm.toggleIgnoreFileNameDate
                     |> .ignoreFileNameDates
+                    |> Expect.equal True
+        ]
+
+
+toggleTaskCompletionInLocalTime : Test
+toggleTaskCompletionInLocalTime =
+    describe "toggleTaskCompletionInLocalTime"
+        [ test "toggles the value from True to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = True }
+                    |> SettingsForm.toggleTaskCompletionInLocalTime
+                    |> .taskCompletionInLocalTime
+                    |> Expect.equal False
+        , test "toggles the value from False to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = False }
+                    |> SettingsForm.toggleTaskCompletionInLocalTime
+                    |> .taskCompletionInLocalTime
+                    |> Expect.equal True
+        ]
+
+
+toggleTaskCompletionWithUtcOffset : Test
+toggleTaskCompletionWithUtcOffset =
+    describe "toggleTaskCompletionWithUtcOffset"
+        [ test "toggles the value from True to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionWithUtcOffset = True }
+                    |> SettingsForm.toggleTaskCompletionWithUtcOffset
+                    |> .taskCompletionWithUtcOffset
+                    |> Expect.equal False
+        , test "toggles the value from False to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionWithUtcOffset = False }
+                    |> SettingsForm.toggleTaskCompletionWithUtcOffset
+                    |> .taskCompletionWithUtcOffset
                     |> Expect.equal True
         ]
 

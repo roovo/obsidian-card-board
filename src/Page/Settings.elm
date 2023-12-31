@@ -134,6 +134,8 @@ type Msg
     | ScopeSelected String
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
+    | ToggleTaskCompletionInLocalTime
+    | ToggleTaskCompletionWithUtcOffset
     | ToggleIgnoreFileNameDate
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
@@ -363,6 +365,24 @@ update msg model =
                     | settingsState =
                         SettingsState.mapGlobalSettings
                             (SettingsForm.updateTaskCompletionFormat taskCompletionFormat)
+                            model.settingsState
+                }
+
+        ToggleTaskCompletionInLocalTime ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            SettingsForm.toggleTaskCompletionInLocalTime
+                            model.settingsState
+                }
+
+        ToggleTaskCompletionWithUtcOffset ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            SettingsForm.toggleTaskCompletionWithUtcOffset
                             model.settingsState
                 }
 
@@ -1054,8 +1074,7 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
                     [ class <| "checkbox-container" ++ taskCompletionInLocalTimeStyle
-
-                    -- , onClick ToggleTaskCompletionInLocalTime
+                    , onClick ToggleTaskCompletionInLocalTime
                     ]
                     []
                 ]
@@ -1070,8 +1089,7 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
                     [ class <| "checkbox-container" ++ taskCompletionWithUtcOffsetStyle
-
-                    -- , onClick ToggleTaskCompletionInLocalTime
+                    , onClick ToggleTaskCompletionWithUtcOffset
                     ]
                     []
                 ]
