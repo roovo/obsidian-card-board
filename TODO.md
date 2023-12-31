@@ -1,3 +1,34 @@
+- what TZ / Date info do I already have?
+    - At Startup
+        - using Date.now() (in ts) => epoch (posix) time (in milliseconds)
+        - new Date().getTimezoneOffset() => difference in minutes of local time zone from UTC
+        - both saved in Session as TimeWithZone
+    - every second
+        - Time.every 1000 Tick => updates posix time in Session
+    - Session holds
+        - TImeWIthZone:
+            zone - set at startup (offset from utc)
+            time - posix (in ms) - updated every second
+    - completion text when marking as complete: TaskItem.toToggledString
+      (using rtfeldman/elm-iso8601-date-string - note that this does not handle time zones)
+    - when parsing tasks, completion timestamp is saved as a posix time
+      parsing is done in TaskPaperTag.completedTagParser
+
+
+- is there anything I can do about compibility (i.e. if settings are changed,
+  what happens with the interpretation of existing completed tasks)
+- do I want to always include the TZ offset in the written timestamp so I
+  know when a task was done relative to UTC whatever the settings?
+- what functionality do the Time based elm libraries I am using offer,
+  will I need to look around for anything else?
+- add the setting(s)
+- use the setting(s) when marking a task as complete
+- ensure that sensible things happen when ordering the completed column
+- do I want to offer some sort of conversion function to update completion
+  timestamps across the vault (very unlikely)
+
+
+---
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
