@@ -86,14 +86,14 @@ requestFilterCandidates =
         |> interopFromElm
 
 
-rewriteTasks : DataviewTaskCompletion -> TaskCompletionFormat -> TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTasks dataviewTaskCompletion taskCompletionFormat timeWithZone filePath taskItems =
+rewriteTasks : DataviewTaskCompletion -> TaskCompletionFormat -> Bool -> Bool -> TimeWithZone -> String -> List TaskItem -> Cmd msg
+rewriteTasks dataviewTaskCompletion taskCompletionFormat asLocal withUtcOffset timeWithZone filePath taskItems =
     let
         rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
         rewriteDetails taskItem =
             { lineNumber = TaskItem.lineNumber taskItem
             , originalText = TaskItem.originalText taskItem
-            , newText = TaskItem.toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone taskItem
+            , newText = TaskItem.toToggledString dataviewTaskCompletion taskCompletionFormat asLocal withUtcOffset timeWithZone taskItem
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }

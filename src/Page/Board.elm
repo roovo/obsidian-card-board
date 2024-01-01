@@ -116,6 +116,8 @@ update msg session =
                     InteropPorts.rewriteTasks
                         (Session.dataviewTaskCompletion session)
                         (Session.globalSettings session |> .taskCompletionFormat)
+                        (Session.globalSettings session |> .taskCompletionInLocalTime)
+                        (Session.globalSettings session |> .taskCompletionWithUtcOffset)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)

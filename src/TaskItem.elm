@@ -61,6 +61,7 @@ import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -527,8 +528,8 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | time : Time.Posix } -> TaskItem -> String
-toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> Bool -> Bool -> TimeWithZone -> TaskItem -> String
+toToggledString dataviewTaskCompletion taskCompletionFormat asLocal withUtcOffset timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
@@ -547,9 +548,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                     let
                         completionString : String
                         completionString =
-                            timeWithZone.time
-                                |> Iso8601.fromTime
-                                |> String.left 19
+                            TimeWithZone.toString asLocal withUtcOffset timeWithZone
                     in
                     case taskCompletionFormat of
                         GlobalSettings.NoCompletion ->
@@ -612,7 +611,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                         DataviewTaskCompletion.Text t ->
                             regexReplacer (" \\[" ++ t ++ ":: \\d{4}-\\d{2}-\\d{2}\\]") (\_ -> "")
             in
-            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "")
+            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:(?:[+-]\\d{2}:\\d{2})|Z){0,1}\\)" (\_ -> "")
                 >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
                 >> dataviewRemover
 

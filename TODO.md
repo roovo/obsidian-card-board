@@ -55,7 +55,11 @@
     - update from the settings page
 - use the setting(s) when marking a task as complete
 - (check how I use the Session time to work out what the time/day is right now)
+    - TimeWithZone.toDate (uses Date.fromPosix)
 - ensure I can mark any format as incomplete
+- consider GlobalSettings.TaskCompletionSettings
+    would use in => InteropPorts.rewriteTasks, TaskItem.toToggledString
+- completed stamp is included in the task title if it isn't in the original format
 - ensure that sensible things happen when ordering the completed column
 - do I want to offer some sort of conversion function to update completion
   timestamps across the vault (very unlikely)

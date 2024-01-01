@@ -1436,55 +1436,61 @@ toToggledString =
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = False, offset = False)" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = True, offset = True)" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard True True { time = Time.millisToPosix 0, zone = Time.customZone 300 [] })
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T05:00:00+05:00) ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 [done:: 1970-01-01] ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview emoji format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview no completion" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
         , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
         , test "doesn't remove dataview format if it has been set to NoCompletion" <|
             \() ->
                 "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
         , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [X] [custom:: 2021-01-01] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
+                "- [X] [custom:: 2021-01-01] foo #tag1 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
@@ -1492,7 +1498,7 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         , test "preserves leading whitepace" <|
             \() ->
@@ -1502,13 +1508,13 @@ toToggledString =
                     |> Maybe.map TaskItem.descendantTasks
                     |> Maybe.map List.head
                     |> ME.join
-                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
         , test "preserves a '+' list marker" <|
             \() ->
                 "+ [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Ok "+ [x] foo #tag1 bar #tag2 ^12345")
         , test "preserves leading whitepace with a '*' list marker" <|
             \() ->
@@ -1518,7 +1524,7 @@ toToggledString =
                     |> Maybe.map TaskItem.descendantTasks
                     |> Maybe.map List.head
                     |> ME.join
-                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion False False { time = Time.millisToPosix 0, zone = Time.customZone 0 [] })
                     |> Expect.equal (Just "   * [x] bar #tag1 bar #tag2 ^12345")
         ]
 
