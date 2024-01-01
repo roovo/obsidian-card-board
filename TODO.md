@@ -1,3 +1,12 @@
+- add a Model to Page.Baord
+- add a Page.BoardState to hold state: Viewing -> DeletingCard -> Viewing
+- add BoardState to Page.Board.Model
+- switch state when Card trash clicked
+- show confirmation dialog
+- allow dialog cancel
+- delete card on dialog confirm
+
+---
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected

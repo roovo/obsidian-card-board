@@ -54,7 +54,7 @@ init flags =
                 session =
                     Session.fromFlags okFlags
             in
-            ( Boards session
+            ( Boards (BoardPage.init session)
                 |> forceAddWhenNoBoards
             , Cmd.batch
                 [ InteropPorts.updateSettings <| Session.settings session
@@ -67,9 +67,9 @@ init flags =
 forceAddWhenNoBoards : Model -> Model
 forceAddWhenNoBoards model =
     case model of
-        Boards session ->
-            if SafeZipper.length (Session.boardConfigs session) == 0 then
-                Settings (SettingsPage.init session)
+        Boards _ ->
+            if SafeZipper.length (Session.boardConfigs <| toSession model) == 0 then
+                Settings (SettingsPage.init <| toSession model)
 
             else
                 model
@@ -83,15 +83,15 @@ forceAddWhenNoBoards model =
 
 
 type Model
-    = Boards Session
+    = Boards BoardPage.Model
     | Settings SettingsPage.Model
 
 
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
-        Boards session ->
-            Boards <| fn session
+        Boards boardPageModel ->
+            Boards <| BoardPage.mapSession fn boardPageModel
 
         Settings settingsPageModel ->
             Settings <| SettingsPage.mapSession fn settingsPageModel
@@ -100,8 +100,8 @@ mapSession fn model =
 toSession : Model -> Session
 toSession model =
     case model of
-        Boards session ->
-            session
+        Boards boardPageModel ->
+            BoardPage.toSession boardPageModel
 
         Settings settingsPageModel ->
             SettingsPage.toSession settingsPageModel
@@ -347,6 +347,7 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
             toModel subModel
                 |> toSession
                 |> Session.updateSettings newSettings
+                |> BoardPage.init
                 |> Boards
     , Cmd.map toMsg subCmd
     )
@@ -428,11 +429,11 @@ toKeyValue string =
 view : Model -> Html Msg
 view model =
     case model of
-        Boards session ->
+        Boards boardPageModel ->
             viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
-                { content = BoardPage.view session
+                { content = BoardPage.view (BoardPage.toSession boardPageModel)
                 , modal = Nothing
                 }
 

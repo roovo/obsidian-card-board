@@ -1,5 +1,9 @@
 module Page.Board exposing
-    ( Msg(..)
+    ( Model
+    , Msg(..)
+    , init
+    , mapSession
+    , toSession
     , update
     , view
     )
@@ -33,6 +37,30 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 
+-- MODEL
+
+
+type alias Model =
+    { session : Session
+    }
+
+
+init : Session -> Model
+init session =
+    { session = session }
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    { model | session = fn model.session }
+
+
+toSession : Model -> Session
+toSession =
+    .session
+
+
+
 -- UPDATE
 
 
@@ -52,56 +80,56 @@ dragType =
     "card-board-tag-header"
 
 
-update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
-update msg session =
+update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
+update msg model =
     case msg of
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
                     if dragData.dragType == dragType then
-                        ( session
-                            |> updateBoardOrder (Session.dragTracker session) dragData
-                            |> Session.moveDragable dragData
+                        ( model
+                            |> updateBoardOrder (Session.dragTracker model.session) dragData
+                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
                         , Cmd.none
                         , Session.NoOp
                         )
 
                     else
-                        ( session, Cmd.none, Session.NoOp )
+                        ( model, Cmd.none, Session.NoOp )
 
                 DragData.Stop ->
-                    ( Session.stopTrackingDragable session
-                    , InteropPorts.updateSettings <| Session.settings session
+                    ( { model | session = Session.stopTrackingDragable model.session }
+                    , InteropPorts.updateSettings <| Session.settings model.session
                     , Session.NoOp
                     )
 
         SettingsClicked ->
-            ( session
+            ( model
             , Cmd.none
             , Session.SettingsClicked
             )
 
         TabHeaderMouseDown ( domId, clientData ) ->
-            ( Session.waitForDrag clientData session
+            ( { model | session = Session.waitForDrag clientData model.session }
             , InteropPorts.trackDraggable dragType clientData.clientPos domId
             , Session.NoOp
             )
 
         TabSelected tabIndex ->
-            ( Session.switchToBoardAt tabIndex session
+            ( { model | session = Session.switchToBoardAt tabIndex model.session }
             , Cmd.none
             , Session.NoOp
             )
 
         TaskItemDeleteClicked id ->
-            ( session
-            , cmdIfHasTask id session InteropPorts.deleteTask
+            ( model
+            , cmdIfHasTask id model InteropPorts.deleteTask
             , Session.NoOp
             )
 
         TaskItemEditClicked id ->
-            ( session
-            , cmdIfHasTask id session InteropPorts.openTaskSourceFile
+            ( model
+            , cmdIfHasTask id model InteropPorts.openTaskSourceFile
             , Session.NoOp
             )
 
@@ -109,25 +137,25 @@ update msg session =
             let
                 timeWithZone : TimeWithZone
                 timeWithZone =
-                    Session.timeWithZone session
+                    Session.timeWithZone (toSession model)
 
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.dataviewTaskCompletion session)
-                        (Session.taskCompletionSettings session)
+                        (Session.dataviewTaskCompletion model.session)
+                        (Session.taskCompletionSettings model.session)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
 
                 cmd : Cmd Msg
                 cmd =
-                    session
+                    model.session
                         |> Session.taskContainingId id
                         |> Maybe.map toggleCmd
                         |> Maybe.withDefault Cmd.none
             in
-            ( session
+            ( model
             , cmd
             , Session.NoOp
             )
@@ -136,36 +164,38 @@ update msg session =
             let
                 newSession : Session
                 newSession =
-                    Session.updateColumnCollapse columnIndex newState session
+                    Session.updateColumnCollapse columnIndex newState model.session
             in
-            ( newSession
+            ( { model | session = newSession }
             , InteropPorts.updateSettings <| Session.settings newSession
             , Session.NoOp
             )
 
 
-cmdIfHasTask : String -> Session -> (TaskItemFields -> Cmd b) -> Cmd b
-cmdIfHasTask id session cmd =
-    session
+cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
+cmdIfHasTask id model cmd =
+    model.session
         |> Session.taskFromId id
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
         |> Maybe.withDefault Cmd.none
 
 
-updateBoardOrder : DragTracker -> DragData -> Session -> Session
-updateBoardOrder dragTracker { cursor, beacons } session =
+updateBoardOrder : DragTracker -> DragData -> Model -> Model
+updateBoardOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
             case Rect.closestTo cursor beacons of
                 Nothing ->
-                    session
+                    model
 
                 Just position ->
-                    Session.moveBoard clientData.uniqueId position session
+                    { model
+                        | session = Session.moveBoard clientData.uniqueId position model.session
+                    }
 
         _ ->
-            session
+            model
 
 
 
