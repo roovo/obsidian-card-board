@@ -49,7 +49,7 @@ import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import DueDate exposing (DueDate)
 import FNV1a
-import GlobalSettings exposing (TaskCompletionFormat)
+import GlobalSettings exposing (TaskCompletionFormat, TaskCompletionSettings)
 import Iso8601
 import Maybe.Extra as ME
 import ObsidianTasksDate
@@ -528,8 +528,8 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> Bool -> Bool -> TimeWithZone -> TaskItem -> String
-toToggledString dataviewTaskCompletion taskCompletionFormat asLocal withUtcOffset timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> TaskItem -> String
+toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
@@ -548,9 +548,9 @@ toToggledString dataviewTaskCompletion taskCompletionFormat asLocal withUtcOffse
                     let
                         completionString : String
                         completionString =
-                            TimeWithZone.toString asLocal withUtcOffset timeWithZone
+                            TimeWithZone.toString taskCompletionSettings timeWithZone
                     in
-                    case taskCompletionFormat of
+                    case taskCompletionSettings.format of
                         GlobalSettings.NoCompletion ->
                             ""
 

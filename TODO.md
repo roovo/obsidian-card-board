@@ -59,6 +59,7 @@
 - ensure I can mark any format as incomplete
 - consider GlobalSettings.TaskCompletionSettings
     would use in => InteropPorts.rewriteTasks, TaskItem.toToggledString
+- taskCompletionWithUtcOffset -> taskCompletionShowUtcOffset
 - completed stamp is included in the task title if it isn't in the original format
 - ensure that sensible things happen when ordering the completed column
 - do I want to offer some sort of conversion function to update completion

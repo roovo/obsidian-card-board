@@ -1,8 +1,10 @@
 module GlobalSettings exposing
     ( GlobalSettings
     , TaskCompletionFormat(..)
+    , TaskCompletionSettings
     , default
     , encoder
+    , taskCompletionSettings
     , v_0_10_0_decoder
     , v_0_11_0_decoder
     , v_0_12_0_decoder
@@ -39,6 +41,13 @@ type alias GlobalSettings =
     }
 
 
+type alias TaskCompletionSettings =
+    { format : TaskCompletionFormat
+    , inLocalTime : Bool
+    , showUtcOffset : Bool
+    }
+
+
 default : GlobalSettings
 default =
     { defaultColumnNames = DefaultColumnNames.default
@@ -72,6 +81,22 @@ v_0_12_0_decoder =
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "taskCompletionInLocalTime" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "taskCompletionWithUtcOffset" TsDecode.bool)
+
+
+
+-- INFO
+
+
+taskCompletionSettings : GlobalSettings -> TaskCompletionSettings
+taskCompletionSettings globalSettings =
+    { format = globalSettings.taskCompletionFormat
+    , inLocalTime = globalSettings.taskCompletionInLocalTime
+    , showUtcOffset = globalSettings.taskCompletionWithUtcOffset
+    }
+
+
+
+-- LEGACY
 
 
 v_0_11_0_decoder : TsDecode.Decoder GlobalSettings

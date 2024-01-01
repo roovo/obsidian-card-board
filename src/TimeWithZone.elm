@@ -30,12 +30,12 @@ toDate timeWithZone =
     Date.fromPosix timeWithZone.zone timeWithZone.time
 
 
-toString : Bool -> Bool -> TimeWithZone -> String
-toString asLocal withUtcOffset timeWithZone =
+toString : { a | inLocalTime : Bool, showUtcOffset : Bool } -> TimeWithZone -> String
+toString settings timeWithZone =
     let
         zoneToUse : Zone
         zoneToUse =
-            if asLocal then
+            if settings.inLocalTime then
                 timeWithZone.zone
 
             else
@@ -57,7 +57,7 @@ toString asLocal withUtcOffset timeWithZone =
         ++ ":"
         -- ss
         ++ toPaddedString 2 (Time.toSecond zoneToUse timeWithZone.time)
-        ++ offsetString asLocal withUtcOffset timeWithZone
+        ++ offsetString settings timeWithZone
 
 
 
@@ -113,9 +113,9 @@ fromMonth month =
             12
 
 
-offsetString : Bool -> Bool -> TimeWithZone -> String
-offsetString asLocal withUtcOffset timeWithZone =
-    case ( asLocal, withUtcOffset ) of
+offsetString : { a | inLocalTime : Bool, showUtcOffset : Bool } -> TimeWithZone -> String
+offsetString settings timeWithZone =
+    case ( settings.inLocalTime, settings.showUtcOffset ) of
         ( False, False ) ->
             ""
 

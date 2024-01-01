@@ -13,6 +13,7 @@ suite =
     concat
         [ default
         , encodeDecode
+        , taskCompletionSettings
         ]
 
 
@@ -72,4 +73,24 @@ encodeDecode =
                             , taskCompletionWithUtcOffset = False
                             }
                         )
+        ]
+
+
+taskCompletionSettings : Test
+taskCompletionSettings =
+    describe "taskCompletionSettings"
+        [ test "returns the format, local time and utc offset settings" <|
+            \() ->
+                { defaultColumnNames = DefaultColumnNames.default
+                , ignoreFileNameDates = False
+                , taskCompletionFormat = GlobalSettings.ObsidianDataview
+                , taskCompletionInLocalTime = True
+                , taskCompletionWithUtcOffset = False
+                }
+                    |> GlobalSettings.taskCompletionSettings
+                    |> Expect.equal
+                        { format = GlobalSettings.ObsidianDataview
+                        , inLocalTime = True
+                        , showUtcOffset = False
+                        }
         ]
