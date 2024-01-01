@@ -15,12 +15,10 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define columns).
 
 ## New
+- Use local time when marking tasks as complete.
 - Boards can have a mixture of date and tag based columns.
 - Columns can be re-ordered (by dragging them on the settings pane).
 - More flexible date based columns based on relative dates.
-- Ability to use css snippets to
-  [set card hightlight color](#customising-card-highlight-color) based on tags.
-- Board reordering; drag and drop tab headers or board names in the settings dialog.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -95,6 +93,9 @@ is appended to the task:
 
 See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
 a format compatible with other plugins (or to choose not to add any completion text).
+
+You can choose wether to use local or UTC time in completion timestamps (via the plugin's
+Global Settings).
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -352,6 +353,7 @@ above the board to the left of the tabs.  You can:
 - Add/remove/edit/reorder columns.
 - Delete boards.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
+- Choose whether to use local or UTC time when marking tasks as completed.
 - Choose to not use the date of daily notes files as the due date for tasks.
 
 The settings for your boards are saved in the
