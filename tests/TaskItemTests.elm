@@ -260,6 +260,7 @@ completion =
             \() ->
                 "- [x] foo @completed(2020-01-01) bar"
                     |> Parser.run TaskItemHelpers.basicParser
+                    |> Debug.log "foo"
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo bar")
         , test "the ✅ date is not included in the title" <|
