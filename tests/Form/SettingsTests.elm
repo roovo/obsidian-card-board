@@ -30,7 +30,7 @@ suite =
         , safeDecoder
         , toggleIgnoreFileNameDate
         , toggleTaskCompletionInLocalTime
-        , toggleTaskCompletionWithUtcOffset
+        , toggleTaskCompletionShowUtcOffset
         , updateDefaultColumnName
         , updateTaskCompletionFormat
         ]
@@ -393,19 +393,19 @@ safeDecoder =
                     |> Result.map Settings.globalSettings
                     |> Result.map .taskCompletionInLocalTime
                     |> Expect.equal (Ok True)
-        , test "decodes a False taskCompletionWithUtcOffset" <|
+        , test "decodes a False taskCompletionShowUtcOffset" <|
             \() ->
-                { exampleSettingsForm | taskCompletionWithUtcOffset = False }
+                { exampleSettingsForm | taskCompletionShowUtcOffset = False }
                     |> SD.run SettingsForm.safeDecoder
                     |> Result.map Settings.globalSettings
-                    |> Result.map .taskCompletionWithUtcOffset
+                    |> Result.map .taskCompletionShowUtcOffset
                     |> Expect.equal (Ok False)
-        , test "decodes a True taskCompletionWithUtcOffset" <|
+        , test "decodes a True taskCompletionShowUtcOffset" <|
             \() ->
-                { exampleSettingsForm | taskCompletionWithUtcOffset = True }
+                { exampleSettingsForm | taskCompletionShowUtcOffset = True }
                     |> SD.run SettingsForm.safeDecoder
                     |> Result.map Settings.globalSettings
-                    |> Result.map .taskCompletionWithUtcOffset
+                    |> Result.map .taskCompletionShowUtcOffset
                     |> Expect.equal (Ok True)
         , test "decodes a today string as Just the string" <|
             \() ->
@@ -542,20 +542,20 @@ toggleTaskCompletionInLocalTime =
         ]
 
 
-toggleTaskCompletionWithUtcOffset : Test
-toggleTaskCompletionWithUtcOffset =
-    describe "toggleTaskCompletionWithUtcOffset"
+toggleTaskCompletionShowUtcOffset : Test
+toggleTaskCompletionShowUtcOffset =
+    describe "toggleTaskCompletionShowUtcOffset"
         [ test "toggles the value from True to False" <|
             \() ->
-                { exampleSettingsForm | taskCompletionWithUtcOffset = True }
-                    |> SettingsForm.toggleTaskCompletionWithUtcOffset
-                    |> .taskCompletionWithUtcOffset
+                { exampleSettingsForm | taskCompletionShowUtcOffset = True }
+                    |> SettingsForm.toggleTaskCompletionShowUtcOffset
+                    |> .taskCompletionShowUtcOffset
                     |> Expect.equal False
         , test "toggles the value from False to False" <|
             \() ->
-                { exampleSettingsForm | taskCompletionWithUtcOffset = False }
-                    |> SettingsForm.toggleTaskCompletionWithUtcOffset
-                    |> .taskCompletionWithUtcOffset
+                { exampleSettingsForm | taskCompletionShowUtcOffset = False }
+                    |> SettingsForm.toggleTaskCompletionShowUtcOffset
+                    |> .taskCompletionShowUtcOffset
                     |> Expect.equal True
         ]
 
@@ -633,7 +633,7 @@ exampleSettingsForm =
     , otherTags = ""
     , taskCompletionFormat = ""
     , taskCompletionInLocalTime = False
-    , taskCompletionWithUtcOffset = False
+    , taskCompletionShowUtcOffset = False
     , today = ""
     , tomorrow = ""
     , undated = ""

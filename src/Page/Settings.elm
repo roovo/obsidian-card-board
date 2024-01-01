@@ -135,7 +135,7 @@ type Msg
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
     | ToggleTaskCompletionInLocalTime
-    | ToggleTaskCompletionWithUtcOffset
+    | ToggleTaskCompletionShowUtcOffset
     | ToggleIgnoreFileNameDate
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
@@ -377,12 +377,12 @@ update msg model =
                             model.settingsState
                 }
 
-        ToggleTaskCompletionWithUtcOffset ->
+        ToggleTaskCompletionShowUtcOffset ->
             wrap
                 { model
                     | settingsState =
                         SettingsState.mapGlobalSettings
-                            SettingsForm.toggleTaskCompletionWithUtcOffset
+                            SettingsForm.toggleTaskCompletionShowUtcOffset
                             model.settingsState
                 }
 
@@ -987,9 +987,9 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
             else
                 ""
 
-        taskCompletionWithUtcOffsetStyle : String
-        taskCompletionWithUtcOffsetStyle =
-            if settingsForm.taskCompletionWithUtcOffset then
+        taskCompletionShowUtcOffsetStyle : String
+        taskCompletionShowUtcOffsetStyle =
+            if settingsForm.taskCompletionShowUtcOffset then
                 " is-enabled"
 
             else
@@ -1088,8 +1088,8 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
-                    [ class <| "checkbox-container" ++ taskCompletionWithUtcOffsetStyle
-                    , onClick ToggleTaskCompletionWithUtcOffset
+                    [ class <| "checkbox-container" ++ taskCompletionShowUtcOffsetStyle
+                    , onClick ToggleTaskCompletionShowUtcOffset
                     ]
                     []
                 ]

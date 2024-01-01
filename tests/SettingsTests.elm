@@ -329,7 +329,7 @@ exampleGlobalSettings =
     , ignoreFileNameDates = False
     , taskCompletionFormat = GlobalSettings.NoCompletion
     , taskCompletionInLocalTime = False
-    , taskCompletionWithUtcOffset = False
+    , taskCompletionShowUtcOffset = False
     }
 
 

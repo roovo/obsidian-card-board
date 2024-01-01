@@ -189,7 +189,7 @@ export type CardBoardPluginSettingsPostV11 = {
       ignoreFileNameDates : boolean;
       taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
       taskCompletionInLocalTime : boolean;
-      taskCompletionWithUtcOffset : boolean;
+      taskCompletionShowUtcOffset : boolean;
     }
   };
   version : string

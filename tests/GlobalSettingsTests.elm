@@ -28,7 +28,7 @@ default =
                         , ignoreFileNameDates = False
                         , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                         , taskCompletionInLocalTime = True
-                        , taskCompletionWithUtcOffset = True
+                        , taskCompletionShowUtcOffset = True
                         }
         ]
 
@@ -50,7 +50,7 @@ encodeDecode =
                 , ignoreFileNameDates = True
                 , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                 , taskCompletionInLocalTime = False
-                , taskCompletionWithUtcOffset = False
+                , taskCompletionShowUtcOffset = False
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
@@ -70,7 +70,7 @@ encodeDecode =
                             , ignoreFileNameDates = True
                             , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                             , taskCompletionInLocalTime = False
-                            , taskCompletionWithUtcOffset = False
+                            , taskCompletionShowUtcOffset = False
                             }
                         )
         ]
@@ -85,7 +85,7 @@ taskCompletionSettings =
                 , ignoreFileNameDates = False
                 , taskCompletionFormat = GlobalSettings.ObsidianDataview
                 , taskCompletionInLocalTime = True
-                , taskCompletionWithUtcOffset = False
+                , taskCompletionShowUtcOffset = False
                 }
                     |> GlobalSettings.taskCompletionSettings
                     |> Expect.equal

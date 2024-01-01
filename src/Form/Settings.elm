@@ -16,7 +16,7 @@ module Form.Settings exposing
     , switchToBoard
     , toggleIgnoreFileNameDate
     , toggleTaskCompletionInLocalTime
-    , toggleTaskCompletionWithUtcOffset
+    , toggleTaskCompletionShowUtcOffset
     , updateDefaultColumnName
     , updateTaskCompletionFormat
     )
@@ -48,7 +48,7 @@ type alias SettingsForm =
     , otherTags : String
     , taskCompletionFormat : String
     , taskCompletionInLocalTime : Bool
-    , taskCompletionWithUtcOffset : Bool
+    , taskCompletionShowUtcOffset : Bool
     , today : String
     , tomorrow : String
     , undated : String
@@ -97,7 +97,7 @@ init settings =
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
     , taskCompletionFormat = taskCompletionFormat_
     , taskCompletionInLocalTime = globalSettings_.taskCompletionInLocalTime
-    , taskCompletionWithUtcOffset = globalSettings_.taskCompletionWithUtcOffset
+    , taskCompletionShowUtcOffset = globalSettings_.taskCompletionShowUtcOffset
     , today = Maybe.withDefault "" defaultColumnNames_.today
     , tomorrow = Maybe.withDefault "" defaultColumnNames_.tomorrow
     , undated = Maybe.withDefault "" defaultColumnNames_.undated
@@ -119,7 +119,7 @@ safeDecoder =
         otherTagsDecoder
         taskCompletionFormatDecoder
         taskCompletionInLocalTimeDecoder
-        taskCompletionWithUtcOffsetDecoder
+        taskCompletionShowUtcOffsetDecoder
         todayDecoder
         tomorrowDecoder
         undatedDecoder
@@ -240,9 +240,9 @@ toggleTaskCompletionInLocalTime settingsForm =
     { settingsForm | taskCompletionInLocalTime = not settingsForm.taskCompletionInLocalTime }
 
 
-toggleTaskCompletionWithUtcOffset : SettingsForm -> SettingsForm
-toggleTaskCompletionWithUtcOffset settingsForm =
-    { settingsForm | taskCompletionWithUtcOffset = not settingsForm.taskCompletionWithUtcOffset }
+toggleTaskCompletionShowUtcOffset : SettingsForm -> SettingsForm
+toggleTaskCompletionShowUtcOffset settingsForm =
+    { settingsForm | taskCompletionShowUtcOffset = not settingsForm.taskCompletionShowUtcOffset }
 
 
 updateDefaultColumnName : String -> String -> SettingsForm -> SettingsForm
@@ -349,7 +349,7 @@ settingsBuilder :
     -> Maybe String
     -> Maybe String
     -> Settings
-settingsBuilder bc com fut ifn ots tcf clt cwu tod tom und unt =
+settingsBuilder bc com fut ifn ots tcf clt cso tod tom und unt =
     let
         defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
@@ -368,7 +368,7 @@ settingsBuilder bc com fut ifn ots tcf clt cwu tod tom und unt =
             , ignoreFileNameDates = ifn
             , taskCompletionFormat = tcf
             , taskCompletionInLocalTime = clt
-            , taskCompletionWithUtcOffset = cwu
+            , taskCompletionShowUtcOffset = cso
             }
     in
     { boardConfigs = bc
@@ -403,10 +403,10 @@ taskCompletionInLocalTimeDecoder =
         |> SD.lift .taskCompletionInLocalTime
 
 
-taskCompletionWithUtcOffsetDecoder : SD.Decoder SettingsForm Bool
-taskCompletionWithUtcOffsetDecoder =
+taskCompletionShowUtcOffsetDecoder : SD.Decoder SettingsForm Bool
+taskCompletionShowUtcOffsetDecoder =
     SD.identity
-        |> SD.lift .taskCompletionWithUtcOffset
+        |> SD.lift .taskCompletionShowUtcOffset
 
 
 todayDecoder : SD.Decoder SettingsForm (Maybe String)

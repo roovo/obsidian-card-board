@@ -37,7 +37,7 @@ type alias GlobalSettings =
     , ignoreFileNameDates : Bool
     , taskCompletionFormat : TaskCompletionFormat
     , taskCompletionInLocalTime : Bool
-    , taskCompletionWithUtcOffset : Bool
+    , taskCompletionShowUtcOffset : Bool
     }
 
 
@@ -54,7 +54,7 @@ default =
     , ignoreFileNameDates = False
     , taskCompletionFormat = ObsidianCardBoard
     , taskCompletionInLocalTime = True
-    , taskCompletionWithUtcOffset = True
+    , taskCompletionShowUtcOffset = True
     }
 
 
@@ -69,7 +69,7 @@ encoder =
         , TsEncode.required "ignoreFileNameDates" .ignoreFileNameDates TsEncode.bool
         , TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
         , TsEncode.required "taskCompletionInLocalTime" .taskCompletionInLocalTime TsEncode.bool
-        , TsEncode.required "taskCompletionWithUtcOffset" .taskCompletionWithUtcOffset TsEncode.bool
+        , TsEncode.required "taskCompletionShowUtcOffset" .taskCompletionShowUtcOffset TsEncode.bool
         ]
 
 
@@ -80,7 +80,7 @@ v_0_12_0_decoder =
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "taskCompletionInLocalTime" TsDecode.bool)
-        |> TsDecode.andMap (TsDecode.field "taskCompletionWithUtcOffset" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "taskCompletionShowUtcOffset" TsDecode.bool)
 
 
 
@@ -91,7 +91,7 @@ taskCompletionSettings : GlobalSettings -> TaskCompletionSettings
 taskCompletionSettings globalSettings =
     { format = globalSettings.taskCompletionFormat
     , inLocalTime = globalSettings.taskCompletionInLocalTime
-    , showUtcOffset = globalSettings.taskCompletionWithUtcOffset
+    , showUtcOffset = globalSettings.taskCompletionShowUtcOffset
     }
 
 

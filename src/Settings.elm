@@ -459,7 +459,7 @@ globalSettingsDefault =
     , ignoreFileNameDates = False
     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
     , taskCompletionInLocalTime = False
-    , taskCompletionWithUtcOffset = False
+    , taskCompletionShowUtcOffset = False
     }
 
 
