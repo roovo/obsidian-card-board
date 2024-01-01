@@ -545,31 +545,17 @@ toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((Tas
         completionTag t_ =
             case completion t_ of
                 Incomplete ->
-                    let
-                        completionString : String
-                        completionString =
-                            TimeWithZone.toString taskCompletionSettings timeWithZone
-                    in
-                    case taskCompletionSettings.format of
-                        GlobalSettings.NoCompletion ->
-                            ""
-
-                        GlobalSettings.ObsidianCardBoard ->
-                            " @completed(" ++ completionString ++ ")"
-
-                        GlobalSettings.ObsidianDataview ->
-                            case dataviewTaskCompletion of
-                                DataviewTaskCompletion.NoCompletion ->
+                    TimeWithZone.completionString
+                        dataviewTaskCompletion
+                        taskCompletionSettings
+                        timeWithZone
+                        |> (\str ->
+                                if String.length str == 0 then
                                     ""
 
-                                DataviewTaskCompletion.Emoji ->
-                                    " ✅ " ++ String.left 10 completionString
-
-                                DataviewTaskCompletion.Text t ->
-                                    " [" ++ t ++ ":: " ++ String.left 10 completionString ++ "]"
-
-                        GlobalSettings.ObsidianTasks ->
-                            " ✅ " ++ String.left 10 completionString
+                                else
+                                    " " ++ str
+                           )
 
                 _ ->
                     ""

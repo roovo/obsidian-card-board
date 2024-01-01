@@ -1,11 +1,14 @@
 module TimeWithZone exposing
     ( TimeWithZone
+    , completionString
     , toDate
     , toString
     , updateTime
     )
 
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
+import GlobalSettings exposing (TaskCompletionSettings)
 import Iso8601
 import Time exposing (Zone)
 import Time.Extra as TE
@@ -23,6 +26,35 @@ type alias TimeWithZone =
 
 
 -- INFO
+
+
+completionString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> String
+completionString dataviewTaskCompletion taskCompletionSettings timeWithZone =
+    let
+        timeStamp : String
+        timeStamp =
+            toString taskCompletionSettings timeWithZone
+    in
+    case taskCompletionSettings.format of
+        GlobalSettings.NoCompletion ->
+            ""
+
+        GlobalSettings.ObsidianCardBoard ->
+            "@completed(" ++ timeStamp ++ ")"
+
+        GlobalSettings.ObsidianDataview ->
+            case dataviewTaskCompletion of
+                DataviewTaskCompletion.NoCompletion ->
+                    ""
+
+                DataviewTaskCompletion.Emoji ->
+                    "✅ " ++ String.left 10 timeStamp
+
+                DataviewTaskCompletion.Text t ->
+                    "[" ++ t ++ ":: " ++ String.left 10 timeStamp ++ "]"
+
+        GlobalSettings.ObsidianTasks ->
+            "✅ " ++ String.left 10 timeStamp
 
 
 toDate : TimeWithZone -> Date

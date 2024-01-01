@@ -25,8 +25,10 @@ import Form.Column.Dated exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
+import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
+import GlobalSettings exposing (TaskCompletionSettings)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -42,6 +44,7 @@ import Settings exposing (Settings)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -592,7 +595,11 @@ view model =
             boardSettingsView settingsForm model.multiSelect dragTracker
 
         SettingsState.EditingGlobalSettings settingsForm ->
-            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
+            globalSettingsView
+                (Session.dataviewTaskCompletion <| toSession model)
+                (Session.timeWithZone <| toSession model)
+                settingsForm
+                dragTracker
 
 
 modalAddBoard : NewBoardForm -> Html Msg
@@ -949,15 +956,15 @@ boardSettingsView settingsForm multiselect dragTracker =
         |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> SettingsForm -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion settingsForm dragTracker =
+globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion timeWithZone settingsForm dragTracker =
     settingsForm
-        |> globalSettingsForm dataviewTaskCompletion
+        |> globalSettingsForm dataviewTaskCompletion timeWithZone
         |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> SettingsForm -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion settingsForm =
+globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion timeWithZone settingsForm =
     let
         dataViewExample : String
         dataViewExample =
@@ -994,6 +1001,29 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
 
             else
                 ""
+
+        taskCompletionExample : String
+        taskCompletionExample =
+            let
+                taskCompletionSettings : TaskCompletionSettings
+                taskCompletionSettings =
+                    settingsForm
+                        |> SD.run SettingsForm.safeDecoder
+                        |> Result.map Settings.globalSettings
+                        |> Result.withDefault GlobalSettings.default
+                        |> GlobalSettings.taskCompletionSettings
+            in
+            TimeWithZone.completionString
+                dataviewTaskCompletion
+                taskCompletionSettings
+                timeWithZone
+                |> (\str ->
+                        if String.length str == 0 then
+                            "[None]"
+
+                        else
+                            str
+                   )
     in
     [ Html.div [ class "setting-items-inner" ]
         ([ Html.div [ class "setting-item setting-item-heading" ]
@@ -1023,43 +1053,16 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Task Completion" ]
-                , Html.div [ class "setting-item-description" ] []
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text <| "Current completion string: " ++ taskCompletionExample ]
                 ]
             , Html.div [ class "setting-item-control" ] []
             ]
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-description" ]
-                    [ Html.text "Format to use when marking tasks as completed:"
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "None" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "no completion date/time will be added" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "CardBoard" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "Dataview" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text dataViewExample ]
-                    , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "Tasks" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "✅ 1999-12-31" ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "For Dataview: " ]
-                    , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
-                    , Html.text " and should be reflected above."
-                    , Html.i [] [ Html.text " If you change the settings in" ]
-                    , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Html.text "When reading tasks, CardBoard understands all these formats."
-                    ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Format" ]
+                , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ taskCompletionFormatSelect settingsForm.taskCompletionFormat ]
@@ -1083,8 +1086,7 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Include UTC offset" ]
-                , Html.div [ class "setting-item-description" ]
-                    [ Html.text "..... need some blurb here ....." ]
+                , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
