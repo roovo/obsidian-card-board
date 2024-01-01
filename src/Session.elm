@@ -256,7 +256,7 @@ switchToBoardAt index (Session config) =
 
 timeIs : Time.Posix -> Session -> Session
 timeIs time (Session config) =
-    Session { config | timeWithZone = TimeWithZone.time time config.timeWithZone }
+    Session { config | timeWithZone = TimeWithZone.updateTime time config.timeWithZone }
 
 
 timeWithZoneIs : Time.Zone -> Time.Posix -> Session -> Session
