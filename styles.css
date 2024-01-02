@@ -538,7 +538,12 @@ ul.card-board-column-list > li.card-board-card::before {
   vertical-align: middle;
 }
 
+.card-board-view .vertical-tab-content {
+  position: relative;
+}
+
 .card-board-view .suggestion-container {
+  position: absolute;
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;

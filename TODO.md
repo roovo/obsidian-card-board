@@ -1,8 +1,3 @@
-- add a scrollbar to the filter definition selector dropdown
-- increase height
-- sort out positioning as it doesn't follow the scroll of the settings modal
-
----
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
