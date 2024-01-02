@@ -15,11 +15,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define columns).
 
 ## New
+- Bugfix: filter definitions dropdown is now scrollable
 - Confirmation step added when deleting cards.
-- Use local time when marking tasks as complete.
-- Boards can have a mixture of date and tag based columns.
-- Columns can be re-ordered (by dragging them on the settings pane).
-- More flexible date based columns based on relative dates.
+- Can choose to use local time when marking tasks as complete.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
