@@ -433,7 +433,7 @@ view model =
             viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
-                { content = BoardPage.view (BoardPage.toSession boardPageModel)
+                { content = BoardPage.view boardPageModel
                 , modal = Nothing
                 }
 
@@ -441,7 +441,9 @@ view model =
             viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
-                { content = BoardPage.view (SettingsPage.toSession settingsPageModel)
+                { content =
+                    BoardPage.view
+                        (BoardPage.init <| SettingsPage.toSession settingsPageModel)
                 , modal = Just <| SettingsPage.view settingsPageModel
                 }
 

@@ -6,6 +6,7 @@
       separate module to hold the stat functions
 - switch state when Card trash clicked
 - show confirmation dialog
+- why do card details disappear when showing the confirmation modal
 - allow dialog cancel
 - delete card on dialog confirm
 

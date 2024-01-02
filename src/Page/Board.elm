@@ -42,7 +42,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Model
     = ViewingBoard Session
-    | DeletingCard String Session
+    | DeletingCard String String Session
 
 
 init : Session -> Model
@@ -50,9 +50,9 @@ init session =
     ViewingBoard session
 
 
-deleteCardRequested : String -> Model -> Model
-deleteCardRequested cardId model =
-    DeletingCard cardId (toSession model)
+deleteCardRequested : String -> String -> Model -> Model
+deleteCardRequested title cardId model =
+    DeletingCard title cardId (toSession model)
 
 
 mapSession : (Session -> Session) -> Model -> Model
@@ -61,8 +61,8 @@ mapSession fn model =
         ViewingBoard session ->
             ViewingBoard <| fn session
 
-        DeletingCard cardId session ->
-            DeletingCard cardId <| fn session
+        DeletingCard title cardId session ->
+            DeletingCard title cardId <| fn session
 
 
 toSession : Model -> Session
@@ -71,7 +71,7 @@ toSession model =
         ViewingBoard session ->
             session
 
-        DeletingCard _ session ->
+        DeletingCard _ _ session ->
             session
 
 
@@ -85,7 +85,7 @@ type Msg
     | TabHeaderMouseDown ( String, DragTracker.ClientData )
     | TabSelected Int
     | TaskItemEditClicked String
-    | TaskItemDeleteClicked String
+    | TaskItemDeleteClicked String String
     | TaskItemToggled String
     | ToggleColumnCollapse Int Bool
 
@@ -136,8 +136,8 @@ update msg model =
             , Session.NoOp
             )
 
-        TaskItemDeleteClicked id ->
-            ( deleteCardRequested id model
+        TaskItemDeleteClicked title id ->
+            ( deleteCardRequested title id model
             , Cmd.none
             , Session.NoOp
             )
@@ -217,8 +217,64 @@ updateBoardOrder dragTracker { cursor, beacons } model =
 -- VIEW
 
 
-view : Session -> Html Msg
-view session =
+view : Model -> Html Msg
+view model =
+    case model of
+        ViewingBoard session ->
+            boardsView session
+
+        DeletingCard title cardId session ->
+            Html.div []
+                [ boardsView session
+                , modalDeleteCardConfirm title cardId
+                ]
+
+
+modalDeleteCardConfirm : String -> String -> Html Msg
+modalDeleteCardConfirm title cardId =
+    Html.div [ class "modal-container" ]
+        [ Html.div
+            [ class "modal-bg"
+            , style "opacity" "0.85"
+            ]
+            []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+
+                -- , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Delete Card" ]
+            , Html.div [ class "modal-content" ]
+                [ Html.p [ class "mod-warning" ]
+                    [ Html.text <|
+                        "Press Delete button to confirm you wish to delete the \""
+                            ++ title
+                            ++ "\" card."
+                    ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ class "mod-warning"
+
+                    -- , onClick <| DeleteConfirmed
+                    ]
+                    [ Html.text "Delete"
+                    ]
+                , Html.button
+                    -- [ onClick <| ModalCancelClicked
+                    []
+                    [ Html.text "Cancel"
+                    ]
+                ]
+            ]
+        ]
+
+
+boardsView : Session -> Html Msg
+boardsView session =
     if SafeZipper.length (Session.boardConfigs session) == 0 then
         Html.text "Loading tasks...."
 
@@ -580,7 +636,7 @@ cardView today card =
             , Html.div [ class "card-board-card-footer-area" ]
                 [ taskDueDate (TaskItem.due taskItem)
                     |> when (TaskItem.isDated taskItem)
-                , cardActionButtons taskItemId (Card.editButtonId card)
+                , cardActionButtons (Card.title card) taskItemId (Card.editButtonId card)
                 ]
             ]
         ]
@@ -639,8 +695,8 @@ dueDateString dueDate =
             "n/a"
 
 
-cardActionButtons : String -> String -> Html Msg
-cardActionButtons taskItemId editButtonId =
+cardActionButtons : String -> String -> String -> Html Msg
+cardActionButtons title taskItemId editButtonId =
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
             [ class "card-board-card-action-area-button"
@@ -654,7 +710,7 @@ cardActionButtons taskItemId editButtonId =
             ]
         , Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemDeleteClicked taskItemId
+            , onClick <| TaskItemDeleteClicked title taskItemId
             ]
             [ FeatherIcons.trash
                 |> FeatherIcons.withSize 1

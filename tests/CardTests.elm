@@ -29,6 +29,7 @@ suite =
         , notesId
         , tagsId
         , taskItemId
+        , title
         ]
 
 
@@ -285,6 +286,18 @@ taskItemId =
                     |> Maybe.map (Card.fromTaskItem "foo" [])
                     |> Maybe.map Card.taskItemId
                     |> Expect.equal (Just (TaskHelpers.taskId "taskItemPath" 1))
+        ]
+
+
+title : Test
+title =
+    describe "title"
+        [ test "returns the title of the TaskItem" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "" [])
+                    |> Maybe.map Card.title
+                    |> Expect.equal (Just "foo")
         ]
 
 
