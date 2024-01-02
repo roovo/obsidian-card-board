@@ -538,8 +538,13 @@ ul.card-board-column-list > li.card-board-card::before {
   vertical-align: middle;
 }
 
+
 .card-board-view .vertical-tab-content {
   position: relative;
+}
+
+.card-board-view .modal-close-button {
+  z-index: 1;
 }
 
 .card-board-view .suggestion-container {
