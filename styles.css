@@ -542,10 +542,25 @@ ul.card-board-column-list > li.card-board-card::before {
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;
+  overflow: auto;
   padding: 5px 8px;
   font-size: var(--font-small);
   text-align: left;
   line-height: 1em;
+  max-height: 400px;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
 }
 
 .card-board-view .suggestion-section {
