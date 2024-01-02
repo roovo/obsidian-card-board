@@ -1,3 +1,46 @@
+- this will be a multi-select in global settings
+- review how multi-select works!
+    - filter candidates requested when mutliselect gets focus fFOR THE FIRST TIME, via
+      Page.Settings.PathsRequested -> InteropPorts.requestFilterCandidates
+      & received via Page.Settings.FilterCandidatesReceived and passed to the
+      multi-select via MultiSelect.recieveItems
+    - as text is entered in the select, MultiSelect.SearchTermChanged is called
+      which updates selectStatus.searchTerm - which is used in a fuzzy search to
+      polpulate the dropdown.
+    - selectedItems is the "output" - a list of which items the user has selected
+    - current filters updated in Page.Settings.switchSettingsState
+      using MultiSelect.updateSelectedItems (after the current ones got using
+      selectedItems.
+- can I re-use what I have?
+    - it will be like filters, but only File and Path
+    - can I re-use filters or do I need something else
+    - do I need a new Multi-select instance or can I re-use
+      the one used for filters?
+- how is the markdown read in typescript?
+    - when elm has initialised...
+    - view.ts.handleElmInitialized => this.vault.getMarkdownFiles()
+      iterate through these and send the contents to elm one at a time
+    - should I filter in ts so I don't send files I am not interested in
+      to elm or ignore them in elm?
+      - in elm, I have Filter.fileIsFromPath which could help?
+      - in ts it will be more efficient as I won't have to read
+        files I am not interested in
+- how do I check if a files is in the filter list in ts?
+
+- possible implementation
+    - for the settings form
+        - re-use MultiSelect in Page.Settings
+        - use the grouper function to only offer up the file and path options
+          - will need to add a way to update this depending on SettingsState
+        - re-use Filter - even allow tag filters to be set, I'll just ignore
+          them in ts when doing the filtering.
+    - for the filtering
+        - do this in typescipt so I only send content to elm
+          from files that pass the filter.
+
+
+
+---
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
@@ -28,6 +71,14 @@
   - you'll see the debug messaged double up
   - and tripple up if you do it again
   - ...
+
+# Mobile
+- you can toggle mobile emulation by entering the following in Developer Tools > Console.
+  this.app.emulateMobile(!this.app.isMobile);
+- use https://github.com/shabegom/obsidian-mobile-logging to console.log to a note
+  inside the vault. Think this does the same as:
+  https://gist.github.com/liamcain/3f21f1ee820cb30f18050d2f3ad85f3f
+
 
 # UI Improvements
 - nested subtasks are un-nested on cards
