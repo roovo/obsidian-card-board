@@ -598,6 +598,7 @@ view model =
             globalSettingsView
                 (Session.dataviewTaskCompletion <| toSession model)
                 (Session.timeWithZone <| toSession model)
+                model.multiSelect
                 settingsForm
                 dragTracker
 
@@ -946,25 +947,25 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
 
 
 boardSettingsView : SettingsForm -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView settingsForm multiselect dragTracker =
+boardSettingsView settingsForm multiSelect dragTracker =
     boardSettingsForm
         (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
         (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
         (SettingsForm.defaultColumnNames settingsForm)
-        multiselect
+        multiSelect
         dragTracker
         |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> SettingsForm -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion timeWithZone settingsForm dragTracker =
+globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion timeWithZone multiSelect settingsForm dragTracker =
     settingsForm
-        |> globalSettingsForm dataviewTaskCompletion timeWithZone
+        |> globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect
         |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> SettingsForm -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion timeWithZone settingsForm =
+globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm =
     let
         dataViewExample : String
         dataViewExample =
@@ -1027,6 +1028,25 @@ globalSettingsForm dataviewTaskCompletion timeWithZone settingsForm =
     in
     [ Html.div [ class "setting-items-inner" ]
         ([ Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "File/Path filters" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "files and paths" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Ignore the following files and paths." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ MultiSelect.view multiSelect
+                ]
+            ]
+         , Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Daily/Periodic notes compatibility" ]
@@ -1236,7 +1256,7 @@ columNamesForm settingsForm =
 
 
 boardSettingsForm : Maybe BoardConfigForm -> Maybe Int -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect dragTracker =
+boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect dragTracker =
     case ( boardConfigForm, boardIndex ) of
         ( Just configForm, Just _ ) ->
             let
@@ -1311,7 +1331,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
                         [ Html.text "Filter tasks by files, paths, and/or tags." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ MultiSelect.view multiselect
+                    [ MultiSelect.view multiSelect
                     ]
                 ]
             , Html.div [ class "setting-item" ]
