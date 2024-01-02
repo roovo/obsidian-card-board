@@ -1,5 +1,5 @@
 module Filter exposing
-    ( Filter
+    ( Filter(..)
     , Polarity(..)
     , Scope(..)
     , decoder
@@ -9,7 +9,6 @@ module Filter exposing
     , encoder
     , filterType
     , filterTypes
-    , isAllowed
     , ofType
     , polarityDecoder
     , polarityEncoder
@@ -23,7 +22,6 @@ module Filter exposing
 import DecodeHelpers
 import Json.Encode as JE
 import List.Extra as LE
-import TaskItem exposing (TaskItem)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
@@ -208,27 +206,6 @@ value filter =
             f
 
 
-isAllowed : Scope -> TaskItem -> Filter -> Bool
-isAllowed scope taskItem filter =
-    case filter of
-        FileFilter filePath ->
-            TaskItem.isFromFile filePath taskItem
-
-        PathFilter path ->
-            fileIsFromPath (TaskItem.filePath taskItem) path
-
-        TagFilter tag ->
-            case scope of
-                TopLevelOnly ->
-                    TaskItem.topLevelTaskHasThisTag tag taskItem
-
-                SubTasksOnly ->
-                    TaskItem.descendantTaskHasThisTag tag taskItem
-
-                Both ->
-                    TaskItem.hasThisTag tag taskItem
-
-
 
 -- MODIFICATION
 
@@ -252,41 +229,3 @@ updatePath oldPath newPath filter =
 
         TagFilter _ ->
             filter
-
-
-
--- HELPERS
-
-
-fileIsFromPath : String -> String -> Bool
-fileIsFromPath file path =
-    let
-        pathComponents : List String
-        pathComponents =
-            path
-                |> String.replace "\\" "/"
-                |> String.split "/"
-                |> List.filter (not << String.isEmpty)
-
-        filePathComponents : List String
-        filePathComponents =
-            file
-                |> String.replace "\\" "/"
-                |> String.split "/"
-                |> List.reverse
-                |> List.drop 1
-                |> List.reverse
-                |> List.filter (not << String.isEmpty)
-
-        isComponentMatching : Int -> String -> Bool
-        isComponentMatching index pathComponent =
-            case LE.getAt index filePathComponents of
-                Nothing ->
-                    False
-
-                Just filePathComponent ->
-                    filePathComponent == pathComponent
-    in
-    pathComponents
-        |> List.indexedMap isComponentMatching
-        |> List.all identity

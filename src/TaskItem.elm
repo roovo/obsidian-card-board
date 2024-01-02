@@ -25,6 +25,7 @@ module TaskItem exposing
     , hasThisTag
     , hasTopLevelTags
     , id
+    , isAllowed
     , isCompleted
     , isDated
     , isFromFile
@@ -49,8 +50,10 @@ import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import DueDate exposing (DueDate)
 import FNV1a
+import Filter exposing (Filter, Scope)
 import GlobalSettings exposing (TaskCompletionFormat, TaskCompletionSettings)
 import Iso8601
+import List.Extra as LE
 import Maybe.Extra as ME
 import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
@@ -316,6 +319,27 @@ id (TaskItem fields_ _) =
     String.fromInt (FNV1a.hash fields_.filePath)
         ++ ":"
         ++ String.fromInt fields_.lineNumber
+
+
+isAllowed : Scope -> TaskItem -> Filter -> Bool
+isAllowed scope taskItem filter =
+    case filter of
+        Filter.FileFilter filePath_ ->
+            isFromFile filePath_ taskItem
+
+        Filter.PathFilter path ->
+            fileIsFromPath (filePath taskItem) path
+
+        Filter.TagFilter tag ->
+            case scope of
+                Filter.TopLevelOnly ->
+                    topLevelTaskHasThisTag tag taskItem
+
+                Filter.SubTasksOnly ->
+                    descendantTaskHasThisTag tag taskItem
+
+                Filter.Both ->
+                    hasThisTag tag taskItem
 
 
 isCompleted : TaskItem -> Bool
@@ -708,6 +732,40 @@ fileDateParser fileDate =
         |> Maybe.map Result.toMaybe
         |> ME.join
         |> P.succeed
+
+
+fileIsFromPath : String -> String -> Bool
+fileIsFromPath file path =
+    let
+        pathComponents : List String
+        pathComponents =
+            path
+                |> String.replace "\\" "/"
+                |> String.split "/"
+                |> List.filter (not << String.isEmpty)
+
+        filePathComponents : List String
+        filePathComponents =
+            file
+                |> String.replace "\\" "/"
+                |> String.split "/"
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+                |> List.filter (not << String.isEmpty)
+
+        isComponentMatching : Int -> String -> Bool
+        isComponentMatching index pathComponent =
+            case LE.getAt index filePathComponents of
+                Nothing ->
+                    False
+
+                Just filePathComponent ->
+                    filePathComponent == pathComponent
+    in
+    pathComponents
+        |> List.indexedMap isComponentMatching
+        |> List.all identity
 
 
 hasAtLeastOneTagOtherThanThese : List String -> TaskItem -> Bool

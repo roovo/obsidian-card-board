@@ -78,7 +78,11 @@ applyFilters taskList polarity scope filters =
         taskList
 
     else
-        TaskList.filter (\t -> filterMode (operator << Filter.isAllowed scope t) filters) taskList
+        TaskList.filter
+            (\t ->
+                filterMode (operator << TaskItem.isAllowed scope t) filters
+            )
+            taskList
 
 
 configureDueDates : Bool -> TaskList -> TaskList

@@ -3,7 +3,9 @@ module TaskItemTests exposing (suite)
 import DataviewTaskCompletion
 import Date
 import Expect
+import Filter
 import GlobalSettings
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Maybe.Extra as ME
@@ -36,6 +38,7 @@ suite =
         , hasThisTagWithSubtagWildcard
         , hasTopLevelTags
         , id
+        , isAllowed
         , isCompleted
         , isFromFile
         , isDated
@@ -963,6 +966,137 @@ id =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.id
                     |> Expect.equal (Ok "1414514984:1")
+        ]
+
+
+isAllowed : Test
+isAllowed =
+    describe "isAllowed"
+        [ test "returns True for a matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal True
+        , test "returns False for a non-matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.diff"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching windows path filter for the full path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter with a trailing \\" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter for the first part of the path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter of \\" <|
+            \() ->
+                FilterHelpers.pathFilter "\\\\"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for an empty windows path filter" <|
+            \() ->
+                FilterHelpers.pathFilter ""
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns False if the windows path filter only contains a part of the last path componant" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\b"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns False if the windows path filter contains the file name" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\c"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns False if the windows path filter contains the file name & extension" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching path filter for the full path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter with a trailing /" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter for the first part of the path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter of /" <|
+            \() ->
+                FilterHelpers.pathFilter "/"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for an empty path filter" <|
+            \() ->
+                FilterHelpers.pathFilter ""
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns False if the path filter only contains a part of the last path componant" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/b"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns False if the path filter contains the file name" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/c"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns False if the path filter contains the file name & extension" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching top level tag when the scope is Both" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns True for a matching top level tag when the scope is TopLevelOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.TopLevelOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a matching top level tag when the scope is SubTasksOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.SubTasksOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal False
+        , test "returns True for a matching sub task tag when the scope is Both" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a matching sub task tag when the scope is TopLevelOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.TopLevelOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal False
+        , test "returns True for a matching sub task tag when the scope is SubTasksOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.SubTasksOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a non-matching tag filter" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo #tagb tagc" "")
+                    |> Expect.equal False
         ]
 
 
