@@ -40,24 +40,34 @@ import TimeWithZone exposing (TimeWithZone)
 -- MODEL
 
 
-type alias Model =
-    { session : Session
-    }
+type Model
+    = ViewingBoard Session
+    | DeletingCard Session
 
 
 init : Session -> Model
 init session =
-    { session = session }
+    ViewingBoard session
 
 
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
-    { model | session = fn model.session }
+    case model of
+        ViewingBoard session ->
+            ViewingBoard <| fn session
+
+        DeletingCard session ->
+            DeletingCard <| fn session
 
 
 toSession : Model -> Session
-toSession =
-    .session
+toSession model =
+    case model of
+        ViewingBoard session ->
+            session
+
+        DeletingCard session ->
+            session
 
 
 
@@ -88,8 +98,8 @@ update msg model =
                 DragData.Move ->
                     if dragData.dragType == dragType then
                         ( model
-                            |> updateBoardOrder (Session.dragTracker model.session) dragData
-                            |> (\m -> { m | session = Session.moveDragable dragData m.session })
+                            |> updateBoardOrder (Session.dragTracker <| toSession model) dragData
+                            |> (mapSession <| Session.moveDragable dragData)
                         , Cmd.none
                         , Session.NoOp
                         )
@@ -98,8 +108,8 @@ update msg model =
                         ( model, Cmd.none, Session.NoOp )
 
                 DragData.Stop ->
-                    ( { model | session = Session.stopTrackingDragable model.session }
-                    , InteropPorts.updateSettings <| Session.settings model.session
+                    ( mapSession Session.stopTrackingDragable model
+                    , InteropPorts.updateSettings <| Session.settings <| toSession model
                     , Session.NoOp
                     )
 
@@ -110,13 +120,13 @@ update msg model =
             )
 
         TabHeaderMouseDown ( domId, clientData ) ->
-            ( { model | session = Session.waitForDrag clientData model.session }
+            ( mapSession (Session.waitForDrag clientData) model
             , InteropPorts.trackDraggable dragType clientData.clientPos domId
             , Session.NoOp
             )
 
         TabSelected tabIndex ->
-            ( { model | session = Session.switchToBoardAt tabIndex model.session }
+            ( mapSession (Session.switchToBoardAt tabIndex) model
             , Cmd.none
             , Session.NoOp
             )
@@ -142,15 +152,16 @@ update msg model =
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.dataviewTaskCompletion model.session)
-                        (Session.taskCompletionSettings model.session)
+                        (Session.dataviewTaskCompletion <| toSession model)
+                        (Session.taskCompletionSettings <| toSession model)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
 
                 cmd : Cmd Msg
                 cmd =
-                    model.session
+                    model
+                        |> toSession
                         |> Session.taskContainingId id
                         |> Maybe.map toggleCmd
                         |> Maybe.withDefault Cmd.none
@@ -164,9 +175,9 @@ update msg model =
             let
                 newSession : Session
                 newSession =
-                    Session.updateColumnCollapse columnIndex newState model.session
+                    Session.updateColumnCollapse columnIndex newState (toSession model)
             in
-            ( { model | session = newSession }
+            ( mapSession (always newSession) model
             , InteropPorts.updateSettings <| Session.settings newSession
             , Session.NoOp
             )
@@ -174,7 +185,8 @@ update msg model =
 
 cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
 cmdIfHasTask id model cmd =
-    model.session
+    model
+        |> toSession
         |> Session.taskFromId id
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
@@ -190,9 +202,7 @@ updateBoardOrder dragTracker { cursor, beacons } model =
                     model
 
                 Just position ->
-                    { model
-                        | session = Session.moveBoard clientData.uniqueId position model.session
-                    }
+                    mapSession (Session.moveBoard clientData.uniqueId position) model
 
         _ ->
             model

@@ -1,6 +1,9 @@
 - add a Model to Page.Baord
 - add a Page.BoardState to hold state: Viewing -> DeletingCard -> Viewing
+    - as this case is so simple, don't think I really need to do this
 - add BoardState to Page.Board.Model
+    - see above - will just keep the state on the model without using a
+      separate module to hold the stat functions
 - switch state when Card trash clicked
 - show confirmation dialog
 - allow dialog cancel
