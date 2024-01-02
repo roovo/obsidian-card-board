@@ -50,6 +50,11 @@ init session =
     ViewingBoard session
 
 
+cancelCurrentState : Model -> Model
+cancelCurrentState model =
+    ViewingBoard (toSession model)
+
+
 deleteCardRequested : String -> String -> Model -> Model
 deleteCardRequested title cardId model =
     DeletingCard title cardId (toSession model)
@@ -81,6 +86,8 @@ toSession model =
 
 type Msg
     = ElementDragged DragData
+    | ModalCancelClicked
+    | ModalCloseClicked
     | SettingsClicked
     | TabHeaderMouseDown ( String, DragTracker.ClientData )
     | TabSelected Int
@@ -117,6 +124,18 @@ update msg model =
                     , InteropPorts.updateSettings <| Session.settings <| toSession model
                     , Session.NoOp
                     )
+
+        ModalCancelClicked ->
+            ( cancelCurrentState model
+            , Cmd.none
+            , Session.NoOp
+            )
+
+        ModalCloseClicked ->
+            ( cancelCurrentState model
+            , Cmd.none
+            , Session.NoOp
+            )
 
         SettingsClicked ->
             ( model
@@ -241,8 +260,7 @@ modalDeleteCardConfirm title cardId =
         , Html.div [ class "modal" ]
             [ Html.div
                 [ class "modal-close-button"
-
-                -- , onClick ModalCloseClicked
+                , onClick ModalCloseClicked
                 ]
                 []
             , Html.div [ class "modal-title" ]
@@ -264,8 +282,7 @@ modalDeleteCardConfirm title cardId =
                     [ Html.text "Delete"
                     ]
                 , Html.button
-                    -- [ onClick <| ModalCancelClicked
-                    []
+                    [ onClick <| ModalCancelClicked ]
                     [ Html.text "Cancel"
                     ]
                 ]
