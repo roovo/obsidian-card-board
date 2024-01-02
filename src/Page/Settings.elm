@@ -169,7 +169,17 @@ switchSettingsState fn model =
 
         newFilters : Dict String Filter
         newFilters =
-            currentFilters <| SettingsState.boardConfigs newSettingsState
+            case newSettingsState of
+                SettingsState.EditingGlobalSettings _ ->
+                    newSettingsState
+                        |> SettingsState.settings
+                        |> Settings.globalSettings
+                        |> .filters
+                        |> (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
+                        |> Dict.fromList
+
+                _ ->
+                    currentFilters <| SettingsState.boardConfigs newSettingsState
     in
     { model
         | settingsState = newSettingsState
@@ -320,7 +330,7 @@ update msg model =
             )
 
         GlobalSettingsClicked ->
-            mapSettingsState SettingsState.editGlobalSettings model
+            wrap <| switchSettingsState SettingsState.editGlobalSettings model
 
         ModalCancelClicked ->
             handleClose model
