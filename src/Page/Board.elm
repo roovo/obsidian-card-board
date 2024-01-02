@@ -60,6 +60,11 @@ deleteCardRequested title cardId model =
     DeletingCard title cardId (toSession model)
 
 
+deleteCardConfirmed : Model -> Model
+deleteCardConfirmed model =
+    ViewingBoard (toSession model)
+
+
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
@@ -85,7 +90,8 @@ toSession model =
 
 
 type Msg
-    = ElementDragged DragData
+    = DeleteConfirmed String
+    | ElementDragged DragData
     | ModalCancelClicked
     | ModalCloseClicked
     | SettingsClicked
@@ -105,6 +111,12 @@ dragType =
 update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
+        DeleteConfirmed cardId ->
+            ( deleteCardConfirmed model
+            , cmdIfHasTask cardId model InteropPorts.deleteTask
+            , Session.NoOp
+            )
+
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
@@ -278,8 +290,7 @@ modalDeleteCardConfirm title cardId =
             , Html.div [ class "modal-button-container" ]
                 [ Html.button
                     [ class "mod-warning"
-
-                    -- , onClick <| DeleteConfirmed
+                    , onClick <| DeleteConfirmed cardId
                     ]
                     [ Html.text "Delete"
                     ]
