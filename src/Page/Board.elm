@@ -42,12 +42,17 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Model
     = ViewingBoard Session
-    | DeletingCard Session
+    | DeletingCard String Session
 
 
 init : Session -> Model
 init session =
     ViewingBoard session
+
+
+deleteCardRequested : String -> Model -> Model
+deleteCardRequested cardId model =
+    DeletingCard cardId (toSession model)
 
 
 mapSession : (Session -> Session) -> Model -> Model
@@ -56,8 +61,8 @@ mapSession fn model =
         ViewingBoard session ->
             ViewingBoard <| fn session
 
-        DeletingCard session ->
-            DeletingCard <| fn session
+        DeletingCard cardId session ->
+            DeletingCard cardId <| fn session
 
 
 toSession : Model -> Session
@@ -66,7 +71,7 @@ toSession model =
         ViewingBoard session ->
             session
 
-        DeletingCard session ->
+        DeletingCard _ session ->
             session
 
 
@@ -132,8 +137,8 @@ update msg model =
             )
 
         TaskItemDeleteClicked id ->
-            ( model
-            , cmdIfHasTask id model InteropPorts.deleteTask
+            ( deleteCardRequested id model
+            , Cmd.none
             , Session.NoOp
             )
 
