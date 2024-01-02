@@ -37,7 +37,7 @@ flagsTests =
     describe "interop.flags (decoding)"
         [ test "decodes valid flags for settings version 0.12.0" <|
             \() ->
-                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.12.0","data":{"globalSettings":{"defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"ignoreFileNameDates":true,"taskCompletionFormat":"ObsidianTasks","taskCompletionInLocalTime":true,"taskCompletionShowUtcOffset":false},
+                """{"now":11,"zone":22,"uniqueId":"12345","rightToLeft":false,"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"settings":{"version":"0.12.0","data":{"globalSettings":{"defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"fileFilter","data":"aFile"}],"ignoreFileNameDates":true,"taskCompletionFormat":"ObsidianTasks","taskCompletionInLocalTime":true,"taskCompletionShowUtcOffset":false},
                 "boardConfigs":[
                    {"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],
                     "filterPolarity":"Deny",
@@ -102,7 +102,7 @@ flagsTests =
                                         , untagged = Nothing
                                         , completed = Just "Completed"
                                         }
-                                    , filters = []
+                                    , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.fileFilter "aFile" ]
                                     , ignoreFileNameDates = True
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = True

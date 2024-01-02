@@ -186,6 +186,7 @@ export type CardBoardPluginSettingsPostV11 = {
         untagged : string
         completed : string;
       }
+      filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
       ignoreFileNameDates : boolean;
       taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
       taskCompletionInLocalTime : boolean;

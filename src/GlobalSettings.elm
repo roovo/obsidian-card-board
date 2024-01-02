@@ -69,6 +69,7 @@ encoder : TsEncode.Encoder GlobalSettings
 encoder =
     TsEncode.object
         [ TsEncode.required "defaultColumnNames" .defaultColumnNames DefaultColumnNames.encoder
+        , TsEncode.required "filters" .filters <| TsEncode.list Filter.encoder
         , TsEncode.required "ignoreFileNameDates" .ignoreFileNameDates TsEncode.bool
         , TsEncode.required "taskCompletionFormat" .taskCompletionFormat taskCompletionFormatEncoder
         , TsEncode.required "taskCompletionInLocalTime" .taskCompletionInLocalTime TsEncode.bool
@@ -80,7 +81,7 @@ v_0_12_0_decoder : TsDecode.Decoder GlobalSettings
 v_0_12_0_decoder =
     TsDecode.succeed GlobalSettings
         |> TsDecode.andMap (TsDecode.field "defaultColumnNames" DefaultColumnNames.v_0_12_0_decoder)
-        |> TsDecode.andMap (TsDecode.succeed [])
+        |> TsDecode.andMap (TsDecode.field "filters" <| TsDecode.list Filter.decoder)
         |> TsDecode.andMap (TsDecode.field "ignoreFileNameDates" TsDecode.bool)
         |> TsDecode.andMap (TsDecode.field "taskCompletionFormat" taskCompletionFormatDecoder)
         |> TsDecode.andMap (TsDecode.field "taskCompletionInLocalTime" TsDecode.bool)
