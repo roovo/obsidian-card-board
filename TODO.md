@@ -38,6 +38,8 @@
         - do this in typescipt so I only send content to elm
           from files that pass the filter.
 
+- add a file to the examples that is ignored in the global
+  settings
 
 
 ---

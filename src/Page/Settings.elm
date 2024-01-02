@@ -165,6 +165,7 @@ switchSettingsState fn model =
         newSettingsState =
             model.settingsState
                 |> SettingsState.mapBoardBeingEdited (\bc -> { bc | filters = currentSelectedFilters })
+                |> SettingsState.mapGlobalSettings (\gs -> { gs | filters = currentSelectedFilters })
                 |> fn
 
         newFilters : Dict String Filter
@@ -1061,7 +1062,7 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
         ([ Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "File/Path filters" ]
+                    [ Html.text "File/Path Filters" ]
                 , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ] []
@@ -1069,9 +1070,9 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "files and paths" ]
+                    [ Html.text "Files and paths to ignore" ]
                 , Html.div [ class "setting-item-description" ]
-                    [ Html.text "Ignore the following files and paths." ]
+                    [ Html.text "Do not load tasks from these." ]
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ MultiSelect.view multiSelect
@@ -1080,7 +1081,7 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
          , Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Daily/Periodic notes compatibility" ]
+                    [ Html.text "Daily/Periodic Notes Compatibility" ]
                 , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ] []

@@ -114,9 +114,10 @@ init settings =
 
 safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
-    SD.map12 settingsBuilder
+    SD.map13 settingsBuilder
         boardConfigFormsDecoder
         completedDecoder
+        filtersDecoder
         futureDecoder
         ignoreFileNameDatesDecoder
         otherTagsDecoder
@@ -316,6 +317,12 @@ completedDecoder =
         |> SD.lift .completed
 
 
+filtersDecoder : SD.Decoder SettingsForm (List Filter)
+filtersDecoder =
+    SD.identity
+        |> SD.lift .filters
+
+
 futureDecoder : SD.Decoder SettingsForm (Maybe String)
 futureDecoder =
     SD.identity
@@ -341,6 +348,7 @@ otherTagsDecoder =
 settingsBuilder :
     SafeZipper BoardConfig
     -> Maybe String
+    -> List Filter
     -> Maybe String
     -> Bool
     -> Maybe String
@@ -352,7 +360,7 @@ settingsBuilder :
     -> Maybe String
     -> Maybe String
     -> Settings
-settingsBuilder bc com fut ifn ots tcf clt cso tod tom und unt =
+settingsBuilder bc com fts fut ifn ots tcf clt cso tod tom und unt =
     let
         defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
@@ -368,7 +376,7 @@ settingsBuilder bc com fut ifn ots tcf clt cso tod tom und unt =
         globalSettings : GlobalSettings
         globalSettings =
             { defaultColumnNames = defaultColumnNames_
-            , filters = []
+            , filters = fts
             , ignoreFileNameDates = ifn
             , taskCompletionFormat = tcf
             , taskCompletionInLocalTime = clt
