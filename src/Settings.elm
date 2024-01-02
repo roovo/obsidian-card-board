@@ -456,6 +456,7 @@ v_0_1_0_Decoder =
 globalSettingsDefault : GlobalSettings
 globalSettingsDefault =
     { defaultColumnNames = DefaultColumnNames.default
+    , filters = []
     , ignoreFileNameDates = False
     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
     , taskCompletionInLocalTime = False

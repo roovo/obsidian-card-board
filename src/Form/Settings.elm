@@ -365,6 +365,7 @@ settingsBuilder bc com fut ifn ots tcf clt cso tod tom und unt =
         globalSettings : GlobalSettings
         globalSettings =
             { defaultColumnNames = defaultColumnNames_
+            , filters = []
             , ignoreFileNameDates = ifn
             , taskCompletionFormat = tcf
             , taskCompletionInLocalTime = clt

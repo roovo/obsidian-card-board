@@ -326,6 +326,7 @@ uniqueBoardNames =
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
     { defaultColumnNames = DefaultColumnNames.default
+    , filters = []
     , ignoreFileNameDates = False
     , taskCompletionFormat = GlobalSettings.NoCompletion
     , taskCompletionInLocalTime = False

@@ -25,6 +25,7 @@ default =
                 GlobalSettings.default
                     |> Expect.equal
                         { defaultColumnNames = DefaultColumnNames.default
+                        , filters = []
                         , ignoreFileNameDates = False
                         , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                         , taskCompletionInLocalTime = True
@@ -47,6 +48,7 @@ encodeDecode =
                     , untagged = Nothing
                     , completed = Just "Done"
                     }
+                , filters = []
                 , ignoreFileNameDates = True
                 , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                 , taskCompletionInLocalTime = False
@@ -67,6 +69,7 @@ encodeDecode =
                                 , untagged = Nothing
                                 , completed = Just "Done"
                                 }
+                            , filters = []
                             , ignoreFileNameDates = True
                             , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                             , taskCompletionInLocalTime = False
@@ -82,6 +85,7 @@ taskCompletionSettings =
         [ test "returns the format, local time and utc offset settings" <|
             \() ->
                 { defaultColumnNames = DefaultColumnNames.default
+                , filters = []
                 , ignoreFileNameDates = False
                 , taskCompletionFormat = GlobalSettings.ObsidianDataview
                 , taskCompletionInLocalTime = True
