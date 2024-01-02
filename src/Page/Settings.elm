@@ -180,10 +180,21 @@ switchSettingsState fn model =
 
                 _ ->
                     currentFilters <| SettingsState.boardConfigs newSettingsState
+
+        newGrouper : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+        newGrouper =
+            case newSettingsState of
+                SettingsState.EditingGlobalSettings _ ->
+                    groupedSelectionsWithoutTags
+
+                _ ->
+                    groupedSelections
     in
     { model
         | settingsState = newSettingsState
-        , multiSelect = MultiSelect.updateSelectedItems newFilters model.multiSelect
+        , multiSelect =
+            MultiSelect.updateSelectedItems newFilters model.multiSelect
+                |> MultiSelect.updateGrouper newGrouper
     }
 
 
@@ -430,6 +441,16 @@ groupedSelections selectionItems =
         |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
         |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
         |> ensureAllTypes
+
+
+groupedSelectionsWithoutTags : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+groupedSelectionsWithoutTags selectionItems =
+    selectionItems
+        |> List.sortBy (\item -> Filter.filterType item.value)
+        |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
+        |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
+        |> ensureAllTypes
+        |> List.filter (\( k, _ ) -> k /= "Tags")
 
 
 ensureAllTypes : List ( String, List (MultiSelect.SelectionItem Filter) ) -> List ( String, List (MultiSelect.SelectionItem Filter) )
