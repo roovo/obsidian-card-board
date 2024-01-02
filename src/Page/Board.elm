@@ -240,7 +240,8 @@ view : Model -> Html Msg
 view model =
     case model of
         ViewingBoard session ->
-            boardsView session
+            Html.div []
+                [ boardsView session ]
 
         DeletingCard title cardId session ->
             Html.div []
@@ -268,9 +269,10 @@ modalDeleteCardConfirm title cardId =
             , Html.div [ class "modal-content" ]
                 [ Html.p [ class "mod-warning" ]
                     [ Html.text <|
-                        "Press Delete button to confirm you wish to delete the \""
+                        "Press Delete to confirm you wish to delete the \""
                             ++ title
-                            ++ "\" card."
+                            ++ "\" card.  This does not delete the task from your "
+                            ++ "markdown, it encloses it in <del> tags."
                     ]
                 ]
             , Html.div [ class "modal-button-container" ]
