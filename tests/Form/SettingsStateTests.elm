@@ -1037,6 +1037,7 @@ exampleSettingsForm : SettingsForm
 exampleSettingsForm =
     { boardConfigForms = SafeZipper.empty
     , completed = ""
+    , filters = []
     , future = ""
     , ignoreFileNameDates = False
     , otherTags = ""

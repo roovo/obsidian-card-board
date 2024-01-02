@@ -24,6 +24,7 @@ module Form.Settings exposing
 import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import Filter exposing (Filter)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
@@ -43,6 +44,7 @@ import Settings exposing (Settings)
 type alias SettingsForm =
     { boardConfigForms : SafeZipper BoardConfigForm
     , completed : String
+    , filters : List Filter
     , future : String
     , ignoreFileNameDates : Bool
     , otherTags : String
@@ -92,6 +94,7 @@ init settings =
     in
     { boardConfigForms = boardConfigForms_
     , completed = Maybe.withDefault "" defaultColumnNames_.completed
+    , filters = globalSettings_.filters
     , future = Maybe.withDefault "" defaultColumnNames_.future
     , ignoreFileNameDates = globalSettings_.ignoreFileNameDates
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
