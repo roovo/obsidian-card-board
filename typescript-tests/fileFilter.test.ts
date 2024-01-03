@@ -37,4 +37,26 @@ describe('fileFilter', () => {
 
     expect(mockCallback.mock.calls).toHaveLength(0);
   });
+
+  test('DOES NOT CALL the callback if there is a matching path filter', async () => {
+    const filters: Filter[] = [{ tag : "pathFilter", data : "aFolder"  }];
+    const testFile          = { path : 'aFolder/foo.md' }
+    const mockCallback      = jest.fn(f => f.path);
+    const fileFilter        = new FileFilter(filters);
+
+    fileFilter.filter(testFile, mockCallback);
+
+    expect(mockCallback.mock.calls).toHaveLength(0);
+  });
+
+  test('DOES NOT CALL the callback if there is a deeper matching path filter', async () => {
+    const filters: Filter[] = [{ tag : "pathFilter", data : "aFolder/bFolder"  }];
+    const testFile          = { path : 'aFolder/bFolder/cFolder/foo.md' }
+    const mockCallback      = jest.fn(f => f.path);
+    const fileFilter        = new FileFilter(filters);
+
+    fileFilter.filter(testFile, mockCallback);
+
+    expect(mockCallback.mock.calls).toHaveLength(0);
+  });
 });
