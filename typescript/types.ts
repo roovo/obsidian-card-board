@@ -125,3 +125,4 @@ type CardBoardPluginSettingsPreV11 = {
   version : string
 }
 
+export type Filter = { data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" };
