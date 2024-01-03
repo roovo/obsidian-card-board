@@ -18,7 +18,9 @@ export class FileFilter {
   }
 
   private buildExcludes(filters: Filter[]) {
-    this.excludes = filters.map(filter => filter.data);
+    this.excludes = filters
+      .filter(f => f.tag != "tagFilter")
+      .map(filter => filter.data);
   }
 
   private pathsToMatch(path: string): string[] {

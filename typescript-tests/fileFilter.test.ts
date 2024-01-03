@@ -59,4 +59,16 @@ describe('fileFilter', () => {
 
     expect(mockCallback.mock.calls).toHaveLength(0);
   });
+
+  test('ignores the contents of tagFilters', async () => {
+    const filters: Filter[] = [{ tag : "tagFilter", data : "aFolder/bFolder"  }];
+    const testFile          = { path : 'aFolder/bFolder/cFolder/foo.md' }
+    const mockCallback      = jest.fn(f => f.path);
+    const fileFilter        = new FileFilter(filters);
+
+    fileFilter.filter(testFile, mockCallback);
+
+    expect(mockCallback.mock.calls).toHaveLength(1);
+    expect(mockCallback.mock.results[0].value).toEqual('aFolder/bFolder/cFolder/foo.md');
+  });
 });
