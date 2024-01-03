@@ -37,6 +37,16 @@
     - for the filtering
         - do this in typescipt so I only send content to elm
           from files that pass the filter.
+    - need to ignore excluded files/paths for the following too:
+      (file) => this.handleFileCreated(file)));
+      (file) => this.handleFileDeleted(file)));
+      (file) => this.handleFileModified(file)));
+      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+
+- filters are in: this.plugin.settings.data.globalSettings.filters
+
+build a file tester class which is initialised with the filters
+and can check if a filter is allowed.  Test this with jest.
 
 - add a file to the examples that is ignored in the global
   settings
