@@ -15,6 +15,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define columns).
 
 ## New
+- You can choose files or directories to ignore when loading
+  tasks from files.  Handy if you use templates which contain
+  tasks.
 - Bugfix: filter definitions dropdown is now scrollable
 - Confirmation step added when deleting cards.
 - Can choose to use local time when marking tasks as complete.
@@ -346,6 +349,7 @@ Filters are applied before tasks are placed onto a board:
 Plugin settings are accessible from the plugin view itself, via the settings icon
 above the board to the left of the tabs.  You can:
 
+- Choose files and paths you do not want to load any tasks from.
 - Create new boards (using the + icon next to the _Boards_ heading).
 - Configure your boards.
 - Customize the default names of the built-in columns.
