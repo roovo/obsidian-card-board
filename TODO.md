@@ -1,52 +1,25 @@
-- this will be a multi-select in global settings
-- review how multi-select works!
-    - filter candidates requested when mutliselect gets focus fFOR THE FIRST TIME, via
-      Page.Settings.PathsRequested -> InteropPorts.requestFilterCandidates
-      & received via Page.Settings.FilterCandidatesReceived and passed to the
-      multi-select via MultiSelect.recieveItems
-    - as text is entered in the select, MultiSelect.SearchTermChanged is called
-      which updates selectStatus.searchTerm - which is used in a fuzzy search to
-      polpulate the dropdown.
-    - selectedItems is the "output" - a list of which items the user has selected
-    - current filters updated in Page.Settings.switchSettingsState
-      using MultiSelect.updateSelectedItems (after the current ones got using
-      selectedItems.
-- can I re-use what I have?
-    - it will be like filters, but only File and Path
-    - can I re-use filters or do I need something else
-    - do I need a new Multi-select instance or can I re-use
-      the one used for filters?
-- how is the markdown read in typescript?
-    - when elm has initialised...
-    - view.ts.handleElmInitialized => this.vault.getMarkdownFiles()
-      iterate through these and send the contents to elm one at a time
-    - should I filter in ts so I don't send files I am not interested in
-      to elm or ignore them in elm?
-      - in elm, I have Filter.fileIsFromPath which could help?
-      - in ts it will be more efficient as I won't have to read
-        files I am not interested in
-- how do I check if a files is in the filter list in ts?
-
-- possible implementation
-    - for the settings form
-        - re-use MultiSelect in Page.Settings
-        - use the grouper function to only offer up the file and path options
-          - will need to add a way to update this depending on SettingsState
-        - re-use Filter - even allow tag filters to be set, I'll just ignore
-          them in ts when doing the filtering.
-    - for the filtering
-        - do this in typescipt so I only send content to elm
-          from files that pass the filter.
-    - need to ignore excluded files/paths for the following too:
-      (file) => this.handleFileCreated(file)));
-      (file) => this.handleFileDeleted(file)));
-      (file) => this.handleFileModified(file)));
-      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+- when elm is initialized
+    - send elm list of FILTERED markdown files
+- when a new file is created
+    - send elm the contents if it passes the FILTER
+- when a file is modifified
+    - send elm the contents if it passes the FILTER
+- when a file is deleted
+    - always let elm know
+- when a file is renamed
+    - always let elm know the old path, send it null for the new path if it is FILTERED
+- when settings are changed
+    - if filters have changed, then
+        - reload all tasks (for first pass as easiest)
+        - can I do something smarter which will only involve updating tasks in
+          files that have either been newly FILTERED out or in
 
 - filters are in: this.plugin.settings.data.globalSettings.filters
 
-build a file tester class which is initialised with the filters
-and can check if a filter is allowed.  Test this with jest.
+class fileFilter {
+    init (filters)
+    filterFiles(files, callback(file))
+}
 
 - add a file to the examples that is ignored in the global
   settings

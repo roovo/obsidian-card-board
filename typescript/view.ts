@@ -14,7 +14,7 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './main';
+import { CardBoardPluginSettingsPostV11 } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
