@@ -129,6 +129,7 @@ File.open(undated_tasks, "w") do |file|
           }
   ```
 """
+end
 
 colab_tasks = File.join(target_directory, "colab.md")
 
@@ -145,4 +146,19 @@ File.open(colab_tasks, "w") do |file|
 
 """
 end
+
+template_directory  = File.join(target_directory, "templates")
+template_tasks      = File.join(template_directory, "template.md")
+
+Dir.mkdir(template_directory)
+
+File.open(template_tasks, "w") do |file|
+  file.write """
+# A template
+
+- [ ] templated task with no date or tags
+- [ ] templated task for today @due(#{(Date.today).strftime("%Y-%m-%d")})
+- [ ] templated task for #people/barney barney
+
+"""
 end
