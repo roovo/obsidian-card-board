@@ -16,14 +16,16 @@ import { Elm, ElmApp, Flags } from '../src/Main';
 import CardBoardPlugin from './main';
 import { CardBoardPluginSettingsPostV11 } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
+import { FileFilter } from './fileFilter'
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 
 export class CardBoardView extends ItemView {
-  private vault:  Vault;
-  private plugin: CardBoardPlugin;
-  private elm: ElmApp;
-  private elmDiv: any;
+  private vault:      Vault;
+  private plugin:     CardBoardPlugin;
+  private elm:        ElmApp;
+  private elmDiv:     any;
+  private fileFilter: FileFilter;
 
   constructor(
     plugin: CardBoardPlugin,
@@ -44,7 +46,15 @@ export class CardBoardView extends ItemView {
   }
 
   async onOpen() {
-    this.icon = "card-board"
+    this.icon       = "card-board"
+
+    const globalSettings : any = this.plugin.settings.data.globalSettings;
+
+    if (globalSettings.hasOwnProperty('filters')) {
+      this.fileFilter = new FileFilter(globalSettings.filters);
+    } else {
+      this.fileFilter = new FileFilter([]);
+    }
 
     // @ts-ignore
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
@@ -262,20 +272,21 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleElmInitialized() {
-
+  handleElmInitialized() {
     const markdownFiles = this.vault.getMarkdownFiles();
 
     for (const file of markdownFiles) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.cachedRead(file);
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath:     file.path,
-          fileDate:     fileDate,
-          fileContents: fileContents
-        }
+      this.fileFilter.filter(file, async (filteredFile: TFile) => {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.vault.cachedRead(file);
+        this.elm.ports.interopToElm.send({
+          tag: "fileAdded",
+          data: {
+            filePath:     file.path,
+            fileDate:     fileDate,
+            fileContents: fileContents
+          }
+        });
       });
     }
 
