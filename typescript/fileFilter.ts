@@ -1,26 +1,30 @@
 import { Filter } from "./types"
 
 export class FileFilter {
-  private excludes: string[];
+  private excludedPaths: string[];
 
   constructor(filters: Filter[]) {
     this.buildExcludes(filters);
   }
 
   filter(file: { path: string }, callback: Function) {
-    if (!(this.isInExcludes(this.pathsToMatch(file.path)))) {
+    if (!(this.isExcluded(this.pathsToMatch(file.path)))) {
       callback(file);
     }
   }
 
-  private isInExcludes(paths: string[]) {
-    return this.excludes.some(item => paths.includes(item));
-  }
-
   private buildExcludes(filters: Filter[]) {
-    this.excludes = filters
+    this.excludedPaths = filters
       .filter(f => f.tag != "tagFilter")
       .map(filter => filter.data);
+  }
+
+  private isExcluded(paths: string[]) {
+    return this.excludedPaths.some(item => paths.includes(item));
+  }
+
+  private parentFolder(path: string): string {
+    return path.split("/").slice(0, -1).join("/");
   }
 
   private pathsToMatch(path: string): string[] {
@@ -28,14 +32,10 @@ export class FileFilter {
     let paths: string[] = [path];
 
     while (remainingPath.length > 0) {
-      remainingPath = this.getParentFolder(remainingPath);
+      remainingPath = this.parentFolder(remainingPath);
       paths.push(remainingPath);
     }
 
     return paths.slice(0, -1);
-  }
-
-  private getParentFolder(path: string): string {
-    return path.split("/").slice(0, -1).join("/");
   }
 }

@@ -71,4 +71,16 @@ describe('fileFilter', () => {
     expect(mockCallback.mock.calls).toHaveLength(1);
     expect(mockCallback.mock.results[0].value).toEqual('aFolder/bFolder/cFolder/foo.md');
   });
+
+  test('calls the callback if the file is in a parent folder of a pathFilter', async () => {
+    const filters: Filter[] = [{ tag : "pathFilter", data : "aFolder/bFolder"  }];
+    const testFile          = { path : 'aFolder/foo.md' }
+    const mockCallback      = jest.fn(f => f.path);
+    const fileFilter        = new FileFilter(filters);
+
+    fileFilter.filter(testFile, mockCallback);
+
+    expect(mockCallback.mock.calls).toHaveLength(1);
+    expect(mockCallback.mock.results[0].value).toEqual('aFolder/foo.md');
+  });
 });
