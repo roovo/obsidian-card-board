@@ -56,7 +56,7 @@ export type CardBoardPluginSettingsPostV11 = {
           name : string;
         }
       })[];
-      filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+      filters : Filter[];
       filterPolarity : "Allow" | "Deny";
       showColumnTags : boolean;
       showFilteredTags : boolean;
@@ -72,7 +72,7 @@ export type CardBoardPluginSettingsPostV11 = {
         untagged : string
         completed : string;
       }
-      filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+      filters : Filter[];
       ignoreFileNameDates : boolean;
       taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
       taskCompletionInLocalTime : boolean;
@@ -99,7 +99,7 @@ type CardBoardPluginSettingsPreV11 = {
         tag : "tagBoardConfig" }
       | { data : {
           completedCount : number;
-          filters : ({ data : string; tag : "tagFilter" } | { data : string; tag : "pathFilter" } | { data : string; tag : "fileFilter" })[];
+          filters : Filter[];
           filterPolarity : "Allow" | "Deny";
           showFilteredTags : boolean;
           includeUndated : boolean;

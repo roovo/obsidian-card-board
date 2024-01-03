@@ -531,8 +531,6 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate = this.formattedFileDate(file);
-
       this.elm.ports.interopToElm.send({
         tag: "fileDeleted",
         data: file.path
@@ -564,13 +562,31 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile,
     oldPath: string
   ) {
-    this.elm.ports.interopToElm.send({
-      tag: "fileRenamed",
-      data: {
-        oldPath: oldPath,
-        newPath: file.path
+    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
+
+    switch(oldNew.join(",")) {
+      case 'false,true': {
+        this.handleFileCreated(file)
+        break;
       }
-    });
+      case 'true,false': {
+        this.elm.ports.interopToElm.send({
+          tag: "fileDeleted",
+          data: oldPath
+        });
+        break;
+      }
+      case 'true,true': {
+        this.elm.ports.interopToElm.send({
+          tag: "fileRenamed",
+          data: {
+            oldPath: oldPath,
+            newPath: file.path
+          }
+        });
+        break;
+      }
+    }
   }
 
   // HELPERS

@@ -8,9 +8,13 @@ export class FileFilter {
   }
 
   filter(file: { path: string }, callback: Function) {
-    if (!(this.isExcluded(this.pathsToMatch(file.path)))) {
+    if (this.isAllowed(file.path)) {
       callback(file);
     }
+  }
+
+  isAllowed(path: string): boolean {
+    return !(this.isExcluded(this.pathsToMatch(path)));
   }
 
   private buildExcludes(filters: Filter[]) {
