@@ -277,12 +277,12 @@ export class CardBoardView extends ItemView {
 
     for (const file of markdownFiles) {
       this.fileFilter.filter(file, async (filteredFile: TFile) => {
-        const fileDate      = this.formattedFileDate(file);
-        const fileContents  = await this.vault.cachedRead(file);
+        const fileDate      = this.formattedFileDate(filteredFile);
+        const fileContents  = await this.vault.cachedRead(filteredFile);
         this.elm.ports.interopToElm.send({
           tag: "fileAdded",
           data: {
-            filePath:     file.path,
+            filePath:     filteredFile.path,
             fileDate:     fileDate,
             fileContents: fileContents
           }
@@ -507,21 +507,22 @@ export class CardBoardView extends ItemView {
     });
   }
 
-
   async handleFileCreated(
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.read(file);
+      this.fileFilter.filter(file, async (filteredFile: TFile) => {
+        const fileDate      = this.formattedFileDate(filteredFile);
+        const fileContents  = await this.vault.read(filteredFile);
 
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
+        this.elm.ports.interopToElm.send({
+          tag: "fileAdded",
+          data: {
+            filePath: filteredFile.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
       });
     }
   }
@@ -543,16 +544,18 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.read(file);
+      this.fileFilter.filter(file, async (filteredFile: TFile) => {
+        const fileDate      = this.formattedFileDate(filteredFile);
+        const fileContents  = await this.vault.read(filteredFile);
 
-      this.elm.ports.interopToElm.send({
-        tag: "fileUpdated",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
+        this.elm.ports.interopToElm.send({
+          tag: "fileUpdated",
+          data: {
+            filePath: filteredFile.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
       });
     }
   }
