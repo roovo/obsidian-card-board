@@ -24,7 +24,7 @@
 .card-board-view {
   height: 100%;
   background-color: var(--background-primary);
-  font-size: var(--font-normal);
+  font-size: var(--font-text-size);
 }
 
 .mod-macos.is-hidden-frameless:not(.is-popout-window) .workspace .workspace-tabs.mod-top-right-space .card-board-view .workspace-tab-header-container {
@@ -212,6 +212,7 @@ ul.card-board-column-list > li.card-board-card::before {
   display: grid;
   grid: "mark contents"
         / 5px auto;
+  font-family: var(--font-text);
 }
 
 .card-board-card-highlight-area {
