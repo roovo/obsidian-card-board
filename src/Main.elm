@@ -23,8 +23,8 @@ import Task
 import TaskItem
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
-import Time
-import TimeWithZone
+import Time exposing (Posix)
+import TimeWithZone exposing (TimeWithZone)
 
 
 main : Program JD.Value Model Msg
@@ -237,8 +237,48 @@ update msg model =
             )
 
         ( Tick time, _ ) ->
-            ( mapSession (Session.timeIs time) model
-            , Cmd.none
+            let
+                cmd : Cmd Msg
+                cmd =
+                    if newDate == oldDate then
+                        Cmd.none
+
+                    else
+                        cmdForDateChange newSession
+
+                newDate : Int
+                newDate =
+                    newSession
+                        |> Session.timeWithZone
+                        |> TimeWithZone.toDate
+                        |> Date.toRataDie
+
+                newSession : Session
+                newSession =
+                    Session.timeIs time <| toSession model
+
+                offsetPosix : Int -> TimeWithZone -> TimeWithZone
+                offsetPosix secs timeWithZone =
+                    let
+                        foo : Posix -> Posix
+                        foo posix =
+                            posix
+                                |> Time.posixToMillis
+                                |> (\m -> m - (secs * 1000))
+                                |> Time.millisToPosix
+                    in
+                    { timeWithZone | time = foo time }
+
+                oldDate : Int
+                oldDate =
+                    toSession model
+                        |> Session.timeWithZone
+                        |> offsetPosix 1
+                        |> TimeWithZone.toDate
+                        |> Date.toRataDie
+            in
+            ( mapSession (always newSession) model
+            , cmd
             )
 
         ( VaultFileAdded markdownFile, _ ) ->
@@ -304,6 +344,31 @@ cmdForFilterPathRename newPath session =
 
     else
         Cmd.none
+
+
+cmdForDateChange : Session -> Cmd Msg
+cmdForDateChange session =
+    let
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
+        cards : List Card
+        cards =
+            Session.taskList session
+                |> TaskList.filter TaskItem.isDated
+                |> Boards.init (Session.uniqueId session) (Session.boardConfigs session)
+                |> Boards.cards (Session.ignoreFileNameDates session) today
+    in
+    if List.isEmpty cards then
+        Cmd.none
+
+    else
+        Cmd.batch
+            [ InteropPorts.displayTaskMarkdown cards
+            , InteropPorts.addHoverToCardEditButtons cards
+            ]
 
 
 cmdForTaskRedraws : String -> Session -> Cmd Msg
