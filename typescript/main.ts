@@ -1,6 +1,7 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './types';
+import * as fs from 'fs';
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
@@ -26,6 +27,30 @@ export default class CardBoardPlugin extends Plugin {
     });
 
     this.addCommands();
+
+
+    this.startSettigsWatch();
+  }
+
+  startSettigsWatch() {
+    const that = this;
+
+    // @ts-ignore
+    const pathToSettings = normalizePath(this.app.vault.adapter.basePath + "/" + this.app.vault.configDir + "/plugins/card-board/data.json");
+
+    // @ts-ignore
+    this.app.vault.adapter.fs.watchFile(pathToSettings, { interval: 1007 }, (current : fs.Stats, previous : fs.Stats) => {
+      console.log('settings file changed');
+
+      const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+      for (const leaf of leaves) {
+        if (leaf.view instanceof CardBoardView) {
+          leaf.view.handleUpdateSettings(that.settings);
+        }
+      }
+
+    });
   }
 
   onunload() {

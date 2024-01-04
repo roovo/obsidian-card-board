@@ -15,12 +15,17 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (uses `#tags` to define columns).
 
 ## New
-- You can choose files or directories to ignore when loading
+- Choose files or directories to ignore when loading
   tasks from files.  Handy if you use templates which contain
   tasks.
-- Bugfix: filter definitions dropdown is now scrollable
 - Confirmation step added when deleting cards.
-- Can choose to use local time when marking tasks as complete.
+- Use local time when marking tasks as complete.
+
+- Bugfix: filter definitions dropdown is now scrollable
+- Bugfix: card content respects _Text Font_ setting in
+  Obsidian _Appearance_ settings
+- Bugfix: use Obsidian _Font size_ setting to determine
+  CardBoard font size.
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
