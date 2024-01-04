@@ -228,7 +228,7 @@ export class CardBoardView extends ItemView {
 
           if (element instanceof HTMLElement) {
             element.innerHTML = "";
-            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, that.plugin);
+            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, that);
 
             const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
 
