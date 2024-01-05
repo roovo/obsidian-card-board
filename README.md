@@ -20,6 +20,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   tasks.
 - Confirmation step added when deleting cards.
 - Use local time when marking tasks as complete.
+- Show the year of a task on the card if it is not due in
+  the current year.
 
 - Bugfix: filter definitions dropdown is now scrollable
 - Bugfix: card content respects _Text Font_ setting in
