@@ -664,7 +664,7 @@ cardView today card =
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
             , Html.div [ class "card-board-card-footer-area" ]
-                [ taskDueDate (TaskItem.due taskItem)
+                [ taskDueDate today (TaskItem.due taskItem)
                     |> when (TaskItem.isDated taskItem)
                 , cardActionButtons (Card.title card) taskItemId (Card.editButtonId card)
                 ]
@@ -708,18 +708,22 @@ subtaskView ( uniqueId, subtask ) =
         ]
 
 
-taskDueDate : Maybe Date -> Html Msg
-taskDueDate dueDate =
+taskDueDate : Date -> Maybe Date -> Html Msg
+taskDueDate today dueDate =
     Html.div [ class "card-board-card-action-area-due" ]
-        [ Html.text ("Due: " ++ dueDateString dueDate)
+        [ Html.text ("Due: " ++ dueDateString today dueDate)
         ]
 
 
-dueDateString : Maybe Date -> String
-dueDateString dueDate =
+dueDateString : Date -> Maybe Date -> String
+dueDateString today dueDate =
     case dueDate of
         Just date ->
-            Date.format "E, MMM ddd" date
+            if Date.year date == Date.year today then
+                Date.format "E, MMM ddd" date
+
+            else
+                Date.format "E, MMM ddd y" date
 
         Nothing ->
             "n/a"
