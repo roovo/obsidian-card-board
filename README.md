@@ -47,12 +47,14 @@ If you have no boards defined, you should get a dialog asking you to add a new
 board.  You can choose between 3 board types:
 
 - **Date based**: looks like the main screenshot above.
-- **Tag based**: uses tags to define the columns (you need to include tags on
-  your tasks or in front matter for this to work).
+- **Tag based**: includes the built-in tag based columns.  You will need to add
+  the tag columns you wish to include as well as include tags on your tasks or use
+  the `tags`
+  [property](https://help.obsidian.md/Editing+and+formatting/Properties) on a note.
 - **Empty board**: has no pre-defined columns.
 
-These are just to get you started.  You can add/edit/re-order/delete columns
-for these (or any board) via the plugin's settings.
+These are just to get you started.  You can mix date and tag based columns on
+the same board: use the plugin's settings to add/edit/re-order/delete columns.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
@@ -70,8 +72,8 @@ What appears on the card depends on what your task looks like:
 - Anything that is indented under a task will appear in the body of the task.
   - Indented tasks will appear as subtasks (all subtasks are grouped together).
   - Indented text will appear as notes.
-- `#tags` in front matter or on the line of the task will
-  appear at the top of the card.
+- `#tags` on the line of the task or included in the `tags` property of the note
+  containing the task will appear at the top of the card
 - Due date (if given) will appear at the bottom of the card.
 
 So, if you had the following in one of your markdown files:
@@ -289,18 +291,20 @@ Tasks with sub-tasks that have matching tags will also appear on the board.
 If you specify a tag with a trailing `/` in the settings for the column,
 then the column will contain all subtags of the tag.
 
-#### Front Matter Tags
+#### Tag Properties
 If you want to give all the tasks on a page the same tag, you can put it in the
-page front matter:
+properties of a note:
 
 ```
 ---
-tags: [ project1 ]
+tags:
+  - recipe
+  - cooking
 ---
 
 # Project 1
 
-- [ ] this task will automatically have a project1 tag
+- [ ] this task will automatically have the recipe and cooking tags
 ```
 
 #### Hiding Tags
@@ -339,8 +343,8 @@ You cannot have more than one Completed column on a board.
 
 ### Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
-types of filter you can use: file, path, and #tags (which includes front matter tags).  You can
-use any combination of these on a per-board basis.
+types of filter you can use: file, path, and #tags (which includes tags in note properties).
+You can use any combination of these on a per-board basis.
 
 You can also:
 
