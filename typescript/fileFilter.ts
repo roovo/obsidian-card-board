@@ -7,39 +7,16 @@ export class FileFilter {
     this.buildExcludes(filters);
   }
 
-  filter(file: { path: string }, callback: Function) {
-    if (this.isAllowed(file.path)) {
-      callback(file);
-    }
-  }
-
   isAllowed(path: string): boolean {
-    return !(this.isExcluded(this.pathsToMatch(path)));
+    for (let elem of this.excludedPaths) {
+      if (path.includes(elem)) return false;
+    }
+    return true;
   }
 
   private buildExcludes(filters: Filter[]) {
     this.excludedPaths = filters
       .filter(f => f.tag != "tagFilter")
-      .map(filter => filter.data);
-  }
-
-  private isExcluded(paths: string[]) {
-    return this.excludedPaths.some(item => paths.includes(item));
-  }
-
-  private parentFolder(path: string): string {
-    return path.split("/").slice(0, -1).join("/");
-  }
-
-  private pathsToMatch(path: string): string[] {
-    let remainingPath: string = path;
-    let paths: string[] = [path];
-
-    while (remainingPath.length > 0) {
-      remainingPath = this.parentFolder(remainingPath);
-      paths.push(remainingPath);
-    }
-
-    return paths.slice(0, -1);
+      .map(f => f.tag == "fileFilter" ? f.data : f.data + "/");
   }
 }

@@ -272,22 +272,23 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  handleElmInitialized() {
+  async handleElmInitialized() {
     const markdownFiles = this.vault.getMarkdownFiles();
+    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
 
-    for (const file of markdownFiles) {
-      this.fileFilter.filter(file, async (filteredFile: TFile) => {
-        const fileDate      = this.formattedFileDate(filteredFile);
-        const fileContents  = await this.vault.cachedRead(filteredFile);
+    for (const file of filteredFiles) {
+      const fileDate      = this.formattedFileDate(file);
+      const fileContents  = await this.vault.cachedRead(file);
 
-        this.elm.ports.interopToElm.send({
-          tag: "fileAdded",
-          data: {
-            filePath:     filteredFile.path,
-            fileDate:     fileDate,
-            fileContents: fileContents
-          }
-        });
+      console.log("CardBoard: added " + file.name);
+
+      this.elm.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: {
+          filePath:     file.path,
+          fileDate:     fileDate,
+          fileContents: fileContents
+        }
       });
     }
 
@@ -512,19 +513,19 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      this.fileFilter.filter(file, async (filteredFile: TFile) => {
-        const fileDate      = this.formattedFileDate(filteredFile);
-        const fileContents  = await this.vault.read(filteredFile);
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.vault.read(file);
 
         this.elm.ports.interopToElm.send({
           tag: "fileAdded",
           data: {
-            filePath: filteredFile.path,
+            filePath: file.path,
             fileDate: fileDate,
             fileContents: fileContents
           }
         });
-      });
+      }
     }
   }
 
@@ -543,19 +544,19 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      this.fileFilter.filter(file, async (filteredFile: TFile) => {
-        const fileDate      = this.formattedFileDate(filteredFile);
-        const fileContents  = await this.vault.read(filteredFile);
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.vault.read(file);
 
         this.elm.ports.interopToElm.send({
           tag: "fileUpdated",
           data: {
-            filePath: filteredFile.path,
+            filePath: file.path,
             fileDate: fileDate,
             fileContents: fileContents
           }
         });
-      });
+      }
     }
   }
 
