@@ -10,28 +10,26 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 - Uses regular tasks/subtasks wherever they are in your vault.
 - Shows them on kanban style boards.
-- Two column types supported:
+- Two column types supported (any combination can be on a single board):
   - Date based (with daily/periodic notes support).
-  - Tag based (uses `#tags` to define columns).
+  - Tag based (use `#tags` to define columns).
 
 ## New
 - Choose files or directories to ignore when loading
-  tasks from files.  Handy if you use templates which contain
-  tasks.
+  tasks from notes.  Handy if you use templates which contain
+  tasks that you don't want to see on your boards.
 - Confirmation step added when deleting cards.
-- Use local time when marking tasks as complete.
-- Show the year of a task on the card if it is not due in
+- Can now choose to use either local or UTC time when marking tasks as complete.
+- Shows the year of a task on the card if it is not due in
   the current year.
-
-- Bugfix: filter definitions dropdown is now scrollable
-- Bugfix: card content respects _Text Font_ setting in
-  Obsidian _Appearance_ settings
-- Bugfix: use Obsidian _Font size_ setting to determine
-  CardBoard font size.
+- Bugfix: filter definitions dropdown is now scrollable.
+- Bugfix: card content respects the _Text Font_ setting in
+  Obsidian _Appearance_ settings.
+- Bugfix: use Obsidian _Font size_ for the CardBoard font size.
 - Bugfix: fix issue where cards which move columns when
-  the date changes loose their content.
-- Bugfix: (hopefully) fixed issues with where cards appear
-  on the board when there is an `Other Tags` column on the board.
+  the date changes (at midnight) loose their content.
+- Bugfix: (hopefully) fixed issues with where cards could appear
+  in unexpected columns when there is an `Other Tags` column.
 
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
@@ -48,13 +46,11 @@ When installed, you can launch the plugin:
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
 If you have no boards defined, you should get a dialog asking you to add a new
-board.  You can choose between 3 board types:
+board.  You can choose from one of 3 board types to get going:
 
 - **Date based**: looks like the main screenshot above.
 - **Tag based**: includes the built-in tag based columns.  You will need to add
-  the tag columns you wish to include as well as include tags on your tasks or use
-  the `tags`
-  [property](https://help.obsidian.md/Editing+and+formatting/Properties) on a note.
+  the tag columns you wish to include.
 - **Empty board**: has no pre-defined columns.
 
 These are just to get you started.  You can mix date and tag based columns on
@@ -65,7 +61,7 @@ Any task in your vault can appear as a card in a column on a board.  In order to
 do this, it must:
 
 - Be in a markdown file.
-- Not be indented.
+- Not be indented - it must be at the start of the line.
 - Use one of the commonmark supported unordered list formats:
   - `- [ ] Task title`
   - `* [ ] Task title`
@@ -99,7 +95,7 @@ It will look something like this on a card on your board:
 ![example card](/images/card.png?raw=true)
 
 ### Marking a task as complete
-If you mark an task as complete on the board it will be marked as completed in the markdown
+If you mark a task as complete on the board it will be marked as completed in the markdown
 file (and vice-versa).  If you mark as complete on the board, a completion timestamp
 is appended to the task:
 
@@ -110,8 +106,8 @@ is appended to the task:
 See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
 a format compatible with other plugins (or to choose not to add any completion text).
 
-You can choose wether to use local or UTC time in completion timestamps (via the plugin's
-Global Settings).
+You can choose wether to use local or UTC time in completion timestamps via the plugin's
+settings (in the `Global Settings` section).
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -132,7 +128,7 @@ the task from your vault, it simply surrounds it with markdown `<del>` tags:
 ```
 
 ### Editing tasks (and hover preview)
-Click on the edit icon to open the file containing the task.  Cmd (or Ctrl on windows)
+Click on the edit icon to open the note containing the task.  Cmd (or Ctrl on windows)
 hover over the icon for the normal Obsidian hover preview.
 
 
@@ -287,13 +283,13 @@ you can define a board that shows tasks tagged with these in separate columns:
 You do not need to inclue the `#` character at the start of the tag when defining
 which tag shold be used for a column.
 
+#### Subtags
+If you specify a tag with a trailing `/` in the settings for the column,
+then the column will contain all tasks which have subtags of the tag, as well
+as those with the _base_ tag.
 
 #### Sub-tasks
 Tasks with sub-tasks that have matching tags will also appear on the board.
-
-#### Subtags
-If you specify a tag with a trailing `/` in the settings for the column,
-then the column will contain all subtags of the tag.
 
 #### Tag Properties
 If you want to give all the tasks on a page the same tag, you can put it in the
@@ -328,7 +324,7 @@ You cannot have more that one of each of these on a board.
 ### Completed column
 You can include a complted column on your board. This will only include
 completed tasks that would have appeared in one of the other columns had it not been
-completed; so it only contains tasks that _belong_ on the board.
+completed; i.e. it only contains tasks that _belong_ on the board.
 
 Where you have columns based on tags and a task is shown in a column due to tags on
 sub-tasks it will only show in that column if those subtasks are incomplete.
@@ -390,7 +386,7 @@ then do ensure that your .obsidian directory is backed up.
 Cardboard is compatible with the *Due* and *Completion* date formats used in
 both [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
 and [Dataview](https://blacksmithgu.github.io/obsidian-dataview/).
-Dates from both of these are understood with no configuration.
+Due dates from both of these are understood with no configuration.
 
 When marking a task as complete, you can choose which format to use via
 CardBoard's Global Settings:
