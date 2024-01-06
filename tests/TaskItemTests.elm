@@ -24,14 +24,10 @@ suite =
         , completedPosix
         , completion
         , containsId
-        , descendantTaskHasThisTag
         , descendantTasks
         , due
         , filePath
-        , hasIncompleteTaskWithThisTag
-        , hasOneOfTheTags
         , hasTags
-        , hasTaskWithTagOtherThanThese
         , hasThisTagBasic
         , hasThisTagWithSubtag
         , hasThisTagWithSubtagWildcard
@@ -52,7 +48,6 @@ suite =
         , title
         , titleWithTags
         , topLevelTags
-        , topLevelTaskHasThisTag
         , toToggledString
         , updateFilePath
         ]
@@ -322,36 +317,6 @@ containsId =
         ]
 
 
-descendantTaskHasThisTag : Test
-descendantTaskHasThisTag =
-    describe "descendantTaskHasThisTag"
-        [ test "returns False for (theTag) '- [ ] foo" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo #theTag'" <|
-            \() ->
-                "- [ ] foo #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #otherTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #otherTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns True for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok True)
-        ]
-
-
 descendantTasks : Test
 descendantTasks =
     describe "descendantTasks"
@@ -542,72 +507,6 @@ filePath =
         ]
 
 
-hasIncompleteTaskWithThisTag : Test
-hasIncompleteTaskWithThisTag =
-    describe "hasIncompleteTaskWithTag - basic operation"
-        [ test "returns True for a task with no sub-tasks that has the tag" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns True for a task without the tag with no sub-tasks, but the tag is in the front matter" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns True for a task with no matching tag but a sub-tasks has the tag" <|
-            \() ->
-                "- [ ] foo #foo\n  - [ ] bar #bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns False for a task with no sub-tasks that doesn't have the tag" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "baz")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a task with no sub-tasks that has the tag but is completed" <|
-            \() ->
-                "- [x] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a completed task with no sub-tasks without the tag, but the tag is in the front matter" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a task with no matching tag plus a sub-tasks has the tag but is completed" <|
-            \() ->
-                "- [ ] foo #foo\n  - [x] bar #bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        ]
-
-
-hasOneOfTheTags : Test
-hasOneOfTheTags =
-    describe "hasOneOfTheTags - basic operation"
-        [ test "returns True if the task has one of the tags" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasOneOfTheTags [ "bar", "baz" ])
-                    |> Expect.equal (Ok True)
-        , test "returns False if the task has none of the tags" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasOneOfTheTags [ "qux", "baz" ])
-                    |> Expect.equal (Ok False)
-        ]
-
-
 hasTags : Test
 hasTags =
     describe "hasTags"
@@ -635,82 +534,6 @@ hasTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok False)
-        ]
-
-
-hasTaskWithTagOtherThanThese : Test
-hasTaskWithTagOtherThanThese =
-    describe "hasTaskWithTagOtherThanThese"
-        [ describe "with no sub-tasks"
-            [ test "returns True for a task which has a tag, but none of those given" <|
-                \() ->
-                    "- [ ] foo #aTag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task which has a tag, in addition to those given" <|
-                \() ->
-                    "- [ ] foo #aTag #yTag #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False for a task which has no tags when none are given either" <|
-                \() ->
-                    "- [ ] foo"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has no tags" <|
-                \() ->
-                    "- [ ] foo"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has no tags other than one of those given" <|
-                \() ->
-                    "- [ ] foo #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has exaclty the same as the given tags" <|
-                \() ->
-                    "- [ ] foo #ytag #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
-        , describe "with sub-tasks"
-            [ test "returns False where the task and sub-tasks have no tags" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False where the task and sub-tasks have no tags and none are given" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
-                        |> Expect.equal (Ok False)
-            , test "returns True where the sub-task has a tag other than those given" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True where the sub-task has a tag other than those given even if the main task has a matching tag" <|
-                \() ->
-                    "- [ ] foo #ztag\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False where the sub- and main task have matching tags" <|
-                \() ->
-                    "- [ ] foo #ztag\n  - [ ] bar #ytag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
         ]
 
 
@@ -1485,36 +1308,6 @@ topLevelTags =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
                     |> Result.map TaskItem.topLevelTags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
-        ]
-
-
-topLevelTaskHasThisTag : Test
-topLevelTaskHasThisTag =
-    describe "topLevelTaskHasThisTag"
-        [ test "returns False for (theTag) '- [ ] foo" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns True for (theTag) '- [ ] foo #theTag'" <|
-            \() ->
-                "- [ ] foo #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok True)
-        , test "returns False for (theTag) '- [ ] foo #otherTag \n  - [ ] bar #otherTag'" <|
-            \() ->
-                "- [ ] foo #otherTag\n  - [ ] bar #otherTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
         ]
 
 

@@ -9,19 +9,15 @@ module TaskItem exposing
     , completedPosix
     , completion
     , containsId
-    , descendantTaskHasThisTag
     , descendantTasks
     , due
     , dueRataDie
     , dummy
     , fields
     , filePath
-    , hasIncompleteTaskWithThisTag
     , hasNotes
-    , hasOneOfTheTags
     , hasSubtasks
     , hasTags
-    , hasTaskWithTagOtherThanThese
     , hasThisTag
     , hasTopLevelTags
     , id
@@ -42,7 +38,6 @@ module TaskItem exposing
     , titleWithTags
     , toToggledString
     , topLevelTags
-    , topLevelTaskHasThisTag
     , updateFilePath
     )
 
@@ -209,20 +204,6 @@ descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-descendantTaskHasThisTag : String -> TaskItem -> Bool
-descendantTaskHasThisTag tagToMatch =
-    let
-        descendantTasksTags : TaskItem -> TagList
-        descendantTasksTags taskItem =
-            descendantTasks taskItem
-                |> List.map (fields >> .tags)
-                |> List.foldl TagList.append TagList.empty
-                |> TagList.unique
-                |> TagList.sort
-    in
-    TagList.containsTagMatching tagToMatch << descendantTasksTags
-
-
 due : TaskItem -> Maybe Date
 due (TaskItem fields_ _) =
     case fields_.dueTag of
@@ -256,16 +237,6 @@ filePath =
     .filePath << fields
 
 
-hasIncompleteTaskWithThisTag : String -> TaskItem -> Bool
-hasIncompleteTaskWithThisTag tagToMatch taskItem =
-    let
-        isIncompleteWithMatchingTag : TaskItem -> Bool
-        isIncompleteWithMatchingTag ti =
-            TagList.containsTagMatching tagToMatch (topLevelTags ti) && not (isCompleted ti)
-    in
-    List.any isIncompleteWithMatchingTag (taskItem :: descendantTasks taskItem)
-
-
 hasNotes : TaskItem -> Bool
 hasNotes =
     not << String.isEmpty << .notes << fields
@@ -276,21 +247,9 @@ hasTags =
     not << TagList.isEmpty << tags
 
 
-hasTaskWithTagOtherThanThese : List String -> TaskItem -> Bool
-hasTaskWithTagOtherThanThese tagsToMatch taskItem =
-    (taskItem :: descendantTasks taskItem)
-        |> List.filter hasTopLevelTags
-        |> List.any (hasAtLeastOneTagOtherThanThese tagsToMatch)
-
-
 hasTopLevelTags : TaskItem -> Bool
 hasTopLevelTags =
     not << TagList.isEmpty << topLevelTags
-
-
-hasOneOfTheTags : List String -> TaskItem -> Bool
-hasOneOfTheTags tagsToMatch taskItem =
-    List.any (\t -> hasThisTag t taskItem) tagsToMatch
 
 
 hasThisTag : String -> TaskItem -> Bool
@@ -466,16 +425,6 @@ titleWithTags taskItem =
         |> .contents
         |> buildContents
         |> String.join " "
-
-
-topLevelTaskHasThisTag : String -> TaskItem -> Bool
-topLevelTaskHasThisTag tagToMatch =
-    let
-        topLevelTasksTags : TaskItem -> TagList
-        topLevelTasksTags (TaskItem fields_ _) =
-            fields_.tags
-    in
-    TagList.containsTagMatching tagToMatch << topLevelTasksTags
 
 
 
@@ -953,11 +902,35 @@ tokenParser dataviewTaskCompletion =
 -- PRIVATE
 
 
-mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
-mapTags fn taskItem =
-    mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+descendantTaskHasThisTag : String -> TaskItem -> Bool
+descendantTaskHasThisTag tagToMatch =
+    let
+        descendantTasksTags : TaskItem -> TagList
+        descendantTasksTags taskItem =
+            descendantTasks taskItem
+                |> List.map (fields >> .tags)
+                |> List.foldl TagList.append TagList.empty
+                |> TagList.unique
+                |> TagList.sort
+    in
+    TagList.containsTagMatching tagToMatch << descendantTasksTags
 
 
 mapFields : (TaskItemFields -> TaskItemFields) -> TaskItem -> TaskItem
 mapFields fn (TaskItem fields_ subtasks_) =
     TaskItem (fn fields_) subtasks_
+
+
+mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
+mapTags fn taskItem =
+    mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+topLevelTaskHasThisTag : String -> TaskItem -> Bool
+topLevelTaskHasThisTag tagToMatch =
+    let
+        topLevelTasksTags : TaskItem -> TagList
+        topLevelTasksTags (TaskItem fields_ _) =
+            fields_.tags
+    in
+    TagList.containsTagMatching tagToMatch << topLevelTasksTags
