@@ -35,11 +35,16 @@ npm run dev             # run dev build
 - bump version: manifest.json, package.json
 
 ## Run tests
+
+### elm tests
 ```
 npx elm-test
 npx chokidar "{src,tests}/**/*.elm" -c "npx elm-test"
 npx elm-test ./tests/SpecificFile.elm
+```
 
+### typescript tests
+```
 npx chokidar "{typescript,typescript-tests}/**/*.ts" -c "npx jest"
 ```
 
