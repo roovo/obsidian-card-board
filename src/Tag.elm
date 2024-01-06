@@ -2,6 +2,7 @@ module Tag exposing
     ( Tag
     , containsInvalidCharacters
     , equals
+    , matches
     , parser
     , startsWith
     , toString
@@ -46,6 +47,20 @@ containsInvalidCharacters tagString =
 equals : String -> Tag -> Bool
 equals checkString (Tag tagString) =
     checkString == tagString
+
+
+matches : String -> Tag -> Bool
+matches checkString (Tag tagString) =
+    let
+        exactMatch : String -> String -> Bool
+        exactMatch check tag =
+            if String.endsWith "/" check then
+                String.startsWith check tag || (tag == String.dropRight 1 check)
+
+            else
+                tag == check
+    in
+    exactMatch (String.toLower checkString) (String.toLower tagString)
 
 
 startsWith : String -> Tag -> Bool

@@ -156,7 +156,7 @@ markdownWithIds card =
                 topLevelTagsMarkdown : String
                 topLevelTagsMarkdown =
                     TaskItem.topLevelTags item
-                        |> TagList.toList
+                        |> TagList.toStrings
                         |> List.map (String.append "#")
                         |> String.join " "
             in

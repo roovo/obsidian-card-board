@@ -20,7 +20,7 @@ suite =
         , fromList
         , isEmpty
         , sort
-        , toList
+        , toStrings
         , unique
         ]
 
@@ -270,18 +270,18 @@ sort =
             \() ->
                 TagList.fromList [ "foo", "bar" ]
                     |> TagList.sort
-                    |> TagList.toList
+                    |> TagList.toStrings
                     |> Expect.equal [ "bar", "foo" ]
         ]
 
 
-toList : Test
-toList =
-    describe "toList"
+toStrings : Test
+toStrings =
+    describe "toStrings"
         [ test "returns the TagList as a list of Strings" <|
             \() ->
                 TagList.fromList [ "foo", "bar" ]
-                    |> TagList.toList
+                    |> TagList.toStrings
                     |> Expect.equal [ "foo", "bar" ]
         ]
 

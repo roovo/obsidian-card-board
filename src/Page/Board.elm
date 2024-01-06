@@ -614,7 +614,7 @@ cardView today card =
         dataTags =
             card
                 |> Card.allTags
-                |> TagList.toList
+                |> TagList.toStrings
                 |> List.map (String.replace "/" "-")
                 |> String.join " "
 

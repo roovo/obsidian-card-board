@@ -1,6 +1,22 @@
+- Boards.init takes the board configs and the taskList from the session
+- for each Board (which has been init'd with the taskList:
+    - get the Board.columns
+    - for each of these get the Column.cards and show them on the board
+    - cards added to columns:
+        Columns.addWithPlacement => Column.addTaskItem
+
+- TaskItem.hasTaskWithTagOtherThanThese used to check for OtherTagsColumn
+- TaskItem.hasThisTag used to check for NamedTagColumn
+
+- rename TaskItem.hasThisTag -> as it also checks if matches due to sub-tags
+
+---
 - bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
   as expected!  However, if I also have an other tags column, this card appears here too
   - not expected
+- on tagboard if there is a todo with the tag defined in filter allow list
+  but no other tags then it appears in the others column.  It feels like
+  it should really be in the untagged column.
 
 - touch events - iPad ??
 - show errors on settings pane ??
@@ -11,9 +27,6 @@
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?
-- on tagboard if there is a todo with the tag defined in filter allow list
-  but no other tags then it appears in the others column.  It feels like
-  it should really be in the untagged column.
 - check coverage and add tests
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:

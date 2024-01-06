@@ -10,8 +10,8 @@ module TagList exposing
     , fromList
     , isEmpty
     , sort
-    , toList
     , toString
+    , toStrings
     , unique
     )
 
@@ -85,17 +85,7 @@ filter test (TagList ts) =
 
 containsTagMatching : String -> TagList -> Bool
 containsTagMatching candidate =
-    let
-        matches : String -> Bool
-        matches t =
-            if String.endsWith "/" candidate then
-                String.startsWith (String.toLower candidate) (String.toLower t)
-                    || (String.toLower t == String.dropRight 1 (String.toLower candidate))
-
-            else
-                String.toLower t == String.toLower candidate
-    in
-    List.any matches << toList
+    List.any (Tag.matches candidate) << toTags
 
 
 containsTagMatchingOneOf : List String -> TagList -> Bool
@@ -109,7 +99,7 @@ containsTagOtherThanThese candidates tagList =
         fromTagList : Set String
         fromTagList =
             tagList
-                |> toList
+                |> toStrings
                 |> Set.fromList
 
         fromCandidates : Set String
@@ -127,7 +117,7 @@ isEmpty (TagList ts) =
 
 unique : TagList -> TagList
 unique =
-    fromList << LE.uniqueBy String.toLower << toList
+    fromList << LE.uniqueBy String.toLower << toStrings
 
 
 
@@ -136,7 +126,7 @@ unique =
 
 sort : TagList -> TagList
 sort =
-    fromList << List.sort << toList
+    fromList << List.sort << toStrings
 
 
 
@@ -145,9 +135,18 @@ sort =
 
 toString : TagList -> String
 toString =
-    String.join " " << List.map (String.append "#") << toList
+    String.join " " << List.map (String.append "#") << toStrings
 
 
-toList : TagList -> List String
-toList (TagList ts) =
+toStrings : TagList -> List String
+toStrings (TagList ts) =
     List.map Tag.toString ts
+
+
+
+-- PRIVATE
+
+
+toTags : TagList -> List Tag
+toTags (TagList ts) =
+    ts

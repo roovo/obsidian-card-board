@@ -33,41 +33,73 @@ suite =
 addTaskItem : Test
 addTaskItem =
     describe "addTaskItem"
-        [ test "places an incomplete tagged card when no otherTags have been configured" <|
-            \() ->
-                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
-                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
-                    |> Tuple.mapFirst OtherTagsColumn.toList
-                    |> Tuple.mapFirst (List.map TaskItem.title)
-                    |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
-        , test "DOES NOT place an incomplete tagged card when otherTags INCLUDES the current one" <|
-            \() ->
-                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag", "aTag" ]
-                    |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
-                    |> Tuple.mapFirst OtherTagsColumn.toList
-                    |> Tuple.mapFirst (List.map TaskItem.title)
-                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
-        , test "DOES NOT place a completed tagged card when no otherTags have been configured" <|
-            \() ->
-                OtherTagsColumn.init "" []
-                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
-                    |> Tuple.mapFirst OtherTagsColumn.toList
-                    |> Tuple.mapFirst (List.map TaskItem.title)
-                    |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
-        , test "DOES NOT place a completed tagged card when otherTags which don't include the current one have been configured" <|
-            \() ->
-                OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
-                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
-                    |> Tuple.mapFirst OtherTagsColumn.toList
-                    |> Tuple.mapFirst (List.map TaskItem.title)
-                    |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
-        , test "DOES NOT place a completed tagged card when otherTags INCLUDES the current one" <|
-            \() ->
-                OtherTagsColumn.init "" [ "aTa", "aTag", "bTag", "aTagger", "aTag/subtag", "aTag" ]
-                    |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
-                    |> Tuple.mapFirst OtherTagsColumn.toList
-                    |> Tuple.mapFirst (List.map TaskItem.title)
-                    |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+        [ describe "incomplete tasks"
+            [ test "places a tagged card when NO otherTags have been configured" <|
+                \() ->
+                    OtherTagsColumn.init "" []
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+            , test "places a tagged card when NON-MATCHING otherTags have been configured" <|
+                \() ->
+                    OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [ "foo" ], PlacementResult.Placed )
+            , test "DOES NOT place an UN-tagged card when no otherTags have been configured" <|
+                \() ->
+                    OtherTagsColumn.init "" []
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+            , test "DOES NOT place a tagged card when otherTags INCLUDES the current one" <|
+                \() ->
+                    OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag", "aTag" ]
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+            , test "DOES NOT place a tagged card when included in another column as a sub-tag" <|
+                \() ->
+                    OtherTagsColumn.init "" [ "aTag/" ]
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [ ] foo #aTag/foo")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+            ]
+        , describe "completed tasks"
+            [ test "CompletedInThisColumn a tagged card when no otherTags have been configured" <|
+                \() ->
+                    OtherTagsColumn.init "" []
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+            , test "CompletedInThisColumn a tagged card when otherTags which don't include the current one have been configured" <|
+                \() ->
+                    OtherTagsColumn.init "" [ "aTa", "bTag", "aTagger", "aTag/subtag" ]
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+            , test "CompletedInThisColumn a completed tagged card with incomplete tagged subtasks" <|
+                \() ->
+                    OtherTagsColumn.init "" []
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag\n  - [ ] bar #bTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.CompletedInThisColumn )
+            , test "DoesNotBelong a tagged card when otherTags INCLUDES the current one" <|
+                \() ->
+                    OtherTagsColumn.init "" [ "aTa", "aTag", "bTag", "aTagger", "aTag/subtag", "aTag" ]
+                        |> OtherTagsColumn.addTaskItem (taskItem "- [x] foo #aTag")
+                        |> Tuple.mapFirst OtherTagsColumn.toList
+                        |> Tuple.mapFirst (List.map TaskItem.title)
+                        |> Expect.equal ( [], PlacementResult.DoesNotBelong )
+            ]
         ]
 
 

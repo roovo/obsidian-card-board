@@ -14,6 +14,7 @@ suite =
     concat
         [ containsInvalidCharacters
         , equals
+        , matches
         , parser
         , startsWith
         , toString
@@ -61,6 +62,84 @@ equals =
                     |> Parser.run Tag.parser
                     |> Result.map (Tag.equals "foo-ba")
                     |> Expect.equal (Ok False)
+        ]
+
+
+matches : Test
+matches =
+    describe "matches"
+        [ describe "basic match string (no subtags)"
+            [ test "returns True if the tag matches" <|
+                \() ->
+                    "#foo"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo")
+                        |> Expect.equal (Ok True)
+            , test "matches are case insensative" <|
+                \() ->
+                    "#foo"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "fOO")
+                        |> Expect.equal (Ok True)
+            , test "returns False if there is no match" <|
+                \() ->
+                    "#foo"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "xxx")
+                        |> Expect.equal (Ok False)
+            , test "returns False if the tag starts with the match string" <|
+                \() ->
+                    "#foo"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "fo")
+                        |> Expect.equal (Ok False)
+            , test "returns False if the tag has a '/' on the end" <|
+                \() ->
+                    "#foo/"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo")
+                        |> Expect.equal (Ok False)
+            , test "returns False if the tag is a subtag of the match string" <|
+                \() ->
+                    "#foo/bar"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo")
+                        |> Expect.equal (Ok False)
+            ]
+        , describe "match string with subtags"
+            [ test "returns True if the tag matches" <|
+                \() ->
+                    "#foo/bar"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo/bar")
+                        |> Expect.equal (Ok True)
+            , test "returns False if the tag has a '/' on the end" <|
+                \() ->
+                    "#foo/bar/"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo/bar")
+                        |> Expect.equal (Ok False)
+            ]
+        , describe "match string with subtag wildcards"
+            [ test "returns True if the tag matches exactly" <|
+                \() ->
+                    "#foo/bar/"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo/bar/")
+                        |> Expect.equal (Ok True)
+            , test "returns True if the tag is a subtag of the match string" <|
+                \() ->
+                    "#foo/bar/baz"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo/bar/")
+                        |> Expect.equal (Ok True)
+            , test "returns True if the tag is the root of the match string" <|
+                \() ->
+                    "#foo/bar"
+                        |> Parser.run Tag.parser
+                        |> Result.map (Tag.matches "foo/bar/")
+                        |> Expect.equal (Ok True)
+            ]
         ]
 
 

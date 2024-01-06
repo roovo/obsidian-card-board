@@ -262,7 +262,7 @@ removeTags =
                     |> TaskList.removeTags [ "tag1", "tag2" ]
                     |> TaskList.tasks
                     |> List.map TaskItem.tags
-                    |> List.concatMap TagList.toList
+                    |> List.concatMap TagList.toStrings
                     |> LE.unique
                     |> Expect.equal [ "tag3", "tag4" ]
         ]

@@ -5,6 +5,7 @@ module TaskItem exposing
     , TaskItem
     , TaskItemFields
     , allSubtasksWithMatchingTagCompleted
+    , asSingleTaskItems
     , completedPosix
     , completion
     , containsId
@@ -15,7 +16,6 @@ module TaskItem exposing
     , dummy
     , fields
     , filePath
-    , hasAnyIncompleteSubtasksWithTagsOtherThanThese
     , hasIncompleteTaskWithThisTag
     , hasNotes
     , hasOneOfTheTags
@@ -34,6 +34,7 @@ module TaskItem exposing
     , originalText
     , parser
     , removeFileNameDate
+    , removeMatchingTags
     , removeTags
     , tags
     , tasksToToggle
@@ -157,6 +158,11 @@ allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
             List.all isCompleted matchingSubtasks
 
 
+asSingleTaskItems : TaskItem -> List TaskItem
+asSingleTaskItems ((TaskItem fields_ subtasks_) as taskItem) =
+    TaskItem fields_ [] :: descendantTasks taskItem
+
+
 completedPosix : TaskItem -> Int
 completedPosix ((TaskItem _ subtasks_) as taskItem) =
     let
@@ -248,23 +254,6 @@ fields (TaskItem f _) =
 filePath : TaskItem -> String
 filePath =
     .filePath << fields
-
-
-hasAnyIncompleteSubtasksWithTagsOtherThanThese : List String -> TaskItem -> Bool
-hasAnyIncompleteSubtasksWithTagsOtherThanThese tagsToMatch taskItem =
-    let
-        subtasksWithTagsOtherThanThese : List TaskItem
-        subtasksWithTagsOtherThanThese =
-            taskItem
-                |> descendantTasks
-                |> List.filter (hasTagOtherThanThese tagsToMatch)
-    in
-    case subtasksWithTagsOtherThanThese of
-        [] ->
-            False
-
-        matchingSubtasks ->
-            List.any (not << isCompleted) matchingSubtasks
 
 
 hasIncompleteTaskWithThisTag : String -> TaskItem -> Bool
@@ -496,6 +485,16 @@ topLevelTaskHasThisTag tagToMatch =
 removeFileNameDate : TaskItem -> TaskItem
 removeFileNameDate (TaskItem fields_ subtasks_) =
     TaskItem { fields_ | dueFile = Nothing } subtasks_
+
+
+removeMatchingTags : String -> TaskItem -> TaskItem
+removeMatchingTags tagToRemove taskItem =
+    let
+        remover : TagList -> TagList
+        remover tagList =
+            TagList.filter (not << Tag.matches tagToRemove) tagList
+    in
+    mapTags remover taskItem
 
 
 removeTags : List String -> TaskItem -> TaskItem
@@ -948,3 +947,17 @@ tokenParser dataviewTaskCompletion =
         , P.succeed Word
             |= ParserHelper.wordParser
         ]
+
+
+
+-- PRIVATE
+
+
+mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
+mapTags fn taskItem =
+    mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+mapFields : (TaskItemFields -> TaskItemFields) -> TaskItem -> TaskItem
+mapFields fn (TaskItem fields_ subtasks_) =
+    TaskItem (fn fields_) subtasks_
