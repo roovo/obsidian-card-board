@@ -21,7 +21,6 @@ module Filter exposing
 
 import DecodeHelpers
 import Json.Encode as JE
-import List.Extra as LE
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 

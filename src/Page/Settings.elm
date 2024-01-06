@@ -999,18 +999,6 @@ globalSettingsView dataviewTaskCompletion timeWithZone multiSelect settingsForm 
 globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
 globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm =
     let
-        dataViewExample : String
-        dataViewExample =
-            case dataviewTaskCompletion of
-                DataviewTaskCompletion.NoCompletion ->
-                    "automatic task completion tracking disabled"
-
-                DataviewTaskCompletion.Emoji ->
-                    "✅ 1999-12-31"
-
-                DataviewTaskCompletion.Text t ->
-                    "[" ++ t ++ ":: 1999-12-31]"
-
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
             if settingsForm.ignoreFileNameDates then

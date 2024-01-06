@@ -47,8 +47,7 @@ import Date exposing (Date)
 import DueDate exposing (DueDate)
 import FNV1a
 import Filter exposing (Filter, Scope)
-import GlobalSettings exposing (TaskCompletionFormat, TaskCompletionSettings)
-import Iso8601
+import GlobalSettings exposing (TaskCompletionSettings)
 import List.Extra as LE
 import Maybe.Extra as ME
 import ObsidianTasksDate
@@ -154,7 +153,7 @@ allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
 
 
 asSingleTaskItems : TaskItem -> List TaskItem
-asSingleTaskItems ((TaskItem fields_ subtasks_) as taskItem) =
+asSingleTaskItems ((TaskItem fields_ _) as taskItem) =
     TaskItem fields_ [] :: descendantTasks taskItem
 
 
@@ -714,21 +713,6 @@ fileIsFromPath file path =
     pathComponents
         |> List.indexedMap isComponentMatching
         |> List.all identity
-
-
-hasAtLeastOneTagOtherThanThese : List String -> TaskItem -> Bool
-hasAtLeastOneTagOtherThanThese tagsToMatch taskItem =
-    taskItem
-        |> fields
-        |> .tags
-        |> TagList.containsTagOtherThanThese tagsToMatch
-
-
-hasTagOtherThanThese : List String -> TaskItem -> Bool
-hasTagOtherThanThese tagsToMatch taskItem =
-    fields taskItem
-        |> .tags
-        |> TagList.containsTagOtherThanThese tagsToMatch
 
 
 indentedItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser IndentedItem

@@ -9,7 +9,6 @@ module TimeWithZone exposing
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import GlobalSettings exposing (TaskCompletionSettings)
-import Iso8601
 import Time exposing (Zone)
 import Time.Extra as TE
 
@@ -20,7 +19,7 @@ import Time.Extra as TE
 
 type alias TimeWithZone =
     { time : Time.Posix
-    , zone : Time.Zone
+    , zone : Zone
     }
 
 

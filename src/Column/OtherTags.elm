@@ -19,7 +19,6 @@ module Column.OtherTags exposing
 
 import DefaultColumnNames exposing (DefaultColumnNames)
 import PlacementResult exposing (PlacementResult)
-import Tag exposing (Tag)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode

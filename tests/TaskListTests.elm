@@ -5,7 +5,6 @@ import Expect
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
-import List.Extra as LE
 import Parser
 import TagList
 import TaskItem exposing (TaskItem)

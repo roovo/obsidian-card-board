@@ -4,7 +4,6 @@ import Expect
 import Filter
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
-import Helpers.TaskItemHelpers as TaskItemHelpers
 import Test exposing (..)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode

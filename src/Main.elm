@@ -127,9 +127,9 @@ type Msg
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
-    | ReceiveTime ( Time.Zone, Time.Posix )
+    | ReceiveTime ( Time.Zone, Posix )
     | ShowBoard Int
-    | Tick Time.Posix
+    | Tick Posix
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileRenamed ( String, String )
