@@ -30,6 +30,8 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   CardBoard font size.
 - Bugfix: fix issue where cards which move columns when
   the date changes loose their content.
+- Bugfix: (hopefully) fixed issues with where cards appear
+  on the board when there is an `Other Tags` column on the board.
 
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
