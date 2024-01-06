@@ -48,9 +48,9 @@ export class CardBoardView extends ItemView {
   async onOpen() {
     this.icon       = "card-board"
 
-    const globalSettings : any = this.plugin.settings.data.globalSettings;
+    const globalSettings : any = this.plugin.settings?.data.globalSettings;
 
-    if (globalSettings.hasOwnProperty('filters')) {
+    if ((!(globalSettings === undefined)) && globalSettings.hasOwnProperty('filters')) {
       this.fileFilter = new FileFilter(globalSettings.filters);
     } else {
       this.fileFilter = new FileFilter([]);
@@ -279,6 +279,7 @@ export class CardBoardView extends ItemView {
       this.fileFilter.filter(file, async (filteredFile: TFile) => {
         const fileDate      = this.formattedFileDate(filteredFile);
         const fileContents  = await this.vault.cachedRead(filteredFile);
+
         this.elm.ports.interopToElm.send({
           tag: "fileAdded",
           data: {
