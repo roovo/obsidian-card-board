@@ -17,7 +17,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 ## New
 - Choose files or directories to ignore when loading
   tasks from notes.  Handy if you use templates which contain
-  tasks that you don't want to see on your boards.
+  tasks that you don't want to see on your boards, or if you
+  want to speed up loading by skipping any files or folders
+  you know will not contain tasks you with to use with CardBoard.
 - Confirmation step added when deleting cards.
 - Can now choose to use either local or UTC time when marking tasks as complete.
 - Shows the year of a task on the card if it is not due in
@@ -448,8 +450,11 @@ and/or set the width of the columns by changing the width setting.
 
 ## Limitations
 - Might not work that great on large vaults (as it parses all markdown files at startup).
-- Might not work that great on large files (as it parses all markdown files, and doesn't use
-  any form of cache).
+  If you use folders in your vault and there are folders which you know will never contain
+  any tasks you wish to use with CardBoard you can configure CardBoard to ignore these.
+- Might not work that great on large markdown files (as it parses all markdown files, and doesn't use
+  any form of cache).  If you know any large markdown files will never contain tasks you
+  wish to use with Cardboard, you can add them to the ignore list in settings.
 - Might not be great on mobile (see previous, plus I haven't put any particular effort into
   making the interface mobile friendly - yet).
 
