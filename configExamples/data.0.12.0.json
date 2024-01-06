@@ -60,11 +60,11 @@
         "filters": [
           {
             "tag": "tagFilter",
-            "data": "home/"
+            "data": "people/"
           },
           {
             "tag": "tagFilter",
-            "data": "people/"
+            "data": "home/"
           }
         ],
         "filterPolarity": "Deny",
@@ -354,7 +354,7 @@
       ],
       "ignoreFileNameDates": false,
       "taskCompletionFormat": "ObsidianCardBoard",
-      "taskCompletionInLocalTime": false,
+      "taskCompletionInLocalTime": true,
       "taskCompletionShowUtcOffset": false
     }
   }
