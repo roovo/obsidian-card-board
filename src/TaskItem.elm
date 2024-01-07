@@ -5,26 +5,23 @@ module TaskItem exposing
     , TaskItem
     , TaskItemFields
     , allSubtasksWithMatchingTagCompleted
+    , asSingleTaskItems
     , completedPosix
     , completion
     , containsId
-    , descendantTaskHasThisTag
     , descendantTasks
     , due
     , dueRataDie
     , dummy
     , fields
     , filePath
-    , hasAnyIncompleteSubtasksWithTagsOtherThanThese
-    , hasIncompleteTaskWithThisTag
     , hasNotes
-    , hasOneOfTheTags
     , hasSubtasks
     , hasTags
-    , hasTaskWithTagOtherThanThese
     , hasThisTag
     , hasTopLevelTags
     , id
+    , isAllowed
     , isCompleted
     , isDated
     , isFromFile
@@ -33,6 +30,7 @@ module TaskItem exposing
     , originalText
     , parser
     , removeFileNameDate
+    , removeMatchingTags
     , removeTags
     , tags
     , tasksToToggle
@@ -40,7 +38,6 @@ module TaskItem exposing
     , titleWithTags
     , toToggledString
     , topLevelTags
-    , topLevelTaskHasThisTag
     , updateFilePath
     )
 
@@ -49,8 +46,9 @@ import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import DueDate exposing (DueDate)
 import FNV1a
-import GlobalSettings exposing (TaskCompletionFormat)
-import Iso8601
+import Filter exposing (Filter, Scope)
+import GlobalSettings exposing (TaskCompletionSettings)
+import List.Extra as LE
 import Maybe.Extra as ME
 import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
@@ -61,6 +59,7 @@ import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -153,6 +152,11 @@ allSubtasksWithMatchingTagCompleted tagToMatch taskItem =
             List.all isCompleted matchingSubtasks
 
 
+asSingleTaskItems : TaskItem -> List TaskItem
+asSingleTaskItems ((TaskItem fields_ _) as taskItem) =
+    TaskItem fields_ [] :: descendantTasks taskItem
+
+
 completedPosix : TaskItem -> Int
 completedPosix ((TaskItem _ subtasks_) as taskItem) =
     let
@@ -199,20 +203,6 @@ descendantTasks (TaskItem _ subtasks_) =
     List.map (\s -> TaskItem s []) subtasks_
 
 
-descendantTaskHasThisTag : String -> TaskItem -> Bool
-descendantTaskHasThisTag tagToMatch =
-    let
-        descendantTasksTags : TaskItem -> TagList
-        descendantTasksTags taskItem =
-            descendantTasks taskItem
-                |> List.map (fields >> .tags)
-                |> List.foldl TagList.append TagList.empty
-                |> TagList.unique
-                |> TagList.sort
-    in
-    TagList.containsTagMatching tagToMatch << descendantTasksTags
-
-
 due : TaskItem -> Maybe Date
 due (TaskItem fields_ _) =
     case fields_.dueTag of
@@ -246,33 +236,6 @@ filePath =
     .filePath << fields
 
 
-hasAnyIncompleteSubtasksWithTagsOtherThanThese : List String -> TaskItem -> Bool
-hasAnyIncompleteSubtasksWithTagsOtherThanThese tagsToMatch taskItem =
-    let
-        subtasksWithTagsOtherThanThese : List TaskItem
-        subtasksWithTagsOtherThanThese =
-            taskItem
-                |> descendantTasks
-                |> List.filter (hasTagOtherThanThese tagsToMatch)
-    in
-    case subtasksWithTagsOtherThanThese of
-        [] ->
-            False
-
-        matchingSubtasks ->
-            List.any (not << isCompleted) matchingSubtasks
-
-
-hasIncompleteTaskWithThisTag : String -> TaskItem -> Bool
-hasIncompleteTaskWithThisTag tagToMatch taskItem =
-    let
-        isIncompleteWithMatchingTag : TaskItem -> Bool
-        isIncompleteWithMatchingTag ti =
-            TagList.containsTagMatching tagToMatch (topLevelTags ti) && not (isCompleted ti)
-    in
-    List.any isIncompleteWithMatchingTag (taskItem :: descendantTasks taskItem)
-
-
 hasNotes : TaskItem -> Bool
 hasNotes =
     not << String.isEmpty << .notes << fields
@@ -283,21 +246,9 @@ hasTags =
     not << TagList.isEmpty << tags
 
 
-hasTaskWithTagOtherThanThese : List String -> TaskItem -> Bool
-hasTaskWithTagOtherThanThese tagsToMatch taskItem =
-    (taskItem :: descendantTasks taskItem)
-        |> List.filter hasTopLevelTags
-        |> List.any (hasAtLeastOneTagOtherThanThese tagsToMatch)
-
-
 hasTopLevelTags : TaskItem -> Bool
 hasTopLevelTags =
     not << TagList.isEmpty << topLevelTags
-
-
-hasOneOfTheTags : List String -> TaskItem -> Bool
-hasOneOfTheTags tagsToMatch taskItem =
-    List.any (\t -> hasThisTag t taskItem) tagsToMatch
 
 
 hasThisTag : String -> TaskItem -> Bool
@@ -315,6 +266,27 @@ id (TaskItem fields_ _) =
     String.fromInt (FNV1a.hash fields_.filePath)
         ++ ":"
         ++ String.fromInt fields_.lineNumber
+
+
+isAllowed : Scope -> TaskItem -> Filter -> Bool
+isAllowed scope taskItem filter =
+    case filter of
+        Filter.FileFilter filePath_ ->
+            isFromFile filePath_ taskItem
+
+        Filter.PathFilter path ->
+            fileIsFromPath (filePath taskItem) path
+
+        Filter.TagFilter tag ->
+            case scope of
+                Filter.TopLevelOnly ->
+                    topLevelTaskHasThisTag tag taskItem
+
+                Filter.SubTasksOnly ->
+                    descendantTaskHasThisTag tag taskItem
+
+                Filter.Both ->
+                    hasThisTag tag taskItem
 
 
 isCompleted : TaskItem -> Bool
@@ -454,16 +426,6 @@ titleWithTags taskItem =
         |> String.join " "
 
 
-topLevelTaskHasThisTag : String -> TaskItem -> Bool
-topLevelTaskHasThisTag tagToMatch =
-    let
-        topLevelTasksTags : TaskItem -> TagList
-        topLevelTasksTags (TaskItem fields_ _) =
-            fields_.tags
-    in
-    TagList.containsTagMatching tagToMatch << topLevelTasksTags
-
-
 
 -- MODIFICATION
 
@@ -471,6 +433,16 @@ topLevelTaskHasThisTag tagToMatch =
 removeFileNameDate : TaskItem -> TaskItem
 removeFileNameDate (TaskItem fields_ subtasks_) =
     TaskItem { fields_ | dueFile = Nothing } subtasks_
+
+
+removeMatchingTags : String -> TaskItem -> TaskItem
+removeMatchingTags tagToRemove taskItem =
+    let
+        remover : TagList -> TagList
+        remover tagList =
+            TagList.filter (not << Tag.matches tagToRemove) tagList
+    in
+    mapTags remover taskItem
 
 
 removeTags : List String -> TaskItem -> TaskItem
@@ -527,8 +499,8 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
 -- CONVERT
 
 
-toToggledString : DataviewTaskCompletion -> TaskCompletionFormat -> { a | time : Time.Posix } -> TaskItem -> String
-toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskItem fields_ _) as taskItem) =
+toToggledString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> TaskItem -> String
+toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((TaskItem fields_ _) as taskItem) =
     let
         blockLinkRegex : Regex
         blockLinkRegex =
@@ -544,33 +516,17 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
         completionTag t_ =
             case completion t_ of
                 Incomplete ->
-                    let
-                        completionString : String
-                        completionString =
-                            timeWithZone.time
-                                |> Iso8601.fromTime
-                                |> String.left 19
-                    in
-                    case taskCompletionFormat of
-                        GlobalSettings.NoCompletion ->
-                            ""
-
-                        GlobalSettings.ObsidianCardBoard ->
-                            " @completed(" ++ completionString ++ ")"
-
-                        GlobalSettings.ObsidianDataview ->
-                            case dataviewTaskCompletion of
-                                DataviewTaskCompletion.NoCompletion ->
+                    TimeWithZone.completionString
+                        dataviewTaskCompletion
+                        taskCompletionSettings
+                        timeWithZone
+                        |> (\str ->
+                                if String.length str == 0 then
                                     ""
 
-                                DataviewTaskCompletion.Emoji ->
-                                    " ✅ " ++ String.left 10 completionString
-
-                                DataviewTaskCompletion.Text t ->
-                                    " [" ++ t ++ ":: " ++ String.left 10 completionString ++ "]"
-
-                        GlobalSettings.ObsidianTasks ->
-                            " ✅ " ++ String.left 10 completionString
+                                else
+                                    " " ++ str
+                           )
 
                 _ ->
                     ""
@@ -612,7 +568,7 @@ toToggledString dataviewTaskCompletion taskCompletionFormat timeWithZone ((TaskI
                         DataviewTaskCompletion.Text t ->
                             regexReplacer (" \\[" ++ t ++ ":: \\d{4}-\\d{2}-\\d{2}\\]") (\_ -> "")
             in
-            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\)" (\_ -> "")
+            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:(?:[+-]\\d{2}:\\d{2})|Z){0,1}\\)" (\_ -> "")
                 >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
                 >> dataviewRemover
 
@@ -725,19 +681,38 @@ fileDateParser fileDate =
         |> P.succeed
 
 
-hasAtLeastOneTagOtherThanThese : List String -> TaskItem -> Bool
-hasAtLeastOneTagOtherThanThese tagsToMatch taskItem =
-    taskItem
-        |> fields
-        |> .tags
-        |> TagList.containsTagOtherThanThese tagsToMatch
+fileIsFromPath : String -> String -> Bool
+fileIsFromPath file path =
+    let
+        pathComponents : List String
+        pathComponents =
+            path
+                |> String.replace "\\" "/"
+                |> String.split "/"
+                |> List.filter (not << String.isEmpty)
 
+        filePathComponents : List String
+        filePathComponents =
+            file
+                |> String.replace "\\" "/"
+                |> String.split "/"
+                |> List.reverse
+                |> List.drop 1
+                |> List.reverse
+                |> List.filter (not << String.isEmpty)
 
-hasTagOtherThanThese : List String -> TaskItem -> Bool
-hasTagOtherThanThese tagsToMatch taskItem =
-    fields taskItem
-        |> .tags
-        |> TagList.containsTagOtherThanThese tagsToMatch
+        isComponentMatching : Int -> String -> Bool
+        isComponentMatching index pathComponent =
+            case LE.getAt index filePathComponents of
+                Nothing ->
+                    False
+
+                Just filePathComponent ->
+                    filePathComponent == pathComponent
+    in
+    pathComponents
+        |> List.indexedMap isComponentMatching
+        |> List.all identity
 
 
 indentedItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser IndentedItem
@@ -905,3 +880,41 @@ tokenParser dataviewTaskCompletion =
         , P.succeed Word
             |= ParserHelper.wordParser
         ]
+
+
+
+-- PRIVATE
+
+
+descendantTaskHasThisTag : String -> TaskItem -> Bool
+descendantTaskHasThisTag tagToMatch =
+    let
+        descendantTasksTags : TaskItem -> TagList
+        descendantTasksTags taskItem =
+            descendantTasks taskItem
+                |> List.map (fields >> .tags)
+                |> List.foldl TagList.append TagList.empty
+                |> TagList.unique
+                |> TagList.sort
+    in
+    TagList.containsTagMatching tagToMatch << descendantTasksTags
+
+
+mapFields : (TaskItemFields -> TaskItemFields) -> TaskItem -> TaskItem
+mapFields fn (TaskItem fields_ subtasks_) =
+    TaskItem (fn fields_) subtasks_
+
+
+mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
+mapTags fn taskItem =
+    mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+topLevelTaskHasThisTag : String -> TaskItem -> Bool
+topLevelTaskHasThisTag tagToMatch =
+    let
+        topLevelTasksTags : TaskItem -> TagList
+        topLevelTasksTags (TaskItem fields_ _) =
+            fields_.tags
+    in
+    TagList.containsTagMatching tagToMatch << topLevelTasksTags

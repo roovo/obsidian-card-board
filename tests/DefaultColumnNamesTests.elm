@@ -23,13 +23,13 @@ encodeDecode =
                 DefaultColumnNames.default
                     |> TsEncode.runExample DefaultColumnNames.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_12_0_decoder
                     |> .decoded
                     |> Expect.equal (Ok DefaultColumnNames.default)
         , test "can decode an encoded non default back to the original" <|
             \() ->
                 exampleColumnNames
-                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_11_0_decoder
+                    |> DecodeHelpers.runDecoder DefaultColumnNames.v_0_12_0_decoder
                     |> .decoded
                     |> Result.withDefault DefaultColumnNames.default
                     |> TsEncode.runExample DefaultColumnNames.encoder

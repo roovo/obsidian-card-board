@@ -10,17 +10,29 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
 
 - Uses regular tasks/subtasks wherever they are in your vault.
 - Shows them on kanban style boards.
-- Two column types supported:
+- Two column types supported (any combination can be on a single board):
   - Date based (with daily/periodic notes support).
-  - Tag based (uses `#tags` to define columns).
+  - Tag based (use `#tags` to define columns).
 
 ## New
-- Boards can have a mixture of date and tag based columns.
-- Columns can be re-ordered (by dragging them on the settings pane).
-- More flexible date based columns based on relative dates.
-- Ability to use css snippets to
-  [set card hightlight color](#customising-card-highlight-color) based on tags.
-- Board reordering; drag and drop tab headers or board names in the settings dialog.
+- Choose files or directories to ignore when loading
+  tasks from notes.  Handy if you use templates which contain
+  tasks that you don't want to see on your boards, or if you
+  want to speed up loading by skipping any files or folders
+  you know will not contain tasks you with to use with CardBoard.
+- Confirmation step added when deleting cards.
+- Can now choose to use either local or UTC time when marking tasks as complete.
+- Shows the year of a task on the card if it is not due in
+  the current year.
+- Bugfix: filter definitions dropdown is now scrollable.
+- Bugfix: card content respects the _Text Font_ setting in
+  Obsidian _Appearance_ settings.
+- Bugfix: use Obsidian _Font size_ for the CardBoard font size.
+- Bugfix: fix issue where cards which move columns when
+  the date changes (at midnight) loose their content.
+- Bugfix: (hopefully) fixed issues with where cards could appear
+  in unexpected columns when there is an `Other Tags` column.
+
 
 ![date based board screenshot](/images/dateBoard.png?raw=true)
 
@@ -36,22 +48,22 @@ When installed, you can launch the plugin:
 ![app ribbon icon](/images/ribbonIcon.png?raw=true)
 
 If you have no boards defined, you should get a dialog asking you to add a new
-board.  You can choose between 3 board types:
+board.  You can choose from one of 3 board types to get going:
 
 - **Date based**: looks like the main screenshot above.
-- **Tag based**: uses tags to define the columns (you need to include tags on
-  your tasks or in front matter for this to work).
+- **Tag based**: includes the built-in tag based columns.  You will need to add
+  the tag columns you wish to include.
 - **Empty board**: has no pre-defined columns.
 
-These are just to get you started.  You can add/edit/re-order/delete columns
-for these (or any board) via the plugin's settings.
+These are just to get you started.  You can mix date and tag based columns on
+the same board: use the plugin's settings to add/edit/re-order/delete columns.
 
 ## Cards
 Any task in your vault can appear as a card in a column on a board.  In order to
 do this, it must:
 
 - Be in a markdown file.
-- Not be indented.
+- Not be indented - it must be at the start of the line.
 - Use one of the commonmark supported unordered list formats:
   - `- [ ] Task title`
   - `* [ ] Task title`
@@ -62,8 +74,8 @@ What appears on the card depends on what your task looks like:
 - Anything that is indented under a task will appear in the body of the task.
   - Indented tasks will appear as subtasks (all subtasks are grouped together).
   - Indented text will appear as notes.
-- `#tags` in front matter or on the line of the task will
-  appear at the top of the card.
+- `#tags` on the line of the task or included in the `tags` property of the note
+  containing the task will appear at the top of the card
 - Due date (if given) will appear at the bottom of the card.
 
 So, if you had the following in one of your markdown files:
@@ -85,7 +97,7 @@ It will look something like this on a card on your board:
 ![example card](/images/card.png?raw=true)
 
 ### Marking a task as complete
-If you mark an task as complete on the board it will be marked as completed in the markdown
+If you mark a task as complete on the board it will be marked as completed in the markdown
 file (and vice-versa).  If you mark as complete on the board, a completion timestamp
 is appended to the task:
 
@@ -95,6 +107,9 @@ is appended to the task:
 
 See the [compatibility section](#other-plugin-compatibility) for details on how you can choose to use
 a format compatible with other plugins (or to choose not to add any completion text).
+
+You can choose wether to use local or UTC time in completion timestamps via the plugin's
+settings (in the `Global Settings` section).
 
 If you have subtasks and the parent task is tagged as an _autocomplete_ task then the main
 task will be marked as complete when you tick off the final subtask:
@@ -115,7 +130,7 @@ the task from your vault, it simply surrounds it with markdown `<del>` tags:
 ```
 
 ### Editing tasks (and hover preview)
-Click on the edit icon to open the file containing the task.  Cmd (or Ctrl on windows)
+Click on the edit icon to open the note containing the task.  Cmd (or Ctrl on windows)
 hover over the icon for the normal Obsidian hover preview.
 
 
@@ -270,26 +285,28 @@ you can define a board that shows tasks tagged with these in separate columns:
 You do not need to inclue the `#` character at the start of the tag when defining
 which tag shold be used for a column.
 
+#### Subtags
+If you specify a tag with a trailing `/` in the settings for the column,
+then the column will contain all tasks which have subtags of the tag, as well
+as those with the _base_ tag.
 
 #### Sub-tasks
 Tasks with sub-tasks that have matching tags will also appear on the board.
 
-#### Subtags
-If you specify a tag with a trailing `/` in the settings for the column,
-then the column will contain all subtags of the tag.
-
-#### Front Matter Tags
+#### Tag Properties
 If you want to give all the tasks on a page the same tag, you can put it in the
-page front matter:
+properties of a note:
 
 ```
 ---
-tags: [ project1 ]
+tags:
+  - recipe
+  - cooking
 ---
 
 # Project 1
 
-- [ ] this task will automatically have a project1 tag
+- [ ] this task will automatically have the recipe and cooking tags
 ```
 
 #### Hiding Tags
@@ -309,7 +326,7 @@ You cannot have more that one of each of these on a board.
 ### Completed column
 You can include a complted column on your board. This will only include
 completed tasks that would have appeared in one of the other columns had it not been
-completed; so it only contains tasks that _belong_ on the board.
+completed; i.e. it only contains tasks that _belong_ on the board.
 
 Where you have columns based on tags and a task is shown in a column due to tags on
 sub-tasks it will only show in that column if those subtasks are incomplete.
@@ -328,8 +345,8 @@ You cannot have more than one Completed column on a board.
 
 ### Board Filters
 You can filter which tasks appear on each board in the board settings.  There are 3
-types of filter you can use: file, path, and #tags (which includes front matter tags).  You can
-use any combination of these on a per-board basis.
+types of filter you can use: file, path, and #tags (which includes tags in note properties).
+You can use any combination of these on a per-board basis.
 
 You can also:
 
@@ -346,12 +363,14 @@ Filters are applied before tasks are placed onto a board:
 Plugin settings are accessible from the plugin view itself, via the settings icon
 above the board to the left of the tabs.  You can:
 
+- Choose files and paths you do not want to load any tasks from.
 - Create new boards (using the + icon next to the _Boards_ heading).
 - Configure your boards.
 - Customize the default names of the built-in columns.
 - Add/remove/edit/reorder columns.
 - Delete boards.
 - Choose whether to use Cardboard, Dataview or Tasks format for marking task completion.
+- Choose whether to use local or UTC time when marking tasks as completed.
 - Choose to not use the date of daily notes files as the due date for tasks.
 
 The settings for your boards are saved in the
@@ -369,7 +388,7 @@ then do ensure that your .obsidian directory is backed up.
 Cardboard is compatible with the *Due* and *Completion* date formats used in
 both [Tasks](https://obsidian-tasks-group.github.io/obsidian-tasks/)
 and [Dataview](https://blacksmithgu.github.io/obsidian-dataview/).
-Dates from both of these are understood with no configuration.
+Due dates from both of these are understood with no configuration.
 
 When marking a task as complete, you can choose which format to use via
 CardBoard's Global Settings:
@@ -431,8 +450,11 @@ and/or set the width of the columns by changing the width setting.
 
 ## Limitations
 - Might not work that great on large vaults (as it parses all markdown files at startup).
-- Might not work that great on large files (as it parses all markdown files, and doesn't use
-  any form of cache).
+  If you use folders in your vault and there are folders which you know will never contain
+  any tasks you wish to use with CardBoard you can configure CardBoard to ignore these.
+- Might not work that great on large markdown files (as it parses all markdown files, and doesn't use
+  any form of cache).  If you know any large markdown files will never contain tasks you
+  wish to use with Cardboard, you can add them to the ignore list in settings.
 - Might not be great on mobile (see previous, plus I haven't put any particular effort into
   making the interface mobile friendly - yet).
 

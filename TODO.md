@@ -1,7 +1,3 @@
-- bug ? if I make a column for "people/" it includes the card tagged with "people/fred"
-  as expected!  However, if I also have an other tags column, this card appears here too
-  - not expected
-
 - touch events - iPad ??
 - show errors on settings pane ??
 
@@ -11,9 +7,6 @@
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
   that as the due date of the card?
 - dataview - what if there is a due date in the frontmatter?
-- on tagboard if there is a todo with the tag defined in filter allow list
-  but no other tags then it appears in the others column.  It feels like
-  it should really be in the untagged column.
 - check coverage and add tests
 - why is the case of the filename for MultiSelect.elm not being recognised properly?
 - add ts declarations to replace @ts-ignores:
@@ -28,6 +21,14 @@
   - you'll see the debug messaged double up
   - and tripple up if you do it again
   - ...
+
+# Mobile
+- you can toggle mobile emulation by entering the following in Developer Tools > Console.
+  this.app.emulateMobile(!this.app.isMobile);
+- use https://github.com/shabegom/obsidian-mobile-logging to console.log to a note
+  inside the vault. Think this does the same as:
+  https://gist.github.com/liamcain/3f21f1ee820cb30f18050d2f3ad85f3f
+
 
 # UI Improvements
 - nested subtasks are un-nested on cards

@@ -14,16 +14,18 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './main';
+import { CardBoardPluginSettingsPostV11 } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
+import { FileFilter } from './fileFilter'
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 
 export class CardBoardView extends ItemView {
-  private vault:  Vault;
-  private plugin: CardBoardPlugin;
-  private elm: ElmApp;
-  private elmDiv: any;
+  private vault:      Vault;
+  private plugin:     CardBoardPlugin;
+  private elm:        ElmApp;
+  private elmDiv:     any;
+  private fileFilter: FileFilter;
 
   constructor(
     plugin: CardBoardPlugin,
@@ -44,7 +46,15 @@ export class CardBoardView extends ItemView {
   }
 
   async onOpen() {
-    this.icon = "card-board"
+    this.icon       = "card-board"
+
+    const globalSettings : any = this.plugin.settings?.data.globalSettings;
+
+    if ((!(globalSettings === undefined)) && globalSettings.hasOwnProperty('filters')) {
+      this.fileFilter = new FileFilter(globalSettings.filters);
+    } else {
+      this.fileFilter = new FileFilter([]);
+    }
 
     // @ts-ignore
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
@@ -218,7 +228,7 @@ export class CardBoardView extends ItemView {
 
           if (element instanceof HTMLElement) {
             element.innerHTML = "";
-            MarkdownRenderer.renderMarkdown(item.markdown, element, card.filePath, that.plugin);
+            MarkdownRenderer.render(that.app, item.markdown, element, card.filePath, that);
 
             const internalLinks = Array.from(element.getElementsByClassName("internal-link"));
 
@@ -263,12 +273,13 @@ export class CardBoardView extends ItemView {
   }
 
   async handleElmInitialized() {
-
     const markdownFiles = this.vault.getMarkdownFiles();
+    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
 
-    for (const file of markdownFiles) {
+    for (const file of filteredFiles) {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.cachedRead(file);
+
       this.elm.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
@@ -496,22 +507,23 @@ export class CardBoardView extends ItemView {
     });
   }
 
-
   async handleFileCreated(
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.read(file);
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.vault.read(file);
 
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
-      });
+        this.elm.ports.interopToElm.send({
+          tag: "fileAdded",
+          data: {
+            filePath: file.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
+      }
     }
   }
 
@@ -519,8 +531,6 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate = this.formattedFileDate(file);
-
       this.elm.ports.interopToElm.send({
         tag: "fileDeleted",
         data: file.path
@@ -532,17 +542,19 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile
   ) {
     if (file instanceof TFile) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.read(file);
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.vault.read(file);
 
-      this.elm.ports.interopToElm.send({
-        tag: "fileUpdated",
-        data: {
-          filePath: file.path,
-          fileDate: fileDate,
-          fileContents: fileContents
-        }
-      });
+        this.elm.ports.interopToElm.send({
+          tag: "fileUpdated",
+          data: {
+            filePath: file.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
+      }
     }
   }
 
@@ -550,13 +562,31 @@ export class CardBoardView extends ItemView {
     file: TAbstractFile,
     oldPath: string
   ) {
-    this.elm.ports.interopToElm.send({
-      tag: "fileRenamed",
-      data: {
-        oldPath: oldPath,
-        newPath: file.path
+    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
+
+    switch(oldNew.join(",")) {
+      case 'false,true': {
+        this.handleFileCreated(file)
+        break;
       }
-    });
+      case 'true,false': {
+        this.elm.ports.interopToElm.send({
+          tag: "fileDeleted",
+          data: oldPath
+        });
+        break;
+      }
+      case 'true,true': {
+        this.elm.ports.interopToElm.send({
+          tag: "fileRenamed",
+          data: {
+            oldPath: oldPath,
+            newPath: file.path
+          }
+        });
+        break;
+      }
+    }
   }
 
   // HELPERS

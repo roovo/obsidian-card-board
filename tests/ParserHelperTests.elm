@@ -305,6 +305,16 @@ timeParserTests =
                 "2020-01-02T01:30:23"
                     |> P.run timeParser
                     |> Expect.equal (Ok <| Time.millisToPosix 1577928623000)
+        , test "parses valid time string with hh:mm:ssZ included" <|
+            \() ->
+                "2020-01-02T01:30:23Z"
+                    |> P.run timeParser
+                    |> Expect.equal (Ok <| Time.millisToPosix 1577928623000)
+        , test "parses valid time string with hh:mm:ss+05:30 included" <|
+            \() ->
+                "2020-01-02T01:30:23+05:30"
+                    |> P.run timeParser
+                    |> Expect.equal (Ok <| Time.millisToPosix 1577908823000)
         , test "fails with an invalid time string" <|
             \() ->
                 "2020-41-02"

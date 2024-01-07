@@ -38,6 +38,7 @@ File.open(todays_tasks, "w") do |file|
 - [ ] something with #foobar an RTL non-sub tag @due(#{Date.today.strftime("%Y-%m-%d")}) #خانه
 	foo bar baz #خانه/آشپزخانه #one two
 	and another line #foobar something else
+- [ ] something I should have done a year ago @due(#{(Date.today - 370).strftime("%Y-%m-%d")})
 """
 end
 
@@ -64,14 +65,6 @@ File.open(tomorrows_daily_note_tasks, "w") do |file|
 """
 end
 
-daily_note_template = File.join(target_directory, "daily_note_template.md")
-
-File.open(daily_note_template, "w") do |file|
-  file.write """
-# Daily note template
-"""
-end
-
 future_tasks = File.join(target_directory, "future_tasks.md")
 
 File.open(future_tasks, "w") do |file|
@@ -80,6 +73,8 @@ File.open(future_tasks, "w") do |file|
 
 - [ ] next week thing @due(#{(Date.today + 7).strftime("%Y-%m-%d")})
 - [ ] day after tomorrow thing @due(#{(Date.today + 2).strftime("%Y-%m-%d")})
+- [ ] two years out thing @due(#{(Date.today + 740).strftime("%Y-%m-%d")})
+- [ ] one year out thing @due(#{(Date.today + 370).strftime("%Y-%m-%d")})
 """
 end
 
@@ -129,6 +124,7 @@ File.open(undated_tasks, "w") do |file|
           }
   ```
 """
+end
 
 colab_tasks = File.join(target_directory, "colab.md")
 
@@ -145,4 +141,19 @@ File.open(colab_tasks, "w") do |file|
 
 """
 end
+
+template_directory  = File.join(target_directory, "templates")
+template_tasks      = File.join(template_directory, "template.md")
+
+Dir.mkdir(template_directory)
+
+File.open(template_tasks, "w") do |file|
+  file.write """
+# A template
+
+- [ ] templated task with no date or tags
+- [ ] templated task for today @due(#{(Date.today).strftime("%Y-%m-%d")})
+- [ ] templated task for #people/barney barney
+
+"""
 end

@@ -6,6 +6,7 @@ module BoardConfig exposing
     , columns
     , decoder_v_0_10_0
     , decoder_v_0_11_0
+    , decoder_v_0_12_0
     , decoder_v_0_1_0
     , decoder_v_0_2_0
     , decoder_v_0_3_0
@@ -127,19 +128,9 @@ encoder =
             ]
 
 
-decoder_v_0_11_0 : TsDecode.Decoder BoardConfig
-decoder_v_0_11_0 =
-    (TsDecode.succeed Config
-        |> TsDecode.required "columns" Columns.decoder
-        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
-        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
-        |> TsDecode.required "filterScope" Filter.scopeDecoder
-        |> TsDecode.required "name" TsDecode.string
-        |> TsDecode.required "showColumnTags" TsDecode.bool
-        |> TsDecode.required "showFilteredTags" TsDecode.bool
-    )
-        |> TsDecode.map configureOtherTagsColumn
-        |> TsDecode.map BoardConfig
+decoder_v_0_12_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_12_0 =
+    decoder_v_0_11_0
 
 
 
@@ -184,6 +175,21 @@ type alias LocalColumnConfig =
     { tag : String
     , displayName : String
     }
+
+
+decoder_v_0_11_0 : TsDecode.Decoder BoardConfig
+decoder_v_0_11_0 =
+    (TsDecode.succeed Config
+        |> TsDecode.required "columns" Columns.decoder
+        |> TsDecode.required "filters" (TsDecode.list Filter.decoder)
+        |> TsDecode.required "filterPolarity" Filter.polarityDecoder
+        |> TsDecode.required "filterScope" Filter.scopeDecoder
+        |> TsDecode.required "name" TsDecode.string
+        |> TsDecode.required "showColumnTags" TsDecode.bool
+        |> TsDecode.required "showFilteredTags" TsDecode.bool
+    )
+        |> TsDecode.map configureOtherTagsColumn
+        |> TsDecode.map BoardConfig
 
 
 decoder_v_0_10_0 : TsDecode.Decoder BoardConfig

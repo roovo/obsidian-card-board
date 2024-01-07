@@ -15,6 +15,8 @@ module Form.Settings exposing
     , safeDecoder
     , switchToBoard
     , toggleIgnoreFileNameDate
+    , toggleTaskCompletionInLocalTime
+    , toggleTaskCompletionShowUtcOffset
     , updateDefaultColumnName
     , updateTaskCompletionFormat
     )
@@ -22,6 +24,7 @@ module Form.Settings exposing
 import BoardConfig exposing (BoardConfig)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
+import Filter exposing (Filter)
 import Form.BoardConfig as BoardConfigForm exposing (BoardConfigForm)
 import Form.Column exposing (ColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
@@ -41,10 +44,13 @@ import Settings exposing (Settings)
 type alias SettingsForm =
     { boardConfigForms : SafeZipper BoardConfigForm
     , completed : String
+    , filters : List Filter
     , future : String
     , ignoreFileNameDates : Bool
     , otherTags : String
     , taskCompletionFormat : String
+    , taskCompletionInLocalTime : Bool
+    , taskCompletionShowUtcOffset : Bool
     , today : String
     , tomorrow : String
     , undated : String
@@ -88,10 +94,13 @@ init settings =
     in
     { boardConfigForms = boardConfigForms_
     , completed = Maybe.withDefault "" defaultColumnNames_.completed
+    , filters = globalSettings_.filters
     , future = Maybe.withDefault "" defaultColumnNames_.future
     , ignoreFileNameDates = globalSettings_.ignoreFileNameDates
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
     , taskCompletionFormat = taskCompletionFormat_
+    , taskCompletionInLocalTime = globalSettings_.taskCompletionInLocalTime
+    , taskCompletionShowUtcOffset = globalSettings_.taskCompletionShowUtcOffset
     , today = Maybe.withDefault "" defaultColumnNames_.today
     , tomorrow = Maybe.withDefault "" defaultColumnNames_.tomorrow
     , undated = Maybe.withDefault "" defaultColumnNames_.undated
@@ -105,13 +114,16 @@ init settings =
 
 safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
-    SD.map10 settingsBuilder
+    SD.map13 settingsBuilder
         boardConfigFormsDecoder
         completedDecoder
+        filtersDecoder
         futureDecoder
         ignoreFileNameDatesDecoder
         otherTagsDecoder
         taskCompletionFormatDecoder
+        taskCompletionInLocalTimeDecoder
+        taskCompletionShowUtcOffsetDecoder
         todayDecoder
         tomorrowDecoder
         undatedDecoder
@@ -227,6 +239,16 @@ toggleIgnoreFileNameDate settingsForm =
     { settingsForm | ignoreFileNameDates = not settingsForm.ignoreFileNameDates }
 
 
+toggleTaskCompletionInLocalTime : SettingsForm -> SettingsForm
+toggleTaskCompletionInLocalTime settingsForm =
+    { settingsForm | taskCompletionInLocalTime = not settingsForm.taskCompletionInLocalTime }
+
+
+toggleTaskCompletionShowUtcOffset : SettingsForm -> SettingsForm
+toggleTaskCompletionShowUtcOffset settingsForm =
+    { settingsForm | taskCompletionShowUtcOffset = not settingsForm.taskCompletionShowUtcOffset }
+
+
 updateDefaultColumnName : String -> String -> SettingsForm -> SettingsForm
 updateDefaultColumnName column newName settingsForm =
     case column of
@@ -295,6 +317,12 @@ completedDecoder =
         |> SD.lift .completed
 
 
+filtersDecoder : SD.Decoder SettingsForm (List Filter)
+filtersDecoder =
+    SD.identity
+        |> SD.lift .filters
+
+
 futureDecoder : SD.Decoder SettingsForm (Maybe String)
 futureDecoder =
     SD.identity
@@ -320,16 +348,19 @@ otherTagsDecoder =
 settingsBuilder :
     SafeZipper BoardConfig
     -> Maybe String
+    -> List Filter
     -> Maybe String
     -> Bool
     -> Maybe String
     -> GlobalSettings.TaskCompletionFormat
+    -> Bool
+    -> Bool
     -> Maybe String
     -> Maybe String
     -> Maybe String
     -> Maybe String
     -> Settings
-settingsBuilder bc com fut ifn ots tcf tod tom und unt =
+settingsBuilder bc com fts fut ifn ots tcf clt cso tod tom und unt =
     let
         defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
@@ -344,9 +375,12 @@ settingsBuilder bc com fut ifn ots tcf tod tom und unt =
 
         globalSettings : GlobalSettings
         globalSettings =
-            { taskCompletionFormat = tcf
-            , defaultColumnNames = defaultColumnNames_
+            { defaultColumnNames = defaultColumnNames_
+            , filters = fts
             , ignoreFileNameDates = ifn
+            , taskCompletionFormat = tcf
+            , taskCompletionInLocalTime = clt
+            , taskCompletionShowUtcOffset = cso
             }
     in
     { boardConfigs = bc
@@ -373,6 +407,18 @@ taskCompletionFormatDecoder =
                     Ok <| GlobalSettings.ObsidianCardBoard
     )
         |> SD.lift .taskCompletionFormat
+
+
+taskCompletionInLocalTimeDecoder : SD.Decoder SettingsForm Bool
+taskCompletionInLocalTimeDecoder =
+    SD.identity
+        |> SD.lift .taskCompletionInLocalTime
+
+
+taskCompletionShowUtcOffsetDecoder : SD.Decoder SettingsForm Bool
+taskCompletionShowUtcOffsetDecoder =
+    SD.identity
+        |> SD.lift .taskCompletionShowUtcOffset
 
 
 todayDecoder : SD.Decoder SettingsForm (Maybe String)

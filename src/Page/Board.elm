@@ -1,5 +1,9 @@
 module Page.Board exposing
-    ( Msg(..)
+    ( Model
+    , Msg(..)
+    , init
+    , mapSession
+    , toSession
     , update
     , view
     )
@@ -33,16 +37,68 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 
+-- MODEL
+
+
+type Model
+    = ViewingBoard Session
+    | DeletingCard String String Session
+
+
+init : Session -> Model
+init session =
+    ViewingBoard session
+
+
+cancelCurrentState : Model -> Model
+cancelCurrentState model =
+    ViewingBoard (toSession model)
+
+
+deleteCardRequested : String -> String -> Model -> Model
+deleteCardRequested title cardId model =
+    DeletingCard title cardId (toSession model)
+
+
+deleteCardConfirmed : Model -> Model
+deleteCardConfirmed model =
+    ViewingBoard (toSession model)
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    case model of
+        ViewingBoard session ->
+            ViewingBoard <| fn session
+
+        DeletingCard title cardId session ->
+            DeletingCard title cardId <| fn session
+
+
+toSession : Model -> Session
+toSession model =
+    case model of
+        ViewingBoard session ->
+            session
+
+        DeletingCard _ _ session ->
+            session
+
+
+
 -- UPDATE
 
 
 type Msg
-    = ElementDragged DragData
+    = DeleteConfirmed String
+    | ElementDragged DragData
+    | ModalCancelClicked
+    | ModalCloseClicked
     | SettingsClicked
     | TabHeaderMouseDown ( String, DragTracker.ClientData )
     | TabSelected Int
     | TaskItemEditClicked String
-    | TaskItemDeleteClicked String
+    | TaskItemDeleteClicked String String
     | TaskItemToggled String
     | ToggleColumnCollapse Int Bool
 
@@ -52,56 +108,74 @@ dragType =
     "card-board-tag-header"
 
 
-update : Msg -> Session -> ( Session, Cmd Msg, Session.Msg )
-update msg session =
+update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
+update msg model =
     case msg of
+        DeleteConfirmed cardId ->
+            ( deleteCardConfirmed model
+            , cmdIfHasTask cardId model InteropPorts.deleteTask
+            , Session.NoOp
+            )
+
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
                     if dragData.dragType == dragType then
-                        ( session
-                            |> updateBoardOrder (Session.dragTracker session) dragData
-                            |> Session.moveDragable dragData
+                        ( model
+                            |> updateBoardOrder (Session.dragTracker <| toSession model) dragData
+                            |> (mapSession <| Session.moveDragable dragData)
                         , Cmd.none
                         , Session.NoOp
                         )
 
                     else
-                        ( session, Cmd.none, Session.NoOp )
+                        ( model, Cmd.none, Session.NoOp )
 
                 DragData.Stop ->
-                    ( Session.stopTrackingDragable session
-                    , InteropPorts.updateSettings <| Session.settings session
+                    ( mapSession Session.stopTrackingDragable model
+                    , InteropPorts.updateSettings <| Session.settings <| toSession model
                     , Session.NoOp
                     )
 
+        ModalCancelClicked ->
+            ( cancelCurrentState model
+            , Cmd.none
+            , Session.NoOp
+            )
+
+        ModalCloseClicked ->
+            ( cancelCurrentState model
+            , Cmd.none
+            , Session.NoOp
+            )
+
         SettingsClicked ->
-            ( session
+            ( model
             , Cmd.none
             , Session.SettingsClicked
             )
 
         TabHeaderMouseDown ( domId, clientData ) ->
-            ( Session.waitForDrag clientData session
+            ( mapSession (Session.waitForDrag clientData) model
             , InteropPorts.trackDraggable dragType clientData.clientPos domId
             , Session.NoOp
             )
 
         TabSelected tabIndex ->
-            ( Session.switchToBoardAt tabIndex session
+            ( mapSession (Session.switchToBoardAt tabIndex) model
             , Cmd.none
             , Session.NoOp
             )
 
-        TaskItemDeleteClicked id ->
-            ( session
-            , cmdIfHasTask id session InteropPorts.deleteTask
+        TaskItemDeleteClicked title id ->
+            ( deleteCardRequested title id model
+            , Cmd.none
             , Session.NoOp
             )
 
         TaskItemEditClicked id ->
-            ( session
-            , cmdIfHasTask id session InteropPorts.openTaskSourceFile
+            ( model
+            , cmdIfHasTask id model InteropPorts.openTaskSourceFile
             , Session.NoOp
             )
 
@@ -109,25 +183,26 @@ update msg session =
             let
                 timeWithZone : TimeWithZone
                 timeWithZone =
-                    Session.timeWithZone session
+                    Session.timeWithZone (toSession model)
 
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.dataviewTaskCompletion session)
-                        (Session.globalSettings session |> .taskCompletionFormat)
+                        (Session.dataviewTaskCompletion <| toSession model)
+                        (Session.taskCompletionSettings <| toSession model)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
 
                 cmd : Cmd Msg
                 cmd =
-                    session
+                    model
+                        |> toSession
                         |> Session.taskContainingId id
                         |> Maybe.map toggleCmd
                         |> Maybe.withDefault Cmd.none
             in
-            ( session
+            ( model
             , cmd
             , Session.NoOp
             )
@@ -136,44 +211,100 @@ update msg session =
             let
                 newSession : Session
                 newSession =
-                    Session.updateColumnCollapse columnIndex newState session
+                    Session.updateColumnCollapse columnIndex newState (toSession model)
             in
-            ( newSession
+            ( mapSession (always newSession) model
             , InteropPorts.updateSettings <| Session.settings newSession
             , Session.NoOp
             )
 
 
-cmdIfHasTask : String -> Session -> (TaskItemFields -> Cmd b) -> Cmd b
-cmdIfHasTask id session cmd =
-    session
+cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
+cmdIfHasTask id model cmd =
+    model
+        |> toSession
         |> Session.taskFromId id
         |> Maybe.map TaskItem.fields
         |> Maybe.map cmd
         |> Maybe.withDefault Cmd.none
 
 
-updateBoardOrder : DragTracker -> DragData -> Session -> Session
-updateBoardOrder dragTracker { cursor, beacons } session =
+updateBoardOrder : DragTracker -> DragData -> Model -> Model
+updateBoardOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
             case Rect.closestTo cursor beacons of
                 Nothing ->
-                    session
+                    model
 
                 Just position ->
-                    Session.moveBoard clientData.uniqueId position session
+                    mapSession (Session.moveBoard clientData.uniqueId position) model
 
         _ ->
-            session
+            model
 
 
 
 -- VIEW
 
 
-view : Session -> Html Msg
-view session =
+view : Model -> Html Msg
+view model =
+    case model of
+        ViewingBoard session ->
+            Html.div []
+                [ boardsView session ]
+
+        DeletingCard title cardId session ->
+            Html.div []
+                [ boardsView session
+                , modalDeleteCardConfirm title cardId
+                ]
+
+
+modalDeleteCardConfirm : String -> String -> Html Msg
+modalDeleteCardConfirm title cardId =
+    Html.div [ class "modal-container" ]
+        [ Html.div
+            [ class "modal-bg"
+            , style "opacity" "0.85"
+            ]
+            []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Delete Card" ]
+            , Html.div [ class "modal-content" ]
+                [ Html.p [ class "mod-warning" ]
+                    [ Html.text <|
+                        "Press Delete to confirm you wish to delete the \""
+                            ++ title
+                            ++ "\" card.  This does not delete the task from your "
+                            ++ "markdown, it encloses it in <del> tags."
+                    ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ class "mod-warning"
+                    , onClick <| DeleteConfirmed cardId
+                    ]
+                    [ Html.text "Delete"
+                    ]
+                , Html.button
+                    [ onClick <| ModalCancelClicked ]
+                    [ Html.text "Cancel"
+                    ]
+                ]
+            ]
+        ]
+
+
+boardsView : Session -> Html Msg
+boardsView session =
     if SafeZipper.length (Session.boardConfigs session) == 0 then
         Html.text "Loading tasks...."
 
@@ -483,7 +614,7 @@ cardView today card =
         dataTags =
             card
                 |> Card.allTags
-                |> TagList.toList
+                |> TagList.toStrings
                 |> List.map (String.replace "/" "-")
                 |> String.join " "
 
@@ -533,9 +664,9 @@ cardView today card =
             , notesView (Card.notesId card)
                 |> when (TaskItem.hasNotes taskItem)
             , Html.div [ class "card-board-card-footer-area" ]
-                [ taskDueDate (TaskItem.due taskItem)
+                [ taskDueDate today (TaskItem.due taskItem)
                     |> when (TaskItem.isDated taskItem)
-                , cardActionButtons taskItemId (Card.editButtonId card)
+                , cardActionButtons (Card.title card) taskItemId (Card.editButtonId card)
                 ]
             ]
         ]
@@ -577,25 +708,29 @@ subtaskView ( uniqueId, subtask ) =
         ]
 
 
-taskDueDate : Maybe Date -> Html Msg
-taskDueDate dueDate =
+taskDueDate : Date -> Maybe Date -> Html Msg
+taskDueDate today dueDate =
     Html.div [ class "card-board-card-action-area-due" ]
-        [ Html.text ("Due: " ++ dueDateString dueDate)
+        [ Html.text ("Due: " ++ dueDateString today dueDate)
         ]
 
 
-dueDateString : Maybe Date -> String
-dueDateString dueDate =
+dueDateString : Date -> Maybe Date -> String
+dueDateString today dueDate =
     case dueDate of
         Just date ->
-            Date.format "E, MMM ddd" date
+            if Date.year date == Date.year today then
+                Date.format "E, MMM ddd" date
+
+            else
+                Date.format "E, MMM ddd y" date
 
         Nothing ->
             "n/a"
 
 
-cardActionButtons : String -> String -> Html Msg
-cardActionButtons taskItemId editButtonId =
+cardActionButtons : String -> String -> String -> Html Msg
+cardActionButtons title taskItemId editButtonId =
     Html.div [ class "card-board-card-action-area-buttons" ]
         [ Html.div
             [ class "card-board-card-action-area-button"
@@ -609,7 +744,7 @@ cardActionButtons taskItemId editButtonId =
             ]
         , Html.div
             [ class "card-board-card-action-area-button"
-            , onClick <| TaskItemDeleteClicked taskItemId
+            , onClick <| TaskItemDeleteClicked title taskItemId
             ]
             [ FeatherIcons.trash
                 |> FeatherIcons.withSize 1

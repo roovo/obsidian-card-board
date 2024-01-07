@@ -8,6 +8,7 @@ module Page.Helper.Multiselect exposing
     , recieveItems
     , selectedItems
     , update
+    , updateGrouper
     , updateSelectedItems
     , view
     )
@@ -146,6 +147,19 @@ itemWasPressed =
 -- TRANSFORM
 
 
+mapConfig : (Config msg a -> Config msg a) -> Model msg a -> Model msg a
+mapConfig fn model =
+    case model of
+        Ready conf selectStatus ->
+            Ready (fn conf) selectStatus
+
+        SettingItems conf selectStatus ->
+            SettingItems (fn conf) selectStatus
+
+        ReceivedItems conf selectStatus ->
+            ReceivedItems (fn conf) selectStatus
+
+
 mapStatus : (Status a -> Status a) -> Model msg a -> Model msg a
 mapStatus transform model =
     case model of
@@ -202,6 +216,11 @@ deleteHighlightedItem model =
             }
         )
         model
+
+
+updateGrouper : (List (SelectionItem a) -> List ( String, List (SelectionItem a) )) -> Model msg a -> Model msg a
+updateGrouper newGrouper model =
+    mapConfig (\c -> { c | grouper = newGrouper }) model
 
 
 updateSelectedItems : Dict String a -> Model msg a -> Model msg a

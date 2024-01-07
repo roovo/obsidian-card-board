@@ -24,7 +24,7 @@
 .card-board-view {
   height: 100%;
   background-color: var(--background-primary);
-  font-size: var(--font-normal);
+  font-size: var(--font-text-size);
 }
 
 .mod-macos.is-hidden-frameless:not(.is-popout-window) .workspace .workspace-tabs.mod-top-right-space .card-board-view .workspace-tab-header-container {
@@ -212,6 +212,7 @@ ul.card-board-column-list > li.card-board-card::before {
   display: grid;
   grid: "mark contents"
         / 5px auto;
+  font-family: var(--font-text);
 }
 
 .card-board-card-highlight-area {
@@ -538,14 +539,39 @@ ul.card-board-column-list > li.card-board-card::before {
   vertical-align: middle;
 }
 
+
+.card-board-view .vertical-tab-content {
+  position: relative;
+}
+
+.card-board-view .modal-close-button {
+  z-index: 1;
+}
+
 .card-board-view .suggestion-container {
+  position: absolute;
   display: grid;
   grid-auto-flow: row;
   grid-gap: 0.5em;
+  overflow: auto;
   padding: 5px 8px;
   font-size: var(--font-small);
   text-align: left;
   line-height: 1em;
+  max-height: 400px;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.card-board-view .suggestion-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
 }
 
 .card-board-view .suggestion-section {

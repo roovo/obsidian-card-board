@@ -25,8 +25,10 @@ import Form.Column.Dated exposing (DatedColumnForm)
 import Form.Columns as ColumnsForm exposing (ColumnsForm)
 import Form.NewBoard as NewBoardForm exposing (NewBoardForm)
 import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
+import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
+import GlobalSettings exposing (TaskCompletionSettings)
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -42,6 +44,7 @@ import Settings exposing (Settings)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -134,6 +137,8 @@ type Msg
     | ScopeSelected String
     | SelectedDatedColumnRangeType Int String
     | TaskCompletionFormatSelected String
+    | ToggleTaskCompletionInLocalTime
+    | ToggleTaskCompletionShowUtcOffset
     | ToggleIgnoreFileNameDate
     | ToggleShowColumnTags
     | ToggleShowFilteredTags
@@ -160,15 +165,37 @@ switchSettingsState fn model =
         newSettingsState =
             model.settingsState
                 |> SettingsState.mapBoardBeingEdited (\bc -> { bc | filters = currentSelectedFilters })
+                |> SettingsState.mapGlobalSettings (\gs -> { gs | filters = currentSelectedFilters })
                 |> fn
 
         newFilters : Dict String Filter
         newFilters =
-            currentFilters <| SettingsState.boardConfigs newSettingsState
+            case newSettingsState of
+                SettingsState.EditingGlobalSettings _ ->
+                    newSettingsState
+                        |> SettingsState.settings
+                        |> Settings.globalSettings
+                        |> .filters
+                        |> (\fs -> List.map (\f -> ( Filter.value f, f )) fs)
+                        |> Dict.fromList
+
+                _ ->
+                    currentFilters <| SettingsState.boardConfigs newSettingsState
+
+        newGrouper : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+        newGrouper =
+            case newSettingsState of
+                SettingsState.EditingGlobalSettings _ ->
+                    groupedSelectionsWithoutTags
+
+                _ ->
+                    groupedSelections
     in
     { model
         | settingsState = newSettingsState
-        , multiSelect = MultiSelect.updateSelectedItems newFilters model.multiSelect
+        , multiSelect =
+            MultiSelect.updateSelectedItems newFilters model.multiSelect
+                |> MultiSelect.updateGrouper newGrouper
     }
 
 
@@ -315,7 +342,7 @@ update msg model =
             )
 
         GlobalSettingsClicked ->
-            mapSettingsState SettingsState.editGlobalSettings model
+            wrap <| switchSettingsState SettingsState.editGlobalSettings model
 
         ModalCancelClicked ->
             handleClose model
@@ -366,6 +393,24 @@ update msg model =
                             model.settingsState
                 }
 
+        ToggleTaskCompletionInLocalTime ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            SettingsForm.toggleTaskCompletionInLocalTime
+                            model.settingsState
+                }
+
+        ToggleTaskCompletionShowUtcOffset ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            SettingsForm.toggleTaskCompletionShowUtcOffset
+                            model.settingsState
+                }
+
         ToggleIgnoreFileNameDate ->
             wrap
                 { model
@@ -397,6 +442,16 @@ groupedSelections selectionItems =
         |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
         |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
         |> ensureAllTypes
+
+
+groupedSelectionsWithoutTags : List (MultiSelect.SelectionItem Filter) -> List ( String, List (MultiSelect.SelectionItem Filter) )
+groupedSelectionsWithoutTags selectionItems =
+    selectionItems
+        |> List.sortBy (\item -> Filter.filterType item.value)
+        |> LE.groupWhile (\a b -> Filter.filterType a.value == Filter.filterType b.value)
+        |> List.map (\( i, is ) -> ( Filter.filterType i.value, i :: is ))
+        |> ensureAllTypes
+        |> List.filter (\( k, _ ) -> k /= "Tags")
 
 
 ensureAllTypes : List ( String, List (MultiSelect.SelectionItem Filter) ) -> List ( String, List (MultiSelect.SelectionItem Filter) )
@@ -572,7 +627,12 @@ view model =
             boardSettingsView settingsForm model.multiSelect dragTracker
 
         SettingsState.EditingGlobalSettings settingsForm ->
-            globalSettingsView (Session.dataviewTaskCompletion <| toSession model) settingsForm dragTracker
+            globalSettingsView
+                (Session.dataviewTaskCompletion <| toSession model)
+                (Session.timeWithZone <| toSession model)
+                model.multiSelect
+                settingsForm
+                dragTracker
 
 
 modalAddBoard : NewBoardForm -> Html Msg
@@ -919,38 +979,26 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
 
 
 boardSettingsView : SettingsForm -> MultiSelect.Model Msg Filter -> DragTracker -> Html Msg
-boardSettingsView settingsForm multiselect dragTracker =
+boardSettingsView settingsForm multiSelect dragTracker =
     boardSettingsForm
         (SafeZipper.current <| SettingsForm.boardConfigForms settingsForm)
         (SafeZipper.currentIndex <| SettingsForm.boardConfigForms settingsForm)
         (SettingsForm.defaultColumnNames settingsForm)
-        multiselect
+        multiSelect
         dragTracker
         |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> SettingsForm -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion settingsForm dragTracker =
+globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion timeWithZone multiSelect settingsForm dragTracker =
     settingsForm
-        |> globalSettingsForm dataviewTaskCompletion
+        |> globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect
         |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> SettingsForm -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion settingsForm =
+globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm =
     let
-        dataViewExample : String
-        dataViewExample =
-            case dataviewTaskCompletion of
-                DataviewTaskCompletion.NoCompletion ->
-                    "automatic task completion tracking disabled"
-
-                DataviewTaskCompletion.Emoji ->
-                    "✅ 1999-12-31"
-
-                DataviewTaskCompletion.Text t ->
-                    "[" ++ t ++ ":: 1999-12-31]"
-
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
             if settingsForm.ignoreFileNameDates then
@@ -958,12 +1006,51 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
 
             else
                 ""
+
+        taskCompletionInLocalTimeStyle : String
+        taskCompletionInLocalTimeStyle =
+            if settingsForm.taskCompletionInLocalTime then
+                " is-enabled"
+
+            else
+                ""
+
+        taskCompletionShowUtcOffsetStyle : String
+        taskCompletionShowUtcOffsetStyle =
+            if settingsForm.taskCompletionShowUtcOffset then
+                " is-enabled"
+
+            else
+                ""
+
+        taskCompletionExample : String
+        taskCompletionExample =
+            let
+                taskCompletionSettings : TaskCompletionSettings
+                taskCompletionSettings =
+                    settingsForm
+                        |> SD.run SettingsForm.safeDecoder
+                        |> Result.map Settings.globalSettings
+                        |> Result.withDefault GlobalSettings.default
+                        |> GlobalSettings.taskCompletionSettings
+            in
+            TimeWithZone.completionString
+                dataviewTaskCompletion
+                taskCompletionSettings
+                timeWithZone
+                |> (\str ->
+                        if String.length str == 0 then
+                            "[None]"
+
+                        else
+                            str
+                   )
     in
     [ Html.div [ class "setting-items-inner" ]
         ([ Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Daily/Periodic notes compatibility" ]
+                    [ Html.text "Daily/Periodic Notes Compatibility" ]
                 , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ] []
@@ -986,47 +1073,74 @@ globalSettingsForm dataviewTaskCompletion settingsForm =
          , Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Task completion format" ]
+                    [ Html.text "File/Path Filters" ]
                 , Html.div [ class "setting-item-description" ] []
                 ]
             , Html.div [ class "setting-item-control" ] []
             ]
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-description" ]
-                    [ Html.text "Format to use when marking tasks as completed:"
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Files and paths to ignore" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Tasks will not be loaded from these.  "
                     , Html.br [] []
                     , Html.br [] []
-                    , Html.strong [] [ Html.text "None" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "no completion date/time will be added" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "CardBoard" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "@completed(1999-12-31T23:59:59)" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "Dataview" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text dataViewExample ]
-                    , Html.i [] [ Html.text " (change via Dataview plugin settings)" ]
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "Tasks" ]
-                    , Html.text ": "
-                    , Html.code [] [ Html.text "✅ 1999-12-31" ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Html.strong [] [ Html.text "For Dataview: " ]
-                    , Html.text "The task related settings in the Dataview plugin (if installed) will be respected"
-                    , Html.text " and should be reflected above."
-                    , Html.i [] [ Html.text " If you change the settings in" ]
-                    , Html.i [] [ Html.text " Dataview you will need to close and re-open the CardBoard view to pick up the changes." ]
-                    , Html.br [] []
-                    , Html.br [] []
-                    , Html.text "When reading tasks, CardBoard understands all these formats."
+                    , Html.span
+                        [ class "mod-warning" ]
+                        [ Html.text "You need to reload Obsidian to see the effect of any changes made to this setting." ]
                     ]
                 ]
             , Html.div [ class "setting-item-control" ]
+                [ MultiSelect.view multiSelect
+                ]
+            ]
+         , Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Task Completion" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text <| "Current completion string: " ++ taskCompletionExample ]
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Format" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ]
                 [ taskCompletionFormatSelect settingsForm.taskCompletionFormat ]
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Use local time" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "UTC will be used otherwise." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ taskCompletionInLocalTimeStyle
+                    , onClick ToggleTaskCompletionInLocalTime
+                    ]
+                    []
+                ]
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Include UTC offset" ]
+                , Html.div [ class "setting-item-description" ] []
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ taskCompletionShowUtcOffsetStyle
+                    , onClick ToggleTaskCompletionShowUtcOffset
+                    ]
+                    []
+                ]
             ]
          ]
             ++ columNamesForm settingsForm
@@ -1168,7 +1282,7 @@ columNamesForm settingsForm =
 
 
 boardSettingsForm : Maybe BoardConfigForm -> Maybe Int -> DefaultColumnNames -> MultiSelect.Model Msg Filter -> DragTracker -> List (Html Msg)
-boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect dragTracker =
+boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect dragTracker =
     case ( boardConfigForm, boardIndex ) of
         ( Just configForm, Just _ ) ->
             let
@@ -1243,7 +1357,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiselect drag
                         [ Html.text "Filter tasks by files, paths, and/or tags." ]
                     ]
                 , Html.div [ class "setting-item-control" ]
-                    [ MultiSelect.view multiselect
+                    [ MultiSelect.view multiSelect
                     ]
                 ]
             , Html.div [ class "setting-item" ]

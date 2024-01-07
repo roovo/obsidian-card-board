@@ -84,7 +84,7 @@ encodeDecode =
                 BoardConfigHelpers.exampleBoardConfig
                     |> TsEncode.runExample BoardConfig.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_11_0
+                    |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_12_0
                     |> .decoded
                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
         ]

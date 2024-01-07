@@ -29,6 +29,8 @@ suite =
         , moveBoard
         , safeDecoder
         , toggleIgnoreFileNameDate
+        , toggleTaskCompletionInLocalTime
+        , toggleTaskCompletionShowUtcOffset
         , updateDefaultColumnName
         , updateTaskCompletionFormat
         ]
@@ -377,6 +379,34 @@ safeDecoder =
                     |> Result.map Settings.globalSettings
                     |> Result.map .taskCompletionFormat
                     |> Expect.equal (Ok <| GlobalSettings.ObsidianCardBoard)
+        , test "decodes a False taskCompletionInLocalTime" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = False }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionInLocalTime
+                    |> Expect.equal (Ok False)
+        , test "decodes a True taskCompletionInLocalTime" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = True }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionInLocalTime
+                    |> Expect.equal (Ok True)
+        , test "decodes a False taskCompletionShowUtcOffset" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionShowUtcOffset = False }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionShowUtcOffset
+                    |> Expect.equal (Ok False)
+        , test "decodes a True taskCompletionShowUtcOffset" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionShowUtcOffset = True }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .taskCompletionShowUtcOffset
+                    |> Expect.equal (Ok True)
         , test "decodes a today string as Just the string" <|
             \() ->
                 { exampleSettingsForm | today = "foo" }
@@ -494,6 +524,42 @@ toggleIgnoreFileNameDate =
         ]
 
 
+toggleTaskCompletionInLocalTime : Test
+toggleTaskCompletionInLocalTime =
+    describe "toggleTaskCompletionInLocalTime"
+        [ test "toggles the value from True to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = True }
+                    |> SettingsForm.toggleTaskCompletionInLocalTime
+                    |> .taskCompletionInLocalTime
+                    |> Expect.equal False
+        , test "toggles the value from False to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionInLocalTime = False }
+                    |> SettingsForm.toggleTaskCompletionInLocalTime
+                    |> .taskCompletionInLocalTime
+                    |> Expect.equal True
+        ]
+
+
+toggleTaskCompletionShowUtcOffset : Test
+toggleTaskCompletionShowUtcOffset =
+    describe "toggleTaskCompletionShowUtcOffset"
+        [ test "toggles the value from True to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionShowUtcOffset = True }
+                    |> SettingsForm.toggleTaskCompletionShowUtcOffset
+                    |> .taskCompletionShowUtcOffset
+                    |> Expect.equal False
+        , test "toggles the value from False to False" <|
+            \() ->
+                { exampleSettingsForm | taskCompletionShowUtcOffset = False }
+                    |> SettingsForm.toggleTaskCompletionShowUtcOffset
+                    |> .taskCompletionShowUtcOffset
+                    |> Expect.equal True
+        ]
+
+
 updateDefaultColumnName : Test
 updateDefaultColumnName =
     describe "updateDefaultColumnName"
@@ -562,10 +628,13 @@ exampleSettingsForm : SettingsForm
 exampleSettingsForm =
     { boardConfigForms = SafeZipper.empty
     , completed = ""
+    , filters = []
     , future = ""
     , ignoreFileNameDates = False
     , otherTags = ""
     , taskCompletionFormat = ""
+    , taskCompletionInLocalTime = False
+    , taskCompletionShowUtcOffset = False
     , today = ""
     , tomorrow = ""
     , undated = ""

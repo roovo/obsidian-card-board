@@ -23,8 +23,8 @@ import Task
 import TaskItem
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
-import Time
-import TimeWithZone
+import Time exposing (Posix)
+import TimeWithZone exposing (TimeWithZone)
 
 
 main : Program JD.Value Model Msg
@@ -54,7 +54,7 @@ init flags =
                 session =
                     Session.fromFlags okFlags
             in
-            ( Boards session
+            ( Boards (BoardPage.init session)
                 |> forceAddWhenNoBoards
             , Cmd.batch
                 [ InteropPorts.updateSettings <| Session.settings session
@@ -67,9 +67,9 @@ init flags =
 forceAddWhenNoBoards : Model -> Model
 forceAddWhenNoBoards model =
     case model of
-        Boards session ->
-            if SafeZipper.length (Session.boardConfigs session) == 0 then
-                Settings (SettingsPage.init session)
+        Boards _ ->
+            if SafeZipper.length (Session.boardConfigs <| toSession model) == 0 then
+                Settings (SettingsPage.init <| toSession model)
 
             else
                 model
@@ -83,15 +83,15 @@ forceAddWhenNoBoards model =
 
 
 type Model
-    = Boards Session
+    = Boards BoardPage.Model
     | Settings SettingsPage.Model
 
 
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
-        Boards session ->
-            Boards <| fn session
+        Boards boardPageModel ->
+            Boards <| BoardPage.mapSession fn boardPageModel
 
         Settings settingsPageModel ->
             Settings <| SettingsPage.mapSession fn settingsPageModel
@@ -100,8 +100,8 @@ mapSession fn model =
 toSession : Model -> Session
 toSession model =
     case model of
-        Boards session ->
-            session
+        Boards boardPageModel ->
+            BoardPage.toSession boardPageModel
 
         Settings settingsPageModel ->
             SettingsPage.toSession settingsPageModel
@@ -127,9 +127,9 @@ type Msg
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
-    | ReceiveTime ( Time.Zone, Time.Posix )
+    | ReceiveTime ( Time.Zone, Posix )
     | ShowBoard Int
-    | Tick Time.Posix
+    | Tick Posix
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
     | VaultFileRenamed ( String, String )
@@ -237,8 +237,48 @@ update msg model =
             )
 
         ( Tick time, _ ) ->
-            ( mapSession (Session.timeIs time) model
-            , Cmd.none
+            let
+                cmd : Cmd Msg
+                cmd =
+                    if newDate == oldDate then
+                        Cmd.none
+
+                    else
+                        cmdForDateChange newSession
+
+                newDate : Int
+                newDate =
+                    newSession
+                        |> Session.timeWithZone
+                        |> TimeWithZone.toDate
+                        |> Date.toRataDie
+
+                newSession : Session
+                newSession =
+                    Session.timeIs time <| toSession model
+
+                offsetPosix : Int -> TimeWithZone -> TimeWithZone
+                offsetPosix secs timeWithZone =
+                    let
+                        foo : Posix -> Posix
+                        foo posix =
+                            posix
+                                |> Time.posixToMillis
+                                |> (\m -> m - (secs * 1000))
+                                |> Time.millisToPosix
+                    in
+                    { timeWithZone | time = foo time }
+
+                oldDate : Int
+                oldDate =
+                    toSession model
+                        |> Session.timeWithZone
+                        |> offsetPosix 1
+                        |> TimeWithZone.toDate
+                        |> Date.toRataDie
+            in
+            ( mapSession (always newSession) model
+            , cmd
             )
 
         ( VaultFileAdded markdownFile, _ ) ->
@@ -306,6 +346,31 @@ cmdForFilterPathRename newPath session =
         Cmd.none
 
 
+cmdForDateChange : Session -> Cmd Msg
+cmdForDateChange session =
+    let
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
+        cards : List Card
+        cards =
+            Session.taskList session
+                |> TaskList.filter TaskItem.isDated
+                |> Boards.init (Session.uniqueId session) (Session.boardConfigs session)
+                |> Boards.cards (Session.ignoreFileNameDates session) today
+    in
+    if List.isEmpty cards then
+        Cmd.none
+
+    else
+        Cmd.batch
+            [ InteropPorts.displayTaskMarkdown cards
+            , InteropPorts.addHoverToCardEditButtons cards
+            ]
+
+
 cmdForTaskRedraws : String -> Session -> Cmd Msg
 cmdForTaskRedraws newPath session =
     let
@@ -347,6 +412,7 @@ updateWith toModel toMsg ( subModel, subCmd, sessionMsg ) =
             toModel subModel
                 |> toSession
                 |> Session.updateSettings newSettings
+                |> BoardPage.init
                 |> Boards
     , Cmd.map toMsg subCmd
     )
@@ -428,11 +494,11 @@ toKeyValue string =
 view : Model -> Html Msg
 view model =
     case model of
-        Boards session ->
+        Boards boardPageModel ->
             viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
-                { content = BoardPage.view session
+                { content = BoardPage.view boardPageModel
                 , modal = Nothing
                 }
 
@@ -440,7 +506,9 @@ view model =
             viewPage
                 GotBoardPageMsg
                 GotSettingsPageMsg
-                { content = BoardPage.view (SettingsPage.toSession settingsPageModel)
+                { content =
+                    BoardPage.view
+                        (BoardPage.init <| SettingsPage.toSession settingsPageModel)
                 , modal = Just <| SettingsPage.view settingsPageModel
                 }
 

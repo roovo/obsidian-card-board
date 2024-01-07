@@ -1,4 +1,7 @@
-module MarkdownFile exposing (MarkdownFile, decoder)
+module MarkdownFile exposing
+    ( MarkdownFile
+    , decoder
+    )
 
 import TagList exposing (TagList)
 import TsJson.Decode as TsDecode
@@ -59,7 +62,12 @@ contentDecoder contents =
 
 frontMatterDecoder : YD.Decoder (List String)
 frontMatterDecoder =
-    YD.field "tags" (YD.list YD.string)
+    YD.field "tags"
+        (YD.oneOf
+            [ YD.list YD.string
+            , invalidListDecoder
+            ]
+        )
 
 
 frontMatterAndBodyFrom : String -> ( Maybe String, Int, Maybe String )
@@ -94,6 +102,20 @@ frontMatterAndBodyFrom contents =
 hasFrontMatter : List String -> Bool
 hasFrontMatter splitContents =
     startsWithWhiteSpace splitContents && List.length splitContents > 2
+
+
+invalidListDecoder : YD.Decoder (List String)
+invalidListDecoder =
+    let
+        buildList : String -> YD.Decoder (List String)
+        buildList str =
+            str
+                |> String.split ","
+                |> List.map String.trim
+                |> YD.succeed
+    in
+    YD.string
+        |> YD.andThen buildList
 
 
 startsWithWhiteSpace : List String -> Bool

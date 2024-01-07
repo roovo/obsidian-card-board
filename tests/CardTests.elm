@@ -29,6 +29,7 @@ suite =
         , notesId
         , tagsId
         , taskItemId
+        , title
         ]
 
 
@@ -46,14 +47,14 @@ allTags =
                 taskItemWithTags
                     |> Maybe.map (Card.fromTaskItem "a_prefix" [])
                     |> Maybe.map Card.allTags
-                    |> Maybe.map TagList.toList
+                    |> Maybe.map TagList.toStrings
                     |> Expect.equal (Just [ "arg", "bar", "baz/boo" ])
         , test "does not remove any tags even if the match the remove list" <|
             \() ->
                 taskItemWithTags
                     |> Maybe.map (Card.fromTaskItem "a_prefix" [ "bar" ])
                     |> Maybe.map Card.allTags
-                    |> Maybe.map TagList.toList
+                    |> Maybe.map TagList.toStrings
                     |> Expect.equal (Just [ "arg", "bar", "baz/boo" ])
         ]
 
@@ -95,14 +96,14 @@ displayTags =
                 taskItemWithTags
                     |> Maybe.map (Card.fromTaskItem "a_prefix" [])
                     |> Maybe.map Card.displayTags
-                    |> Maybe.map TagList.toList
+                    |> Maybe.map TagList.toStrings
                     |> Expect.equal (Just [ "arg", "bar", "baz/boo" ])
         , test "removes any tags matching the remove list" <|
             \() ->
                 taskItemWithTags
                     |> Maybe.map (Card.fromTaskItem "a_prefix" [ "bar" ])
                     |> Maybe.map Card.displayTags
-                    |> Maybe.map TagList.toList
+                    |> Maybe.map TagList.toStrings
                     |> Expect.equal (Just [ "arg", "baz/boo" ])
         ]
 
@@ -285,6 +286,18 @@ taskItemId =
                     |> Maybe.map (Card.fromTaskItem "foo" [])
                     |> Maybe.map Card.taskItemId
                     |> Expect.equal (Just (TaskHelpers.taskId "taskItemPath" 1))
+        ]
+
+
+title : Test
+title =
+    describe "title"
+        [ test "returns the title of the TaskItem" <|
+            \() ->
+                taskItem
+                    |> Maybe.map (Card.fromTaskItem "" [])
+                    |> Maybe.map Card.title
+                    |> Expect.equal (Just "foo")
         ]
 
 

@@ -105,15 +105,40 @@ tagsToHide (OtherTagsColumn _ _ tth _) =
 
 addTaskItem : TaskItem -> OtherTagsColumn -> ( OtherTagsColumn, PlacementResult )
 addTaskItem taskItem ((OtherTagsColumn c ots tth tl) as otherTagsColumn) =
-    if belongs ots taskItem then
-        if isCompleted ots taskItem then
-            ( otherTagsColumn, PlacementResult.CompletedInThisColumn )
+    let
+        candidates : List TaskItem
+        candidates =
+            TaskItem.asSingleTaskItems taskItem
+                |> List.filter TaskItem.hasTags
+                |> List.map removeOtherColumnTags
+                |> List.filter TaskItem.hasTags
 
-        else
-            ( OtherTagsColumn c ots tth (TaskList.add taskItem tl), PlacementResult.Placed )
+        removeOtherColumnTags : TaskItem -> TaskItem
+        removeOtherColumnTags item =
+            let
+                helper : String -> TaskItem -> TaskItem
+                helper tag taskItem_ =
+                    if TaskItem.hasThisTag tag taskItem_ then
+                        TaskItem.removeMatchingTags tag taskItem_
+
+                    else
+                        taskItem_
+            in
+            List.foldl helper item ots
+    in
+    if List.length candidates == 0 then
+        ( otherTagsColumn, PlacementResult.DoesNotBelong )
+
+    else if
+        TaskItem.isCompleted taskItem
+            || List.all TaskItem.isCompleted candidates
+    then
+        ( otherTagsColumn, PlacementResult.CompletedInThisColumn )
 
     else
-        ( otherTagsColumn, PlacementResult.DoesNotBelong )
+        ( OtherTagsColumn c ots tth (TaskList.add taskItem tl)
+        , PlacementResult.Placed
+        )
 
 
 setCollapse : Bool -> OtherTagsColumn -> OtherTagsColumn
@@ -150,11 +175,6 @@ updateName newName (OtherTagsColumn c ots tth tl) =
 -- PRIVATE
 
 
-belongs : List String -> TaskItem -> Bool
-belongs tags item =
-    TaskItem.hasTaskWithTagOtherThanThese tags item
-
-
 config : OtherTagsColumn -> Config
 config (OtherTagsColumn c _ _ _) =
     c
@@ -166,11 +186,3 @@ configEncoder =
         [ TsEncode.required "collapsed" .collapsed TsEncode.bool
         , TsEncode.required "name" .name TsEncode.string
         ]
-
-
-isCompleted : List String -> TaskItem -> Bool
-isCompleted columnTags taskItem =
-    TaskItem.isCompleted taskItem
-        || (TaskItem.hasSubtasks taskItem
-                && not (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese columnTags taskItem)
-           )

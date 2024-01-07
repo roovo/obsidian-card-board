@@ -21,6 +21,7 @@ module Session exposing
     , settings
     , stopTrackingDragable
     , switchToBoardAt
+    , taskCompletionSettings
     , taskContainingId
     , taskFromId
     , taskList
@@ -43,7 +44,7 @@ import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
-import GlobalSettings exposing (GlobalSettings)
+import GlobalSettings exposing (GlobalSettings, TaskCompletionSettings)
 import InteropDefinitions
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
@@ -171,6 +172,11 @@ settings (Session config) =
     config.settings
 
 
+taskCompletionSettings : Session -> TaskCompletionSettings
+taskCompletionSettings =
+    GlobalSettings.taskCompletionSettings << globalSettings
+
+
 taskContainingId : String -> Session -> Maybe TaskItem
 taskContainingId id (Session config) =
     case config.taskList of
@@ -256,7 +262,7 @@ switchToBoardAt index (Session config) =
 
 timeIs : Time.Posix -> Session -> Session
 timeIs time (Session config) =
-    Session { config | timeWithZone = TimeWithZone.time time config.timeWithZone }
+    Session { config | timeWithZone = TimeWithZone.updateTime time config.timeWithZone }
 
 
 timeWithZoneIs : Time.Zone -> Time.Posix -> Session -> Session

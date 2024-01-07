@@ -171,7 +171,7 @@ timeParser =
                 |> Result.map P.succeed
                 |> Result.withDefault (P.problem "not a valid date")
     in
-    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-' || c == 'T' || c == ':')
+    P.getChompedString (P.chompWhile <| \c -> Char.isDigit c || c == '-' || c == 'T' || c == 'Z' || c == ':' || c == '+' || c == '-')
         |> P.andThen convertToTime
 
 

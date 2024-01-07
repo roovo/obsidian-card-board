@@ -3,7 +3,9 @@ module TaskItemTests exposing (suite)
 import DataviewTaskCompletion
 import Date
 import Expect
+import Filter
 import GlobalSettings
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Maybe.Extra as ME
@@ -22,20 +24,16 @@ suite =
         , completedPosix
         , completion
         , containsId
-        , descendantTaskHasThisTag
         , descendantTasks
         , due
         , filePath
-        , hasAnyIncompleteSubtasksWithTagsOtherThanThese
-        , hasIncompleteTaskWithThisTag
-        , hasOneOfTheTags
         , hasTags
-        , hasTaskWithTagOtherThanThese
         , hasThisTagBasic
         , hasThisTagWithSubtag
         , hasThisTagWithSubtagWildcard
         , hasTopLevelTags
         , id
+        , isAllowed
         , isCompleted
         , isFromFile
         , isDated
@@ -43,13 +41,13 @@ suite =
         , notes
         , originalText
         , parsing
+        , removeMatchingTags
         , removeTags
         , tags
         , tasksToToggle
         , title
         , titleWithTags
         , topLevelTags
-        , topLevelTaskHasThisTag
         , toToggledString
         , updateFilePath
         ]
@@ -319,36 +317,6 @@ containsId =
         ]
 
 
-descendantTaskHasThisTag : Test
-descendantTaskHasThisTag =
-    describe "descendantTaskHasThisTag"
-        [ test "returns False for (theTag) '- [ ] foo" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo #theTag'" <|
-            \() ->
-                "- [ ] foo #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #otherTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #otherTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns True for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.descendantTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok True)
-        ]
-
-
 descendantTasks : Test
 descendantTasks =
     describe "descendantTasks"
@@ -366,6 +334,13 @@ descendantTasks =
                     |> Result.map TaskItem.descendantTasks
                     |> Result.map (List.map TaskItem.title)
                     |> Expect.equal (Ok [ "bar" ])
+        , test "parses multiple descendantTasks including grandkids" <|
+            \() ->
+                "- [ ] foo\n - [ ] bar\n   - [ ] baz\n - [ ] qaz"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.descendantTasks
+                    |> Result.map (List.map TaskItem.title)
+                    |> Expect.equal (Ok [ "bar", "baz", "qaz" ])
         , test "stops parsing descendantTasks at the end of indentation" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar\n  - [ ] baz\n- [ ] roo"
@@ -532,166 +507,6 @@ filePath =
         ]
 
 
-hasAnyIncompleteSubtasksWithTagsOtherThanThese : Test
-hasAnyIncompleteSubtasksWithTagsOtherThanThese =
-    describe "hasAnyIncompleteSubtasksWithTagsOtherThanThese"
-        [ describe "incomplete task"
-            [ test "returns False for a task with no sub-tasks that has another tag" <|
-                \() ->
-                    "- [ ] foo #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task with an incomplete sub-task with no tag" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task with an incomplete sub-task with one of the given tags" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [ ] bar #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns True for a task with an incomplete sub-task with a different tag" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task with an incomplete sub-task with a different tag and another that matches" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [ ] bar #atag  - [ ] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task with an incomplete sub-task with a different tag and another that is complete and matches" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [ ] bar #atag  - [x] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False for a task with a completed sub-task with a different tag and another that is not complete and matches" <|
-                \() ->
-                    "- [ ] foo #atag\n  - [x] bar #atag  - [ ] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
-        , describe "completed task"
-            [ test "returns False for a task with no sub-tasks that has another tag" <|
-                \() ->
-                    "- [x] foo #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task with an incomplete sub-task with no tag" <|
-                \() ->
-                    "- [x] foo #atag\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task with an incomplete sub-task with one of the given tags" <|
-                \() ->
-                    "- [x] foo #atag\n  - [ ] bar #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns True for a task with an incomplete sub-task with a different tag" <|
-                \() ->
-                    "- [x] foo #atag\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task with an incomplete sub-task with a different tag and another that matches" <|
-                \() ->
-                    "- [x] foo #atag\n  - [ ] bar #atag  - [ ] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task with an incomplete sub-task with a different tag and another that is complete and matches" <|
-                \() ->
-                    "- [x] foo #atag\n  - [ ] bar #atag  - [x] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False for a task with a completed sub-task with a different tag and another that is not complete and matches" <|
-                \() ->
-                    "- [x] foo #atag\n  - [x] bar #atag  - [ ] baz #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasAnyIncompleteSubtasksWithTagsOtherThanThese [ "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
-        ]
-
-
-hasIncompleteTaskWithThisTag : Test
-hasIncompleteTaskWithThisTag =
-    describe "hasIncompleteTaskWithTag - basic operation"
-        [ test "returns True for a task with no sub-tasks that has the tag" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns True for a task without the tag with no sub-tasks, but the tag is in the front matter" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns True for a task with no matching tag but a sub-tasks has the tag" <|
-            \() ->
-                "- [ ] foo #foo\n  - [ ] bar #bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok True)
-        , test "returns False for a task with no sub-tasks that doesn't have the tag" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "baz")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a task with no sub-tasks that has the tag but is completed" <|
-            \() ->
-                "- [x] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a completed task with no sub-tasks without the tag, but the tag is in the front matter" <|
-            \() ->
-                "- [x] foo"
-                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList [ "bar" ]) 0)
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        , test "returns False for a task with no matching tag plus a sub-tasks has the tag but is completed" <|
-            \() ->
-                "- [ ] foo #foo\n  - [x] bar #bar"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasIncompleteTaskWithThisTag "bar")
-                    |> Expect.equal (Ok False)
-        ]
-
-
-hasOneOfTheTags : Test
-hasOneOfTheTags =
-    describe "hasOneOfTheTags - basic operation"
-        [ test "returns True if the task has one of the tags" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasOneOfTheTags [ "bar", "baz" ])
-                    |> Expect.equal (Ok True)
-        , test "returns False if the task has none of the tags" <|
-            \() ->
-                "- [ ] foo #bar #foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.hasOneOfTheTags [ "qux", "baz" ])
-                    |> Expect.equal (Ok False)
-        ]
-
-
 hasTags : Test
 hasTags =
     describe "hasTags"
@@ -719,82 +534,6 @@ hasTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.hasTags
                     |> Expect.equal (Ok False)
-        ]
-
-
-hasTaskWithTagOtherThanThese : Test
-hasTaskWithTagOtherThanThese =
-    describe "hasTaskWithTagOtherThanThese"
-        [ describe "with no sub-tasks"
-            [ test "returns True for a task which has a tag, but none of those given" <|
-                \() ->
-                    "- [ ] foo #aTag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True for a task which has a tag, in addition to those given" <|
-                \() ->
-                    "- [ ] foo #aTag #yTag #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False for a task which has no tags when none are given either" <|
-                \() ->
-                    "- [ ] foo"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has no tags" <|
-                \() ->
-                    "- [ ] foo"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has no tags other than one of those given" <|
-                \() ->
-                    "- [ ] foo #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False for a task which has exaclty the same as the given tags" <|
-                \() ->
-                    "- [ ] foo #ytag #ztag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
-        , describe "with sub-tasks"
-            [ test "returns False where the task and sub-tasks have no tags" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            , test "returns False where the task and sub-tasks have no tags and none are given" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [])
-                        |> Expect.equal (Ok False)
-            , test "returns True where the sub-task has a tag other than those given" <|
-                \() ->
-                    "- [ ] foo\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns True where the sub-task has a tag other than those given even if the main task has a matching tag" <|
-                \() ->
-                    "- [ ] foo #ztag\n  - [ ] bar #atag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok True)
-            , test "returns False where the sub- and main task have matching tags" <|
-                \() ->
-                    "- [ ] foo #ztag\n  - [ ] bar #ytag"
-                        |> Parser.run TaskItemHelpers.basicParser
-                        |> Result.map (TaskItem.hasTaskWithTagOtherThanThese [ "ytag", "ztag" ])
-                        |> Expect.equal (Ok False)
-            ]
         ]
 
 
@@ -963,6 +702,137 @@ id =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "File A" Nothing TagList.empty 0)
                     |> Result.map TaskItem.id
                     |> Expect.equal (Ok "1414514984:1")
+        ]
+
+
+isAllowed : Test
+isAllowed =
+    describe "isAllowed"
+        [ test "returns True for a matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal True
+        , test "returns False for a non-matching file filter" <|
+            \() ->
+                FilterHelpers.fileFilter "a/b/c.diff"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "a/b/c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching windows path filter for the full path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter with a trailing \\" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter for the first part of the path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching windows path filter of \\" <|
+            \() ->
+                FilterHelpers.pathFilter "\\\\"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns True for an empty windows path filter" <|
+            \() ->
+                FilterHelpers.pathFilter ""
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal True
+        , test "returns False if the windows path filter only contains a part of the last path componant" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\b"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns False if the windows path filter contains the file name" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\c"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns False if the windows path filter contains the file name & extension" <|
+            \() ->
+                FilterHelpers.pathFilter "aa\\\\bb\\\\c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa\\bb\\c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching path filter for the full path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter with a trailing /" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter for the first part of the path" <|
+            \() ->
+                FilterHelpers.pathFilter "aa"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for a matching path filter of /" <|
+            \() ->
+                FilterHelpers.pathFilter "/"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns True for an empty path filter" <|
+            \() ->
+                FilterHelpers.pathFilter ""
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal True
+        , test "returns False if the path filter only contains a part of the last path componant" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/b"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns False if the path filter contains the file name" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/c"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns False if the path filter contains the file name & extension" <|
+            \() ->
+                FilterHelpers.pathFilter "aa/bb/c.ext"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo" "aa/bb/c.ext")
+                    |> Expect.equal False
+        , test "returns True for a matching top level tag when the scope is Both" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns True for a matching top level tag when the scope is TopLevelOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.TopLevelOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a matching top level tag when the scope is SubTasksOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.SubTasksOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo #taga #tagb" "")
+                    |> Expect.equal False
+        , test "returns True for a matching sub task tag when the scope is Both" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a matching sub task tag when the scope is TopLevelOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.TopLevelOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal False
+        , test "returns True for a matching sub task tag when the scope is SubTasksOnly" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.SubTasksOnly (TaskItemHelpers.exampleTaskItem "- [ ] foo\n  - [ ] bar #taga #tagb" "")
+                    |> Expect.equal True
+        , test "returns False for a non-matching tag filter" <|
+            \() ->
+                FilterHelpers.tagFilter "taga"
+                    |> TaskItem.isAllowed Filter.Both (TaskItemHelpers.exampleTaskItem "- [ ] foo #tagb tagc" "")
+                    |> Expect.equal False
         ]
 
 
@@ -1199,6 +1069,48 @@ parsing =
         ]
 
 
+removeMatchingTags : Test
+removeMatchingTags =
+    describe "removeMatchingTags"
+        [ test "removes an exact match from a TaskItem" <|
+            \() ->
+                "- [ ] foo #foo #bar"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeMatchingTags "foo")
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toStrings
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "removes tags that match a subtag wildcard" <|
+            \() ->
+                "- [ ] foo #foo/bar #bar #foo/ #foo #foo/poo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeMatchingTags "foo/")
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toStrings
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar" ])
+        , test "removes tags that match a subtag" <|
+            \() ->
+                "- [ ] foo #foo #bar #foo/bar #foo/"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeMatchingTags "foo/bar")
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toStrings
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "foo", "foo/" ])
+        , test "does not affect subtasks" <|
+            \() ->
+                "- [ ] foo #bar\n  - [ ] bar #foo #baz"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.removeMatchingTags "foo")
+                    |> Result.map TaskItem.tags
+                    |> Result.map TagList.toStrings
+                    |> Result.map List.sort
+                    |> Expect.equal (Ok [ "bar", "baz", "foo" ])
+        ]
+
+
 removeTags : Test
 removeTags =
     describe "removeTags"
@@ -1208,7 +1120,7 @@ removeTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
                     |> Result.map TaskItem.tags
-                    |> Result.map TagList.toList
+                    |> Result.map TagList.toStrings
                     |> Result.map List.sort
                     |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
         , test "removes from a TaskItem and it's subtasks" <|
@@ -1217,7 +1129,7 @@ removeTags =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map (TaskItem.removeTags [ "foo", "baz" ])
                     |> Result.map TaskItem.tags
-                    |> Result.map TagList.toList
+                    |> Result.map TagList.toStrings
                     |> Result.map List.sort
                     |> Expect.equal (Ok [ "bar", "baza", "foo/", "qux" ])
         ]
@@ -1399,36 +1311,6 @@ topLevelTags =
         ]
 
 
-topLevelTaskHasThisTag : Test
-topLevelTaskHasThisTag =
-    describe "topLevelTaskHasThisTag"
-        [ test "returns False for (theTag) '- [ ] foo" <|
-            \() ->
-                "- [ ] foo"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns True for (theTag) '- [ ] foo #theTag'" <|
-            \() ->
-                "- [ ] foo #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok True)
-        , test "returns False for (theTag) '- [ ] foo #otherTag \n  - [ ] bar #otherTag'" <|
-            \() ->
-                "- [ ] foo #otherTag\n  - [ ] bar #otherTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        , test "returns False for (theTag) '- [ ] foo\n  - [ ] bar #thisTag'" <|
-            \() ->
-                "- [ ] foo\n  - [ ] bar #theTag"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.topLevelTaskHasThisTag "theTag")
-                    |> Expect.equal (Ok False)
-        ]
-
-
 toToggledString : Test
 toToggledString =
     describe "toToggledString"
@@ -1436,55 +1318,141 @@ toToggledString =
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.NoCompletion
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format" <|
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = False, offset = False)" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
+        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = True, offset = True)" <|
+            \() ->
+                "- [ ] foo #tag1 bar #tag2 ^12345"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = True
+                            , showUtcOffset = True
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 300 [] }
+                        )
+                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T05:00:00+05:00) ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianTasks { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianTasks
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            (DataviewTaskCompletion.Text "done")
+                            { format = GlobalSettings.ObsidianDataview
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 [done:: 1970-01-01] ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview emoji format" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.Emoji GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.Emoji
+                            { format = GlobalSettings.ObsidianDataview
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
         , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview no completion" <|
             \() ->
                 "- [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianDataview { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianDataview
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
         , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "done") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            (DataviewTaskCompletion.Text "done")
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
         , test "doesn't remove dataview format if it has been set to NoCompletion" <|
             \() ->
                 "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
         , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
             \() ->
-                "- [X] [custom:: 2021-01-01] foo #tag1 ✅ 1970-01-01 @completed(2020-03-22T00:00:00) bar #tag2"
+                "- [X] [custom:: 2021-01-01] foo #tag1 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 bar #tag2"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString (DataviewTaskCompletion.Text "custom") GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            (DataviewTaskCompletion.Text "custom")
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
         , test "preserves leading whitespace for descendant tasks" <|
             \() ->
@@ -1492,7 +1460,15 @@ toToggledString =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
                     |> Result.withDefault []
-                    |> List.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.ObsidianCardBoard { time = Time.millisToPosix 0 })
+                    |> List.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.ObsidianCardBoard
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
         , test "preserves leading whitepace" <|
             \() ->
@@ -1502,13 +1478,29 @@ toToggledString =
                     |> Maybe.map TaskItem.descendantTasks
                     |> Maybe.map List.head
                     |> ME.join
-                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Maybe.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.NoCompletion
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
         , test "preserves a '+' list marker" <|
             \() ->
                 "+ [ ] foo #tag1 bar #tag2 ^12345"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Result.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.NoCompletion
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Ok "+ [x] foo #tag1 bar #tag2 ^12345")
         , test "preserves leading whitepace with a '*' list marker" <|
             \() ->
@@ -1518,7 +1510,15 @@ toToggledString =
                     |> Maybe.map TaskItem.descendantTasks
                     |> Maybe.map List.head
                     |> ME.join
-                    |> Maybe.map (TaskItem.toToggledString DataviewTaskCompletion.NoCompletion GlobalSettings.NoCompletion { time = Time.millisToPosix 0 })
+                    |> Maybe.map
+                        (TaskItem.toToggledString
+                            DataviewTaskCompletion.NoCompletion
+                            { format = GlobalSettings.NoCompletion
+                            , inLocalTime = False
+                            , showUtcOffset = False
+                            }
+                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
+                        )
                     |> Expect.equal (Just "   * [x] bar #tag1 bar #tag2 ^12345")
         ]
 

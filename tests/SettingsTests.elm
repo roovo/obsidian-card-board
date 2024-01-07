@@ -89,11 +89,11 @@ cleanupNames =
 currentVersion : Test
 currentVersion =
     describe "currentVersion"
-        [ test "is 0.11.0" <|
+        [ test "is 0.12.0" <|
             \() ->
                 Settings.currentVersion
                     |> Semver.print
-                    |> Expect.equal "0.11.0"
+                    |> Expect.equal "0.12.0"
         ]
 
 
@@ -325,9 +325,12 @@ uniqueBoardNames =
 
 exampleGlobalSettings : GlobalSettings
 exampleGlobalSettings =
-    { taskCompletionFormat = GlobalSettings.NoCompletion
-    , defaultColumnNames = DefaultColumnNames.default
+    { defaultColumnNames = DefaultColumnNames.default
+    , filters = []
     , ignoreFileNameDates = False
+    , taskCompletionFormat = GlobalSettings.NoCompletion
+    , taskCompletionInLocalTime = False
+    , taskCompletionShowUtcOffset = False
     }
 
 

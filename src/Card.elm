@@ -14,6 +14,7 @@ module Card exposing
     , tagsId
     , taskItem
     , taskItemId
+    , title
     )
 
 import Date exposing (Date)
@@ -49,6 +50,32 @@ fromTaskItem idPrefix tagsToHide taskItem_ =
 -- INFO
 
 
+allTags : Card -> TagList
+allTags (Card _ tagList _) =
+    tagList
+
+
+descendantTasks : Card -> List ( String, TaskItem )
+descendantTasks (Card idPrefix _ item) =
+    TaskItem.descendantTasks item
+        |> List.map (\sub -> ( idPrefix ++ ":" ++ TaskItem.id sub, sub ))
+
+
+displayTags : Card -> TagList
+displayTags =
+    TaskItem.tags << taskItem
+
+
+editButtonId : Card -> String
+editButtonId card =
+    id card ++ ":editButton"
+
+
+filePath : Card -> String
+filePath (Card _ _ item) =
+    TaskItem.filePath item
+
+
 highlight : Date -> Card -> Highlight
 highlight datestamp (Card _ _ item) =
     case ( TaskItem.isCompleted item, TaskItem.due item ) of
@@ -72,16 +99,6 @@ highlight datestamp (Card _ _ item) =
 id : Card -> String
 id ((Card idPrefix _ _) as card) =
     idPrefix ++ ":" ++ taskItemId card
-
-
-editButtonId : Card -> String
-editButtonId card =
-    id card ++ ":editButton"
-
-
-filePath : Card -> String
-filePath (Card _ _ item) =
-    TaskItem.filePath item
 
 
 markdownWithIds : Card -> List { id : String, markdown : String }
@@ -139,7 +156,7 @@ markdownWithIds card =
                 topLevelTagsMarkdown : String
                 topLevelTagsMarkdown =
                     TaskItem.topLevelTags item
-                        |> TagList.toList
+                        |> TagList.toStrings
                         |> List.map (String.append "#")
                         |> String.join " "
             in
@@ -164,25 +181,9 @@ notesId card =
     id card ++ ":notes"
 
 
-allTags : Card -> TagList
-allTags (Card _ tagList _) =
-    tagList
-
-
-displayTags : Card -> TagList
-displayTags =
-    TaskItem.tags << taskItem
-
-
 tagsId : Card -> String
 tagsId card =
     id card ++ ":tags"
-
-
-descendantTasks : Card -> List ( String, TaskItem )
-descendantTasks (Card idPrefix _ item) =
-    TaskItem.descendantTasks item
-        |> List.map (\sub -> ( idPrefix ++ ":" ++ TaskItem.id sub, sub ))
 
 
 taskItem : Card -> TaskItem
@@ -193,3 +194,8 @@ taskItem (Card _ _ item) =
 taskItemId : Card -> String
 taskItemId (Card _ _ item) =
     TaskItem.id item
+
+
+title : Card -> String
+title (Card _ _ item) =
+    TaskItem.title item

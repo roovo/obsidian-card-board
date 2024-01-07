@@ -52,6 +52,13 @@ decoderTests =
                     |> .decoded
                     |> Result.map .frontMatterTags
                     |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
+        , test "extracts (inline) tags with no brackets from the front matter block" <|
+            \() ->
+                "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"---\\ntags: tag1, tag2\\n---\\nsome contents\"}"
+                    |> DecodeHelpers.runDecoder decoder
+                    |> .decoded
+                    |> Result.map .frontMatterTags
+                    |> Expect.equal (Ok <| TagList.fromList [ "tag1", "tag2" ])
         , test "extracts (top level) tags from the front matter block" <|
             \() ->
                 "{\"filePath\":\"a path\",\"fileDate\":\"a date\",\"fileContents\":\"---\\ntags:\\n- tag1\\n- tag2\\n---\\nsome contents\"}"

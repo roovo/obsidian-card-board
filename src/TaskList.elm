@@ -10,7 +10,6 @@ module TaskList exposing
     , map
     , parser
     , removeForFile
-    , removeTags
     , replaceForFile
     , taskContainingId
     , taskFromId
@@ -116,11 +115,6 @@ replaceForFile filePath updatedList =
 removeForFile : String -> TaskList -> TaskList
 removeForFile filePath =
     TaskList << itemsNotFromFile filePath << topLevelTasks
-
-
-removeTags : List String -> TaskList -> TaskList
-removeTags tags =
-    map (TaskItem.removeTags tags)
 
 
 

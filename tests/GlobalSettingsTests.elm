@@ -13,6 +13,7 @@ suite =
     concat
         [ default
         , encodeDecode
+        , taskCompletionSettings
         ]
 
 
@@ -23,9 +24,12 @@ default =
             \() ->
                 GlobalSettings.default
                     |> Expect.equal
-                        { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                        , defaultColumnNames = DefaultColumnNames.default
+                        { defaultColumnNames = DefaultColumnNames.default
+                        , filters = []
                         , ignoreFileNameDates = False
+                        , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                        , taskCompletionInLocalTime = True
+                        , taskCompletionShowUtcOffset = True
                         }
         ]
 
@@ -35,8 +39,7 @@ encodeDecode =
     describe "encoding and decoding GlobalSettings"
         [ test "can decode an encoded string back to the original" <|
             \() ->
-                { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                , defaultColumnNames =
+                { defaultColumnNames =
                     { today = Just "Do Today"
                     , tomorrow = Nothing
                     , future = Just "The Future"
@@ -45,16 +48,19 @@ encodeDecode =
                     , untagged = Nothing
                     , completed = Just "Done"
                     }
+                , filters = []
                 , ignoreFileNameDates = True
+                , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                , taskCompletionInLocalTime = False
+                , taskCompletionShowUtcOffset = False
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_11_0_decoder
+                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_12_0_decoder
                     |> .decoded
                     |> Expect.equal
                         (Ok
-                            { taskCompletionFormat = GlobalSettings.ObsidianCardBoard
-                            , defaultColumnNames =
+                            { defaultColumnNames =
                                 { today = Just "Do Today"
                                 , tomorrow = Nothing
                                 , future = Just "The Future"
@@ -63,7 +69,32 @@ encodeDecode =
                                 , untagged = Nothing
                                 , completed = Just "Done"
                                 }
+                            , filters = []
                             , ignoreFileNameDates = True
+                            , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
+                            , taskCompletionInLocalTime = False
+                            , taskCompletionShowUtcOffset = False
                             }
                         )
+        ]
+
+
+taskCompletionSettings : Test
+taskCompletionSettings =
+    describe "taskCompletionSettings"
+        [ test "returns the format, local time and utc offset settings" <|
+            \() ->
+                { defaultColumnNames = DefaultColumnNames.default
+                , filters = []
+                , ignoreFileNameDates = False
+                , taskCompletionFormat = GlobalSettings.ObsidianDataview
+                , taskCompletionInLocalTime = True
+                , taskCompletionShowUtcOffset = False
+                }
+                    |> GlobalSettings.taskCompletionSettings
+                    |> Expect.equal
+                        { format = GlobalSettings.ObsidianDataview
+                        , inLocalTime = True
+                        , showUtcOffset = False
+                        }
         ]

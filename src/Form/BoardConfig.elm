@@ -3,7 +3,6 @@ module Form.BoardConfig exposing
     , fromNewBoardForm
     , init
     , mapColumnsForm
-      -- , optionsForSelect
     , safeDecoder
     , toggleShowColumnTags
     , toggleShowFilteredTags
@@ -124,7 +123,6 @@ safeDecoder =
 
 
 
--- INFO
 -- MODIFICATION
 
 

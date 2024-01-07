@@ -5,6 +5,7 @@ module DefaultColumnNames exposing
     , nameFor
     , v_0_10_0_decoder
     , v_0_11_0_decoder
+    , v_0_12_0_decoder
     , v_0_7_0_decoder
     , v_0_8_0_decoder
     , v_0_9_0_decoder
@@ -77,6 +78,28 @@ nameFor column defaultColumnNames =
 -- SERIALIZE
 
 
+v_0_12_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_12_0_decoder =
+    v_0_11_0_decoder
+
+
+encoder : TsEncode.Encoder DefaultColumnNames
+encoder =
+    TsEncode.object
+        [ TsEncode.required "today" (fromMaybe .today) TsEncode.string
+        , TsEncode.required "tomorrow" (fromMaybe .tomorrow) TsEncode.string
+        , TsEncode.required "future" (fromMaybe .future) TsEncode.string
+        , TsEncode.required "undated" (fromMaybe .undated) TsEncode.string
+        , TsEncode.required "otherTags" (fromMaybe .otherTags) TsEncode.string
+        , TsEncode.required "untagged" (fromMaybe .untagged) TsEncode.string
+        , TsEncode.required "completed" (fromMaybe .completed) TsEncode.string
+        ]
+
+
+
+-- LEGACY
+
+
 v_0_11_0_decoder : TsDecode.Decoder DefaultColumnNames
 v_0_11_0_decoder =
     TsDecode.succeed DefaultColumnNames
@@ -114,19 +137,6 @@ v_0_7_0_decoder =
         |> TsDecode.andMap (TsDecode.field "others" <| TsDecode.map toMaybe TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "untagged" <| TsDecode.map toMaybe TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "completed" <| TsDecode.map toMaybe TsDecode.string)
-
-
-encoder : TsEncode.Encoder DefaultColumnNames
-encoder =
-    TsEncode.object
-        [ TsEncode.required "today" (fromMaybe .today) TsEncode.string
-        , TsEncode.required "tomorrow" (fromMaybe .tomorrow) TsEncode.string
-        , TsEncode.required "future" (fromMaybe .future) TsEncode.string
-        , TsEncode.required "undated" (fromMaybe .undated) TsEncode.string
-        , TsEncode.required "otherTags" (fromMaybe .otherTags) TsEncode.string
-        , TsEncode.required "untagged" (fromMaybe .untagged) TsEncode.string
-        , TsEncode.required "completed" (fromMaybe .completed) TsEncode.string
-        ]
 
 
 
