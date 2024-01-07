@@ -280,8 +280,6 @@ export class CardBoardView extends ItemView {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.vault.cachedRead(file);
 
-      console.log("CardBoard: added " + file.name);
-
       this.elm.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
