@@ -90,7 +90,8 @@ toSession model =
 
 
 type Msg
-    = DeleteConfirmed String
+    = ColumnMouseDown ( String, DragTracker.ClientData )
+    | DeleteConfirmed String
     | ElementDragged DragData
     | ModalCancelClicked
     | ModalCloseClicked
@@ -103,14 +104,25 @@ type Msg
     | ToggleColumnCollapse Int Bool
 
 
-dragType : String
-dragType =
+tagHeaderDragType : String
+tagHeaderDragType =
     "card-board-tag-header"
+
+
+columnDragType : String
+columnDragType =
+    "card-board-column"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
+        ColumnMouseDown ( domId, clientData ) ->
+            ( mapSession (Session.waitForDrag clientData) model
+            , InteropPorts.trackDraggable columnDragType clientData.clientPos domId
+            , Session.NoOp
+            )
+
         DeleteConfirmed cardId ->
             ( deleteCardConfirmed model
             , cmdIfHasTask cardId model InteropPorts.deleteTask
@@ -120,7 +132,7 @@ update msg model =
         ElementDragged dragData ->
             case dragData.dragAction of
                 DragData.Move ->
-                    if dragData.dragType == dragType then
+                    if dragData.dragType == tagHeaderDragType then
                         ( model
                             |> updateBoardOrder (Session.dragTracker <| toSession model) dragData
                             |> (mapSession <| Session.moveDragable dragData)
@@ -157,7 +169,7 @@ update msg model =
 
         TabHeaderMouseDown ( domId, clientData ) ->
             ( mapSession (Session.waitForDrag clientData) model
-            , InteropPorts.trackDraggable dragType clientData.clientPos domId
+            , InteropPorts.trackDraggable tagHeaderDragType clientData.clientPos domId
             , Session.NoOp
             )
 
@@ -329,7 +341,7 @@ boardsView session =
 
             isDragging : Bool
             isDragging =
-                Session.isDragging session && draggedType == Just dragType
+                Session.isDragging session && draggedType == Just tagHeaderDragType
 
             draggedType : Maybe String
             draggedType =
@@ -486,7 +498,7 @@ viewDraggedHeader isDragging session =
 
 beaconType : String
 beaconType =
-    "data-" ++ dragType ++ "-beacon"
+    "data-" ++ tagHeaderDragType ++ "-beacon"
 
 
 beacon : BeaconPosition -> Html Msg
@@ -584,8 +596,27 @@ columnView boardId columnIndex today column =
 
             else
                 ""
+
+        domId : String
+        domId =
+            "card-board-column:" ++ String.fromInt columnIndex
+
+        name : String
+        name =
+            Column.name column
     in
-    Html.div [ class <| "card-board-column" ++ columnCollapsedClass ]
+    Html.div
+        [ class <| "card-board-column" ++ columnCollapsedClass
+        , onDown <|
+            \e ->
+                ColumnMouseDown <|
+                    ( domId
+                    , { uniqueId = name
+                      , clientPos = Coords.fromFloatTuple e.clientPos
+                      , offsetPos = Coords.fromFloatTuple e.offsetPos
+                      }
+                    )
+        ]
         [ Html.div [ class "card-board-column-header" ]
             [ Html.div
                 [ class columnCollapsedArrow
@@ -594,7 +625,7 @@ columnView boardId columnIndex today column =
                 ]
                 []
             , Html.span []
-                [ Html.text <| Column.name column ]
+                [ Html.text <| name ]
             , Html.span [ class "sub-text" ]
                 [ Html.text <| columnCountString ]
             ]
