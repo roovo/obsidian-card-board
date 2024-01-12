@@ -933,7 +933,7 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
             , Html.div [ class "modal-title" ]
                 [ Html.text "The Modal Title" ]
             , Html.div [ class "modal-content vertical-tabs-container" ]
-                [ Html.div [ class "settings-menu vertical-tab-header" ]
+                [ Html.div [ class "settings-menu vertical-tab-header card-board-settings-board-name-container" ]
                     [ Html.div [ class "vertical-tab-header-group" ]
                         [ Html.div [ class "vertical-tab-header-group-title" ]
                             [ Html.text "Options" ]

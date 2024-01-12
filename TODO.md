@@ -1,3 +1,13 @@
+- scrolling whilst dnd in progress:
+    - https://codesandbox.io/p/sandbox/mystifying-river-er5r9y?file=%2Fsrc%2FuseScroll.ts
+    - https://gsap.com/community/forums/topic/24717-draggable-items-in-a-scrollable-div-renewed/
+        - https://gsap.com/community/forums/topic/16791-auto-scrolling-and-boundaries-with-clones/#comment-74471
+            uses: /gsap/1.18.4/utils/Draggable
+    - https://jsfiddle.net/a3na7hf0/2/
+- detect when I am near the egde (top/botton or left/right) of container
+- scroll the contatiner if I am
+
+---
 - touch events - iPad ??
 - show errors on settings pane ??
 

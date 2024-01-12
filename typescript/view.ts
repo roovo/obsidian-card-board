@@ -349,6 +349,7 @@ export class CardBoardView extends ItemView {
 
     const draggedElement = document.getElementById(data.draggableId);
     const beaconType = "data-" + data.dragType + "-beacon";
+    const dragContainer = data.dragType + "-container";
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -387,6 +388,20 @@ export class CardBoardView extends ItemView {
       const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
       const leftSplit   = document.getElementsByClassName("workspace-split")[0];
+
+      const scrollable    = document.getElementsByClassName(dragContainer)[0];
+      const SCROLL_MARGIN = 20;
+
+      if (scrollable instanceof HTMLElement) {
+        const scrollableRect  = scrollable.getBoundingClientRect();
+        const bottom          = scrollableRect.y + scrollableRect.height;
+
+        if ( event.clientY < scrollableRect.y + SCROLL_MARGIN) {
+          scrollable.scrollTop -= 5;
+        } else if ( event.clientY > bottom - SCROLL_MARGIN) {
+          scrollable.scrollTop += 5;
+        }
+      }
 
       if ((ribbon instanceof HTMLElement) &&
           (leftSplit instanceof HTMLElement) &&
