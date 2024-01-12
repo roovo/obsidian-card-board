@@ -9,6 +9,7 @@ module Settings exposing
     , encoder
     , globalSettings
     , moveBoard
+    , moveColumn
     , restrictSpecialColumns
     , switchToBoard
     , updateCurrentBoard
@@ -16,6 +17,8 @@ module Settings exposing
     )
 
 import BoardConfig exposing (BoardConfig)
+import Column
+import Columns exposing (Columns)
 import DefaultColumnNames exposing (DefaultColumnNames)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import Filter
@@ -107,6 +110,25 @@ moveBoard draggedId beaconPosition settings =
                 |> Maybe.withDefault 0
     in
     { settings | boardConfigs = SafeZipper.atIndex movedBoardIndex movedBoardConfigs }
+
+
+moveColumn : String -> BeaconPosition -> Settings -> Settings
+moveColumn draggedId beaconPosition settings =
+    let
+        doMove : Columns -> Columns
+        doMove columns =
+            columns
+                |> Columns.toList
+                |> BeaconPosition.performMove draggedId beaconPosition Column.name
+                |> Columns.fromList
+    in
+    { settings
+        | boardConfigs =
+            SafeZipper.mapSelectedAndRest
+                (BoardConfig.mapColumns doMove)
+                identity
+                settings.boardConfigs
+    }
 
 
 switchToBoard : Int -> Settings -> Settings

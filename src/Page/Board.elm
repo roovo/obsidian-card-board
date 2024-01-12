@@ -140,6 +140,14 @@ update msg model =
                         , Session.NoOp
                         )
 
+                    else if dragData.dragType == columnDragType then
+                        ( model
+                            |> updateColumnOrder (Session.dragTracker <| toSession model) dragData
+                            |> (mapSession <| Session.moveDragable dragData)
+                        , Cmd.none
+                        , Session.NoOp
+                        )
+
                     else
                         ( model, Cmd.none, Session.NoOp )
 
@@ -251,6 +259,21 @@ updateBoardOrder dragTracker { cursor, beacons } model =
 
                 Just position ->
                     mapSession (Session.moveBoard clientData.uniqueId position) model
+
+        _ ->
+            model
+
+
+updateColumnOrder : DragTracker -> DragData -> Model -> Model
+updateColumnOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    mapSession (Session.moveColumn clientData.uniqueId position) model
 
         _ ->
             model

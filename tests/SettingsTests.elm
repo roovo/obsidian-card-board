@@ -26,6 +26,7 @@ suite =
         , decoder
         , encodeDecode
         , moveBoard
+        , moveColumn
         , uniqueBoardNames
         ]
 
@@ -289,6 +290,50 @@ moveBoard =
         ]
 
 
+moveColumn : Test
+moveColumn =
+    describe "moveColumn"
+        [ test "does nothing if there are no boards" <|
+            \() ->
+                { exampleSettings | boardConfigs = SafeZipper.empty }
+                    |> Settings.moveColumn "0" (BeaconPosition.After "0")
+                    |> Settings.boardConfigs
+                    |> Expect.equal SafeZipper.empty
+        , test "does nothing if there is a board with no columns" <|
+            \() ->
+                exampleSettingsWithBoardWithNoColumns
+                    |> Settings.moveColumn "0" (BeaconPosition.After "0")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> Expect.equal []
+        , test "does nothing if moving to the same index" <|
+            \() ->
+                exampleSettingsWithBoardWithConsecutiveColumns
+                    |> Settings.moveColumn "2" (BeaconPosition.After "2")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "0", "1", "2", "3", "4" ]
+        , test "moves a column to a different position" <|
+            \() ->
+                exampleSettingsWithBoardWithConsecutiveColumns
+                    |> Settings.moveColumn "2" (BeaconPosition.Before "1")
+                    |> Settings.boardConfigs
+                    |> SafeZipper.current
+                    |> Maybe.map BoardConfig.columns
+                    |> Maybe.map Columns.toList
+                    |> Maybe.withDefault []
+                    |> List.map Column.name
+                    |> Expect.equal [ "0", "2", "1", "3", "4" ]
+        ]
+
+
 uniqueBoardNames : Test
 uniqueBoardNames =
     describe "ensuring that board names are unique after decoding"
@@ -337,6 +382,51 @@ exampleGlobalSettings =
 exampleSettings : Settings.Settings
 exampleSettings =
     { boardConfigs = SafeZipper.fromList []
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithBoardWithNoColumns : Settings.Settings
+exampleSettingsWithBoardWithNoColumns =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ { columns = Columns.empty
+              , filters = []
+              , filterPolarity = Filter.Allow
+              , filterScope = Filter.Both
+              , name = ""
+              , showColumnTags = False
+              , showFilteredTags = False
+              }
+                |> BoardConfig.fromConfig
+            ]
+    , globalSettings = exampleGlobalSettings
+    , version = Settings.currentVersion
+    }
+
+
+exampleSettingsWithBoardWithConsecutiveColumns : Settings.Settings
+exampleSettingsWithBoardWithConsecutiveColumns =
+    { boardConfigs =
+        SafeZipper.fromList
+            [ { columns =
+                    Columns.fromList
+                        [ Column.namedTag "0" "tag"
+                        , Column.namedTag "1" "tag"
+                        , Column.namedTag "2" "tag"
+                        , Column.namedTag "3" "tag"
+                        , Column.namedTag "4" "tag"
+                        ]
+              , filters = []
+              , filterPolarity = Filter.Allow
+              , filterScope = Filter.Both
+              , name = ""
+              , showColumnTags = False
+              , showFilteredTags = False
+              }
+                |> BoardConfig.fromConfig
+            ]
     , globalSettings = exampleGlobalSettings
     , version = Settings.currentVersion
     }

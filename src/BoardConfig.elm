@@ -21,6 +21,7 @@ module BoardConfig exposing
     , filterScope
     , filters
     , fromConfig
+    , mapColumns
     , mapFilters
     , name
     , restrictSpecialColumns
@@ -140,6 +141,11 @@ decoder_v_0_12_0 =
 cleanupColumnNames : DefaultColumnNames -> BoardConfig -> BoardConfig
 cleanupColumnNames defaultColumnNames (BoardConfig c) =
     BoardConfig { c | columns = Columns.cleanupNames defaultColumnNames c.columns }
+
+
+mapColumns : (Columns -> Columns) -> BoardConfig -> BoardConfig
+mapColumns fn (BoardConfig c) =
+    BoardConfig { c | columns = fn c.columns }
 
 
 mapFilters : (Filter -> Filter) -> BoardConfig -> BoardConfig
