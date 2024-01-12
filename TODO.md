@@ -1,4 +1,3 @@
-- dragging blanks out card contents in moved columns
 - doesn't display card contents on ghost column
 - need to get scrolling working
 - restrict drag to column background

@@ -567,12 +567,24 @@ boardView ignoreFileNameDates today board =
         [ class "card-board-board"
         , hidden True
         ]
-        [ Html.div [ class "card-board-columns" ]
+        [ Html.Keyed.node "div"
+            [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView Nothing (Board.id board) index today column)
+                |> List.indexedMap (\index column -> keyedColumnView Nothing (Board.id board) index today column)
             )
         ]
+
+
+
+-- , Html.Keyed.node "div"
+--     [ class "card-board-boards" ]
+--     (Boards.boardZipper boards
+--         |> SafeZipper.mapSelectedAndRest
+--             (keyedSelectedBoardView ignoreFileNameDates today dragTracker)
+--             (keyedBoardView ignoreFileNameDates today)
+--         |> SafeZipper.toList
+--     )
 
 
 keyedSelectedBoardView : Bool -> Date -> DragTracker -> Board -> ( String, Html Msg )
@@ -606,17 +618,25 @@ selectedBoardView ignoreFileNameDates today dragTracker board =
             DragTracker.isDragging dragTracker && draggedType == Just columnDragType
     in
     Html.div [ class "card-board-board" ]
-        [ Html.div [ class "card-board-columns" ]
+        [ Html.Keyed.node "div"
+            [ class "card-board-columns" ]
             ((board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView draggedUniqueId (Board.id board) index today column)
+                |> List.indexedMap (\index column -> keyedColumnView draggedUniqueId (Board.id board) index today column)
              )
                 |> (\cs ->
                         List.append cs
-                            [ columnGhostView (Board.id board) today isDragging dragTracker draggedColumn ]
+                            [ keyedColumnGhostView (Board.id board) today isDragging dragTracker draggedColumn ]
                    )
             )
         ]
+
+
+keyedColumnGhostView : String -> Date -> Bool -> DragTracker -> Maybe Column -> ( String, Html Msg )
+keyedColumnGhostView boardId today isDragging dragTracker draggedColumn =
+    ( boardId ++ ":" ++ (Maybe.map Column.name draggedColumn |> Maybe.withDefault "") ++ ":ghost"
+    , Html.Lazy.lazy5 columnGhostView boardId today isDragging dragTracker draggedColumn
+    )
 
 
 columnGhostView : String -> Date -> Bool -> DragTracker -> Maybe Column -> Html Msg
@@ -689,6 +709,13 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
 
         _ ->
             Html.text ""
+
+
+keyedColumnView : Maybe String -> String -> Int -> Date -> Column -> ( String, Html Msg )
+keyedColumnView draggedId boardId columnIndex today column =
+    ( boardId ++ ":" ++ Column.name column
+    , Html.Lazy.lazy5 columnView draggedId boardId columnIndex today column
+    )
 
 
 columnView : Maybe String -> String -> Int -> Date -> Column -> Html Msg
