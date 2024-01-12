@@ -570,7 +570,7 @@ boardView ignoreFileNameDates today board =
         [ Html.div [ class "card-board-columns" ]
             (board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
+                |> List.indexedMap (\index column -> columnView Nothing (Board.id board) index today column)
             )
         ]
 
@@ -595,7 +595,11 @@ selectedBoardView ignoreFileNameDates today dragTracker board =
 
         draggedUniqueId : Maybe String
         draggedUniqueId =
-            DragTracker.uniqueId dragTracker
+            if isDragging then
+                DragTracker.uniqueId dragTracker
+
+            else
+                Nothing
 
         isDragging : Bool
         isDragging =
@@ -605,7 +609,7 @@ selectedBoardView ignoreFileNameDates today dragTracker board =
         [ Html.div [ class "card-board-columns" ]
             ((board
                 |> Board.columns ignoreFileNameDates today
-                |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
+                |> List.indexedMap (\index column -> columnView draggedUniqueId (Board.id board) index today column)
              )
                 |> (\cs ->
                         List.append cs
@@ -687,8 +691,8 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
             Html.text ""
 
 
-columnView : String -> Int -> Date -> Column -> Html Msg
-columnView boardId columnIndex today column =
+columnView : Maybe String -> String -> Int -> Date -> Column -> Html Msg
+columnView draggedId boardId columnIndex today column =
     let
         columnCollapsedAria : String
         columnCollapsedAria =
@@ -726,6 +730,10 @@ columnView boardId columnIndex today column =
         domId =
             "card-board-column:" ++ String.fromInt columnIndex
 
+        isBeingDragged : Bool
+        isBeingDragged =
+            Just name == draggedId
+
         name : String
         name =
             Column.name column
@@ -735,6 +743,7 @@ columnView boardId columnIndex today column =
         , Html.div
             [ id domId
             , class <| "card-board-column" ++ columnCollapsedClass
+            , attributeIf isBeingDragged (style "opacity" "0")
             , onDown <|
                 \e ->
                     ColumnMouseDown <|
