@@ -608,7 +608,8 @@ columnView boardId columnIndex today column =
     Html.div []
         [ columnBeacon (BeaconPosition.Before name)
         , Html.div
-            [ class <| "card-board-column" ++ columnCollapsedClass
+            [ id domId
+            , class <| "card-board-column" ++ columnCollapsedClass
             , onDown <|
                 \e ->
                     ColumnMouseDown <|
