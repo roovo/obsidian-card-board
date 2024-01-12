@@ -605,32 +605,36 @@ columnView boardId columnIndex today column =
         name =
             Column.name column
     in
-    Html.div
-        [ class <| "card-board-column" ++ columnCollapsedClass
-        , onDown <|
-            \e ->
-                ColumnMouseDown <|
-                    ( domId
-                    , { uniqueId = name
-                      , clientPos = Coords.fromFloatTuple e.clientPos
-                      , offsetPos = Coords.fromFloatTuple e.offsetPos
-                      }
-                    )
-        ]
-        [ Html.div [ class "card-board-column-header" ]
-            [ Html.div
-                [ class columnCollapsedArrow
-                , attribute "aria-label" columnCollapsedAria
-                , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
-                ]
-                []
-            , Html.span []
-                [ Html.text <| name ]
-            , Html.span [ class "sub-text" ]
-                [ Html.text <| columnCountString ]
+    Html.div []
+        [ columnBeacon (BeaconPosition.Before name)
+        , Html.div
+            [ class <| "card-board-column" ++ columnCollapsedClass
+            , onDown <|
+                \e ->
+                    ColumnMouseDown <|
+                        ( domId
+                        , { uniqueId = name
+                          , clientPos = Coords.fromFloatTuple e.clientPos
+                          , offsetPos = Coords.fromFloatTuple e.offsetPos
+                          }
+                        )
             ]
-        , Html.Keyed.ul [ class "card-board-column-list" ]
-            (List.map (cardView today) (Column.cards boardId column))
+            [ Html.div [ class "card-board-column-header" ]
+                [ Html.div
+                    [ class columnCollapsedArrow
+                    , attribute "aria-label" columnCollapsedAria
+                    , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
+                    ]
+                    []
+                , Html.span []
+                    [ Html.text <| name ]
+                , Html.span [ class "sub-text" ]
+                    [ Html.text <| columnCountString ]
+                ]
+            , Html.Keyed.ul [ class "card-board-column-list" ]
+                (List.map (cardView today) (Column.cards boardId column))
+            ]
+        , columnBeacon (BeaconPosition.After name)
         ]
 
 
@@ -801,6 +805,20 @@ attributeIf condition attribute =
 
     else
         class ""
+
+
+columnBeaconType : String
+columnBeaconType =
+    "data-" ++ columnDragType ++ "-beacon"
+
+
+columnBeacon : BeaconPosition -> Html Msg
+columnBeacon beaconPosition =
+    Html.span
+        [ attribute columnBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        , style "font-size" "0"
+        ]
+        []
 
 
 empty : Html Msg

@@ -394,6 +394,8 @@ export class CardBoardView extends ItemView {
       const scrollable    = document.getElementsByClassName(dragContainer)[0];
       const SCROLL_MARGIN = 20;
 
+      console.log("dragAction: " + dragAction);
+
       if (scrollable instanceof HTMLElement) {
         const scrollableRect  = scrollable.getBoundingClientRect();
         const bottom          = scrollableRect.y + scrollableRect.height;
