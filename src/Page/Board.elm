@@ -12,6 +12,7 @@ import Board exposing (Board)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
+import Columns
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -28,6 +29,8 @@ import Html.Lazy
 import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
+import List.Extra as LE
+import Maybe.Extra as ME
 import SafeZipper
 import Session exposing (Session)
 import TagList
@@ -366,11 +369,14 @@ boardsView session =
             isDragging =
                 Session.isDragging session && draggedType == Just tagHeaderDragType
 
-            draggedType : Maybe String
-            draggedType =
+            dragTracker : DragTracker
+            dragTracker =
                 session
                     |> Session.dragTracker
-                    |> DragTracker.dragType
+
+            draggedType : Maybe String
+            draggedType =
+                DragTracker.dragType dragTracker
         in
         Html.div
             [ attribute "dir" (TextDirection.toString <| Session.textDirection session)
@@ -406,7 +412,7 @@ boardsView session =
                 [ class "card-board-boards" ]
                 (Boards.boardZipper boards
                     |> SafeZipper.mapSelectedAndRest
-                        (keyedSelectedBoardView ignoreFileNameDates today)
+                        (keyedSelectedBoardView ignoreFileNameDates today dragTracker)
                         (keyedBoardView ignoreFileNameDates today)
                     |> SafeZipper.toList
                 )
@@ -569,20 +575,116 @@ boardView ignoreFileNameDates today board =
         ]
 
 
-keyedSelectedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
-keyedSelectedBoardView ignoreFileNameDates today board =
-    ( Board.id board, Html.Lazy.lazy3 selectedBoardView ignoreFileNameDates today board )
+keyedSelectedBoardView : Bool -> Date -> DragTracker -> Board -> ( String, Html Msg )
+keyedSelectedBoardView ignoreFileNameDates today dragTracker board =
+    ( Board.id board, Html.Lazy.lazy4 selectedBoardView ignoreFileNameDates today dragTracker board )
 
 
-selectedBoardView : Bool -> Date -> Board -> Html Msg
-selectedBoardView ignoreFileNameDates today board =
+selectedBoardView : Bool -> Date -> DragTracker -> Board -> Html Msg
+selectedBoardView ignoreFileNameDates today dragTracker board =
+    let
+        draggedColumn : Maybe Column
+        draggedColumn =
+            board
+                |> Board.columns ignoreFileNameDates today
+                |> LE.find (\c -> Just (Column.name c) == draggedUniqueId)
+
+        draggedType : Maybe String
+        draggedType =
+            DragTracker.dragType dragTracker
+
+        draggedUniqueId : Maybe String
+        draggedUniqueId =
+            DragTracker.uniqueId dragTracker
+
+        isDragging : Bool
+        isDragging =
+            DragTracker.isDragging dragTracker && draggedType == Just columnDragType
+    in
     Html.div [ class "card-board-board" ]
         [ Html.div [ class "card-board-columns" ]
-            (board
+            ((board
                 |> Board.columns ignoreFileNameDates today
                 |> List.indexedMap (\index column -> columnView (Board.id board) index today column)
+             )
+                |> (\cs ->
+                        List.append cs
+                            [ columnGhostView (Board.id board) today isDragging dragTracker draggedColumn ]
+                   )
             )
         ]
+
+
+columnGhostView : String -> Date -> Bool -> DragTracker -> Maybe Column -> Html Msg
+columnGhostView boardId today isDragging dragTracker draggedColumn =
+    case ( isDragging, draggedColumn, dragTracker ) of
+        ( True, Just column, DragTracker.Dragging clientData domData ) ->
+            let
+                columnCollapsedAria : String
+                columnCollapsedAria =
+                    if Column.isCollapsed column then
+                        "Un-collapse"
+
+                    else
+                        "Collapse"
+
+                columnCollapsedArrow : String
+                columnCollapsedArrow =
+                    if Column.isCollapsed column then
+                        "arrow-down"
+
+                    else
+                        "arrow-right"
+
+                columnCollapsedClass : String
+                columnCollapsedClass =
+                    if Column.isCollapsed column then
+                        " collapsed"
+
+                    else
+                        ""
+
+                columnCountString : String
+                columnCountString =
+                    if Column.isCollapsed column then
+                        "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
+
+                    else
+                        ""
+
+                name : String
+                name =
+                    Column.name column
+            in
+            Html.div []
+                [ Html.div
+                    [ class <| "card-board-column" ++ columnCollapsedClass
+                    , style "position" "fixed"
+                    , style "top" (String.fromFloat (domData.draggedNodeStartRect.y - domData.offset.y) ++ "px")
+                    , style "left" (String.fromFloat (clientData.clientPos.x - domData.offset.x - clientData.offsetPos.x) ++ "px")
+                    , style "width" (String.fromFloat domData.draggedNodeStartRect.width ++ "px")
+                    , style "height" (String.fromFloat domData.draggedNodeStartRect.height ++ "px")
+                    , style "cursor" "grabbing"
+                    , style "opacity" "0.85"
+                    ]
+                    [ Html.div [ class "card-board-column-header" ]
+                        [ Html.div
+                            [ class columnCollapsedArrow
+                            , attribute "aria-label" columnCollapsedAria
+                            ]
+                            []
+                        , Html.span []
+                            [ Html.text <| name ]
+                        , Html.span [ class "sub-text" ]
+                            [ Html.text <| columnCountString ]
+                        ]
+                    , Html.Keyed.ul [ class "card-board-column-list" ]
+                        (List.map (cardView today) (Column.cards boardId column))
+                    ]
+                ]
+
+        _ ->
+            Html.text ""
 
 
 columnView : String -> Int -> Date -> Column -> Html Msg
