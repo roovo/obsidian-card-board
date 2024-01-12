@@ -728,7 +728,10 @@ columnView draggedId boardId columnIndex today column =
 
         domId : String
         domId =
-            "card-board-column:" ++ String.fromInt columnIndex
+            "card-board-column:"
+                ++ boardId
+                ++ ":"
+                ++ name
 
         isBeingDragged : Bool
         isBeingDragged =

@@ -1,4 +1,3 @@
-- only shows ghost column on first board
 - dragging blanks out card contents in moved columns
 - doesn't display card contents on ghost column
 - need to get scrolling working
