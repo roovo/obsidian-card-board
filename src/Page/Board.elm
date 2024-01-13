@@ -9,6 +9,7 @@ module Page.Board exposing
     )
 
 import Board exposing (Board)
+import BoardConfig exposing (BoardConfig)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
@@ -147,7 +148,7 @@ update msg model =
                         ( model
                             |> updateColumnOrder (Session.dragTracker <| toSession model) dragData
                             |> (mapSession <| Session.moveDragable dragData)
-                        , Cmd.none
+                        , displayGhostMarkdown model
                         , Session.NoOp
                         )
 
@@ -280,6 +281,52 @@ updateColumnOrder dragTracker { cursor, beacons } model =
 
         _ ->
             model
+
+
+displayGhostMarkdown : Model -> Cmd Msg
+displayGhostMarkdown model =
+    let
+        dragTracker : DragTracker
+        dragTracker =
+            Session.dragTracker session
+
+        session : Session
+        session =
+            toSession model
+
+        currentBoardConfig : Maybe BoardConfig
+        currentBoardConfig =
+            session
+                |> Session.boardConfigs
+                |> SafeZipper.current
+
+        currentBoard : Maybe Board
+        currentBoard =
+            currentBoardConfig
+                |> Maybe.map (\bc -> Board.init (Session.uniqueId session) bc (Session.taskList session))
+
+        ghostId : String
+        ghostId =
+            currentBoard
+                |> Maybe.map (\b -> Board.id b ++ ":ghost")
+                |> Maybe.withDefault ""
+
+        ignoreFileNameDates : Bool
+        ignoreFileNameDates =
+            Session.ignoreFileNameDates session
+
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+    in
+    currentBoard
+        |> Maybe.map (Board.columns ignoreFileNameDates today)
+        |> Maybe.withDefault []
+        |> LE.find (\c -> Just (Column.name c) == DragTracker.uniqueId dragTracker)
+        |> Maybe.map (Column.cards ghostId)
+        |> Maybe.withDefault []
+        |> InteropPorts.displayTaskMarkdown
 
 
 
@@ -576,17 +623,6 @@ boardView ignoreFileNameDates today board =
         ]
 
 
-
--- , Html.Keyed.node "div"
---     [ class "card-board-boards" ]
---     (Boards.boardZipper boards
---         |> SafeZipper.mapSelectedAndRest
---             (keyedSelectedBoardView ignoreFileNameDates today dragTracker)
---             (keyedBoardView ignoreFileNameDates today)
---         |> SafeZipper.toList
---     )
-
-
 keyedSelectedBoardView : Bool -> Date -> DragTracker -> Board -> ( String, Html Msg )
 keyedSelectedBoardView ignoreFileNameDates today dragTracker board =
     ( Board.id board, Html.Lazy.lazy4 selectedBoardView ignoreFileNameDates today dragTracker board )
@@ -676,6 +712,10 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
                     else
                         ""
 
+                ghostBoardId : String
+                ghostBoardId =
+                    boardId ++ ":ghost"
+
                 name : String
                 name =
                     Column.name column
@@ -703,7 +743,7 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
                             [ Html.text <| columnCountString ]
                         ]
                     , Html.Keyed.ul [ class "card-board-column-list" ]
-                        (List.map (cardView today) (Column.cards boardId column))
+                        (List.map (cardView today) (Column.cards ghostBoardId column))
                     ]
                 ]
 
