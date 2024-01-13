@@ -1,4 +1,3 @@
-- add scrolling for columns on settings panel
 - restrict drag to column background
 - show dragable cursor when over column background
 - review duplications in Page.Board -> columnView & columnGhostView, displayGhostMarkdown

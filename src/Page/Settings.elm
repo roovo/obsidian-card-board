@@ -970,7 +970,10 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
                         ]
                     ]
                 , Html.div [ class "vertical-tab-content-container" ]
-                    [ Html.div [ class "vertical-tab-content" ]
+                    [ Html.div
+                        [ class "vertical-tab-content"
+                        , class "card-board-settings-column-settings-container"
+                        ]
                         formContents
                     ]
                 ]
