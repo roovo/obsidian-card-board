@@ -277,7 +277,7 @@ updateColumnOrder dragTracker { cursor, beacons } model =
                     model
 
                 Just position ->
-                    mapSession (Session.moveColumn clientData.uniqueId (Debug.log "position" position)) model
+                    mapSession (Session.moveColumn clientData.uniqueId position) model
 
         _ ->
             model

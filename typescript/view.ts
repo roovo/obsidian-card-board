@@ -351,6 +351,8 @@ export class CardBoardView extends ItemView {
     const beaconType = "data-" + data.dragType + "-beacon";
     const dragContainer = data.dragType + "-container";
 
+    var timer: ReturnType<typeof setTimeout>;
+
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
 
@@ -384,54 +386,115 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
+    function scrollDiv(scrollable: HTMLElement, isInLeftEdge: boolean, isInRightEdge: boolean, isInTopEdge: boolean, isInBottomEdge: boolean, event: MouseEvent) : boolean {
+      const maxScrollX      = scrollable.scrollWidth - scrollable.clientWidth;
+      const maxScrollY      = scrollable.scrollHeight - scrollable.clientHeight;
+
+      const currentScrollX  = scrollable.scrollLeft;
+      const currentScrollY  = scrollable.scrollTop;
+
+      const canScrollLeft   = currentScrollX > 0;
+      const canScrollRight  = currentScrollX < maxScrollX;
+      const canScrollUp     = currentScrollY > 0;
+      const canScrollDown   = currentScrollY < maxScrollY;
+
+      var nextScrollX = currentScrollX;
+      var nextScrollY = currentScrollY;
+
+      if (isInLeftEdge && canScrollLeft) {
+        nextScrollX -= 5;
+      } else if (isInRightEdge && canScrollRight) {
+        nextScrollX += 5;
+      }
+
+      if (isInTopEdge && canScrollUp) {
+        nextScrollY -= 5;
+      } else if (isInBottomEdge && canScrollDown) {
+        nextScrollY += 5;
+      }
+
+      nextScrollX = Math.max(0, Math.min(maxScrollX, nextScrollX));
+      nextScrollY = Math.max(0, Math.min(maxScrollY, nextScrollY));
+
+      if ((nextScrollX != currentScrollX) || (nextScrollY != currentScrollY)) {
+        scrollable.scrollLeft = nextScrollX;
+        scrollable.scrollTop  = nextScrollY;
+
+        return true;
+      }
+      return false;
+    }
+
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
       const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
       const leftSplit   = document.getElementsByClassName("workspace-split")[0];
 
       const scrollable    = document.getElementsByClassName(dragContainer)[0];
-      const SCROLL_MARGIN = 20;
 
-      if (scrollable instanceof HTMLElement) {
+      if ((dragAction == "move") && (scrollable instanceof HTMLElement)) {
         const scrollableRect  = scrollable.getBoundingClientRect();
+        const SCROLL_MARGIN   = 20;
+
         const bottom          = scrollableRect.y + scrollableRect.height;
         const right           = scrollableRect.x + scrollableRect.width;
 
-        if ( event.clientY < scrollableRect.y + SCROLL_MARGIN) {
-          scrollable.scrollTop -= 5;
-        } else if ( event.clientY > bottom - SCROLL_MARGIN) {
-          scrollable.scrollTop += 5;
-        } else if ( event.clientX < scrollableRect.x + SCROLL_MARGIN) {
-          scrollable.scrollLeft -= 5;
-        } else if ( event.clientX > right - SCROLL_MARGIN) {
-          scrollable.scrollLeft += 5;
+        const isInLeftEdge    = event.clientX < scrollableRect.x + SCROLL_MARGIN;
+        const isInRightEdge   = event.clientX > right - SCROLL_MARGIN
+        const isInTopEdge     = event.clientY < scrollableRect.y + SCROLL_MARGIN
+        const isInBottomEdge  = event.clientY > bottom - SCROLL_MARGIN
+
+        if (!(isInLeftEdge || isInRightEdge || isInTopEdge || isInBottomEdge)) {
+          clearTimeout(timer);
+        } else {
+          (function checkForWindowScroll() {
+            clearTimeout(timer);
+
+            if (scrollDiv(scrollable, isInLeftEdge, isInRightEdge, isInTopEdge, isInBottomEdge, event)) {
+              timer = setTimeout(checkForWindowScroll, 30);
+            }
+          })();
         }
       }
 
-      if ((ribbon instanceof HTMLElement) &&
-          (leftSplit instanceof HTMLElement) &&
-          (draggedElement instanceof HTMLElement)) {
-          const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
-          const offsetTop  = tabHeader.clientHeight;
+      if (dragAction == "move") {
+        if ((ribbon instanceof HTMLElement) &&
+            (leftSplit instanceof HTMLElement) &&
+            (draggedElement instanceof HTMLElement)) {
+            const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
+            const offsetTop  = tabHeader.clientHeight;
 
-          const draggedElementRect = draggedElement.getBoundingClientRect();
+            const draggedElementRect = draggedElement.getBoundingClientRect();
 
-          that.elm.ports.interopToElm.send({
-            tag: "elementDragged",
-            data: {
-              dragType: data.dragType,
-              dragAction: dragAction,
-              cursor: coords(event),
-              offset: { x: offsetLeft, y: offsetTop },
-              draggedNodeRect: {
-                x: draggedElementRect.x,
-                y: draggedElementRect.y,
-                width: draggedElementRect.width,
-                height: draggedElementRect.height
-              },
-              beacons: beaconPositions(beaconType)
-            }
-          });
+            that.elm.ports.interopToElm.send({
+              tag: "elementDragged",
+              data: {
+                dragType: data.dragType,
+                dragAction: dragAction,
+                cursor: coords(event),
+                offset: { x: offsetLeft, y: offsetTop },
+                draggedNodeRect: {
+                  x: draggedElementRect.x,
+                  y: draggedElementRect.y,
+                  width: draggedElementRect.width,
+                  height: draggedElementRect.height
+                },
+                beacons: beaconPositions(beaconType)
+              }
+            });
+        }
+      } else {
+            that.elm.ports.interopToElm.send({
+              tag: "elementDragged",
+              data: {
+                dragType: data.dragType,
+                dragAction: "stop",
+                cursor: coords(event),
+                offset: { x: 0, y: 0 },
+                draggedNodeRect: { x: 0, y: 0, width: 0, height: 0 },
+                beacons: []
+              }
+            });
       }
     }
 
