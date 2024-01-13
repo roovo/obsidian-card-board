@@ -386,7 +386,15 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
-    function scrollDiv(scrollable: HTMLElement, isInLeftEdge: boolean, isInRightEdge: boolean, isInTopEdge: boolean, isInBottomEdge: boolean, event: MouseEvent) : boolean {
+    function scrollDiv(scrollable: HTMLElement, leftEdgeDistance: number, rightEdgeDistance: number, topEdgeDistance: number, bottomEdgeDistance: number, event: MouseEvent) : boolean {
+      const SCROLL_MARGIN   = 20;
+      const MAX_STEP        = 20;
+
+      const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
+      const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
+      const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
+      const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
+
       const maxScrollX      = scrollable.scrollWidth - scrollable.clientWidth;
       const maxScrollY      = scrollable.scrollHeight - scrollable.clientHeight;
 
@@ -402,15 +410,19 @@ export class CardBoardView extends ItemView {
       var nextScrollY = currentScrollY;
 
       if (isInLeftEdge && canScrollLeft) {
-        nextScrollX -= 5;
+        var intensity = (SCROLL_MARGIN - leftEdgeDistance) / SCROLL_MARGIN;
+        nextScrollX -= (MAX_STEP * intensity);
       } else if (isInRightEdge && canScrollRight) {
-        nextScrollX += 5;
+        var intensity = (SCROLL_MARGIN - rightEdgeDistance) / SCROLL_MARGIN;
+        nextScrollX += (MAX_STEP * intensity);
       }
 
       if (isInTopEdge && canScrollUp) {
-        nextScrollY -= 5;
+        var intensity = (SCROLL_MARGIN - topEdgeDistance) / SCROLL_MARGIN;
+        nextScrollY -= (MAX_STEP * intensity);
       } else if (isInBottomEdge && canScrollDown) {
-        nextScrollY += 5;
+        var intensity = (SCROLL_MARGIN - bottomEdgeDistance) / SCROLL_MARGIN;
+        nextScrollY += (MAX_STEP * intensity);
       }
 
       nextScrollX = Math.max(0, Math.min(maxScrollX, nextScrollX));
@@ -439,10 +451,15 @@ export class CardBoardView extends ItemView {
         const bottom          = scrollableRect.y + scrollableRect.height;
         const right           = scrollableRect.x + scrollableRect.width;
 
-        const isInLeftEdge    = event.clientX < scrollableRect.x + SCROLL_MARGIN;
-        const isInRightEdge   = event.clientX > right - SCROLL_MARGIN
-        const isInTopEdge     = event.clientY < scrollableRect.y + SCROLL_MARGIN
-        const isInBottomEdge  = event.clientY > bottom - SCROLL_MARGIN
+        const leftEdgeDistance    = Math.abs(event.clientX - scrollableRect.x);
+        const rightEdgeDistance   = Math.abs(event.clientX - right);
+        const topEdgeDistance     = Math.abs(event.clientY - scrollableRect.y);
+        const bottomEdgeDistance  = Math.abs(event.clientY - bottom);
+
+        const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
+        const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
+        const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
+        const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
 
         if (!(isInLeftEdge || isInRightEdge || isInTopEdge || isInBottomEdge)) {
           clearTimeout(timer);
@@ -450,7 +467,7 @@ export class CardBoardView extends ItemView {
           (function checkForWindowScroll() {
             clearTimeout(timer);
 
-            if (scrollDiv(scrollable, isInLeftEdge, isInRightEdge, isInTopEdge, isInBottomEdge, event)) {
+            if (scrollDiv(scrollable, leftEdgeDistance, rightEdgeDistance, topEdgeDistance, bottomEdgeDistance, event)) {
               timer = setTimeout(checkForWindowScroll, 30);
             }
           })();

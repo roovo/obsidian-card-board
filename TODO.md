@@ -1,9 +1,8 @@
-- make scroll speed depend on how close to the edge you are?
-    - https://gsap.com/community/forums/topic/36941-scrolling-an-element-horizontally-based-on-mouse-position/
 - add scrolling for columns on settings panel
 - restrict drag to column background
 - show dragable cursor when over column background
 - review duplications in Page.Board -> columnView & columnGhostView, displayGhostMarkdown
+- review duplications in view.ts drag calculations
 
 ---
 - touch events - iPad ??
