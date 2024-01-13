@@ -1,4 +1,3 @@
-- cant drag to last position
 - drag scroll is only working whilst the mouse is moving - might be better to do
   it based on position whether moving or not...
 - restrict drag to column background

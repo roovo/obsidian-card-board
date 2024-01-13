@@ -87,6 +87,11 @@ body:not(.is-grabbing):not(.is-fullscreen).is-hidden-frameless .mod-top .card-bo
   grid-row-start: 1;
 }
 
+.card-board-column-with-beacons {
+  display: flex;
+  flex-direction: row;
+}
+
 .card-board-columns {
   display: flex;
 }

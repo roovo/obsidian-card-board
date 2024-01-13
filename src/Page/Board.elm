@@ -277,7 +277,7 @@ updateColumnOrder dragTracker { cursor, beacons } model =
                     model
 
                 Just position ->
-                    mapSession (Session.moveColumn clientData.uniqueId position) model
+                    mapSession (Session.moveColumn clientData.uniqueId (Debug.log "position" position)) model
 
         _ ->
             model
@@ -503,13 +503,13 @@ tabHeader isDragging currentBoardIndex tabIndex name =
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before name)
+        [ beacon tagHeaderBeaconType (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After name)
+        , beacon tagHeaderBeaconType (BeaconPosition.After name)
         ]
 
 
@@ -538,13 +538,13 @@ selectedTabHeader isDragging tabIndex name =
                     )
             )
         ]
-        [ beacon (BeaconPosition.Before name)
+        [ beacon tagHeaderBeaconType (BeaconPosition.Before name)
         , Html.div
             [ class "workspace-tab-header-inner" ]
             [ Html.div [ class "workspace-tab-header-inner-title" ]
                 [ Html.text <| name ]
             ]
-        , beacon (BeaconPosition.After name)
+        , beacon tagHeaderBeaconType (BeaconPosition.After name)
         ]
 
 
@@ -572,20 +572,6 @@ viewDraggedHeader isDragging session =
 
         _ ->
             empty
-
-
-beaconType : String
-beaconType =
-    "data-" ++ tagHeaderDragType ++ "-beacon"
-
-
-beacon : BeaconPosition -> Html Msg
-beacon beaconPosition =
-    Html.span
-        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
-        , style "font-size" "0"
-        ]
-        []
 
 
 tabHeaderClass : Maybe Int -> Int -> String
@@ -810,8 +796,8 @@ columnView draggedId boardId columnIndex today column =
         name =
             Column.name column
     in
-    Html.div []
-        [ columnBeacon (BeaconPosition.Before name)
+    Html.div [ class "card-board-column-with-beacons" ]
+        [ beacon columnBeaconType (BeaconPosition.Before name)
         , Html.div
             [ id domId
             , class <| "card-board-column" ++ columnCollapsedClass
@@ -841,7 +827,7 @@ columnView draggedId boardId columnIndex today column =
             , Html.Keyed.ul [ class "card-board-column-list" ]
                 (List.map (cardView today) (Column.cards boardId column))
             ]
-        , columnBeacon (BeaconPosition.After name)
+        , beacon columnBeaconType (BeaconPosition.After name)
         ]
 
 
@@ -1014,18 +1000,23 @@ attributeIf condition attribute =
         class ""
 
 
-columnBeaconType : String
-columnBeaconType =
-    "data-" ++ columnDragType ++ "-beacon"
+tagHeaderBeaconType : String
+tagHeaderBeaconType =
+    "data-" ++ tagHeaderDragType ++ "-beacon"
 
 
-columnBeacon : BeaconPosition -> Html Msg
-columnBeacon beaconPosition =
+beacon : String -> BeaconPosition -> Html Msg
+beacon beaconType beaconPosition =
     Html.span
-        [ attribute columnBeaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
+        [ attribute beaconType (JE.encode 0 <| BeaconPosition.encoder beaconPosition)
         , style "font-size" "0"
         ]
         []
+
+
+columnBeaconType : String
+columnBeaconType =
+    "data-" ++ columnDragType ++ "-beacon"
 
 
 empty : Html Msg
