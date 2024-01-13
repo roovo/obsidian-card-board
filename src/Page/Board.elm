@@ -456,7 +456,9 @@ boardsView session =
                     []
                 ]
             , Html.Keyed.node "div"
-                [ class "card-board-boards" ]
+                [ class "card-board-boards"
+                , class "card-board-column-container"
+                ]
                 (Boards.boardZipper boards
                     |> SafeZipper.mapSelectedAndRest
                         (keyedSelectedBoardView ignoreFileNameDates today dragTracker)

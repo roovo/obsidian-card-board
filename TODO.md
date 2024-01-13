@@ -1,6 +1,7 @@
-- need to get scrolling working
 - look at how the nearest beacon is found whilst dragging short and long columns around
     - do I want to restrict it to the dimension I am moving in?
+- drag scroll is only working whilst the mouse is moving - might be better to do
+  it based on position whether moving or not...
 - restrict drag to column background
 - show dragable cursor when over column background
 

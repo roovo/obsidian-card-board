@@ -395,11 +395,16 @@ export class CardBoardView extends ItemView {
       if (scrollable instanceof HTMLElement) {
         const scrollableRect  = scrollable.getBoundingClientRect();
         const bottom          = scrollableRect.y + scrollableRect.height;
+        const right           = scrollableRect.x + scrollableRect.width;
 
         if ( event.clientY < scrollableRect.y + SCROLL_MARGIN) {
           scrollable.scrollTop -= 5;
         } else if ( event.clientY > bottom - SCROLL_MARGIN) {
           scrollable.scrollTop += 5;
+        } else if ( event.clientX < scrollableRect.x + SCROLL_MARGIN) {
+          scrollable.scrollLeft -= 5;
+        } else if ( event.clientX > right - SCROLL_MARGIN) {
+          scrollable.scrollLeft += 5;
         }
       }
 
