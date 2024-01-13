@@ -531,7 +531,7 @@ updateBoardOrder : DragTracker -> DragData -> Model -> Model
 updateBoardOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
+            case Rect.closestTo Coords.Vertical cursor beacons of
                 Nothing ->
                     model
 
@@ -549,7 +549,7 @@ updateColumnOrder : DragTracker -> DragData -> Model -> Model
 updateColumnOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
+            case Rect.closestTo Coords.Vertical cursor beacons of
                 Nothing ->
                     model
 

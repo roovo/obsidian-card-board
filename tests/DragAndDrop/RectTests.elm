@@ -1,5 +1,6 @@
 module DragAndDrop.RectTests exposing (suite)
 
+import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.Rect as Rect
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers
@@ -36,34 +37,96 @@ centre =
 closestTo : Test
 closestTo =
     describe "closestTo"
-        [ test "returns Nothing if there are no rects" <|
-            \() ->
-                []
-                    |> Rect.closestTo { x = 0, y = 0 }
-                    |> Expect.equal Nothing
-        , test "returns the rect if there is only one" <|
-            \() ->
-                [ { beaconPosition = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
-                ]
-                    |> Rect.closestTo { x = 0, y = 0 }
-                    |> Expect.equal (Just "1")
-        , test "returns the first of the two if there are more than one at the same distance" <|
-            \() ->
-                [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
-                , { beaconPosition = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
-                , { beaconPosition = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
-                ]
-                    |> Rect.closestTo { x = 0, y = 0 }
-                    |> Expect.equal (Just "2")
-        , test "returns the closest of the bunch" <|
-            \() ->
-                [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
-                , { beaconPosition = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
-                , { beaconPosition = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
-                , { beaconPosition = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
-                ]
-                    |> Rect.closestTo { x = 12, y = 20 }
-                    |> Expect.equal (Just "3")
+        [ describe "Both horizontal and vertical"
+            [ test "returns Nothing if there are no rects" <|
+                \() ->
+                    []
+                        |> Rect.closestTo Coords.Both { x = 0, y = 0 }
+                        |> Expect.equal Nothing
+            , test "returns the rect if there is only one" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Both { x = 0, y = 0 }
+                        |> Expect.equal (Just "1")
+            , test "returns the first of the two if there are more than one at the same distance" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    , { beaconPosition = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Both { x = 0, y = 0 }
+                        |> Expect.equal (Just "2")
+            , test "returns the closest of the bunch" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
+                    , { beaconPosition = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
+                    , { beaconPosition = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Both { x = 12, y = 20 }
+                        |> Expect.equal (Just "3")
+            ]
+        , describe "Horizontal only"
+            [ test "returns Nothing if there are no rects" <|
+                \() ->
+                    []
+                        |> Rect.closestTo Coords.Horizontal { x = 0, y = 0 }
+                        |> Expect.equal Nothing
+            , test "returns the rect if there is only one" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Horizontal { x = 0, y = 0 }
+                        |> Expect.equal (Just "1")
+            , test "returns the first of the two if there are more than one at the same distance" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    , { beaconPosition = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Horizontal { x = 0, y = 0 }
+                        |> Expect.equal (Just "2")
+            , test "returns the closest of the bunch" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
+                    , { beaconPosition = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
+                    , { beaconPosition = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Horizontal { x = 57, y = 2 }
+                        |> Expect.equal (Just "2")
+            ]
+        , describe "Vertical only"
+            [ test "returns Nothing if there are no rects" <|
+                \() ->
+                    []
+                        |> Rect.closestTo Coords.Vertical { x = 0, y = 0 }
+                        |> Expect.equal Nothing
+            , test "returns the rect if there is only one" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Vertical { x = 0, y = 0 }
+                        |> Expect.equal (Just "1")
+            , test "returns the first of the two if there are more than one at the same distance" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    , { beaconPosition = "3", rect = { x = 0, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Vertical { x = 0, y = 0 }
+                        |> Expect.equal (Just "2")
+            , test "returns the closest of the bunch" <|
+                \() ->
+                    [ { beaconPosition = "1", rect = { x = 1, y = 1, width = 1, height = 1 } }
+                    , { beaconPosition = "2", rect = { x = 10, y = 30, width = 100, height = 100 } }
+                    , { beaconPosition = "3", rect = { x = 10, y = 30, width = 10, height = 10 } }
+                    , { beaconPosition = "4", rect = { x = 100, y = 0, width = 1, height = 1 } }
+                    ]
+                        |> Rect.closestTo Coords.Vertical { x = 57, y = 2 }
+                        |> Expect.equal (Just "1")
+            ]
         ]
 
 

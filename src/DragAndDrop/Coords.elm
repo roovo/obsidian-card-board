@@ -1,5 +1,6 @@
 module DragAndDrop.Coords exposing
     ( Coords
+    , Plane(..)
     , decoder
     , distance
     , encoder
@@ -19,6 +20,12 @@ type alias Coords =
     { x : Float
     , y : Float
     }
+
+
+type Plane
+    = Both
+    | Horizontal
+    | Vertical
 
 
 
@@ -53,8 +60,8 @@ fromFloatTuple ( x, y ) =
 -- UTILS
 
 
-distance : Coords -> Coords -> Float
-distance coords1 coords2 =
+distance : Plane -> Coords -> Coords -> Float
+distance plane coords1 coords2 =
     let
         dx : Float
         dx =
@@ -64,7 +71,15 @@ distance coords1 coords2 =
         dy =
             coords1.y - coords2.y
     in
-    sqrt ((dx ^ 2) + (dy ^ 2))
+    case plane of
+        Both ->
+            sqrt ((dx ^ 2) + (dy ^ 2))
+
+        Horizontal ->
+            abs dx
+
+        Vertical ->
+            abs dy
 
 
 subtract : Coords -> Coords -> Coords
