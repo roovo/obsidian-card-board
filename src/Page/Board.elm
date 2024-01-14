@@ -251,92 +251,6 @@ update msg model =
             )
 
 
-cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
-cmdIfHasTask id model cmd =
-    model
-        |> toSession
-        |> Session.taskFromId id
-        |> Maybe.map TaskItem.fields
-        |> Maybe.map cmd
-        |> Maybe.withDefault Cmd.none
-
-
-updateBoardOrder : DragTracker -> DragData -> Model -> Model
-updateBoardOrder dragTracker { cursor, beacons } model =
-    case dragTracker of
-        DragTracker.Dragging clientData _ ->
-            case Rect.closestTo Coords.Horizontal cursor beacons of
-                Nothing ->
-                    model
-
-                Just position ->
-                    mapSession (Session.moveBoard clientData.uniqueId position) model
-
-        _ ->
-            model
-
-
-updateColumnOrder : DragTracker -> DragData -> Model -> Model
-updateColumnOrder dragTracker { cursor, beacons } model =
-    case dragTracker of
-        DragTracker.Dragging clientData _ ->
-            case Rect.closestTo Coords.Horizontal cursor beacons of
-                Nothing ->
-                    model
-
-                Just position ->
-                    mapSession (Session.moveColumn clientData.uniqueId position) model
-
-        _ ->
-            model
-
-
-displayGhostMarkdown : Model -> Cmd Msg
-displayGhostMarkdown model =
-    let
-        dragTracker : DragTracker
-        dragTracker =
-            Session.dragTracker session
-
-        session : Session
-        session =
-            toSession model
-
-        currentBoardConfig : Maybe BoardConfig
-        currentBoardConfig =
-            session
-                |> Session.boardConfigs
-                |> SafeZipper.current
-
-        currentBoard : Maybe Board
-        currentBoard =
-            currentBoardConfig
-                |> Maybe.map (\bc -> Board.init (Session.uniqueId session) bc (Session.taskList session))
-
-        ghostId : String
-        ghostId =
-            currentBoard
-                |> Maybe.map (\b -> Board.id b ++ ":ghost")
-                |> Maybe.withDefault ""
-
-        ignoreFileNameDates : Bool
-        ignoreFileNameDates =
-            Session.ignoreFileNameDates session
-
-        today : Date
-        today =
-            Session.timeWithZone session
-                |> TimeWithZone.toDate
-    in
-    currentBoard
-        |> Maybe.map (Board.columns ignoreFileNameDates today)
-        |> Maybe.withDefault []
-        |> LE.find (\c -> Just (Column.name c) == DragTracker.uniqueId dragTracker)
-        |> Maybe.map (Column.cards ghostId)
-        |> Maybe.withDefault []
-        |> InteropPorts.displayTaskMarkdown
-
-
 
 -- VIEW
 
@@ -582,23 +496,6 @@ viewDraggedHeader isDragging session =
             empty
 
 
-tabHeaderClass : Maybe Int -> Int -> String
-tabHeaderClass currentBoardIndex index =
-    case currentBoardIndex of
-        Just i ->
-            if index == i - 1 then
-                " is-before-active"
-
-            else if index == i + 1 then
-                " is-after-active"
-
-            else
-                ""
-
-        Nothing ->
-            ""
-
-
 keyedBoardView : Bool -> Date -> Board -> ( String, Html Msg )
 keyedBoardView ignoreFileNameDates today board =
     ( Board.id board, Html.Lazy.lazy3 boardView ignoreFileNameDates today board )
@@ -676,49 +573,13 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
     case ( isDragging, draggedColumn, dragTracker ) of
         ( True, Just column, DragTracker.Dragging clientData domData ) ->
             let
-                columnCollapsedAria : String
-                columnCollapsedAria =
-                    if Column.isCollapsed column then
-                        "Un-collapse"
-
-                    else
-                        "Collapse"
-
-                columnCollapsedArrow : String
-                columnCollapsedArrow =
-                    if Column.isCollapsed column then
-                        "arrow-down"
-
-                    else
-                        "arrow-right"
-
-                columnCollapsedClass : String
-                columnCollapsedClass =
-                    if Column.isCollapsed column then
-                        " collapsed"
-
-                    else
-                        ""
-
-                columnCountString : String
-                columnCountString =
-                    if Column.isCollapsed column then
-                        "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
-
-                    else
-                        ""
-
-                ghostBoardId : String
-                ghostBoardId =
-                    boardId ++ ":ghost"
-
                 name : String
                 name =
                     Column.name column
             in
             Html.div []
                 [ Html.div
-                    [ class <| "card-board-column" ++ columnCollapsedClass
+                    [ class <| "card-board-column" ++ columnCollapsedClass column
                     , style "position" "fixed"
                     , style "top" (String.fromFloat (domData.draggedNodeStartRect.y - domData.offset.y) ++ "px")
                     , style "left" (String.fromFloat (clientData.clientPos.x - domData.offset.x - clientData.offsetPos.x) ++ "px")
@@ -729,17 +590,17 @@ columnGhostView boardId today isDragging dragTracker draggedColumn =
                     ]
                     [ Html.div [ class "card-board-column-header" ]
                         [ Html.div
-                            [ class columnCollapsedArrow
-                            , attribute "aria-label" columnCollapsedAria
+                            [ class (columnCollapsedArrow column)
+                            , attribute "aria-label" (columnCollapsedAria column)
                             ]
                             []
                         , Html.span []
                             [ Html.text <| name ]
                         , Html.span [ class "sub-text" ]
-                            [ Html.text <| columnCountString ]
+                            [ Html.text <| columnCountString column ]
                         ]
                     , Html.Keyed.ul [ class "card-board-column-list" ]
-                        (List.map (cardView today) (Column.cards ghostBoardId column))
+                        (List.map (cardView today) (Column.cards (ghostBoardId boardId) column))
                     ]
                 ]
 
@@ -757,38 +618,6 @@ keyedColumnView draggedId boardId columnIndex today column =
 columnView : Maybe String -> String -> Int -> Date -> Column -> Html Msg
 columnView draggedId boardId columnIndex today column =
     let
-        columnCollapsedAria : String
-        columnCollapsedAria =
-            if Column.isCollapsed column then
-                "Un-collapse"
-
-            else
-                "Collapse"
-
-        columnCollapsedArrow : String
-        columnCollapsedArrow =
-            if Column.isCollapsed column then
-                "arrow-down"
-
-            else
-                "arrow-right"
-
-        columnCollapsedClass : String
-        columnCollapsedClass =
-            if Column.isCollapsed column then
-                " collapsed"
-
-            else
-                ""
-
-        columnCountString : String
-        columnCountString =
-            if Column.isCollapsed column then
-                "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
-
-            else
-                ""
-
         domId : String
         domId =
             "card-board-column:"
@@ -808,7 +637,7 @@ columnView draggedId boardId columnIndex today column =
         [ beacon columnBeaconType (BeaconPosition.Before name)
         , Html.div
             [ id domId
-            , class <| "card-board-column" ++ columnCollapsedClass
+            , class <| "card-board-column" ++ columnCollapsedClass column
             , attributeIf isBeingDragged (style "opacity" "0")
             , onDown <|
                 \e ->
@@ -822,15 +651,15 @@ columnView draggedId boardId columnIndex today column =
             ]
             [ Html.div [ class "card-board-column-header" ]
                 [ Html.div
-                    [ class columnCollapsedArrow
-                    , attribute "aria-label" columnCollapsedAria
+                    [ class (columnCollapsedArrow column)
+                    , attribute "aria-label" (columnCollapsedAria column)
                     , onClick <| ToggleColumnCollapse columnIndex (not <| Column.isCollapsed column)
                     ]
                     []
                 , Html.span []
                     [ Html.text <| name ]
                 , Html.span [ class "sub-text" ]
-                    [ Html.text <| columnCountString ]
+                    [ Html.text <| columnCountString column ]
                 ]
             , Html.Keyed.ul [ class "card-board-column-list" ]
                 (List.map (cardView today) (Column.cards boardId column))
@@ -952,20 +781,6 @@ taskDueDate today dueDate =
         ]
 
 
-dueDateString : Date -> Maybe Date -> String
-dueDateString today dueDate =
-    case dueDate of
-        Just date ->
-            if Date.year date == Date.year today then
-                Date.format "E, MMM ddd" date
-
-            else
-                Date.format "E, MMM ddd y" date
-
-        Nothing ->
-            "n/a"
-
-
 cardActionButtons : String -> String -> String -> Html Msg
 cardActionButtons title taskItemId editButtonId =
     Html.div [ class "card-board-card-action-area-buttons" ]
@@ -1023,14 +838,121 @@ beacon beaconType beaconPosition =
         []
 
 
+cmdIfHasTask : String -> Model -> (TaskItemFields -> Cmd b) -> Cmd b
+cmdIfHasTask id model cmd =
+    model
+        |> toSession
+        |> Session.taskFromId id
+        |> Maybe.map TaskItem.fields
+        |> Maybe.map cmd
+        |> Maybe.withDefault Cmd.none
+
+
 columnBeaconType : String
 columnBeaconType =
     "data-" ++ columnDragType ++ "-beacon"
 
 
+columnCollapsedAria : Column -> String
+columnCollapsedAria column =
+    if Column.isCollapsed column then
+        "Un-collapse"
+
+    else
+        "Collapse"
+
+
+columnCollapsedArrow : Column -> String
+columnCollapsedArrow column =
+    if Column.isCollapsed column then
+        "arrow-down"
+
+    else
+        "arrow-right"
+
+
+columnCollapsedClass : Column -> String
+columnCollapsedClass column =
+    if Column.isCollapsed column then
+        " collapsed"
+
+    else
+        ""
+
+
+columnCountString : Column -> String
+columnCountString column =
+    if Column.isCollapsed column then
+        "(" ++ (String.fromInt <| Column.cardCount column) ++ ")"
+
+    else
+        ""
+
+
+displayGhostMarkdown : Model -> Cmd Msg
+displayGhostMarkdown model =
+    let
+        dragTracker : DragTracker
+        dragTracker =
+            Session.dragTracker session
+
+        session : Session
+        session =
+            toSession model
+
+        currentBoard : Maybe Board
+        currentBoard =
+            session
+                |> Session.boardConfigs
+                |> SafeZipper.current
+                |> Maybe.map (\bc -> Board.init (Session.uniqueId session) bc (Session.taskList session))
+
+        ghostId : String
+        ghostId =
+            currentBoard
+                |> Maybe.map (ghostBoardId << Board.id)
+                |> Maybe.withDefault ""
+
+        ignoreFileNameDates : Bool
+        ignoreFileNameDates =
+            Session.ignoreFileNameDates session
+
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+    in
+    currentBoard
+        |> Maybe.map (Board.columns ignoreFileNameDates today)
+        |> Maybe.withDefault []
+        |> LE.find (\c -> Just (Column.name c) == DragTracker.uniqueId dragTracker)
+        |> Maybe.map (Column.cards ghostId)
+        |> Maybe.withDefault []
+        |> InteropPorts.displayTaskMarkdown
+
+
+dueDateString : Date -> Maybe Date -> String
+dueDateString today dueDate =
+    case dueDate of
+        Just date ->
+            if Date.year date == Date.year today then
+                Date.format "E, MMM ddd" date
+
+            else
+                Date.format "E, MMM ddd y" date
+
+        Nothing ->
+            "n/a"
+
+
 empty : Html Msg
 empty =
     Html.text ""
+
+
+ghostBoardId : String -> String
+ghostBoardId boardId =
+    boardId ++ ":ghost"
 
 
 nonPropogatingOnDown : (Mouse.Event -> Msg) -> Html.Attribute Msg
@@ -1042,6 +964,53 @@ nonPropogatingOnDown =
 onClickWithPreventDefault : msg -> Attribute msg
 onClickWithPreventDefault msg =
     Html.Events.preventDefaultOn "click" (JD.map alwaysPreventDefault (JD.succeed msg))
+
+
+tabHeaderClass : Maybe Int -> Int -> String
+tabHeaderClass currentBoardIndex index =
+    case currentBoardIndex of
+        Just i ->
+            if index == i - 1 then
+                " is-before-active"
+
+            else if index == i + 1 then
+                " is-after-active"
+
+            else
+                ""
+
+        Nothing ->
+            ""
+
+
+updateBoardOrder : DragTracker -> DragData -> Model -> Model
+updateBoardOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo Coords.Horizontal cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    mapSession (Session.moveBoard clientData.uniqueId position) model
+
+        _ ->
+            model
+
+
+updateColumnOrder : DragTracker -> DragData -> Model -> Model
+updateColumnOrder dragTracker { cursor, beacons } model =
+    case dragTracker of
+        DragTracker.Dragging clientData _ ->
+            case Rect.closestTo Coords.Horizontal cursor beacons of
+                Nothing ->
+                    model
+
+                Just position ->
+                    mapSession (Session.moveColumn clientData.uniqueId position) model
+
+        _ ->
+            model
 
 
 when : Bool -> Html Msg -> Html Msg
