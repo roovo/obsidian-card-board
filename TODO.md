@@ -1,4 +1,3 @@
-- show dragable cursor when over column background
 - review duplications in Page.Board -> columnView & columnGhostView, displayGhostMarkdown
 - review duplications in view.ts drag calculations
 
