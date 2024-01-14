@@ -42,8 +42,9 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Model
-    = ViewingBoard Session
-    | DeletingCard String String Session
+    = DeletingCard String String Session
+    | EditingCardDueDate String Session
+    | ViewingBoard Session
 
 
 init : Session -> Model
@@ -66,6 +67,11 @@ deleteCardConfirmed model =
     ViewingBoard (toSession model)
 
 
+editCardDueDateRequested : String -> Model -> Model
+editCardDueDateRequested cardId model =
+    EditingCardDueDate cardId (toSession model)
+
+
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
@@ -75,6 +81,9 @@ mapSession fn model =
         DeletingCard title cardId session ->
             DeletingCard title cardId <| fn session
 
+        EditingCardDueDate cardId session ->
+            EditingCardDueDate cardId <| fn session
+
 
 toSession : Model -> Session
 toSession model =
@@ -83,6 +92,9 @@ toSession model =
             session
 
         DeletingCard _ _ session ->
+            session
+
+        EditingCardDueDate _ session ->
             session
 
 
@@ -143,11 +155,7 @@ update msg model =
             )
 
         EditCardDueDateRequested cardId ->
-            let
-                foo =
-                    Debug.log "edit requested" cardId
-            in
-            ( model
+            ( editCardDueDateRequested cardId model
             , Cmd.none
             , Session.NoOp
             )
@@ -278,6 +286,50 @@ view model =
                 [ boardsView session
                 , modalDeleteCardConfirm title cardId
                 ]
+
+        EditingCardDueDate cardId session ->
+            Html.div []
+                [ boardsView session
+                , modalEditCardDueDate cardId
+                ]
+
+
+modalEditCardDueDate : String -> Html Msg
+modalEditCardDueDate cardId =
+    Html.div [ class "modal-container" ]
+        [ Html.div
+            [ class "modal-bg"
+            , style "opacity" "0.85"
+            ]
+            []
+        , Html.div [ class "modal" ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                [ Html.text "Edit due date" ]
+            , Html.div [ class "modal-content" ]
+                [ Html.p []
+                    [ Html.text <|
+                        "Editing card due date: "
+                            ++ cardId
+                    ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ class "mod-warning"
+                    ]
+                    [ Html.text "Save"
+                    ]
+                , Html.button
+                    [ onClick <| ModalCancelClicked ]
+                    [ Html.text "Cancel"
+                    ]
+                ]
+            ]
+        ]
 
 
 modalDeleteCardConfirm : String -> String -> Html Msg

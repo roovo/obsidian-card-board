@@ -1,11 +1,16 @@
+- find the card with the given cardId and use in EditingCardDueDate instead of the id
+  - if the card can't be found then don't show the modal!
+- datepickers
+    - https://package.elm-lang.org/packages/abradley2/elm-datepicker
+    - https://package.elm-lang.org/packages/NoRedInk/datetimepicker-legacy
+    - https://package.elm-lang.org/packages/dwyl/elm-datepicker
+    - https://package.elm-lang.org/packages/PanagiotisGeorgiadis/elm-datepicker
+    - https://package.elm-lang.org/packages/anderssorby/elm-datepicker
 - need to realise that a card could move to a different column on the board
   or be removed entirely from the board if the due date is edited, so best
   if the editing is done in a modal.
 - I could even let the user know which columns the card will appear in whilst
   editing
-- show a context menu when right clicking a card: update/set due date
-- can I use the builtin Meun from Obsidian - I think this is best as I can use the native
-  menu style.  See obsidian-full-calendar:src/ui/view.ts for example useage
 - when selected, open a modal with a calendar picker and an option to remove
   the due date.  User cancels or saves the change for it to take effect.
 
