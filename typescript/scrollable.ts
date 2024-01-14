@@ -24,10 +24,10 @@ export class Scrollable {
     const bottom      = this.elementRect.y + this.elementRect.height;
     const right       = this.elementRect.x + this.elementRect.width;
 
-    this.leftEdgeDistance    = Math.abs(event.clientX - this.elementRect.x);
-    this.rightEdgeDistance   = Math.abs(event.clientX - right);
-    this.topEdgeDistance     = Math.abs(event.clientY - this.elementRect.y);
-    this.bottomEdgeDistance  = Math.abs(event.clientY - bottom);
+    this.leftEdgeDistance    = Math.max(0, event.clientX - this.elementRect.x);
+    this.rightEdgeDistance   = Math.max(0, right - event.clientX);
+    this.topEdgeDistance     = Math.max(0, event.clientY - this.elementRect.y);
+    this.bottomEdgeDistance  = Math.max(0, bottom - event.clientY);
 
     this.isInLeftEdge    = this.leftEdgeDistance < this.SCROLL_MARGIN;
     this.isInRightEdge   = this.rightEdgeDistance < this.SCROLL_MARGIN;
