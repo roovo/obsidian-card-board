@@ -1,7 +1,7 @@
 import { Filter } from "./types"
 
 export class Scrollable {
-  private SCROLL_MARGIN   = 20;
+  private SCROLL_MARGIN   = 30;
   private MAX_STEP        = 20;
 
   private element: HTMLElement;

@@ -1,5 +1,3 @@
-- review duplications in view.ts drag calculations
-
 ---
 - touch events - iPad ??
 - show errors on settings pane ??
