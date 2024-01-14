@@ -24,7 +24,7 @@ import FeatherIcons
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
 import Html.Events exposing (onClick)
-import Html.Events.Extra.Mouse exposing (onDown)
+import Html.Events.Extra.Mouse as Mouse exposing (onDown)
 import Html.Keyed
 import Html.Lazy
 import InteropPorts
@@ -94,7 +94,8 @@ toSession model =
 
 
 type Msg
-    = ColumnMouseDown ( String, DragTracker.ClientData )
+    = CardMouseDown
+    | ColumnMouseDown ( String, DragTracker.ClientData )
     | DeleteConfirmed String
     | ElementDragged DragData
     | ModalCancelClicked
@@ -121,6 +122,13 @@ columnDragType =
 update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
+        CardMouseDown ->
+            let
+                foo =
+                    Debug.log "card" "mousedown"
+            in
+            ( model, Cmd.none, Session.NoOp )
+
         ColumnMouseDown ( domId, clientData ) ->
             ( mapSession (Session.waitForDrag clientData) model
             , InteropPorts.trackDraggable columnDragType clientData.clientPos domId
@@ -872,6 +880,7 @@ cardView today card =
     Html.li
         [ class "card-board-card cm-s-obsidian"
         , attributeIf (not <| String.isEmpty dataTags) (attribute "data-tags" dataTags)
+        , nonPropogatingOnDown <| always CardMouseDown
         ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []
@@ -1022,6 +1031,12 @@ columnBeaconType =
 empty : Html Msg
 empty =
     Html.text ""
+
+
+nonPropogatingOnDown : (Mouse.Event -> Msg) -> Html.Attribute Msg
+nonPropogatingOnDown =
+    { stopPropagation = True, preventDefault = True }
+        |> Mouse.onWithOptions "mousedown"
 
 
 onClickWithPreventDefault : msg -> Attribute msg
