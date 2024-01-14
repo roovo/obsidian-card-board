@@ -40,6 +40,7 @@ type FromElm
 type ToElm
     = ActiveStateUpdated Bool
     | ConfigChanged TextDirection
+    | EditCardDueDate String
     | ElementDragged DragData
     | FileAdded MarkdownFile
     | FileDeleted String
@@ -156,6 +157,7 @@ toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
+        , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string

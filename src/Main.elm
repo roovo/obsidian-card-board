@@ -121,6 +121,7 @@ type Msg
     | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
+    | EditCardDueDateRequested String
     | ElementDragged DragData
     | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
@@ -157,6 +158,13 @@ update msg model =
 
         ( ConfigChanged textDirection, _ ) ->
             ( mapSession (Session.updateTextDirection textDirection) model, Cmd.none )
+
+        ( EditCardDueDateRequested cardId, Boards subModel ) ->
+            BoardPage.update (BoardPage.EditCardDueDateRequested cardId) subModel
+                |> updateWith Boards GotBoardPageMsg
+
+        ( EditCardDueDateRequested cardId, Settings subModel ) ->
+            ( model, Cmd.none )
 
         ( ElementDragged dragData, Boards subModel ) ->
             BoardPage.update (BoardPage.ElementDragged dragData) subModel
@@ -438,6 +446,9 @@ subscriptions _ =
 
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
+
+                                InteropDefinitions.EditCardDueDate cardId ->
+                                    EditCardDueDateRequested cardId
 
                                 InteropDefinitions.ElementDragged dragData ->
                                     ElementDragged dragData

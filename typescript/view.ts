@@ -354,7 +354,10 @@ export class CardBoardView extends ItemView {
       item
         .setTitle("Edit Due Date")
         .onClick(() => {
-          console.log("context menu selected: " + data.cardId);
+          this.elm.ports.interopToElm.send({
+            tag: "editCardDueDate",
+            data: data.cardId
+          });
         })
     );
 

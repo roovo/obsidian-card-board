@@ -95,6 +95,7 @@ type Msg
     | CardRightMouseDown String Mouse.Event
     | ColumnMouseDown ( String, DragTracker.ClientData )
     | DeleteConfirmed String
+    | EditCardDueDateRequested String
     | ElementDragged DragData
     | ModalCancelClicked
     | ModalCloseClicked
@@ -138,6 +139,16 @@ update msg model =
         DeleteConfirmed cardId ->
             ( deleteCardConfirmed model
             , cmdIfHasTask cardId model InteropPorts.deleteTask
+            , Session.NoOp
+            )
+
+        EditCardDueDateRequested cardId ->
+            let
+                foo =
+                    Debug.log "edit requested" cardId
+            in
+            ( model
+            , Cmd.none
             , Session.NoOp
             )
 

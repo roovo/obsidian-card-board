@@ -1002,6 +1002,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
+        , test "decodes editCardDueDate data" <|
+            \() ->
+                """{"tag":"editCardDueDate","data":"a card"}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.EditCardDueDate "a card")
         , test "decodes fileRenamed data" <|
             \() ->
                 """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
