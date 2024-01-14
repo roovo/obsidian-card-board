@@ -15,6 +15,7 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define columns).
 
 ## New
+- Re-order columns by drag and drop.
 - Choose files or directories to ignore when loading
   tasks from notes.  Handy if you use templates which contain
   tasks that you don't want to see on your boards, or if you
