@@ -7,6 +7,7 @@ module InteropDefinitions exposing
     , displayTaskMarkdownEncoder
     , interop
     , openTaskSourceFileEncoder
+    , showCardContextMenuEncoder
     , trackDraggableEncoder
     , updateTasksEncoder
     )
@@ -31,6 +32,7 @@ type FromElm
     | ElmInitialized
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
+    | ShowCardContextMenu { clientPos : ( Float, Float ), cardId : String }
     | TrackDraggable { dragType : String, clientPos : Coords, draggableId : String }
     | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
 
@@ -109,6 +111,14 @@ openTaskSourceFileEncoder =
         ]
 
 
+showCardContextMenuEncoder : TsEncode.Encoder { a | clientPos : ( Float, Float ), cardId : String }
+showCardContextMenuEncoder =
+    TsEncode.object
+        [ required "clientPos" .clientPos (TsEncode.tuple TsEncode.float TsEncode.float)
+        , required "cardId" .cardId TsEncode.string
+        ]
+
+
 trackDraggableEncoder : TsEncode.Encoder { dragType : String, clientPos : Coords, draggableId : String }
 trackDraggableEncoder =
     TsEncode.object
@@ -161,7 +171,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vTrackDraggable _ vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vShowCardContextMenu vTrackDraggable _ vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -184,6 +194,9 @@ fromElm =
                 RequestFilterCandidates ->
                     vRequestPaths
 
+                ShowCardContextMenu info ->
+                    vShowCardContextMenu info
+
                 TrackDraggable info ->
                     vTrackDraggable info
 
@@ -197,6 +210,7 @@ fromElm =
         |> TsEncode.variant0 "elmInitialized"
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
+        |> TsEncode.variantTagged "showCardContextMenu" showCardContextMenuEncoder
         |> TsEncode.variantTagged "trackDraggable" trackDraggableEncoder
         |> TsEncode.variantTagged "updateSettings" Settings.encoder
         |> TsEncode.variantTagged "updateTasks" updateTasksEncoder

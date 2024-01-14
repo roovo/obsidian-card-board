@@ -124,14 +124,10 @@ update msg model =
             ( model, Cmd.none, Session.NoOp )
 
         CardRightMouseDown cardId event ->
-            let
-                foo =
-                    Debug.log "context" cardId
-
-                bar =
-                    Debug.log "context" event
-            in
-            ( model, Cmd.none, Session.NoOp )
+            ( model
+            , InteropPorts.showCardContextMenu event.clientPos cardId
+            , Session.NoOp
+            )
 
         ColumnMouseDown ( domId, clientData ) ->
             ( mapSession (Session.waitForDrag clientData) model

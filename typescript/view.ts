@@ -112,6 +112,9 @@ export class CardBoardView extends ItemView {
         case "requestFilterCandidates":
           that.handleRequestFilterCandidates();
           break;
+        case "showCardContextMenu":
+          that.handleShowCardContextMenu(fromElm.data);
+          break;
         case "trackDraggable":
           that.handleTrackDraggable(fromElm.data);
           break;
@@ -297,6 +300,7 @@ export class CardBoardView extends ItemView {
     });
   }
 
+
   async handleOpenTaskSourceFile(
     data: {
       filePath: string,
@@ -335,6 +339,15 @@ export class CardBoardView extends ItemView {
       tag: "filterCandidates",
       data: filterCandidates
     });
+  }
+
+  handleShowCardContextMenu(
+    data: {
+      clientPos: [number, number],
+      cardId: string
+    }
+  ) {
+    console.log("showContextMenu: " + data.cardId);
   }
 
   async handleTrackDraggable(

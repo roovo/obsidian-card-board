@@ -8,6 +8,7 @@ port module InteropPorts exposing
     , openTaskSourceFile
     , requestFilterCandidates
     , rewriteTasks
+    , showCardContextMenu
     , toElm
     , trackDraggable
     , updateSettings
@@ -98,6 +99,13 @@ rewriteTasks dataviewTaskCompletion taskCompletionSettings timeWithZone filePath
     in
     { filePath = filePath, tasks = List.map rewriteDetails taskItems }
         |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
+        |> interopFromElm
+
+
+showCardContextMenu : ( Float, Float ) -> String -> Cmd msg
+showCardContextMenu clientPos cardId =
+    { clientPos = clientPos, cardId = cardId }
+        |> encodeVariant "showCardContextMenu" InteropDefinitions.showCardContextMenuEncoder
         |> interopFromElm
 
 

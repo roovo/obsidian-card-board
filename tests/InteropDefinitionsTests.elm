@@ -916,6 +916,13 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"requestFilterCandidates"}"""
+        , test "encodes showCardContextMenu data" <|
+            \() ->
+                { clientPos = ( 0.1, 2.2 ), cardId = "this card" }
+                    |> InteropDefinitions.ShowCardContextMenu
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"showCardContextMenu","data":{"clientPos":[0.1,2.2],"cardId":"this card"}}"""
         , test "encodes TrackDraggable data" <|
             \() ->
                 { dragType = "someDragType", clientPos = { x = 1.1, y = 2.2 }, draggableId = "id of draggable" }
