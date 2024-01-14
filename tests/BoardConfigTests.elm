@@ -21,6 +21,7 @@ suite =
     concat
         [ collapseColumn
         , encodeDecode
+        , mapColumns
         , mapFilters
         , setNamesToDefault
         , updateName
@@ -87,6 +88,32 @@ encodeDecode =
                     |> DecodeHelpers.runDecoder BoardConfig.decoder_v_0_12_0
                     |> .decoded
                     |> Expect.equal (Ok BoardConfigHelpers.exampleBoardConfig)
+        ]
+
+
+mapColumns : Test
+mapColumns =
+    describe "mapColumns"
+        [ test "updates the columns" <|
+            \() ->
+                { columns =
+                    Columns.fromList
+                        [ Column.undated "one"
+                        , Column.untagged "two"
+                        , Column.otherTags "three" []
+                        ]
+                , filters = []
+                , filterPolarity = Filter.Allow
+                , filterScope = Filter.Both
+                , name = ""
+                , showColumnTags = False
+                , showFilteredTags = False
+                }
+                    |> BoardConfig.fromConfig
+                    |> BoardConfig.mapColumns (always Columns.empty)
+                    |> BoardConfig.columns
+                    |> Columns.toList
+                    |> Expect.equal []
         ]
 
 

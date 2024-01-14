@@ -1,3 +1,4 @@
+---
 - touch events - iPad ??
 - show errors on settings pane ??
 

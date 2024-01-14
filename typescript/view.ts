@@ -17,6 +17,7 @@ import CardBoardPlugin from './main';
 import { CardBoardPluginSettingsPostV11 } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 import { FileFilter } from './fileFilter'
+import { Scrollable } from './scrollable'
 
 export const VIEW_TYPE_CARD_BOARD = "card-board-view";
 
@@ -349,6 +350,9 @@ export class CardBoardView extends ItemView {
 
     const draggedElement = document.getElementById(data.draggableId);
     const beaconType = "data-" + data.dragType + "-beacon";
+    const dragContainer = data.dragType + "-container";
+
+    var timer: ReturnType<typeof setTimeout>;
 
     document.addEventListener("mousemove", maybeDragMove);
     document.addEventListener("mouseup", stopAwaitingDrag);
@@ -383,35 +387,145 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
+    // function scrollDiv(scrollable: HTMLElement, leftEdgeDistance: number, rightEdgeDistance: number, topEdgeDistance: number, bottomEdgeDistance: number, event: MouseEvent) : boolean {
+    //   const SCROLL_MARGIN   = 20;
+    //   const MAX_STEP        = 20;
+
+    //   const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
+    //   const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
+    //   const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
+    //   const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
+
+    //   const maxScrollX      = scrollable.scrollWidth - scrollable.clientWidth;
+    //   const maxScrollY      = scrollable.scrollHeight - scrollable.clientHeight;
+
+    //   const currentScrollX  = scrollable.scrollLeft;
+    //   const currentScrollY  = scrollable.scrollTop;
+
+    //   const canScrollLeft   = currentScrollX > 0;
+    //   const canScrollRight  = currentScrollX < maxScrollX;
+    //   const canScrollUp     = currentScrollY > 0;
+    //   const canScrollDown   = currentScrollY < maxScrollY;
+
+    //   var nextScrollX = currentScrollX;
+    //   var nextScrollY = currentScrollY;
+
+    //   if (isInLeftEdge && canScrollLeft) {
+    //     var intensity = (SCROLL_MARGIN - leftEdgeDistance) / SCROLL_MARGIN;
+    //     nextScrollX -= (MAX_STEP * intensity);
+    //   } else if (isInRightEdge && canScrollRight) {
+    //     var intensity = (SCROLL_MARGIN - rightEdgeDistance) / SCROLL_MARGIN;
+    //     nextScrollX += (MAX_STEP * intensity);
+    //   }
+
+    //   if (isInTopEdge && canScrollUp) {
+    //     var intensity = (SCROLL_MARGIN - topEdgeDistance) / SCROLL_MARGIN;
+    //     nextScrollY -= (MAX_STEP * intensity);
+    //   } else if (isInBottomEdge && canScrollDown) {
+    //     var intensity = (SCROLL_MARGIN - bottomEdgeDistance) / SCROLL_MARGIN;
+    //     nextScrollY += (MAX_STEP * intensity);
+    //   }
+
+    //   nextScrollX = Math.max(0, Math.min(maxScrollX, nextScrollX));
+    //   nextScrollY = Math.max(0, Math.min(maxScrollY, nextScrollY));
+
+    //   if ((nextScrollX != currentScrollX) || (nextScrollY != currentScrollY)) {
+    //     scrollable.scrollLeft = nextScrollX;
+    //     scrollable.scrollTop  = nextScrollY;
+
+    //     return true;
+    //   }
+    //   return false;
+    // }
+
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
       const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
       const leftSplit   = document.getElementsByClassName("workspace-split")[0];
 
-      if ((ribbon instanceof HTMLElement) &&
-          (leftSplit instanceof HTMLElement) &&
-          (draggedElement instanceof HTMLElement)) {
-          const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
-          const offsetTop  = tabHeader.clientHeight;
+      const container    = document.getElementsByClassName(dragContainer)[0];
 
-          const draggedElementRect = draggedElement.getBoundingClientRect();
+      if ((dragAction == "move") && (container instanceof HTMLElement)) {
+        const scrollable = new Scrollable(container, event);
 
-          that.elm.ports.interopToElm.send({
-            tag: "elementDragged",
-            data: {
-              dragType: data.dragType,
-              dragAction: dragAction,
-              cursor: coords(event),
-              offset: { x: offsetLeft, y: offsetTop },
-              draggedNodeRect: {
-                x: draggedElementRect.x,
-                y: draggedElementRect.y,
-                width: draggedElementRect.width,
-                height: draggedElementRect.height
-              },
-              beacons: beaconPositions(beaconType)
+        if (!scrollable.isInScrollableEdge()) {
+          clearTimeout(timer);
+        } else {
+          (function checkForWindowScroll() {
+            clearTimeout(timer);
+
+            if (scrollable.doScroll()) {
+              timer = setTimeout(checkForWindowScroll, 30);
             }
-          });
+          })();
+        }
+        // const scrollableRect  = scrollable.getBoundingClientRect();
+        // const SCROLL_MARGIN   = 20;
+
+        // const bottom          = scrollableRect.y + scrollableRect.height;
+        // const right           = scrollableRect.x + scrollableRect.width;
+
+        // const leftEdgeDistance    = Math.abs(event.clientX - scrollableRect.x);
+        // const rightEdgeDistance   = Math.abs(event.clientX - right);
+        // const topEdgeDistance     = Math.abs(event.clientY - scrollableRect.y);
+        // const bottomEdgeDistance  = Math.abs(event.clientY - bottom);
+
+        // const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
+        // const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
+        // const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
+        // const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
+
+        // if (!(isInLeftEdge || isInRightEdge || isInTopEdge || isInBottomEdge)) {
+        //   clearTimeout(timer);
+        // } else {
+        //   (function checkForWindowScroll() {
+        //     clearTimeout(timer);
+
+        //     if (scrollDiv(scrollable, leftEdgeDistance, rightEdgeDistance, topEdgeDistance, bottomEdgeDistance, event)) {
+        //       timer = setTimeout(checkForWindowScroll, 30);
+        //     }
+        //   })();
+        // }
+      }
+
+      if (dragAction == "move") {
+        if ((ribbon instanceof HTMLElement) &&
+            (leftSplit instanceof HTMLElement) &&
+            (draggedElement instanceof HTMLElement)) {
+            const offsetLeft = ribbon.clientWidth + leftSplit.clientWidth;
+            const offsetTop  = tabHeader.clientHeight;
+
+            const draggedElementRect = draggedElement.getBoundingClientRect();
+
+            that.elm.ports.interopToElm.send({
+              tag: "elementDragged",
+              data: {
+                dragType: data.dragType,
+                dragAction: dragAction,
+                cursor: coords(event),
+                offset: { x: offsetLeft, y: offsetTop },
+                draggedNodeRect: {
+                  x: draggedElementRect.x,
+                  y: draggedElementRect.y,
+                  width: draggedElementRect.width,
+                  height: draggedElementRect.height
+                },
+                beacons: beaconPositions(beaconType)
+              }
+            });
+        }
+      } else {
+            that.elm.ports.interopToElm.send({
+              tag: "elementDragged",
+              data: {
+                dragType: data.dragType,
+                dragAction: "stop",
+                cursor: coords(event),
+                offset: { x: 0, y: 0 },
+                draggedNodeRect: { x: 0, y: 0, width: 0, height: 0 },
+                beacons: []
+              }
+            });
       }
     }
 

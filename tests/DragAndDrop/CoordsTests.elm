@@ -36,8 +36,18 @@ distance =
         [ test "calculates the euclidean distance" <|
             \() ->
                 { x = 5, y = 0 }
-                    |> Coords.distance { x = 2, y = 2 }
+                    |> Coords.distance Coords.Both { x = 2, y = 2 }
                     |> Expect.within (Absolute 0.0001) (sqrt 13)
+        , test "calculates the horizontal distance" <|
+            \() ->
+                { x = 5, y = 0 }
+                    |> Coords.distance Coords.Horizontal { x = 2, y = 2 }
+                    |> Expect.within (Absolute 0.0001) 3
+        , test "calculates the vertical distance" <|
+            \() ->
+                { x = 5, y = 0 }
+                    |> Coords.distance Coords.Vertical { x = 2, y = 2 }
+                    |> Expect.within (Absolute 0.0001) 2
         ]
 
 

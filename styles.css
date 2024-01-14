@@ -87,6 +87,11 @@ body:not(.is-grabbing):not(.is-fullscreen).is-hidden-frameless .mod-top .card-bo
   grid-row-start: 1;
 }
 
+.card-board-column-with-beacons {
+  display: flex;
+  flex-direction: row;
+}
+
 .card-board-columns {
   display: flex;
 }
@@ -101,6 +106,7 @@ body:not(.is-grabbing):not(.is-fullscreen).is-hidden-frameless .mod-top .card-bo
   padding: 0.6em 1em 1em 1em;
   margin-right: 15px;
   width: 20em;
+  cursor: grab;
   background-color: var(--background-secondary);
   border-radius: 3px;
   border: var(--border-width) solid var(--background-modifier-border);
@@ -206,6 +212,7 @@ ul.card-board-column-list > li.card-board-card::before {
   border: var(--border-width) solid var(--background-modifier-border);
   background-color: var(--background-primary);
   padding: 0;
+  cursor: auto;
   user-select: text;
   -webkit-user-select: text;
   grid-column-gap: 0.25em;

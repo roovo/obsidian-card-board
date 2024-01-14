@@ -16,6 +16,7 @@ module Session exposing
     , isDragging
     , makeActiveView
     , moveBoard
+    , moveColumn
     , moveDragable
     , replaceTaskItems
     , settings
@@ -243,6 +244,11 @@ makeActiveView isActiveView_ (Session config) =
 moveBoard : String -> BeaconPosition -> Session -> Session
 moveBoard draggedId beaconPosition (Session config) =
     Session { config | settings = Settings.moveBoard draggedId beaconPosition config.settings }
+
+
+moveColumn : String -> BeaconPosition -> Session -> Session
+moveColumn draggedId beaconPosition (Session config) =
+    Session { config | settings = Settings.moveColumn draggedId beaconPosition config.settings }
 
 
 moveDragable : DragData -> Session -> Session

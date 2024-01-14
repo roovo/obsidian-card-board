@@ -531,7 +531,7 @@ updateBoardOrder : DragTracker -> DragData -> Model -> Model
 updateBoardOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
+            case Rect.closestTo Coords.Vertical cursor beacons of
                 Nothing ->
                     model
 
@@ -549,7 +549,7 @@ updateColumnOrder : DragTracker -> DragData -> Model -> Model
 updateColumnOrder dragTracker { cursor, beacons } model =
     case dragTracker of
         DragTracker.Dragging clientData _ ->
-            case Rect.closestTo cursor beacons of
+            case Rect.closestTo Coords.Vertical cursor beacons of
                 Nothing ->
                     model
 
@@ -933,7 +933,7 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
             , Html.div [ class "modal-title" ]
                 [ Html.text "The Modal Title" ]
             , Html.div [ class "modal-content vertical-tabs-container" ]
-                [ Html.div [ class "settings-menu vertical-tab-header" ]
+                [ Html.div [ class "settings-menu vertical-tab-header card-board-settings-board-name-container" ]
                     [ Html.div [ class "vertical-tab-header-group" ]
                         [ Html.div [ class "vertical-tab-header-group-title" ]
                             [ Html.text "Options" ]
@@ -970,7 +970,10 @@ settingsSurroundView currentSection boardConfigForms dragTracker formContents =
                         ]
                     ]
                 , Html.div [ class "vertical-tab-content-container" ]
-                    [ Html.div [ class "vertical-tab-content" ]
+                    [ Html.div
+                        [ class "vertical-tab-content"
+                        , class "card-board-settings-column-settings-container"
+                        ]
                         formContents
                     ]
                 ]
