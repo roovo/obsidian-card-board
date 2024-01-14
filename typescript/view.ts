@@ -4,6 +4,7 @@ import {
   ItemView,
   MarkdownRenderer,
   MarkdownView,
+  Menu,
   TAbstractFile,
   TFile,
   TFolder,
@@ -347,7 +348,17 @@ export class CardBoardView extends ItemView {
       cardId: string
     }
   ) {
-    console.log("showContextMenu: " + data.cardId);
+    const menu = new Menu();
+
+    menu.addItem((item) =>
+      item
+        .setTitle("Edit Due Date")
+        .onClick(() => {
+          console.log("context menu selected: " + data.cardId);
+        })
+    );
+
+    menu.showAtPosition({x : data.clientPos[0], y : data.clientPos[1]})
   }
 
   async handleTrackDraggable(
