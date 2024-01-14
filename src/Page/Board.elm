@@ -22,7 +22,7 @@ import FeatherIcons
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
 import Html.Events exposing (onClick)
-import Html.Events.Extra.Mouse as Mouse exposing (onDown)
+import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
 import Html.Lazy
 import InteropPorts
@@ -92,6 +92,7 @@ toSession model =
 
 type Msg
     = CardMouseDown
+    | CardRightMouseDown String Mouse.Event
     | ColumnMouseDown ( String, DragTracker.ClientData )
     | DeleteConfirmed String
     | ElementDragged DragData
@@ -120,6 +121,16 @@ update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         CardMouseDown ->
+            ( model, Cmd.none, Session.NoOp )
+
+        CardRightMouseDown cardId event ->
+            let
+                foo =
+                    Debug.log "context" cardId
+
+                bar =
+                    Debug.log "context" event
+            in
             ( model, Cmd.none, Session.NoOp )
 
         ColumnMouseDown ( domId, clientData ) ->
@@ -703,6 +714,7 @@ cardView today card =
         [ class "card-board-card cm-s-obsidian"
         , attributeIf (not <| String.isEmpty dataTags) (attribute "data-tags" dataTags)
         , nonPropogatingOnDown <| always CardMouseDown
+        , onContextMenu <| CardRightMouseDown (Card.id card)
         ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []
