@@ -1,6 +1,6 @@
 module DragAndDrop.RectTests exposing (suite)
 
-import DragAndDrop.Coords as Coords exposing (Coords)
+import DragAndDrop.Coords as Coords
 import DragAndDrop.Rect as Rect
 import Expect
 import Helpers.DecodeHelpers as DecodeHelpers

@@ -9,11 +9,9 @@ module Page.Board exposing
     )
 
 import Board exposing (Board)
-import BoardConfig exposing (BoardConfig)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
-import Columns
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -31,7 +29,6 @@ import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
-import Maybe.Extra as ME
 import SafeZipper
 import Session exposing (Session)
 import TagList
@@ -123,10 +120,6 @@ update : Msg -> Model -> ( Model, Cmd Msg, Session.Msg )
 update msg model =
     case msg of
         CardMouseDown ->
-            let
-                foo =
-                    Debug.log "card" "mousedown"
-            in
             ( model, Cmd.none, Session.NoOp )
 
         ColumnMouseDown ( domId, clientData ) ->
@@ -955,7 +948,7 @@ ghostBoardId boardId =
     boardId ++ ":ghost"
 
 
-nonPropogatingOnDown : (Mouse.Event -> Msg) -> Html.Attribute Msg
+nonPropogatingOnDown : (Mouse.Event -> Msg) -> Attribute Msg
 nonPropogatingOnDown =
     { stopPropagation = True, preventDefault = True }
         |> Mouse.onWithOptions "mousedown"
