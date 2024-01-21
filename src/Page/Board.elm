@@ -161,7 +161,19 @@ update msg model =
             )
 
         DatePickerMsg subMsg ->
-            ( model, Cmd.none, Session.NoOp )
+            case model of
+                EditingCardDueDate datePicker cardId session ->
+                    let
+                        newPicker =
+                            DatePicker.update subMsg datePicker
+                    in
+                    ( EditingCardDueDate newPicker cardId session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
+
+                _ ->
+                    ( model, Cmd.none, Session.NoOp )
 
         DeleteConfirmed cardId ->
             ( deleteCardConfirmed model

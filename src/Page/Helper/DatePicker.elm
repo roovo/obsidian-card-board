@@ -2,12 +2,14 @@ module Page.Helper.DatePicker exposing
     ( DatePicker
     , Msg
     , init
+    , update
     , view
     )
 
 import Date exposing (Date)
 import Html exposing (Html)
 import Html.Attributes exposing (placeholder, type_, value)
+import Html.Events exposing (onInput)
 
 
 
@@ -20,7 +22,6 @@ type DatePicker
 
 type alias Model =
     { inputText : String
-    , date : Maybe Date
     }
 
 
@@ -28,7 +29,6 @@ init : Maybe Date -> DatePicker
 init date =
     DatePicker
         { inputText = toDateString date
-        , date = date
         }
 
 
@@ -37,7 +37,14 @@ init date =
 
 
 type Msg
-    = NoOp
+    = EnteredDate String
+
+
+update : Msg -> DatePicker -> DatePicker
+update msg (DatePicker model) =
+    case msg of
+        EnteredDate dateString ->
+            DatePicker { model | inputText = dateString }
 
 
 
@@ -50,6 +57,7 @@ view (DatePicker model) =
         [ type_ "text"
         , placeholder "Due date"
         , value model.inputText
+        , onInput EnteredDate
         ]
         []
 
