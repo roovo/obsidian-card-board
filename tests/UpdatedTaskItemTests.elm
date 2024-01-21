@@ -203,7 +203,7 @@ toggleCompletion =
                         "- [ ] foo #tag1 bar #tag2 ^12345"
                             |> Parser.run TaskItemHelpers.basicParser
                             |> Result.map UpdatedTaskItem.init
-                            |> Result.map (UpdatedTaskItem.toggleCompletion obsidianCompletionSettings timeAtEpoc)
+                            |> Result.map (UpdatedTaskItem.toggleCompletion cardBoardCompletionSettings timeAtEpoc)
                             |> Result.map UpdatedTaskItem.toString
                             |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
                 , test "returns the original text if completion is toggled twice" <|
@@ -211,8 +211,8 @@ toggleCompletion =
                         "- [ ] foo #tag1 bar #tag2 ^12345"
                             |> Parser.run TaskItemHelpers.basicParser
                             |> Result.map UpdatedTaskItem.init
-                            |> Result.map (UpdatedTaskItem.toggleCompletion obsidianCompletionSettings timeAtEpoc)
-                            |> Result.map (UpdatedTaskItem.toggleCompletion obsidianCompletionSettings timeAtEpoc)
+                            |> Result.map (UpdatedTaskItem.toggleCompletion cardBoardCompletionSettings timeAtEpoc)
+                            |> Result.map (UpdatedTaskItem.toggleCompletion cardBoardCompletionSettings timeAtEpoc)
                             |> Result.map UpdatedTaskItem.toString
                             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
                 , test "outputs a completed task string (with a local time CardBoard formatted completed tag)" <|
@@ -222,7 +222,7 @@ toggleCompletion =
                             |> Result.map UpdatedTaskItem.init
                             |> Result.map
                                 (UpdatedTaskItem.toggleCompletion
-                                    { obsidianCompletionSettings | inLocalTime = True, showUtcOffset = True }
+                                    { cardBoardCompletionSettings | inLocalTime = True, showUtcOffset = True }
                                     { timeAtEpoc | zone = Time.customZone 300 [] }
                                 )
                             |> Result.map UpdatedTaskItem.toString
@@ -364,6 +364,72 @@ updateDate =
                             |> Result.map UpdatedTaskItem.toString
                             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
                 ]
+            , describe "CardBoard format"
+                [ test "outputs the original text if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate cardBoardCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    cardBoardCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
+                ]
+            , describe "ObsidianTasks format"
+                [ test "outputs the original text if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate tasksCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    tasksCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 📅 2024-01-21 ^12345")
+                ]
+            , describe "ObsidianDataview format"
+                [ test "outputs the original text if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate dataviewCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    dataviewCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [due:: 2024-01-21] ^12345")
+                ]
             ]
         ]
 
@@ -390,8 +456,8 @@ noCompletionSettings =
     }
 
 
-obsidianCompletionSettings : TaskCompletionSettings
-obsidianCompletionSettings =
+cardBoardCompletionSettings : TaskCompletionSettings
+cardBoardCompletionSettings =
     { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
     , format = GlobalSettings.ObsidianCardBoard
     , inLocalTime = False

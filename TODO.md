@@ -1,5 +1,6 @@
 - re-visit global settings as now they set both due and completed date format
 - respect Tasks setting to use either Tasks or Dataview format for tasks
+- would be nice if the due date was placed before any completion date(s) that may be present
 - should I colour the input to show if the date is valid or not (red background if invalid)
 - should I search for the taskItem instead of the card as this is what I actually need for the
   modal (I think)
