@@ -87,6 +87,16 @@ toggleCompletion =
                             |> Result.map UpdatedTaskItem.toString
                             |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T05:00:00+05:00) ^12345")
                 ]
+            , describe "ObsidianTasks format"
+                [ test "outputs a completed task string (with a UTC CardBoard formatted completed tag)" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.toggleCompletion tasksCompletionSettings timeAtEpoc)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
+                ]
             ]
         ]
 
@@ -113,6 +123,15 @@ obsidianCompletionSettings =
     }
 
 
+tasksCompletionSettings : TaskCompletionSettings
+tasksCompletionSettings =
+    { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+    , format = GlobalSettings.ObsidianTasks
+    , inLocalTime = False
+    , showUtcOffset = False
+    }
+
+
 timeAtEpoc : TimeWithZone
 timeAtEpoc =
     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
@@ -125,20 +144,6 @@ timeAtEpoc =
 --
 --
 --
--- , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
---     \() ->
---         "- [ ] foo #tag1 bar #tag2 ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.ObsidianTasks
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
 -- , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
 --     \() ->
 --         "- [ ] foo #tag1 bar #tag2 ^12345"
