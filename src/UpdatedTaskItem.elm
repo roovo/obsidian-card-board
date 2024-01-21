@@ -4,9 +4,13 @@ module UpdatedTaskItem exposing
     , toggleCompletion
     )
 
+import DataviewTaskCompletion
+import GlobalSettings
 import Regex exposing (Regex)
+import Session exposing (TaskCompletionSettings)
 import String.Extra as SE
 import TaskItem exposing (Completion, TaskItem)
+import TimeWithZone exposing (TimeWithZone)
 
 
 
@@ -18,8 +22,13 @@ type UpdatedTaskItem
 
 
 type alias Changes =
-    { changeCompletion : Bool
+    { completionChange : CompletionChange
     }
+
+
+type CompletionChange
+    = NoChange
+    | Change TaskCompletionSettings TimeWithZone
 
 
 
@@ -28,7 +37,7 @@ type alias Changes =
 
 init : TaskItem -> UpdatedTaskItem
 init =
-    UpdatedTaskItem { changeCompletion = False }
+    UpdatedTaskItem { completionChange = NoChange }
 
 
 
@@ -37,51 +46,128 @@ init =
 
 toString : UpdatedTaskItem -> String
 toString (UpdatedTaskItem changes taskItem) =
-    if changes.changeCompletion then
-        let
-            replaceCheckbox : TaskItem -> String -> String
-            replaceCheckbox t_ taskString =
-                let
-                    checkboxIndex : Int
-                    checkboxIndex =
-                        Regex.find checkboxRegex taskString
-                            |> List.head
-                            |> Maybe.map .index
-                            |> Maybe.withDefault 0
-                            |> (+) 2
-                in
-                SE.replaceSlice
-                    (toggledCheckbox t_)
-                    checkboxIndex
-                    (checkboxIndex + 3)
-                    taskString
-        in
-        taskItem
-            |> TaskItem.originalText
-            |> replaceCheckbox taskItem
+    case changes.completionChange of
+        Change taskCompletionSettings now ->
+            let
+                completionTag : TaskItem -> String
+                completionTag t_ =
+                    case TaskItem.completion t_ of
+                        TaskItem.Incomplete ->
+                            completionString taskCompletionSettings now
+                                |> (\str ->
+                                        if String.length str == 0 then
+                                            ""
 
-    else
-        taskItem
-            |> TaskItem.originalText
+                                        else
+                                            " " ++ str
+                                   )
+
+                        _ ->
+                            ""
+
+                insertCompletionTag : TaskItem -> String -> String
+                insertCompletionTag t_ taskString =
+                    let
+                        tagInserter : String -> String
+                        tagInserter =
+                            Regex.find blockLinkRegex taskString
+                                |> List.head
+                                |> Maybe.map .index
+                                |> Maybe.withDefault (String.length taskString)
+                                |> SE.insertAt (completionTag t_)
+                    in
+                    tagInserter taskString
+
+                replaceCheckbox : TaskItem -> String -> String
+                replaceCheckbox t_ taskString =
+                    let
+                        checkboxIndex : Int
+                        checkboxIndex =
+                            Regex.find checkboxRegex taskString
+                                |> List.head
+                                |> Maybe.map .index
+                                |> Maybe.withDefault 0
+                                |> (+) 2
+                    in
+                    SE.replaceSlice
+                        (toggledCheckbox t_)
+                        checkboxIndex
+                        (checkboxIndex + 3)
+                        taskString
+            in
+            taskItem
+                |> TaskItem.originalText
+                |> replaceCheckbox taskItem
+                |> insertCompletionTag taskItem
+
+        NoChange ->
+            TaskItem.originalText taskItem
 
 
 
 -- MODIFICATION
 
 
-toggleCompletion : UpdatedTaskItem -> UpdatedTaskItem
-toggleCompletion (UpdatedTaskItem changes taskItem) =
-    UpdatedTaskItem { changes | changeCompletion = not changes.changeCompletion } taskItem
+toggleCompletion : TaskCompletionSettings -> TimeWithZone -> UpdatedTaskItem -> UpdatedTaskItem
+toggleCompletion taskCompletionSettings now (UpdatedTaskItem changes taskItem) =
+    case changes.completionChange of
+        NoChange ->
+            UpdatedTaskItem
+                { changes | completionChange = Change taskCompletionSettings now }
+                taskItem
+
+        Change _ _ ->
+            UpdatedTaskItem
+                { changes | completionChange = NoChange }
+                taskItem
 
 
 
 -- PRIVATE
 
 
+blockLinkRegex : Regex
+blockLinkRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
+
+
 checkboxRegex : Regex
 checkboxRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
+
+
+completionString : TaskCompletionSettings -> TimeWithZone -> String
+completionString taskCompletionSettings timeWithZone =
+    let
+        timeStamp : String
+        timeStamp =
+            TimeWithZone.toString taskCompletionSettings timeWithZone
+
+        dataviewTaskCompletion =
+            taskCompletionSettings.dataviewTaskCompletion
+    in
+    case taskCompletionSettings.format of
+        GlobalSettings.NoCompletion ->
+            ""
+
+        GlobalSettings.ObsidianCardBoard ->
+            "@completed(" ++ timeStamp ++ ")"
+
+        GlobalSettings.ObsidianDataview ->
+            case dataviewTaskCompletion of
+                DataviewTaskCompletion.NoCompletion ->
+                    ""
+
+                DataviewTaskCompletion.Emoji ->
+                    "✅ " ++ String.left 10 timeStamp
+
+                DataviewTaskCompletion.Text t ->
+                    "[" ++ t ++ ":: " ++ String.left 10 timeStamp ++ "]"
+
+        GlobalSettings.ObsidianTasks ->
+            "✅ " ++ String.left 10 timeStamp
 
 
 toggledCheckbox : TaskItem -> String
@@ -103,48 +189,6 @@ toggledCheckbox t_ =
 -- toToggledString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> TaskItem -> String
 -- toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((TaskItem fields_ _) as taskItem) =
 --     let
---         blockLinkRegex : Regex
---         blockLinkRegex =
---             Maybe.withDefault Regex.never <|
---                 Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
---
---         checkboxRegex : Regex
---         checkboxRegex =
---             Maybe.withDefault Regex.never <|
---                 Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
---
---         completionTag : TaskItem -> String
---         completionTag t_ =
---             case completion t_ of
---                 Incomplete ->
---                     TimeWithZone.completionString
---                         dataviewTaskCompletion
---                         taskCompletionSettings
---                         timeWithZone
---                         |> (\str ->
---                                 if String.length str == 0 then
---                                     ""
---
---                                 else
---                                     " " ++ str
---                            )
---
---                 _ ->
---                     ""
---
---         insertCompletionTag : TaskItem -> String -> String
---         insertCompletionTag t_ taskString =
---             let
---                 tagInserter : String -> String
---                 tagInserter =
---                     Regex.find blockLinkRegex taskString
---                         |> List.head
---                         |> Maybe.map .index
---                         |> Maybe.withDefault (String.length taskString)
---                         |> SE.insertAt (completionTag t_)
---             in
---             tagInserter taskString
---
 --         regexReplacer : String -> (Regex.Match -> String) -> String -> String
 --         regexReplacer regex replacer original =
 --             case Regex.fromString regex of

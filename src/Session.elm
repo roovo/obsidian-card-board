@@ -1,6 +1,7 @@
 module Session exposing
     ( Msg(..)
     , Session
+    , TaskCompletionSettings
     , addTaskList
     , boardConfigs
     , cards
@@ -12,6 +13,7 @@ module Session exposing
     , finishAdding
     , fromFlags
     , globalSettings
+    , globalTaskCompletionSettings
     , ignoreFileNameDates
     , isActiveView
     , isDragging
@@ -46,7 +48,7 @@ import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
-import GlobalSettings exposing (GlobalSettings, TaskCompletionSettings)
+import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import InteropDefinitions
 import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
@@ -76,6 +78,14 @@ type alias Config =
     , textDirection : TextDirection
     , timeWithZone : TimeWithZone
     , uniqueId : String
+    }
+
+
+type alias TaskCompletionSettings =
+    { dataviewTaskCompletion : DataviewTaskCompletion
+    , format : TaskCompletionFormat
+    , inLocalTime : Bool
+    , showUtcOffset : Bool
     }
 
 
@@ -181,9 +191,25 @@ settings (Session config) =
     config.settings
 
 
+globalTaskCompletionSettings : Session -> GlobalSettings.TaskCompletionSettings
+globalTaskCompletionSettings session =
+    globalSettings session
+        |> GlobalSettings.taskCompletionSettings
+
+
 taskCompletionSettings : Session -> TaskCompletionSettings
-taskCompletionSettings =
-    GlobalSettings.taskCompletionSettings << globalSettings
+taskCompletionSettings session =
+    let
+        globalCompletionSettings : GlobalSettings.TaskCompletionSettings
+        globalCompletionSettings =
+            globalSettings session
+                |> GlobalSettings.taskCompletionSettings
+    in
+    { dataviewTaskCompletion = dataviewTaskCompletion session
+    , format = globalCompletionSettings.format
+    , inLocalTime = globalCompletionSettings.inLocalTime
+    , showUtcOffset = globalCompletionSettings.showUtcOffset
+    }
 
 
 taskContainingId : String -> Session -> Maybe TaskItem

@@ -276,7 +276,7 @@ update msg model =
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
                         (Session.dataviewTaskCompletion <| toSession model)
-                        (Session.taskCompletionSettings <| toSession model)
+                        (Session.globalTaskCompletionSettings <| toSession model)
                         timeWithZone
                         (TaskItem.filePath taskItem)
                         (TaskItem.tasksToToggle id timeWithZone taskItem)
