@@ -1,6 +1,7 @@
 module UpdatedTaskItemTests exposing (suite)
 
 import DataviewTaskCompletion
+import Date
 import Expect
 import Fuzz
 import GlobalSettings
@@ -21,6 +22,7 @@ suite =
         [ completionString
         , toString
         , toggleCompletion
+        , updateDate
         ]
 
 
@@ -285,6 +287,36 @@ toggleCompletion =
                         |> Maybe.map (UpdatedTaskItem.toggleCompletion noCompletionSettings timeAtEpoc)
                         |> Maybe.map UpdatedTaskItem.toString
                         |> Expect.equal (Just "   * [ ] bar #tag1 bar #tag2 ^12345")
+            ]
+        ]
+
+
+updateDate : Test
+updateDate =
+    describe "updateDate"
+        [ describe "No file or inline date"
+            [ describe "NoCompletion format"
+                [ test "outputs the original text if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    noCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
+                ]
             ]
         ]
 

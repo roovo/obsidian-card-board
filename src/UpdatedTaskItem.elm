@@ -6,9 +6,11 @@ module UpdatedTaskItem exposing
     , originalText
     , toString
     , toggleCompletion
+    , updateDate
     )
 
 import DataviewTaskCompletion
+import Date exposing (Date)
 import GlobalSettings
 import Regex exposing (Regex)
 import Session exposing (TaskCompletionSettings)
@@ -22,17 +24,13 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type UpdatedTaskItem
-    = UpdatedTaskItem Changes TaskItem
+    = UpdatedTaskItem Change TaskItem
 
 
-type alias Changes =
-    { completionChange : CompletionChange
-    }
-
-
-type CompletionChange
-    = NoChange
-    | Change TaskCompletionSettings TimeWithZone
+type Change
+    = ChangeCompletion TaskCompletionSettings TimeWithZone
+    | ChangeDueDate TaskCompletionSettings (Maybe Date)
+    | NoChange
 
 
 
@@ -41,7 +39,7 @@ type CompletionChange
 
 init : TaskItem -> UpdatedTaskItem
 init =
-    UpdatedTaskItem { completionChange = NoChange }
+    UpdatedTaskItem NoChange
 
 
 
@@ -91,9 +89,9 @@ originalText (UpdatedTaskItem _ taskItem) =
 
 
 toString : UpdatedTaskItem -> String
-toString (UpdatedTaskItem changes taskItem) =
-    case changes.completionChange of
-        Change taskCompletionSettings now ->
+toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
+    case change of
+        ChangeCompletion taskCompletionSettings now ->
             let
                 insertCompletionTag : TaskItem -> String -> String
                 insertCompletionTag t_ taskString =
@@ -159,8 +157,32 @@ toString (UpdatedTaskItem changes taskItem) =
                 |> removeCompletionTags
                 |> insertCompletionTag taskItem
 
+        ChangeDueDate taskCompletionSettings newDate ->
+            case newDate of
+                Nothing ->
+                    originalText updatedTaskItem
+
+                Just date ->
+                    let
+                        insertDueDate : TaskItem -> String -> String
+                        insertDueDate t_ taskString =
+                            let
+                                tagInserter : String -> String
+                                tagInserter =
+                                    Regex.find blockLinkRegex taskString
+                                        |> List.head
+                                        |> Maybe.map .index
+                                        |> Maybe.withDefault (String.length taskString)
+                                        |> SE.insertAt (dueTag taskCompletionSettings date t_)
+                            in
+                            tagInserter taskString
+                    in
+                    taskItem
+                        |> TaskItem.originalText
+                        |> insertDueDate taskItem
+
         NoChange ->
-            TaskItem.originalText taskItem
+            originalText updatedTaskItem
 
 
 
@@ -168,17 +190,21 @@ toString (UpdatedTaskItem changes taskItem) =
 
 
 toggleCompletion : TaskCompletionSettings -> TimeWithZone -> UpdatedTaskItem -> UpdatedTaskItem
-toggleCompletion taskCompletionSettings now (UpdatedTaskItem changes taskItem) =
-    case changes.completionChange of
-        NoChange ->
-            UpdatedTaskItem
-                { changes | completionChange = Change taskCompletionSettings now }
-                taskItem
+toggleCompletion taskCompletionSettings now (UpdatedTaskItem change taskItem) =
+    case change of
+        ChangeCompletion _ _ ->
+            UpdatedTaskItem NoChange taskItem
 
-        Change _ _ ->
-            UpdatedTaskItem
-                { changes | completionChange = NoChange }
-                taskItem
+        ChangeDueDate _ _ ->
+            UpdatedTaskItem (ChangeCompletion taskCompletionSettings now) taskItem
+
+        NoChange ->
+            UpdatedTaskItem (ChangeCompletion taskCompletionSettings now) taskItem
+
+
+updateDate : TaskCompletionSettings -> Maybe Date -> UpdatedTaskItem -> UpdatedTaskItem
+updateDate taskCompletionSettings date (UpdatedTaskItem _ taskItem) =
+    UpdatedTaskItem (ChangeDueDate taskCompletionSettings date) taskItem
 
 
 
@@ -214,6 +240,36 @@ completionTag taskCompletionSettings now t_ =
             ""
 
 
+dueString : TaskCompletionSettings -> Date -> String
+dueString taskCompletionSettings date =
+    let
+        dateStamp : String
+        dateStamp =
+            Date.toIsoString date
+
+        dataviewTaskCompletion =
+            taskCompletionSettings.dataviewTaskCompletion
+    in
+    "@due(" ++ dateStamp ++ ")"
+
+
+dueTag : TaskCompletionSettings -> Date -> TaskItem -> String
+dueTag taskCompletionSettings date t_ =
+    case TaskItem.completion t_ of
+        TaskItem.Incomplete ->
+            dueString taskCompletionSettings date
+                |> (\str ->
+                        if String.length str == 0 then
+                            ""
+
+                        else
+                            " " ++ str
+                   )
+
+        _ ->
+            ""
+
+
 toggledCheckbox : TaskItem -> String
 toggledCheckbox t_ =
     case TaskItem.completion t_ of
@@ -222,20 +278,3 @@ toggledCheckbox t_ =
 
         _ ->
             "[ ]"
-
-
-
---
---
---
---
---
--- toToggledString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> TaskItem -> String
--- toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((TaskItem fields_ _) as taskItem) =
---     let
---     in
---     fields_.originalText
---         |> replaceCheckbox taskItem
---         |> removeCompletionTags
---         |> insertCompletionTag taskItem
---
