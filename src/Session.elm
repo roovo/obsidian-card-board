@@ -8,6 +8,7 @@ module Session exposing
     , default
     , deleteItemsFromFile
     , dragTracker
+    , findCard
     , finishAdding
     , fromFlags
     , globalSettings
@@ -47,6 +48,7 @@ import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import GlobalSettings exposing (GlobalSettings, TaskCompletionSettings)
 import InteropDefinitions
+import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 import State exposing (State)
@@ -141,6 +143,12 @@ cards ((Session config) as session) =
 dataviewTaskCompletion : Session -> DataviewTaskCompletion
 dataviewTaskCompletion (Session config) =
     config.dataviewTaskCompletion
+
+
+findCard : String -> Session -> Maybe Card
+findCard cardId session =
+    cards session
+        |> LE.find (\c -> Card.id c == cardId)
 
 
 dragTracker : Session -> DragTracker

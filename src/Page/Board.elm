@@ -29,6 +29,7 @@ import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
+import Maybe.Extra as ME
 import Page.Helper.DatePicker as DatePicker exposing (DatePicker)
 import SafeZipper
 import Session exposing (Session)
@@ -71,14 +72,15 @@ deleteCardConfirmed model =
 editCardDueDateRequested : String -> Model -> Model
 editCardDueDateRequested cardId model =
     let
-        today : Maybe Date
-        today =
+        date : Maybe Date
+        date =
             toSession model
-                |> Session.timeWithZone
-                |> TimeWithZone.toDate
-                |> Just
+                |> Session.findCard cardId
+                |> Maybe.map Card.taskItem
+                |> Maybe.map TaskItem.due
+                |> ME.join
     in
-    EditingCardDueDate (DatePicker.init today) cardId (toSession model)
+    EditingCardDueDate (DatePicker.init date) cardId (toSession model)
 
 
 mapSession : (Session -> Session) -> Model -> Model

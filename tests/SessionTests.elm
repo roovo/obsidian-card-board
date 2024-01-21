@@ -28,6 +28,7 @@ suite =
         , cards
         , default
         , deleteItemsFromFile
+        , findCard
         , finishAdding
         , globalSettings
         , moveDragable
@@ -160,6 +161,25 @@ deleteItemsFromFile =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
+findCard : Test
+findCard =
+    describe "findCard"
+        [ test "returns Nothing if there are no tasks and no boards" <|
+            \() ->
+                Session.default
+                    |> Session.findCard ""
+                    |> Expect.equal Nothing
+        , test "returns Just the card if there is one with the given ID" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings untaggedAndCompleted
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.findCard "xXxXx:A_Name:Untagged:3826002220:2"
+                    |> Maybe.map Card.title
+                    |> Expect.equal (Just "a1")
         ]
 
 
