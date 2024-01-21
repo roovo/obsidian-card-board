@@ -28,7 +28,7 @@ import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
-import GlobalSettings exposing (TaskCompletionSettings)
+import GlobalSettings
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -39,12 +39,13 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
-import Session exposing (Session)
+import Session exposing (Session, TaskCompletionSettings)
 import Settings exposing (Settings)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
 import TimeWithZone exposing (TimeWithZone)
+import UpdatedTaskItem
 
 
 
@@ -1029,16 +1030,23 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
         taskCompletionExample : String
         taskCompletionExample =
             let
-                taskCompletionSettings : TaskCompletionSettings
-                taskCompletionSettings =
+                proposedSettings : GlobalSettings.TaskCompletionSettings
+                proposedSettings =
                     settingsForm
                         |> SD.run SettingsForm.safeDecoder
-                        |> Result.map Settings.globalSettings
-                        |> Result.withDefault GlobalSettings.default
+                        |> Result.withDefault Settings.default
+                        |> Settings.globalSettings
                         |> GlobalSettings.taskCompletionSettings
+
+                taskCompletionSettings : TaskCompletionSettings
+                taskCompletionSettings =
+                    { dataviewTaskCompletion = dataviewTaskCompletion
+                    , format = proposedSettings.format
+                    , inLocalTime = proposedSettings.inLocalTime
+                    , showUtcOffset = proposedSettings.showUtcOffset
+                    }
             in
-            TimeWithZone.completionString
-                dataviewTaskCompletion
+            UpdatedTaskItem.completionString
                 taskCompletionSettings
                 timeWithZone
                 |> (\str ->

@@ -36,7 +36,6 @@ module TaskItem exposing
     , tasksToToggle
     , title
     , titleWithTags
-    , toToggledString
     , topLevelTags
     , updateFilePath
     )
@@ -493,115 +492,6 @@ parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
     )
         |> P.andThen rejectIfNoTitle
         |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
-
-
-
--- CONVERT
-
-
-toToggledString : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> TaskItem -> String
-toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone ((TaskItem fields_ _) as taskItem) =
-    let
-        blockLinkRegex : Regex
-        blockLinkRegex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromString "(\\s\\^[a-zA-Z\\d-]+)$"
-
-        checkboxRegex : Regex
-        checkboxRegex =
-            Maybe.withDefault Regex.never <|
-                Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
-
-        completionTag : TaskItem -> String
-        completionTag t_ =
-            case completion t_ of
-                Incomplete ->
-                    TimeWithZone.completionString
-                        dataviewTaskCompletion
-                        taskCompletionSettings
-                        timeWithZone
-                        |> (\str ->
-                                if String.length str == 0 then
-                                    ""
-
-                                else
-                                    " " ++ str
-                           )
-
-                _ ->
-                    ""
-
-        insertCompletionTag : TaskItem -> String -> String
-        insertCompletionTag t_ taskString =
-            let
-                tagInserter : String -> String
-                tagInserter =
-                    Regex.find blockLinkRegex taskString
-                        |> List.head
-                        |> Maybe.map .index
-                        |> Maybe.withDefault (String.length taskString)
-                        |> SE.insertAt (completionTag t_)
-            in
-            tagInserter taskString
-
-        regexReplacer : String -> (Regex.Match -> String) -> String -> String
-        regexReplacer regex replacer original =
-            case Regex.fromString regex of
-                Just r ->
-                    Regex.replace r replacer original
-
-                Nothing ->
-                    original
-
-        removeCompletionTags : String -> String
-        removeCompletionTags =
-            let
-                dataviewRemover : String -> String
-                dataviewRemover =
-                    case dataviewTaskCompletion of
-                        DataviewTaskCompletion.NoCompletion ->
-                            identity
-
-                        DataviewTaskCompletion.Emoji ->
-                            identity
-
-                        DataviewTaskCompletion.Text t ->
-                            regexReplacer (" \\[" ++ t ++ ":: \\d{4}-\\d{2}-\\d{2}\\]") (\_ -> "")
-            in
-            regexReplacer " @completed\\(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:(?:[+-]\\d{2}:\\d{2})|Z){0,1}\\)" (\_ -> "")
-                >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
-                >> dataviewRemover
-
-        replaceCheckbox : TaskItem -> String -> String
-        replaceCheckbox t_ taskString =
-            let
-                checkboxIndex : Int
-                checkboxIndex =
-                    Regex.find checkboxRegex taskString
-                        |> List.head
-                        |> Maybe.map .index
-                        |> Maybe.withDefault 0
-                        |> (+) 2
-            in
-            SE.replaceSlice
-                (toggledCheckbox t_)
-                checkboxIndex
-                (checkboxIndex + 3)
-                taskString
-
-        toggledCheckbox : TaskItem -> String
-        toggledCheckbox t_ =
-            case completion t_ of
-                Incomplete ->
-                    "[x]"
-
-                _ ->
-                    "[ ]"
-    in
-    fields_.originalText
-        |> replaceCheckbox taskItem
-        |> removeCompletionTags
-        |> insertCompletionTag taskItem
 
 
 

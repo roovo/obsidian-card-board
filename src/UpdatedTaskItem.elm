@@ -1,5 +1,6 @@
 module UpdatedTaskItem exposing
     ( UpdatedTaskItem
+    , completionString
     , init
     , lineNumber
     , originalText
@@ -45,6 +46,38 @@ init =
 
 
 -- INFO
+
+
+completionString : TaskCompletionSettings -> TimeWithZone -> String
+completionString taskCompletionSettings timeWithZone =
+    let
+        timeStamp : String
+        timeStamp =
+            TimeWithZone.toString taskCompletionSettings timeWithZone
+
+        dataviewTaskCompletion =
+            taskCompletionSettings.dataviewTaskCompletion
+    in
+    case taskCompletionSettings.format of
+        GlobalSettings.NoCompletion ->
+            ""
+
+        GlobalSettings.ObsidianCardBoard ->
+            "@completed(" ++ timeStamp ++ ")"
+
+        GlobalSettings.ObsidianDataview ->
+            case dataviewTaskCompletion of
+                DataviewTaskCompletion.NoCompletion ->
+                    ""
+
+                DataviewTaskCompletion.Emoji ->
+                    "✅ " ++ String.left 10 timeStamp
+
+                DataviewTaskCompletion.Text t ->
+                    "[" ++ t ++ ":: " ++ String.left 10 timeStamp ++ "]"
+
+        GlobalSettings.ObsidianTasks ->
+            "✅ " ++ String.left 10 timeStamp
 
 
 lineNumber : UpdatedTaskItem -> Int
@@ -162,38 +195,6 @@ checkboxRegex : Regex
 checkboxRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString "(-|\\*|\\+) \\[[ xX]\\]"
-
-
-completionString : TaskCompletionSettings -> TimeWithZone -> String
-completionString taskCompletionSettings timeWithZone =
-    let
-        timeStamp : String
-        timeStamp =
-            TimeWithZone.toString taskCompletionSettings timeWithZone
-
-        dataviewTaskCompletion =
-            taskCompletionSettings.dataviewTaskCompletion
-    in
-    case taskCompletionSettings.format of
-        GlobalSettings.NoCompletion ->
-            ""
-
-        GlobalSettings.ObsidianCardBoard ->
-            "@completed(" ++ timeStamp ++ ")"
-
-        GlobalSettings.ObsidianDataview ->
-            case dataviewTaskCompletion of
-                DataviewTaskCompletion.NoCompletion ->
-                    ""
-
-                DataviewTaskCompletion.Emoji ->
-                    "✅ " ++ String.left 10 timeStamp
-
-                DataviewTaskCompletion.Text t ->
-                    "[" ++ t ++ ":: " ++ String.left 10 timeStamp ++ "]"
-
-        GlobalSettings.ObsidianTasks ->
-            "✅ " ++ String.left 10 timeStamp
 
 
 completionTag : TaskCompletionSettings -> TimeWithZone -> TaskItem -> String

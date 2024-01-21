@@ -13,7 +13,6 @@ module Session exposing
     , finishAdding
     , fromFlags
     , globalSettings
-    , globalTaskCompletionSettings
     , ignoreFileNameDates
     , isActiveView
     , isDragging
@@ -189,12 +188,6 @@ isDragging (Session config) =
 settings : Session -> Settings
 settings (Session config) =
     config.settings
-
-
-globalTaskCompletionSettings : Session -> GlobalSettings.TaskCompletionSettings
-globalTaskCompletionSettings session =
-    globalSettings session
-        |> GlobalSettings.taskCompletionSettings
 
 
 taskCompletionSettings : Session -> TaskCompletionSettings
