@@ -132,6 +132,56 @@ toggleCompletion =
                             |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
                 ]
             ]
+        , describe "completed tasks"
+            [ test "removes all completed timestamps respecting the dataview completion format" <|
+                \() ->
+                    "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.toggleCompletion
+                                { dataviewCompletionSettings | dataviewTaskCompletion = DataviewTaskCompletion.Text "done" }
+                                timeAtEpoc
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+            , test "handles a [X] checkbox" <|
+                \() ->
+                    "- [X] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.toggleCompletion
+                                { dataviewCompletionSettings | dataviewTaskCompletion = DataviewTaskCompletion.Text "done" }
+                                timeAtEpoc
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+            , test "handles a + checkbox marker" <|
+                \() ->
+                    "+ [X] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.toggleCompletion
+                                { dataviewCompletionSettings | dataviewTaskCompletion = DataviewTaskCompletion.Text "done" }
+                                timeAtEpoc
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "+ [ ] foo #tag1 bar #tag2 ^12345")
+            , test "removes all completed timestamps respecting the dataview completion format of none" <|
+                \() ->
+                    "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.toggleCompletion
+                                dataviewCompletionSettings
+                                timeAtEpoc
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
+            ]
         ]
 
 
@@ -187,48 +237,6 @@ timeAtEpoc =
 --
 --
 --
--- , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
---     \() ->
---         "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map
---                 (TaskItem.toggleCompletion
---                     (DataviewTaskCompletion.Text "done")
---                     { format = GlobalSettings.ObsidianCardBoard
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
--- , test "doesn't remove dataview format if it has been set to NoCompletion" <|
---     \() ->
---         "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.ObsidianCardBoard
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
--- , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
---     \() ->
---         "- [X] [custom:: 2021-01-01] foo #tag1 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 bar #tag2"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map
---                 (TaskItem.toggleCompletion
---                     (DataviewTaskCompletion.Text "custom")
---                     { format = GlobalSettings.ObsidianCardBoard
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
 -- , test "preserves leading whitespace for descendant tasks" <|
 --     \() ->
 --         "- [X] the task\n   \t- [ ] a subtask"
@@ -263,20 +271,6 @@ timeAtEpoc =
 --                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
 --                 )
 --             |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
--- , test "preserves a '+' list marker" <|
---     \() ->
---         "+ [ ] foo #tag1 bar #tag2 ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.NoCompletion
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Ok "+ [x] foo #tag1 bar #tag2 ^12345")
 -- , test "preserves leading whitepace with a '*' list marker" <|
 --     \() ->
 --         "- [ ] foo\n   * [ ] bar #tag1 bar #tag2 ^12345"
