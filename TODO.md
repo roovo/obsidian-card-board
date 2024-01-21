@@ -1,4 +1,6 @@
 - should I colour the input to show if the date is valid or not (red background if invalid)
+- should I search for the taskItem instead of the card as this is what I actually need for the
+  modal (I think)
 - need to realise that a card could move to a different column on the board
   or be removed entirely from the board if the due date is edited, so best
   if the editing is done in a modal.
