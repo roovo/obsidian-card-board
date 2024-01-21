@@ -1,12 +1,4 @@
-- find the card with the given cardId and use in EditingCardDueDate instead of the id
-  - if the card can't be found then don't show the modal!  -> NEED TO IMPLEMENT THIS
 - should I colour the input to show if the date is valid or not (red background if invalid)
-- datepickers
-    - https://package.elm-lang.org/packages/abradley2/elm-datepicker
-    - https://package.elm-lang.org/packages/NoRedInk/datetimepicker-legacy
-    - https://package.elm-lang.org/packages/dwyl/elm-datepicker
-    - https://package.elm-lang.org/packages/PanagiotisGeorgiadis/elm-datepicker
-    - https://package.elm-lang.org/packages/anderssorby/elm-datepicker
 - need to realise that a card could move to a different column on the board
   or be removed entirely from the board if the due date is edited, so best
   if the editing is done in a modal.

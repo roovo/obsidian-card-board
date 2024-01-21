@@ -45,7 +45,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Model
     = DeletingCard String String Session
-    | EditingCardDueDate DatePicker String Session
+    | EditingCardDueDate DatePicker Card Session
     | ViewingBoard Session
 
 
@@ -72,15 +72,24 @@ deleteCardConfirmed model =
 editCardDueDateRequested : String -> Model -> Model
 editCardDueDateRequested cardId model =
     let
-        date : Maybe Date
-        date =
+        card : Maybe Card
+        card =
             toSession model
                 |> Session.findCard cardId
-                |> Maybe.map Card.taskItem
-                |> Maybe.map TaskItem.due
-                |> ME.join
     in
-    EditingCardDueDate (DatePicker.init date) cardId (toSession model)
+    case card of
+        Just cardToEdit ->
+            let
+                date : Maybe Date
+                date =
+                    cardToEdit
+                        |> Card.taskItem
+                        |> TaskItem.due
+            in
+            EditingCardDueDate (DatePicker.init date) cardToEdit (toSession model)
+
+        Nothing ->
+            model
 
 
 mapSession : (Session -> Session) -> Model -> Model
@@ -92,8 +101,8 @@ mapSession fn model =
         DeletingCard title cardId session ->
             DeletingCard title cardId <| fn session
 
-        EditingCardDueDate datePicker cardId session ->
-            EditingCardDueDate datePicker cardId <| fn session
+        EditingCardDueDate datePicker card session ->
+            EditingCardDueDate datePicker card <| fn session
 
 
 toSession : Model -> Session
@@ -162,12 +171,12 @@ update msg model =
 
         DatePickerMsg subMsg ->
             case model of
-                EditingCardDueDate datePicker cardId session ->
+                EditingCardDueDate datePicker card session ->
                     let
                         newPicker =
                             DatePicker.update subMsg datePicker
                     in
-                    ( EditingCardDueDate newPicker cardId session
+                    ( EditingCardDueDate newPicker card session
                     , Cmd.none
                     , Session.NoOp
                     )
@@ -314,15 +323,15 @@ view model =
                 , modalDeleteCardConfirm title cardId
                 ]
 
-        EditingCardDueDate datePicker cardId session ->
+        EditingCardDueDate datePicker card session ->
             Html.div []
                 [ boardsView session
-                , modalEditCardDueDate datePicker cardId
+                , modalEditCardDueDate datePicker card
                 ]
 
 
-modalEditCardDueDate : DatePicker -> String -> Html Msg
-modalEditCardDueDate datePicker cardId =
+modalEditCardDueDate : DatePicker -> Card -> Html Msg
+modalEditCardDueDate datePicker card =
     Html.div [ class "modal-container" ]
         [ Html.div
             [ class "modal-bg"
@@ -340,8 +349,8 @@ modalEditCardDueDate datePicker cardId =
             , Html.div [ class "modal-content" ]
                 [ Html.p []
                     [ Html.text <|
-                        "Editing card due date: "
-                            ++ cardId
+                        "Editing card: "
+                            ++ Card.title card
                     , DatePicker.view datePicker
                         |> Html.map DatePickerMsg
                     ]
