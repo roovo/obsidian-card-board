@@ -32,11 +32,12 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Page.Helper.DatePicker as DatePicker exposing (DatePicker)
 import SafeZipper
-import Session exposing (Session)
+import Session exposing (Session, TaskCompletionSettings)
 import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TextDirection
 import TimeWithZone exposing (TimeWithZone)
+import UpdatedTaskItem exposing (UpdatedTaskItem)
 
 
 
@@ -268,26 +269,37 @@ update msg model =
 
         TaskItemToggled id ->
             let
+                cmd : Cmd Msg
+                cmd =
+                    session
+                        |> Session.taskContainingId id
+                        |> Maybe.map toggleCmd
+                        |> Maybe.withDefault Cmd.none
+
+                updatedTaskItems : TaskItem -> List UpdatedTaskItem
+                updatedTaskItems taskItem =
+                    taskItem
+                        |> TaskItem.tasksToToggle id timeWithZone
+                        |> List.map UpdatedTaskItem.init
+                        |> List.map (UpdatedTaskItem.toggleCompletion taskCompletionSettings timeWithZone)
+
+                session : Session
+                session =
+                    toSession model
+
+                taskCompletionSettings : TaskCompletionSettings
+                taskCompletionSettings =
+                    Session.taskCompletionSettings session
+
                 timeWithZone : TimeWithZone
                 timeWithZone =
-                    Session.timeWithZone (toSession model)
+                    Session.timeWithZone session
 
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.dataviewTaskCompletion <| toSession model)
-                        (Session.globalTaskCompletionSettings <| toSession model)
-                        timeWithZone
                         (TaskItem.filePath taskItem)
-                        (TaskItem.tasksToToggle id timeWithZone taskItem)
-
-                cmd : Cmd Msg
-                cmd =
-                    model
-                        |> toSession
-                        |> Session.taskContainingId id
-                        |> Maybe.map toggleCmd
-                        |> Maybe.withDefault Cmd.none
+                        (updatedTaskItems taskItem)
             in
             ( model
             , cmd

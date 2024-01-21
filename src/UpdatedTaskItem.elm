@@ -1,5 +1,8 @@
 module UpdatedTaskItem exposing
-    ( init
+    ( UpdatedTaskItem
+    , init
+    , lineNumber
+    , originalText
     , toString
     , toggleCompletion
     )
@@ -42,6 +45,16 @@ init =
 
 
 -- INFO
+
+
+lineNumber : UpdatedTaskItem -> Int
+lineNumber (UpdatedTaskItem _ taskItem) =
+    TaskItem.lineNumber taskItem
+
+
+originalText : UpdatedTaskItem -> String
+originalText (UpdatedTaskItem _ taskItem) =
+    TaskItem.originalText taskItem
 
 
 toString : UpdatedTaskItem -> String

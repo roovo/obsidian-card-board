@@ -26,6 +26,7 @@ import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
+import UpdatedTaskItem exposing (UpdatedTaskItem)
 
 
 toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
@@ -87,17 +88,17 @@ requestFilterCandidates =
         |> interopFromElm
 
 
-rewriteTasks : DataviewTaskCompletion -> TaskCompletionSettings -> TimeWithZone -> String -> List TaskItem -> Cmd msg
-rewriteTasks dataviewTaskCompletion taskCompletionSettings timeWithZone filePath taskItems =
+rewriteTasks : String -> List UpdatedTaskItem -> Cmd msg
+rewriteTasks filePath updatedTaskItems =
     let
-        rewriteDetails : TaskItem -> { lineNumber : Int, originalText : String, newText : String }
-        rewriteDetails taskItem =
-            { lineNumber = TaskItem.lineNumber taskItem
-            , originalText = TaskItem.originalText taskItem
-            , newText = TaskItem.toToggledString dataviewTaskCompletion taskCompletionSettings timeWithZone taskItem
+        rewriteDetails : UpdatedTaskItem -> { lineNumber : Int, originalText : String, newText : String }
+        rewriteDetails updatedTaskItem =
+            { lineNumber = UpdatedTaskItem.lineNumber updatedTaskItem
+            , originalText = UpdatedTaskItem.originalText updatedTaskItem
+            , newText = UpdatedTaskItem.toString updatedTaskItem
             }
     in
-    { filePath = filePath, tasks = List.map rewriteDetails taskItems }
+    { filePath = filePath, tasks = List.map rewriteDetails updatedTaskItems }
         |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
         |> interopFromElm
 

@@ -4,8 +4,10 @@ import DataviewTaskCompletion
 import Expect
 import GlobalSettings
 import Helpers.TaskItemHelpers as TaskItemHelpers
+import Maybe.Extra as ME
 import Parser
 import Session exposing (TaskCompletionSettings)
+import TaskItem
 import Test exposing (..)
 import Time
 import TimeWithZone exposing (TimeWithZone)
@@ -55,6 +57,18 @@ toggleCompletion =
                             |> Result.map (UpdatedTaskItem.toggleCompletion noCompletionSettings timeAtEpoc)
                             |> Result.map UpdatedTaskItem.toString
                             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "preserves leading whitespace of subtasks" <|
+                    \() ->
+                        "- [ ] foo\n   - [ ] bar #tag1 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.toMaybe
+                            |> Maybe.map TaskItem.descendantTasks
+                            |> Maybe.map List.head
+                            |> ME.join
+                            |> Maybe.map UpdatedTaskItem.init
+                            |> Maybe.map (UpdatedTaskItem.toggleCompletion noCompletionSettings timeAtEpoc)
+                            |> Maybe.map UpdatedTaskItem.toString
+                            |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
                 ]
             , describe "ObsidianCardBoard format"
                 [ test "outputs a completed task string (with a UTC CardBoard formatted completed tag)" <|
@@ -181,6 +195,18 @@ toggleCompletion =
                             )
                         |> Result.map UpdatedTaskItem.toString
                         |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
+            , test "preserves leading whitespace of subtasks wich use a * marker" <|
+                \() ->
+                    "- [ ] foo\n   * [x] @completed(2020-03-22T00:00:00Z) bar #tag1 bar #tag2 ^12345"
+                        |> Parser.run TaskItemHelpers.basicParser
+                        |> Result.toMaybe
+                        |> Maybe.map TaskItem.descendantTasks
+                        |> Maybe.map List.head
+                        |> ME.join
+                        |> Maybe.map UpdatedTaskItem.init
+                        |> Maybe.map (UpdatedTaskItem.toggleCompletion noCompletionSettings timeAtEpoc)
+                        |> Maybe.map UpdatedTaskItem.toString
+                        |> Expect.equal (Just "   * [ ] bar #tag1 bar #tag2 ^12345")
             ]
         ]
 
@@ -228,64 +254,3 @@ tasksCompletionSettings =
 timeAtEpoc : TimeWithZone
 timeAtEpoc =
     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-
-
-
---
---
---
---
---
---
--- , test "preserves leading whitespace for descendant tasks" <|
---     \() ->
---         "- [X] the task\n   \t- [ ] a subtask"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.map TaskItem.descendantTasks
---             |> Result.withDefault []
---             |> List.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.ObsidianCardBoard
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
--- , test "preserves leading whitepace" <|
---     \() ->
---         "- [ ] foo\n   - [ ] bar #tag1 bar #tag2 ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.toMaybe
---             |> Maybe.map TaskItem.descendantTasks
---             |> Maybe.map List.head
---             |> ME.join
---             |> Maybe.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.NoCompletion
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
--- , test "preserves leading whitepace with a '*' list marker" <|
---     \() ->
---         "- [ ] foo\n   * [ ] bar #tag1 bar #tag2 ^12345"
---             |> Parser.run TaskItemHelpers.basicParser
---             |> Result.toMaybe
---             |> Maybe.map TaskItem.descendantTasks
---             |> Maybe.map List.head
---             |> ME.join
---             |> Maybe.map
---                 (TaskItem.toggleCompletion
---                     DataviewTaskCompletion.NoCompletion
---                     { format = GlobalSettings.NoCompletion
---                     , inLocalTime = False
---                     , showUtcOffset = False
---                     }
---                     { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
---                 )
---             |> Expect.equal (Just "   * [x] bar #tag1 bar #tag2 ^12345")
