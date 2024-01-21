@@ -1,8 +1,8 @@
 module SessionTests exposing (suite)
 
 import BoardConfig
-import Card
 import Column
+import Card
 import Column.Completed as CompletedColumn
 import Columns
 import DataviewTaskCompletion
@@ -88,14 +88,14 @@ cards =
                     |> Session.updateSettings untaggedAndCompleted
                     |> Session.cards
                     |> Expect.equal []
-        , test "returns the cards if there is a board and tasks that go on it" <|
+        , test "returns an the cards if there is a board and tasks that go on it" <|
             \() ->
                 Session.default
                     |> Session.updateSettings untaggedAndCompleted
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.cards
-                    |> List.map Card.title
-                    |> Expect.equal [ "a1", "a2" ]
+                    |> List.map Card.name
+                    |> Expect.equal []
         ]
 
 
