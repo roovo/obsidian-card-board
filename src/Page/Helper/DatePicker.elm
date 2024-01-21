@@ -1,9 +1,13 @@
 module Page.Helper.DatePicker exposing
     ( DatePicker
+    , Msg
     , init
+    , view
     )
 
 import Date exposing (Date)
+import Html exposing (Html)
+import Html.Attributes exposing (placeholder, type_, value)
 
 
 
@@ -26,6 +30,28 @@ init date =
         { inputText = toDateString date
         , date = date
         }
+
+
+
+-- UPDATE
+
+
+type Msg
+    = NoOp
+
+
+
+-- VIEW
+
+
+view : DatePicker -> Html Msg
+view (DatePicker model) =
+    Html.input
+        [ type_ "text"
+        , placeholder "Due date"
+        , value model.inputText
+        ]
+        []
 
 
 

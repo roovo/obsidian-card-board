@@ -115,6 +115,7 @@ type Msg
     = CardMouseDown
     | CardRightMouseDown String Mouse.Event
     | ColumnMouseDown ( String, DragTracker.ClientData )
+    | DatePickerMsg DatePicker.Msg
     | DeleteConfirmed String
     | EditCardDueDateRequested String
     | ElementDragged DragData
@@ -156,6 +157,9 @@ update msg model =
             , InteropPorts.trackDraggable columnDragType clientData.clientPos domId
             , Session.NoOp
             )
+
+        DatePickerMsg subMsg ->
+            ( model, Cmd.none, Session.NoOp )
 
         DeleteConfirmed cardId ->
             ( deleteCardConfirmed model
@@ -299,12 +303,12 @@ view model =
         EditingCardDueDate datePicker cardId session ->
             Html.div []
                 [ boardsView session
-                , modalEditCardDueDate cardId
+                , modalEditCardDueDate datePicker cardId
                 ]
 
 
-modalEditCardDueDate : String -> Html Msg
-modalEditCardDueDate cardId =
+modalEditCardDueDate : DatePicker -> String -> Html Msg
+modalEditCardDueDate datePicker cardId =
     Html.div [ class "modal-container" ]
         [ Html.div
             [ class "modal-bg"
@@ -324,6 +328,8 @@ modalEditCardDueDate cardId =
                     [ Html.text <|
                         "Editing card due date: "
                             ++ cardId
+                    , DatePicker.view datePicker
+                        |> Html.map DatePickerMsg
                     ]
                 ]
             , Html.div [ class "modal-button-container" ]
