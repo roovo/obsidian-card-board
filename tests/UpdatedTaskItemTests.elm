@@ -20,6 +20,7 @@ suite : Test
 suite =
     concat
         [ completionString
+        , dueString
         , toString
         , toggleCompletion
         , updateDate
@@ -99,6 +100,52 @@ completionString =
                         , showUtcOffset = showUtcOffset
                         }
                     |> Expect.equal "✅ 1970-01-01"
+        ]
+
+
+dueString : Test
+dueString =
+    describe "dueString"
+        [ test "returns a CardBoard format due date for NoCompletion format" <|
+            \() ->
+                Date.fromRataDie 738906
+                    |> UpdatedTaskItem.dueString
+                        { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+                        , format = GlobalSettings.NoCompletion
+                        , inLocalTime = False
+                        , showUtcOffset = False
+                        }
+                    |> Expect.equal "@due(2024-01-21)"
+        , test "returns a CardBoard format due date for CardBoard format" <|
+            \() ->
+                Date.fromRataDie 738906
+                    |> UpdatedTaskItem.dueString
+                        { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+                        , format = GlobalSettings.ObsidianCardBoard
+                        , inLocalTime = False
+                        , showUtcOffset = False
+                        }
+                    |> Expect.equal "@due(2024-01-21)"
+        , test "returns a Tasks format due date for ObsidianTasks format" <|
+            \() ->
+                Date.fromRataDie 738906
+                    |> UpdatedTaskItem.dueString
+                        { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+                        , format = GlobalSettings.ObsidianTasks
+                        , inLocalTime = False
+                        , showUtcOffset = False
+                        }
+                    |> Expect.equal "📅 2024-01-21"
+        , test "returns a DataView format due date for ObsidianDataview format" <|
+            \() ->
+                Date.fromRataDie 738906
+                    |> UpdatedTaskItem.dueString
+                        { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+                        , format = GlobalSettings.ObsidianDataview
+                        , inLocalTime = False
+                        , showUtcOffset = False
+                        }
+                    |> Expect.equal "[due:: 2024-01-21]"
         ]
 
 

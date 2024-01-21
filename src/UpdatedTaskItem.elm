@@ -1,6 +1,7 @@
 module UpdatedTaskItem exposing
     ( UpdatedTaskItem
     , completionString
+    , dueString
     , init
     , lineNumber
     , originalText
@@ -76,6 +77,27 @@ completionString taskCompletionSettings timeWithZone =
 
         GlobalSettings.ObsidianTasks ->
             "✅ " ++ String.left 10 timeStamp
+
+
+dueString : TaskCompletionSettings -> Date -> String
+dueString taskCompletionSettings date =
+    let
+        dateStamp : String
+        dateStamp =
+            Date.toIsoString date
+    in
+    case taskCompletionSettings.format of
+        GlobalSettings.NoCompletion ->
+            "@due(" ++ dateStamp ++ ")"
+
+        GlobalSettings.ObsidianCardBoard ->
+            "@due(" ++ dateStamp ++ ")"
+
+        GlobalSettings.ObsidianDataview ->
+            "[due:: " ++ dateStamp ++ "]"
+
+        GlobalSettings.ObsidianTasks ->
+            "📅 " ++ dateStamp
 
 
 lineNumber : UpdatedTaskItem -> Int
@@ -238,19 +260,6 @@ completionTag taskCompletionSettings now t_ =
 
         _ ->
             ""
-
-
-dueString : TaskCompletionSettings -> Date -> String
-dueString taskCompletionSettings date =
-    let
-        dateStamp : String
-        dateStamp =
-            Date.toIsoString date
-
-        dataviewTaskCompletion =
-            taskCompletionSettings.dataviewTaskCompletion
-    in
-    "@due(" ++ dateStamp ++ ")"
 
 
 dueTag : TaskCompletionSettings -> Date -> TaskItem -> String
