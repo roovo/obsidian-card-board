@@ -29,6 +29,7 @@ import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
+import Page.Helper.DatePicker as DatePicker exposing (DatePicker)
 import SafeZipper
 import Session exposing (Session)
 import TagList
@@ -43,7 +44,7 @@ import TimeWithZone exposing (TimeWithZone)
 
 type Model
     = DeletingCard String String Session
-    | EditingCardDueDate String Session
+    | EditingCardDueDate DatePicker String Session
     | ViewingBoard Session
 
 
@@ -69,7 +70,15 @@ deleteCardConfirmed model =
 
 editCardDueDateRequested : String -> Model -> Model
 editCardDueDateRequested cardId model =
-    EditingCardDueDate cardId (toSession model)
+    let
+        today : Maybe Date
+        today =
+            toSession model
+                |> Session.timeWithZone
+                |> TimeWithZone.toDate
+                |> Just
+    in
+    EditingCardDueDate (DatePicker.init today) cardId (toSession model)
 
 
 mapSession : (Session -> Session) -> Model -> Model
@@ -81,8 +90,8 @@ mapSession fn model =
         DeletingCard title cardId session ->
             DeletingCard title cardId <| fn session
 
-        EditingCardDueDate cardId session ->
-            EditingCardDueDate cardId <| fn session
+        EditingCardDueDate datePicker cardId session ->
+            EditingCardDueDate datePicker cardId <| fn session
 
 
 toSession : Model -> Session
@@ -94,7 +103,7 @@ toSession model =
         DeletingCard _ _ session ->
             session
 
-        EditingCardDueDate _ session ->
+        EditingCardDueDate _ _ session ->
             session
 
 
@@ -287,7 +296,7 @@ view model =
                 , modalDeleteCardConfirm title cardId
                 ]
 
-        EditingCardDueDate cardId session ->
+        EditingCardDueDate datePicker cardId session ->
             Html.div []
                 [ boardsView session
                 , modalEditCardDueDate cardId
