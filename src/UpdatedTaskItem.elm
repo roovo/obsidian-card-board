@@ -145,15 +145,6 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                         (checkboxIndex + 3)
                         taskString
 
-                regexReplacer : String -> (Regex.Match -> String) -> String -> String
-                regexReplacer regex replacer original =
-                    case Regex.fromString regex of
-                        Just r ->
-                            Regex.replace r replacer original
-
-                        Nothing ->
-                            original
-
                 removeCompletionTags : String -> String
                 removeCompletionTags =
                     let
@@ -173,16 +164,25 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                         >> regexReplacer " ✅ \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
                         >> dataviewRemover
             in
-            taskItem
-                |> TaskItem.originalText
+            updatedTaskItem
+                |> originalText
                 |> replaceCheckbox taskItem
                 |> removeCompletionTags
                 |> insertCompletionTag taskItem
 
         ChangeDueDate taskCompletionSettings newDate ->
+            let
+                removeDueTags : String -> String
+                removeDueTags =
+                    regexReplacer " @due\\(\\d{4}-\\d{2}-\\d{2}\\)" (\_ -> "")
+                        >> regexReplacer " 📅 \\d{4}-\\d{2}-\\d{2}" (\_ -> "")
+                        >> regexReplacer " \\[due:: \\d{4}-\\d{2}-\\d{2}\\]" (\_ -> "")
+            in
             case newDate of
                 Nothing ->
-                    originalText updatedTaskItem
+                    updatedTaskItem
+                        |> originalText
+                        |> removeDueTags
 
                 Just date ->
                     let
@@ -199,8 +199,9 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                             in
                             tagInserter taskString
                     in
-                    taskItem
-                        |> TaskItem.originalText
+                    updatedTaskItem
+                        |> originalText
+                        |> removeDueTags
                         |> insertDueDate taskItem
 
         NoChange ->
@@ -277,6 +278,16 @@ dueTag taskCompletionSettings date t_ =
 
         _ ->
             ""
+
+
+regexReplacer : String -> (Regex.Match -> String) -> String -> String
+regexReplacer regex replacer original =
+    case Regex.fromString regex of
+        Just r ->
+            Regex.replace r replacer original
+
+        Nothing ->
+            original
 
 
 toggledCheckbox : TaskItem -> String

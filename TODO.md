@@ -1,3 +1,9 @@
+- what if the date hasn't changed but the format isn't the "correct" one?
+  - I think leave it as it is.
+- what if there are multiple due dates on the task line
+- if it updates an inline due date it should put it in the same place in the line as the
+  existing one (or where the first one is if there are more than one)
+- check I ignore due dates on sub-tasks
 - re-visit global settings as now they set both due and completed date format
 - respect Tasks setting to use either Tasks or Dataview format for tasks
 - would be nice if the due date was placed before any completion date(s) that may be present

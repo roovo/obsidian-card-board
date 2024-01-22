@@ -431,6 +431,74 @@ updateDate =
                             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [due:: 2024-01-21] ^12345")
                 ]
             ]
+        , describe "No file date but with an inline due date"
+            [ describe "NoCompletion format"
+                [ test "removes due dates in any format if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    noCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
+                ]
+            , describe "ObsidianTasks format"
+                [ test "removes the due date if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 📅 1999-01-21 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    tasksCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 📅 2024-01-21 ^12345")
+                ]
+            , describe "ObsidianDataview format"
+                [ test "removes the due date if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 📅 2024-01-21 bar #tag2 ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
+                , test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run TaskItemHelpers.basicParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    dataviewCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [due:: 2024-01-21] ^12345")
+                ]
+            ]
         ]
 
 
