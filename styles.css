@@ -606,3 +606,138 @@ ul.card-board-column-list > li.card-board-card::before {
 .setting-item-control .suggestion-item:hover {
   background-color: var(--background-secondary);
 }
+
+
+
+.datepicker-container {
+  position: relative;
+}
+
+.datepicker-input:focus {
+  outline: 0;
+}
+
+.datepicker-picker {
+  position: absolute;
+  border: 1px solid #CCC;
+  z-index: 10;
+  background-color: white;
+}
+
+.datepicker-picker-header, .datepicker-weekdays {
+  background: #F2F2F2;
+}
+
+.datepicker-picker-header {
+  display: flex;
+  align-items: center;
+}
+
+.datepicker-prev-container, .datepicker-next-container {
+  flex: 0 1 auto;
+  cursor: pointer;
+}
+
+.datepicker-month-container {
+  flex: 1 1 auto;
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+}
+
+.datepicker-month, .datepicker-year {
+  flex: 1 1 auto;
+  cursor: default;
+  text-align: center;
+}
+
+.datepicker-year {
+  font-size: var(-font-small);
+  font-weight: 700;
+}
+
+.datepicker-prev, .datepicker-next {
+  border: 6px solid transparent;
+  background-color: inherit;
+  display: block;
+  width: 0;
+  height: 0;
+  padding: 0 0.2em;
+}
+
+.datepicker-prev {
+  border-right-color: #AAA;
+}
+
+.datepicker-prev:hover {
+  border-right-color: #BBB;
+}
+
+.datepicker-next {
+  border-left-color: #AAA;
+}
+
+.datepicker-next:hover {
+  border-left-color: #BBB;
+}
+
+.datepicker-table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  font-size: var(-font-small);
+}
+
+.datepicker-table td {
+  width: 2em;
+  height: 2em;
+  text-align: center;
+}
+
+.datepicker-row {
+  border-top: 1px solid #F2F2F2;
+}
+
+.datepicker-dow {
+  border-bottom: 1px solid #CCC;
+  cursor: default;
+}
+
+.datepicker-day {
+  cursor: pointer;
+}
+.datepicker-day:hover {
+  background: #F2F2F2;
+}
+
+.datepicker-disabled {
+  cursor: default;
+  color: #DDD;
+}
+.datepicker-disabled:hover {
+  background: inherit;
+}
+
+.datepicker-picked {
+  color: white;
+  background: darkblue;
+}
+
+.datepicker-picked:hover {
+  background: darkblue;
+}
+
+.datepicker-today {
+  font-weight: bold;
+}
+
+.datepicker-other-month {
+  color: #AAA;
+}
+
+.datepicker-other-month.datepicker-disabled {
+  color: #EEE;
+}
+
+.datepicker-other-month.datepicker-picked {
+  color: white;
+}
