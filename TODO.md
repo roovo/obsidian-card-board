@@ -15,6 +15,9 @@
 - when selected, open a modal with a calendar picker and an option to remove
   the due date.  User cancels or saves the change for it to take effect.
 
+- improve general modal behaviour so tabbing and hitting enter work as expected
+  ...save having to use the mouse!!
+
 ---
 - touch events - iPad ??
 - show errors on settings pane ??
