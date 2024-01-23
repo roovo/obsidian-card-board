@@ -14,6 +14,7 @@
   editing
 - when selected, open a modal with a calendar picker and an option to remove
   the due date.  User cancels or saves the change for it to take effect.
+- support weekday start other than Monday??
 
 - improve general modal behaviour so tabbing and hitting enter work as expected
   ...save having to use the mouse!!

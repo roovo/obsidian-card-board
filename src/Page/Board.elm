@@ -390,7 +390,10 @@ modalEditCardDueDate datePicker card =
             , style "opacity" "0.85"
             ]
             []
-        , Html.div [ class "modal" ]
+        , Html.div
+            [ class "modal"
+            , class "edit-date"
+            ]
             [ Html.div
                 [ class "modal-close-button"
                 , onClick ModalCloseClicked

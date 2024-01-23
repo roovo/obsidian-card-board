@@ -76,7 +76,7 @@ update msg (DatePicker model) =
 
 view : DatePicker -> Html Msg
 view (DatePicker model) =
-    Html.div []
+    Html.div [ class "datepicker-container" ]
         [ Html.input
             [ type_ "text"
             , placeholder "Due date"
@@ -96,7 +96,7 @@ view (DatePicker model) =
 
 pickerView : Model -> Html Msg
 pickerView model =
-    Html.div []
+    Html.div [ class "datepicker-picker" ]
         [ Html.div [ class "datepicker-header" ]
             []
         , Html.table [ class "datepicker-table" ]

@@ -417,6 +417,10 @@ ul.card-board-column-list > li.card-board-card::before {
   float: right;
 }
 
+.modal.edit-date {
+  overflow: visible;
+}
+
 .modal.mod-settings {
   width: 80%;
 }
@@ -620,15 +624,15 @@ ul.card-board-column-list > li.card-board-card::before {
 .datepicker-picker {
   position: absolute;
   border: 1px solid #CCC;
-  z-index: 10;
+  z-index: 100;
   background-color: white;
 }
 
-.datepicker-picker-header, .datepicker-weekdays {
+.datepicker-header, .datepicker-weekdays {
   background: #F2F2F2;
 }
 
-.datepicker-picker-header {
+.datepicker-header {
   display: flex;
   align-items: center;
 }
@@ -684,7 +688,7 @@ ul.card-board-column-list > li.card-board-card::before {
 .datepicker-table {
   border-spacing: 0;
   border-collapse: collapse;
-  font-size: var(-font-small);
+  font-size: var(--font-small);
 }
 
 .datepicker-table td {
