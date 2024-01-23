@@ -70,6 +70,11 @@ deleteCardConfirmed model =
     ViewingBoard (toSession model)
 
 
+editCardDueDateConfirmed : Model -> Model
+editCardDueDateConfirmed model =
+    ViewingBoard (toSession model)
+
+
 editCardDueDateRequested : String -> Model -> Model
 editCardDueDateRequested cardId model =
     let
@@ -129,6 +134,7 @@ type Msg
     | ColumnMouseDown ( String, DragTracker.ClientData )
     | DatePickerMsg DatePicker.Msg
     | DeleteConfirmed String
+    | EditCardDueDateConfirmed
     | EditCardDueDateRequested String
     | ElementDragged DragData
     | ModalCancelClicked
@@ -190,6 +196,40 @@ update msg model =
             , cmdIfHasTask cardId model InteropPorts.deleteTask
             , Session.NoOp
             )
+
+        EditCardDueDateConfirmed ->
+            case model of
+                EditingCardDueDate datePicker card session ->
+                    let
+                        cmd : Cmd Msg
+                        cmd =
+                            InteropPorts.rewriteTasks
+                                (TaskItem.filePath taskItem)
+                                updatedTaskItems
+
+                        taskCompletionSettings : TaskCompletionSettings
+                        taskCompletionSettings =
+                            Session.taskCompletionSettings session
+
+                        taskItem : TaskItem
+                        taskItem =
+                            card
+                                |> Card.taskItem
+
+                        updatedTaskItems : List UpdatedTaskItem
+                        updatedTaskItems =
+                            taskItem
+                                |> UpdatedTaskItem.init
+                                |> UpdatedTaskItem.updateDate taskCompletionSettings (DatePicker.pickedDate datePicker)
+                                |> List.singleton
+                    in
+                    ( editCardDueDateConfirmed model
+                    , cmd
+                    , Session.NoOp
+                    )
+
+                _ ->
+                    ( model, Cmd.none, Session.NoOp )
 
         EditCardDueDateRequested cardId ->
             ( editCardDueDateRequested cardId model
@@ -370,11 +410,12 @@ modalEditCardDueDate datePicker card =
             , Html.div [ class "modal-button-container" ]
                 [ Html.button
                     [ class "mod-warning"
+                    , onClick EditCardDueDateConfirmed
                     ]
                     [ Html.text "Save"
                     ]
                 , Html.button
-                    [ onClick <| ModalCancelClicked ]
+                    [ onClick ModalCancelClicked ]
                     [ Html.text "Cancel"
                     ]
                 ]

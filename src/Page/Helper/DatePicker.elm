@@ -2,6 +2,7 @@ module Page.Helper.DatePicker exposing
     ( DatePicker
     , Msg
     , init
+    , pickedDate
     , update
     , view
     )
@@ -30,6 +31,17 @@ init date =
     DatePicker
         { inputText = toDateString date
         }
+
+
+
+-- INFO
+
+
+pickedDate : DatePicker -> Maybe Date
+pickedDate (DatePicker model) =
+    model.inputText
+        |> Date.fromIsoString
+        |> Result.toMaybe
 
 
 

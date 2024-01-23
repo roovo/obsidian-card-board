@@ -1,6 +1,3 @@
-- what if the date hasn't changed but the format isn't the "correct" one?
-  - I think leave it as it is.
-- what if there are multiple due dates on the task line
 - if it updates an inline due date it should put it in the same place in the line as the
   existing one (or where the first one is if there are more than one)
 - check I ignore due dates on sub-tasks
