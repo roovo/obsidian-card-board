@@ -7,9 +7,10 @@ import Fuzz
 import GlobalSettings
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Maybe.Extra as ME
-import Parser
+import Parser exposing (Parser)
 import Session exposing (TaskCompletionSettings)
-import TaskItem
+import TagList
+import TaskItem exposing (TaskItem)
 import Test exposing (..)
 import Time
 import TimeWithZone exposing (TimeWithZone)
@@ -499,6 +500,94 @@ updateDate =
                             |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [due:: 2024-01-21] ^12345")
                 ]
             ]
+        , describe "No inline due date but with a file date"
+            [ describe "NoCompletion format"
+                [ test "adds a @due(none) if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run fileDateParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(none) ^12345")
+                ]
+            , test "outputs the task item with the due date if one is given" <|
+                \() ->
+                    "- [ ] foo #tag1 bar #tag2 ^12345"
+                        |> Parser.run fileDateParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.updateDate
+                                noCompletionSettings
+                                (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
+            , test "outputs the task item with the due date if one is given even if it is the same as the file date" <|
+                \() ->
+                    "- [ ] foo #tag1 bar #tag2 ^12345"
+                        |> Parser.run fileDateParser
+                        |> Result.map UpdatedTaskItem.init
+                        |> Result.map
+                            (UpdatedTaskItem.updateDate
+                                noCompletionSettings
+                                (Date.fromIsoString "1999-01-01" |> Result.toMaybe)
+                            )
+                        |> Result.map UpdatedTaskItem.toString
+                        |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(1999-01-01) ^12345")
+            , describe "ObsidianDataview format"
+                [ test "outputs the task item with the due date if one is given even if it is the same as the file date" <|
+                    \() ->
+                        "- [ ] foo #tag1 bar #tag2 ^12345"
+                            |> Parser.run fileDateParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    dataviewCompletionSettings
+                                    (Date.fromIsoString "1999-01-01" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [due:: 1999-01-01] ^12345")
+                ]
+            ]
+        , describe "both inline and file date"
+            [ describe "NoCompletion format"
+                [ test "removes inline due dates and adds a @due(none) if the new date is Nothing" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run fileDateParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map (UpdatedTaskItem.updateDate noCompletionSettings Nothing)
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(none) ^12345")
+                , test "outputs the task item with the due date if one is given" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run fileDateParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    noCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 @due(2024-01-21) ^12345")
+                ]
+            , describe "ObsidianTasks format"
+                [ test "outputs the task item with the given due date if present" <|
+                    \() ->
+                        "- [ ] foo #tag1 @due(1999-01-01) bar 📅 1999-01-02 #tag2 [due:: 1999-01-03] ^12345"
+                            |> Parser.run fileDateParser
+                            |> Result.map UpdatedTaskItem.init
+                            |> Result.map
+                                (UpdatedTaskItem.updateDate
+                                    tasksCompletionSettings
+                                    (Date.fromIsoString "2024-01-21" |> Result.toMaybe)
+                                )
+                            |> Result.map UpdatedTaskItem.toString
+                            |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 📅 2024-01-21 ^12345")
+                ]
+            ]
         ]
 
 
@@ -513,6 +602,11 @@ dataviewCompletionSettings =
     , inLocalTime = False
     , showUtcOffset = False
     }
+
+
+fileDateParser : Parser TaskItem
+fileDateParser =
+    TaskItem.parser (DataviewTaskCompletion.Text "completion") "" (Just "1999-01-01") TagList.empty 0
 
 
 noCompletionSettings : TaskCompletionSettings

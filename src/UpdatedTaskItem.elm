@@ -115,19 +115,6 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
     case change of
         ChangeCompletion taskCompletionSettings now ->
             let
-                insertCompletionTag : TaskItem -> String -> String
-                insertCompletionTag t_ taskString =
-                    let
-                        tagInserter : String -> String
-                        tagInserter =
-                            Regex.find blockLinkRegex taskString
-                                |> List.head
-                                |> Maybe.map .index
-                                |> Maybe.withDefault (String.length taskString)
-                                |> SE.insertAt (completionTag taskCompletionSettings now t_)
-                    in
-                    tagInserter taskString
-
                 replaceCheckbox : TaskItem -> String -> String
                 replaceCheckbox t_ taskString =
                     let
@@ -168,7 +155,7 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                 |> originalText
                 |> replaceCheckbox taskItem
                 |> removeCompletionTags
-                |> insertCompletionTag taskItem
+                |> insertBeforeBlockLink (completionTag taskCompletionSettings now taskItem)
 
         ChangeDueDate taskCompletionSettings newDate ->
             let
@@ -183,29 +170,35 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                     updatedTaskItem
                         |> originalText
                         |> removeDueTags
+                        |> insertBeforeBlockLink (noneTagIfHasFileDate taskItem)
 
                 Just date ->
-                    let
-                        insertDueDate : TaskItem -> String -> String
-                        insertDueDate t_ taskString =
-                            let
-                                tagInserter : String -> String
-                                tagInserter =
-                                    Regex.find blockLinkRegex taskString
-                                        |> List.head
-                                        |> Maybe.map .index
-                                        |> Maybe.withDefault (String.length taskString)
-                                        |> SE.insertAt (dueTag taskCompletionSettings date t_)
-                            in
-                            tagInserter taskString
-                    in
                     updatedTaskItem
                         |> originalText
                         |> removeDueTags
-                        |> insertDueDate taskItem
+                        |> insertBeforeBlockLink (dueTag taskCompletionSettings date taskItem)
 
         NoChange ->
             originalText updatedTaskItem
+
+
+noneTagIfHasFileDate : TaskItem -> String
+noneTagIfHasFileDate taskItem =
+    taskItem
+        |> TaskItem.fields
+        |> .dueFile
+        |> Maybe.map (always " @due(none)")
+        |> Maybe.withDefault ""
+
+
+insertBeforeBlockLink : String -> String -> String
+insertBeforeBlockLink toInsert taskString =
+    taskString
+        |> Regex.find blockLinkRegex
+        |> List.head
+        |> Maybe.map .index
+        |> Maybe.withDefault (String.length taskString)
+        |> (\i -> SE.insertAt toInsert i taskString)
 
 
 
