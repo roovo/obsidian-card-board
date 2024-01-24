@@ -179,8 +179,13 @@ dragTracker (Session config) =
 
 
 firstDayOfWeek : Session -> Date.Weekday
-firstDayOfWeek (Session config) =
-    config.firstDayOfWeek
+firstDayOfWeek ((Session config) as session) =
+    case globalSettings session |> .firstDayOfWeek of
+        GlobalSettings.FromLocale ->
+            config.firstDayOfWeek
+
+        GlobalSettings.SpecificWeekday weekday ->
+            weekday
 
 
 globalSettings : Session -> GlobalSettings

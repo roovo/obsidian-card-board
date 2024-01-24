@@ -1,4 +1,3 @@
-- support weekday start other than Monday??
 - if I click on the next/prev month button then click outside the calendar
   the calendar doesn't close
 

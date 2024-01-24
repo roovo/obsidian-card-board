@@ -11,7 +11,7 @@ import DragAndDrop.DragData as DragData
 import DragAndDrop.DragTracker as DragTracker
 import Expect
 import Filter
-import GlobalSettings
+import GlobalSettings exposing (GlobalSettings)
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import InteropDefinitions exposing (Flags)
@@ -33,6 +33,7 @@ suite =
         , deleteItemsFromFile
         , findCard
         , finishAdding
+        , firstDayOfWeek
         , fromFlags
         , globalSettings
         , moveDragable
@@ -218,6 +219,25 @@ finishAdding =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
+firstDayOfWeek : Test
+firstDayOfWeek =
+    describe "firstDayOfWeek"
+        [ test "respects the global setting if it is for a specific day" <|
+            \() ->
+                exampleFlags
+                    |> Session.fromFlags
+                    |> Session.updateSettings exampleSettings
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Fri
+        , test "respects the locale if that is what has been set" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 2 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Tue
         ]
 
 
@@ -454,8 +474,17 @@ exampleSettings =
                                 , name = "A Name"
                                 }
                             ]
+                    , globalSettings =
+                        { defaultGlobalSettings
+                            | firstDayOfWeek = GlobalSettings.SpecificWeekday Time.Fri
+                        }
                 }
            )
+
+
+defaultGlobalSettings : GlobalSettings
+defaultGlobalSettings =
+    GlobalSettings.default
 
 
 untaggedAndCompleted : Settings
