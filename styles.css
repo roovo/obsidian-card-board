@@ -370,6 +370,13 @@ ul.card-board-column-list > li.card-board-card::before {
   width: 100%;
 }
 
+h3.setting-heading-compact {
+  margin-block-end: 0;
+}
+
+.example-stamp {
+  font-weight: var(--bold-weight);
+}
 
 .cardboard-settings-column-item {
   display: grid;
