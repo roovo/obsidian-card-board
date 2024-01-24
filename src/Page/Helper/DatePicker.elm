@@ -156,6 +156,9 @@ dayView model date =
         isOtherMonth =
             Date.month date /= Date.month model.calendarStart
 
+        isPicked =
+            Date.toIsoString date == model.inputText
+
         isToday =
             Date.toRataDie date == Date.toRataDie model.today
     in
@@ -164,6 +167,7 @@ dayView model date =
             [ ( "datepicker-day", True )
             , ( "datepicker-other-month", isOtherMonth )
             , ( "datepicker-today", isToday )
+            , ( "datepicker-picked", isPicked )
             ]
          ]
             ++ [ onClick <| DateClicked date ]

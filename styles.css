@@ -723,11 +723,11 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .datepicker-picked {
   color: white;
-  background: darkblue;
+  background: var(--interactive-accent);
 }
 
 .datepicker-picked:hover {
-  background: darkblue;
+  background: var(--interactive-accent);
 }
 
 .datepicker-today {
