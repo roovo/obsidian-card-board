@@ -20,7 +20,7 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
+import Html.Attributes exposing (attribute, checked, class, hidden, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
@@ -406,14 +406,28 @@ modalEditCardDueDate datePicker taskItem =
                 ]
                 []
             , Html.div [ class "modal-title" ]
-                [ Html.text "Edit due date" ]
+                []
             , Html.div [ class "modal-content" ]
-                [ Html.p []
-                    [ Html.text <|
-                        "Editing card: "
-                            ++ TaskItem.title taskItem
-                    , DatePicker.view datePicker
-                        |> Html.map DatePickerMsg
+                [ Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text <| "Task: " ++ TaskItem.title taskItem ]
+                        , Html.div [ class "setting-item-description" ]
+                            []
+                        ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Due date" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Leave blank to clear the due date." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ DatePicker.view datePicker
+                            |> Html.map DatePickerMsg
+                        ]
                     ]
                 ]
             , Html.div [ class "modal-button-container" ]

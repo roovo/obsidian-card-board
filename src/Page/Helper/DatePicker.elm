@@ -124,6 +124,7 @@ view (DatePicker model) =
     Html.div [ class "datepicker-container" ]
         [ Html.input
             [ type_ "text"
+            , class "datepicker-input"
             , placeholder "Due date"
             , value model.inputText
             , onInput EnteredDate

@@ -419,6 +419,12 @@ due =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "uses the last due date on the line if there are more than one" <|
+            \() ->
+                "- [ ] @due(2021-03-02) foo @due(2021-03-03)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
         , test "@due(none) cancels the file date" <|
             \() ->
                 "- [ ] foo @due(none)"

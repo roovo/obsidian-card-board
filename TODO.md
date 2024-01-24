@@ -1,13 +1,10 @@
-- if it updates an inline due date it should put it in the same place in the line as the
-  existing one (or where the first one is if there are more than one)
-- would be nice if the due date was placed before any completion date(s) that may be present
 - should I colour the input to show if the date is valid or not (red background if invalid)
+- what happens in the dialog if the task has a long title
 
 - make the modal look better
 - I could even let the user know which columns the card will appear in whilst
   editing
 
-- re-visit global settings as now they set both due and completed date format
 - respect Tasks setting to use either Tasks or Dataview format for tasks
 
 - improve general modal behaviour so tabbing and hitting enter work as expected
