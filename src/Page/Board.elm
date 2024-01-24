@@ -47,7 +47,7 @@ import UpdatedTaskItem exposing (UpdatedTaskItem)
 
 type Model
     = DeletingCard String String Session
-    | EditingCardDueDate DatePicker Card Session
+    | EditingCardDueDate DatePicker TaskItem Session
     | ViewingBoard Session
 
 
@@ -79,19 +79,18 @@ editCardDueDateConfirmed model =
 editCardDueDateRequested : String -> Model -> Model
 editCardDueDateRequested cardId model =
     let
-        card : Maybe Card
-        card =
+        taskItem : Maybe TaskItem
+        taskItem =
             toSession model
                 |> Session.findCard cardId
+                |> Maybe.map Card.taskItem
     in
-    case card of
-        Just cardToEdit ->
+    case taskItem of
+        Just taskToEdit ->
             let
                 date : Maybe Date
                 date =
-                    cardToEdit
-                        |> Card.taskItem
-                        |> TaskItem.due
+                    TaskItem.due taskToEdit
 
                 today : Date
                 today =
@@ -104,7 +103,7 @@ editCardDueDateRequested cardId model =
                     toSession model
                         |> Session.firstDayOfWeek
             in
-            EditingCardDueDate (DatePicker.init firstDayOfWeek today date) cardToEdit (toSession model)
+            EditingCardDueDate (DatePicker.init firstDayOfWeek today date) taskToEdit (toSession model)
 
         Nothing ->
             model
@@ -211,7 +210,7 @@ update msg model =
 
         EditCardDueDateConfirmed ->
             case model of
-                EditingCardDueDate datePicker card session ->
+                EditingCardDueDate datePicker taskItem session ->
                     let
                         cmd : Cmd Msg
                         cmd =
@@ -222,11 +221,6 @@ update msg model =
                         taskCompletionSettings : TaskCompletionSettings
                         taskCompletionSettings =
                             Session.taskCompletionSettings session
-
-                        taskItem : TaskItem
-                        taskItem =
-                            card
-                                |> Card.taskItem
 
                         updatedTaskItems : List UpdatedTaskItem
                         updatedTaskItems =
@@ -387,15 +381,15 @@ view model =
                 , modalDeleteCardConfirm title cardId
                 ]
 
-        EditingCardDueDate datePicker card session ->
+        EditingCardDueDate datePicker taskItem session ->
             Html.div []
                 [ boardsView session
-                , modalEditCardDueDate datePicker card
+                , modalEditCardDueDate datePicker taskItem
                 ]
 
 
-modalEditCardDueDate : DatePicker -> Card -> Html Msg
-modalEditCardDueDate datePicker card =
+modalEditCardDueDate : DatePicker -> TaskItem -> Html Msg
+modalEditCardDueDate datePicker taskItem =
     Html.div [ class "modal-container" ]
         [ Html.div
             [ class "modal-bg"
@@ -417,7 +411,7 @@ modalEditCardDueDate datePicker card =
                 [ Html.p []
                     [ Html.text <|
                         "Editing card: "
-                            ++ Card.title card
+                            ++ TaskItem.title taskItem
                     , DatePicker.view datePicker
                         |> Html.map DatePickerMsg
                     ]

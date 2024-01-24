@@ -1,5 +1,3 @@
-- should I search for the taskItem instead of the card as this is what I actually need for the
-  modal (I think)
 - if it updates an inline due date it should put it in the same place in the line as the
   existing one (or where the first one is if there are more than one)
 - would be nice if the due date was placed before any completion date(s) that may be present
