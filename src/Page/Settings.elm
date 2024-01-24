@@ -1015,6 +1015,12 @@ globalSettingsView dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
 globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> Time.Weekday -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
 globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect settingsForm =
     let
+        dueDateExample : String
+        dueDateExample =
+            UpdatedTaskItem.dueString
+                taskCompletionSettings
+                (TimeWithZone.toDate timeWithZone)
+
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
             if settingsForm.ignoreFileNameDates then
@@ -1023,41 +1029,16 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
             else
                 ""
 
-        taskCompletionInLocalTimeStyle : String
-        taskCompletionInLocalTimeStyle =
-            if settingsForm.taskCompletionInLocalTime then
-                " is-enabled"
-
-            else
-                ""
-
-        taskCompletionShowUtcOffsetStyle : String
-        taskCompletionShowUtcOffsetStyle =
-            if settingsForm.taskCompletionShowUtcOffset then
-                " is-enabled"
-
-            else
-                ""
+        proposedSettings : GlobalSettings.TaskCompletionSettings
+        proposedSettings =
+            settingsForm
+                |> SD.run SettingsForm.safeDecoder
+                |> Result.withDefault Settings.default
+                |> Settings.globalSettings
+                |> GlobalSettings.taskCompletionSettings
 
         taskCompletionExample : String
         taskCompletionExample =
-            let
-                proposedSettings : GlobalSettings.TaskCompletionSettings
-                proposedSettings =
-                    settingsForm
-                        |> SD.run SettingsForm.safeDecoder
-                        |> Result.withDefault Settings.default
-                        |> Settings.globalSettings
-                        |> GlobalSettings.taskCompletionSettings
-
-                taskCompletionSettings : TaskCompletionSettings
-                taskCompletionSettings =
-                    { dataviewTaskCompletion = dataviewTaskCompletion
-                    , format = proposedSettings.format
-                    , inLocalTime = proposedSettings.inLocalTime
-                    , showUtcOffset = proposedSettings.showUtcOffset
-                    }
-            in
             UpdatedTaskItem.completionString
                 taskCompletionSettings
                 timeWithZone
@@ -1068,16 +1049,33 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
                         else
                             str
                    )
+
+        taskCompletionInLocalTimeStyle : String
+        taskCompletionInLocalTimeStyle =
+            if settingsForm.taskCompletionInLocalTime then
+                " is-enabled"
+
+            else
+                ""
+
+        taskCompletionSettings : TaskCompletionSettings
+        taskCompletionSettings =
+            { dataviewTaskCompletion = dataviewTaskCompletion
+            , format = proposedSettings.format
+            , inLocalTime = proposedSettings.inLocalTime
+            , showUtcOffset = proposedSettings.showUtcOffset
+            }
+
+        taskCompletionShowUtcOffsetStyle : String
+        taskCompletionShowUtcOffsetStyle =
+            if settingsForm.taskCompletionShowUtcOffset then
+                " is-enabled"
+
+            else
+                ""
     in
     [ Html.div [ class "setting-items-inner" ]
-        ([ Html.div [ class "setting-item setting-item-heading" ]
-            [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Miscellaneous" ]
-                , Html.div [ class "setting-item-description" ] []
-                ]
-            , Html.div [ class "setting-item-control" ] []
-            ]
+        ([ Html.h3 [] [ Html.text "Miscellaneous" ]
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
@@ -1120,15 +1118,7 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
             , Html.div [ class "setting-item-control" ]
                 [ firstDayOfWeekSelect defaultFirstDayOfWeek settingsForm.firstDayOfWeek ]
             ]
-         , Html.div [ class "setting-item setting-item-heading" ]
-            [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Task Completion" ]
-                , Html.div [ class "setting-item-description" ]
-                    [ Html.text <| "Current completion string: " ++ taskCompletionExample ]
-                ]
-            , Html.div [ class "setting-item-control" ] []
-            ]
+         , Html.h3 [] [ Html.text "Task Due & Completion Stamps" ]
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
@@ -1175,15 +1165,8 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
 
 columNamesForm : SettingsForm -> List (Html Msg)
 columNamesForm settingsForm =
-    [ Html.div [ class "setting-item setting-item-heading" ]
-        [ Html.div [ class "setting-item-info" ]
-            [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Default Column Names" ]
-            , Html.div [ class "setting-item-description" ]
-                [ Html.text "Customise names used for auto-generated columns." ]
-            ]
-        , Html.div [ class "setting-item-control" ] []
-        ]
+    [ Html.h3 []
+        [ Html.text "Default Column Names" ]
     , Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
@@ -1366,14 +1349,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect drag
                         []
                     ]
                 ]
-            , Html.div [ class "setting-item setting-item-heading" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Filters" ]
-                    , Html.div [ class "setting-item-description" ] []
-                    ]
-                , Html.div [ class "setting-item-control" ] []
-                ]
+            , Html.h3 [] [ Html.text "Filters" ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
@@ -1420,14 +1396,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect drag
                         []
                     ]
                 ]
-            , Html.div [ class "setting-item setting-item-heading" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Columns" ]
-                    , Html.div [ class "setting-item-description" ] []
-                    ]
-                , Html.div [ class "setting-item-control" ] []
-                ]
+            , Html.h3 [] [ Html.text "Columns" ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
                     ((configForm.columnsForm
