@@ -26,6 +26,7 @@ type DatePicker
 
 type alias Model =
     { calendarStart : Date
+    , firstDayOfWeek : Time.Weekday
     , inputText : String
     , mouseDownInPicker : Bool
     , showPicker : Bool
@@ -33,8 +34,8 @@ type alias Model =
     }
 
 
-init : Date -> Maybe Date -> DatePicker
-init today date =
+init : Time.Weekday -> Date -> Maybe Date -> DatePicker
+init firstDayOfWeek today date =
     let
         calendarStart =
             Date.fromCalendarDate (Date.year startDate) (Date.month startDate) 1
@@ -44,6 +45,7 @@ init today date =
     in
     DatePicker
         { calendarStart = calendarStart
+        , firstDayOfWeek = firstDayOfWeek
         , inputText = toDateString date
         , mouseDownInPicker = False
         , showPicker = False
@@ -177,12 +179,16 @@ pickerView model =
             [ Html.thead [ class "datepicker-weekdays" ]
                 [ Html.tr []
                     ([ "Mo", "Tu", "We", "Th", "Fr", "Sa", "Su" ]
+                        |> List.repeat 2
+                        |> List.concat
+                        |> List.drop (Date.weekdayToNumber model.firstDayOfWeek - 1)
+                        |> List.take 7
                         |> List.map (\d -> Html.td [ class "datepicker-dow" ] [ Html.text d ])
                     )
                 ]
             , Html.tbody [ class "datepicker-days" ]
                 (model.calendarStart
-                    |> dateGrid
+                    |> dateGrid model.firstDayOfWeek
                     |> List.map
                         (\rowDays ->
                             Html.tr [ class "datepicker-row" ]
@@ -222,16 +228,19 @@ dayView model date =
 -- PRIVATE
 
 
-dateGrid : Date -> List (List Date)
-dateGrid calendarStart =
+dateGrid : Time.Weekday -> Date -> List (List Date)
+dateGrid firstDayOfWeek calendarStart =
     let
+        firstDayAsInterval =
+            weekdayToInterval firstDayOfWeek
+
         start =
             calendarStart
-                |> Date.floor Date.Monday
+                |> Date.floor firstDayAsInterval
 
         end =
             Date.add Date.Months 1 calendarStart
-                |> Date.ceiling Date.Monday
+                |> Date.ceiling firstDayAsInterval
     in
     Date.range Date.Day 1 start end
         |> LE.groupsOf 7
@@ -240,3 +249,28 @@ dateGrid calendarStart =
 toDateString : Maybe Date -> String
 toDateString =
     Maybe.withDefault "" << Maybe.map Date.toIsoString
+
+
+weekdayToInterval : Time.Weekday -> Date.Interval
+weekdayToInterval weekday =
+    case weekday of
+        Time.Mon ->
+            Date.Monday
+
+        Time.Tue ->
+            Date.Tuesday
+
+        Time.Wed ->
+            Date.Wednesday
+
+        Time.Thu ->
+            Date.Thursday
+
+        Time.Fri ->
+            Date.Friday
+
+        Time.Sat ->
+            Date.Saturday
+
+        Time.Sun ->
+            Date.Sunday

@@ -9,7 +9,8 @@ import {
   TFile,
   TFolder,
   Vault,
-  WorkspaceLeaf
+  WorkspaceLeaf,
+  moment
 } from 'obsidian';
 
 import { Elm, ElmApp, Flags } from '../src/Main';
@@ -65,6 +66,8 @@ export class CardBoardView extends ItemView {
       uniqueId:           this.randomId(5),
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
+      firstDayOfWeek:     moment.localeData().firstDayOfWeek(),
+      // firstDayOfWeek:     1,
       settings:           this.plugin.settings,
       rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {

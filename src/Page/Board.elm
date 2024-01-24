@@ -36,6 +36,7 @@ import Session exposing (Session, TaskCompletionSettings)
 import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TextDirection
+import Time
 import TimeWithZone exposing (TimeWithZone)
 import UpdatedTaskItem exposing (UpdatedTaskItem)
 
@@ -97,8 +98,13 @@ editCardDueDateRequested cardId model =
                     toSession model
                         |> Session.timeWithZone
                         |> TimeWithZone.toDate
+
+                firstDayOfWeek : Time.Weekday
+                firstDayOfWeek =
+                    toSession model
+                        |> Session.firstDayOfWeek
             in
-            EditingCardDueDate (DatePicker.init today date) cardToEdit (toSession model)
+            EditingCardDueDate (DatePicker.init firstDayOfWeek today date) cardToEdit (toSession model)
 
         Nothing ->
             model

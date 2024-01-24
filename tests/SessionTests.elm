@@ -6,6 +6,7 @@ import Column
 import Column.Completed as CompletedColumn
 import Columns
 import DataviewTaskCompletion
+import Date
 import DragAndDrop.DragData as DragData
 import DragAndDrop.DragTracker as DragTracker
 import Expect
@@ -13,12 +14,14 @@ import Filter
 import GlobalSettings
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import InteropDefinitions exposing (Flags)
 import SafeZipper
 import Session
 import Settings exposing (Settings)
 import TaskItem
 import TaskList
 import Test exposing (..)
+import Time
 
 
 suite : Test
@@ -30,6 +33,7 @@ suite =
         , deleteItemsFromFile
         , findCard
         , finishAdding
+        , fromFlags
         , globalSettings
         , moveDragable
         , replaceTaskItems
@@ -129,6 +133,11 @@ default =
                 Session.default
                     |> Session.dataviewTaskCompletion
                     |> Expect.equal (DataviewTaskCompletion.Text "completion")
+        , test "starts the week on a Monday" <|
+            \() ->
+                Session.default
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Mon
         ]
 
 
@@ -209,6 +218,45 @@ finishAdding =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
+fromFlags : Test
+fromFlags =
+    describe "fromFlags"
+        [ test "copies the dataviewTaskCompletion value from the flags" <|
+            \() ->
+                { exampleFlags | dataviewTaskCompletion = DataviewTaskCompletion.Emoji }
+                    |> Session.fromFlags
+                    |> Session.dataviewTaskCompletion
+                    |> Expect.equal DataviewTaskCompletion.Emoji
+        , test "sets the firstDayOfWeek to Mon if the flag value is 1" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 1 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Mon
+        , test "sets the firstDayOfWeek to Sun if the flag value is 0" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 0 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Sun
+        , test "sets the firstDayOfWeek to Sat if the flag value is 6" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 6 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Sat
+        , test "builds TimeWithZone from the flag values for now and zone" <|
+            \() ->
+                { exampleFlags | now = 123, zone = 456 }
+                    |> Session.fromFlags
+                    |> Session.timeWithZone
+                    |> Expect.equal
+                        { time = Time.millisToPosix 123
+                        , zone = Time.customZone 456 []
+                        }
         ]
 
 
@@ -375,6 +423,18 @@ updatePath =
 
 
 -- HELPERS
+
+
+exampleFlags : Flags
+exampleFlags =
+    { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+    , firstDayOfWeek = 0
+    , now = 0
+    , rightToLeft = False
+    , settings = Settings.default
+    , uniqueId = "youNeeq"
+    , zone = 123
+    }
 
 
 exampleSettings : Settings

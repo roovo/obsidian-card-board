@@ -11,6 +11,7 @@ module Session exposing
     , dragTracker
     , findCard
     , finishAdding
+    , firstDayOfWeek
     , fromFlags
     , globalSettings
     , ignoreFileNameDates
@@ -44,6 +45,7 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import Date
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
@@ -71,6 +73,7 @@ type Session
 type alias Config =
     { dataviewTaskCompletion : DataviewTaskCompletion
     , dragTracker : DragTracker
+    , firstDayOfWeek : Time.Weekday
     , isActiveView : Bool
     , settings : Settings
     , taskList : State TaskList
@@ -103,6 +106,7 @@ default =
     Session
         { dataviewTaskCompletion = DataviewTaskCompletion.default
         , dragTracker = DragTracker.init
+        , firstDayOfWeek = Time.Mon
         , isActiveView = False
         , settings = Settings.default
         , taskList = State.Waiting
@@ -117,9 +121,18 @@ default =
 
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
+    let
+        momentToWeekdayNumber dayNumber =
+            if dayNumber == 0 then
+                7
+
+            else
+                dayNumber
+    in
     Session
         { dataviewTaskCompletion = flags.dataviewTaskCompletion
         , dragTracker = DragTracker.init
+        , firstDayOfWeek = Date.numberToWeekday <| momentToWeekdayNumber flags.firstDayOfWeek
         , isActiveView = False
         , settings = flags.settings
         , taskList = State.Waiting
@@ -163,6 +176,11 @@ findCard cardId session =
 dragTracker : Session -> DragTracker
 dragTracker (Session config) =
     config.dragTracker
+
+
+firstDayOfWeek : Session -> Date.Weekday
+firstDayOfWeek (Session config) =
+    config.firstDayOfWeek
 
 
 globalSettings : Session -> GlobalSettings

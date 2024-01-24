@@ -53,12 +53,13 @@ type ToElm
 
 
 type alias Flags =
-    { settings : Settings
-    , dataviewTaskCompletion : DataviewTaskCompletion
-    , rightToLeft : Bool
+    { dataviewTaskCompletion : DataviewTaskCompletion
+    , firstDayOfWeek : Int
     , now : Int
-    , zone : Int
+    , rightToLeft : Bool
+    , settings : Settings
     , uniqueId : String
+    , zone : Int
     }
 
 
@@ -144,12 +145,13 @@ updateTasksEncoder =
 flags : TsDecode.Decoder Flags
 flags =
     TsDecode.succeed Flags
-        |> TsDecode.andMap (TsDecode.field "settings" Settings.decoder)
         |> TsDecode.andMap (TsDecode.field "dataviewTaskCompletion" DataviewTaskCompletion.decoder)
-        |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "firstDayOfWeek" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "now" TsDecode.int)
-        |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
+        |> TsDecode.andMap (TsDecode.field "settings" Settings.decoder)
         |> TsDecode.andMap (TsDecode.field "uniqueId" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "zone" TsDecode.int)
 
 
 toElm : TsDecode.Decoder ToElm
