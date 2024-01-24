@@ -9,7 +9,7 @@ module Page.Helper.DatePicker exposing
 
 import Date exposing (Date)
 import Html exposing (Html)
-import Html.Attributes exposing (class, placeholder, type_, value)
+import Html.Attributes exposing (class, classList, placeholder, type_, value)
 import Html.Events exposing (onBlur, onFocus, onInput)
 import Time
 
@@ -122,16 +122,25 @@ pickerView model =
                     |> List.map
                         (\rowDays ->
                             Html.tr [ class "datepicker-row" ]
-                                (List.map dayView rowDays)
+                                (List.map (dayView model.calendarStart) rowDays)
                         )
                 )
             ]
         ]
 
 
-dayView : Date -> Html Msg
-dayView date =
-    Html.td []
+dayView : Date -> Date -> Html Msg
+dayView calendarStart date =
+    let
+        isOtherMonth =
+            Date.month date /= Date.month calendarStart
+    in
+    Html.td
+        [ classList
+            [ ( "datepicker-day", True )
+            , ( "datepicker-other-month", isOtherMonth )
+            ]
+        ]
         [ Html.text <| String.fromInt <| Date.day date ]
 
 
