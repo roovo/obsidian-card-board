@@ -12,6 +12,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, classList, placeholder, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, stopPropagationOn)
 import Json.Decode as JD
+import List.Extra as LE
 import Time
 
 
@@ -138,7 +139,6 @@ pickerView model =
                 ]
             , Html.tbody [ class "datepicker-days" ]
                 (model.calendarStart
-                    |> displayDates
                     |> dateGrid
                     |> List.map
                         (\rowDays ->
@@ -175,26 +175,8 @@ dayView model date =
 -- PRIVATE
 
 
-dateGrid : List Date -> List (List Date)
-dateGrid dates =
-    let
-        go i xs racc acc =
-            case xs of
-                [] ->
-                    List.reverse acc
-
-                x :: xxs ->
-                    if i == 6 then
-                        go 0 xxs [] (List.reverse (x :: racc) :: acc)
-
-                    else
-                        go (i + 1) xxs (x :: racc) acc
-    in
-    go 0 dates [] []
-
-
-displayDates : Date -> List Date
-displayDates calendarStart =
+dateGrid : Date -> List (List Date)
+dateGrid calendarStart =
     let
         start =
             calendarStart
@@ -205,6 +187,7 @@ displayDates calendarStart =
                 |> Date.ceiling Date.Monday
     in
     Date.range Date.Day 1 start end
+        |> LE.groupsOf 7
 
 
 toDateString : Maybe Date -> String
