@@ -26,6 +26,7 @@ type alias Model =
     { calendarStart : Date
     , inputText : String
     , showPicker : Bool
+    , today : Date
     }
 
 
@@ -42,6 +43,7 @@ init today date =
         { calendarStart = calendarStart
         , inputText = toDateString date
         , showPicker = False
+        , today = today
         }
 
 
@@ -122,23 +124,27 @@ pickerView model =
                     |> List.map
                         (\rowDays ->
                             Html.tr [ class "datepicker-row" ]
-                                (List.map (dayView model.calendarStart) rowDays)
+                                (List.map (dayView model) rowDays)
                         )
                 )
             ]
         ]
 
 
-dayView : Date -> Date -> Html Msg
-dayView calendarStart date =
+dayView : Model -> Date -> Html Msg
+dayView model date =
     let
         isOtherMonth =
-            Date.month date /= Date.month calendarStart
+            Date.month date /= Date.month model.calendarStart
+
+        isToday =
+            Date.toRataDie date == Date.toRataDie model.today
     in
     Html.td
         [ classList
             [ ( "datepicker-day", True )
             , ( "datepicker-other-month", isOtherMonth )
+            , ( "datepicker-today", isToday )
             ]
         ]
         [ Html.text <| String.fromInt <| Date.day date ]
