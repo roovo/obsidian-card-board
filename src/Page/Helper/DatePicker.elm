@@ -10,7 +10,8 @@ module Page.Helper.DatePicker exposing
 import Date exposing (Date)
 import Html exposing (Html)
 import Html.Attributes exposing (class, classList, placeholder, type_, value)
-import Html.Events exposing (onBlur, onFocus, onInput)
+import Html.Events exposing (onBlur, onClick, onFocus, onInput, stopPropagationOn)
+import Json.Decode as JD
 import Time
 
 
@@ -25,6 +26,7 @@ type DatePicker
 type alias Model =
     { calendarStart : Date
     , inputText : String
+    , mouseDownInPicker : Bool
     , showPicker : Bool
     , today : Date
     }
@@ -42,6 +44,7 @@ init today date =
     DatePicker
         { calendarStart = calendarStart
         , inputText = toDateString date
+        , mouseDownInPicker = False
         , showPicker = False
         , today = today
         }
@@ -64,21 +67,33 @@ pickedDate (DatePicker model) =
 
 type Msg
     = Blurred
+    | DateClicked Date
     | EnteredDate String
     | Focussed
+    | PickerMouseDown
+    | PickerMouseUp
 
 
 update : Msg -> DatePicker -> DatePicker
 update msg (DatePicker model) =
     case msg of
         Blurred ->
-            DatePicker { model | showPicker = False }
+            DatePicker { model | showPicker = model.mouseDownInPicker }
+
+        DateClicked date ->
+            DatePicker { model | inputText = Date.toIsoString date }
 
         EnteredDate dateString ->
             DatePicker { model | inputText = dateString }
 
         Focussed ->
-            DatePicker { model | showPicker = True }
+            DatePicker { model | showPicker = True, mouseDownInPicker = False }
+
+        PickerMouseDown ->
+            DatePicker { model | mouseDownInPicker = True }
+
+        PickerMouseUp ->
+            DatePicker { model | mouseDownInPicker = False }
 
 
 
@@ -107,7 +122,11 @@ view (DatePicker model) =
 
 pickerView : Model -> Html Msg
 pickerView model =
-    Html.div [ class "datepicker-picker" ]
+    Html.div
+        [ class "datepicker-picker"
+        , stopPropagationOn "mousedown" <| JD.succeed ( PickerMouseDown, True )
+        , stopPropagationOn "mouseup" <| JD.succeed ( PickerMouseUp, True )
+        ]
         [ Html.div [ class "datepicker-header" ]
             []
         , Html.table [ class "datepicker-table" ]
@@ -141,12 +160,14 @@ dayView model date =
             Date.toRataDie date == Date.toRataDie model.today
     in
     Html.td
-        [ classList
+        ([ classList
             [ ( "datepicker-day", True )
             , ( "datepicker-other-month", isOtherMonth )
             , ( "datepicker-today", isToday )
             ]
-        ]
+         ]
+            ++ [ onClick <| DateClicked date ]
+        )
         [ Html.text <| String.fromInt <| Date.day date ]
 
 
