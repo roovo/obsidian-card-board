@@ -5,6 +5,7 @@ import Expect
 import GlobalSettings
 import Helpers.DecodeHelpers as DecodeHelpers
 import Test exposing (..)
+import Time
 import TsJson.Encode as TsEncode
 
 
@@ -26,6 +27,7 @@ default =
                     |> Expect.equal
                         { defaultColumnNames = DefaultColumnNames.default
                         , filters = []
+                        , firstDayOfWeek = GlobalSettings.FromLocale
                         , ignoreFileNameDates = False
                         , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                         , taskCompletionInLocalTime = True
@@ -49,6 +51,7 @@ encodeDecode =
                     , completed = Just "Done"
                     }
                 , filters = []
+                , firstDayOfWeek = GlobalSettings.SpecificWeekday Time.Wed
                 , ignoreFileNameDates = True
                 , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                 , taskCompletionInLocalTime = False
@@ -56,7 +59,7 @@ encodeDecode =
                 }
                     |> TsEncode.runExample GlobalSettings.encoder
                     |> .output
-                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_12_0_decoder
+                    |> DecodeHelpers.runDecoder GlobalSettings.v_0_13_0_decoder
                     |> .decoded
                     |> Expect.equal
                         (Ok
@@ -70,6 +73,7 @@ encodeDecode =
                                 , completed = Just "Done"
                                 }
                             , filters = []
+                            , firstDayOfWeek = GlobalSettings.SpecificWeekday Time.Wed
                             , ignoreFileNameDates = True
                             , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                             , taskCompletionInLocalTime = False
@@ -86,6 +90,7 @@ taskCompletionSettings =
             \() ->
                 { defaultColumnNames = DefaultColumnNames.default
                 , filters = []
+                , firstDayOfWeek = GlobalSettings.FromLocale
                 , ignoreFileNameDates = False
                 , taskCompletionFormat = GlobalSettings.ObsidianDataview
                 , taskCompletionInLocalTime = True

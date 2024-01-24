@@ -6,6 +6,7 @@ module DefaultColumnNames exposing
     , v_0_10_0_decoder
     , v_0_11_0_decoder
     , v_0_12_0_decoder
+    , v_0_13_0_decoder
     , v_0_7_0_decoder
     , v_0_8_0_decoder
     , v_0_9_0_decoder
@@ -76,6 +77,11 @@ nameFor column defaultColumnNames =
 
 
 -- SERIALIZE
+
+
+v_0_13_0_decoder : TsDecode.Decoder DefaultColumnNames
+v_0_13_0_decoder =
+    v_0_12_0_decoder
 
 
 v_0_12_0_decoder : TsDecode.Decoder DefaultColumnNames

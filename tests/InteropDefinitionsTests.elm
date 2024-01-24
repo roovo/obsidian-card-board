@@ -20,6 +20,7 @@ import Semver
 import TagList
 import Test exposing (..)
 import TextDirection
+import Time
 import TsJson.Encode as TsEncode
 
 
@@ -35,9 +36,10 @@ suite =
 flagsTests : Test
 flagsTests =
     describe "interop.flags (decoding)"
-        [ test "decodes valid flags for settings version 0.12.0" <|
+        [ test "decodes valid flags for settings version 0.13.0" <|
             \() ->
-                """{"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"firstDayOfWeek":0,"now":11,"rightToLeft":false,"uniqueId":"12345","zone":22,"settings":{"version":"0.12.0","data":{"globalSettings":{"defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"fileFilter","data":"aFile"}],"ignoreFileNameDates":true,"taskCompletionFormat":"ObsidianTasks","taskCompletionInLocalTime":true,"taskCompletionShowUtcOffset":false},
+                """{"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"firstDayOfWeek":0,"now":11,"rightToLeft":false,"uniqueId":"12345","zone":22,
+                "settings":{"version":"0.13.0","data":{"globalSettings":{"defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"fileFilter","data":"aFile"}],"firstDayOfWeek":"Thu","ignoreFileNameDates":true,"taskCompletionFormat":"ObsidianTasks","taskCompletionInLocalTime":true,"taskCompletionShowUtcOffset":false},
                 "boardConfigs":[
                    {"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],
                     "filterPolarity":"Deny",
@@ -58,7 +60,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -103,6 +105,90 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.fileFilter "aFile" ]
+                                    , firstDayOfWeek = GlobalSettings.SpecificWeekday Time.Thu
+                                    , ignoreFileNameDates = True
+                                    , taskCompletionFormat = GlobalSettings.ObsidianTasks
+                                    , taskCompletionInLocalTime = True
+                                    , taskCompletionShowUtcOffset = False
+                                    }
+                                }
+                            , dataviewTaskCompletion = DataviewTaskCompletion.Text "completion"
+                            , firstDayOfWeek = 0
+                            , rightToLeft = False
+                            , now = 11
+                            , zone = 22
+                            , uniqueId = "12345"
+                            }
+                        )
+        , test "decodes valid flags for settings version 0.12.0" <|
+            \() ->
+                """{"dataviewTaskCompletion":{"taskCompletionTracking":true,"taskCompletionUseEmojiShorthand":false,"taskCompletionText":"completion"},"firstDayOfWeek":0,"now":11,"rightToLeft":false,"uniqueId":"12345","zone":22,"settings":{"version":"0.12.0","data":{"globalSettings":{"defaultColumnNames":{"today":"Do Today","tomorrow":"","future":"The Future","undated":"","otherTags":"The Others","untagged":"","completed":"Completed"},"filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"fileFilter","data":"aFile"}],"ignoreFileNameDates":true,"taskCompletionFormat":"ObsidianTasks","taskCompletionInLocalTime":true,"taskCompletionShowUtcOffset":false},
+                "boardConfigs":[
+                   {"filters":[{"tag":"pathFilter","data":"a/path"},{"tag":"tagFilter","data":"tag1"}],
+                    "filterPolarity":"Deny",
+                    "filterScope":"TopLevelOnly",
+                    "showFilteredTags":true,
+                    "showColumnTags":false,
+                    "columns":[{"tag":"undated","data":{"collapsed":false,"name":"Undated"}},{"tag":"dated","data":{"collapsed":false,"name":"Do Today","range":{"tag":"before","data":1}}},{"tag":"dated","data":{"collapsed":false,"name":"Tomorrow","range":{"tag":"between","data":{"from":1,"to":1}}}},{"tag":"dated","data":{"collapsed":false,"name":"The Future","range":{"tag":"after","data":1}}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":4,"limit":4}}],
+                    "name":"date board name"},
+                   {"columns":[{"tag":"untagged","data":{"collapsed":false,"name":"Untagged"}},{"tag":"namedTag","data":{"collapsed":true,"name":"name 1","tag":"tag1"}},{"tag":"completed","data":{"collapsed":false,"name":"Completed","index":2,"limit":5}}],
+                    "showColumnTags":false,
+                    "filters":[{"tag":"pathFilter","data":"b/path"},{"tag":"tagFilter","data":"tag2"}],
+                    "filterPolarity":"Allow",
+                    "filterScope":"SubTasksOnly",
+                    "showFilteredTags":false,
+                    "name":"tag board name"}]}}}"""
+                    |> DecodeHelpers.runDecoder interop.flags
+                    |> .decoded
+                    |> Expect.equal
+                        (Ok
+                            { settings =
+                                { version = Semver.version 0 13 0 [] []
+                                , boardConfigs =
+                                    SafeZipper.fromList
+                                        [ BoardConfig
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.undated "Undated"
+                                                    , Column.dated (DatedColumn.init "Do Today" <| DatedColumn.Before 1)
+                                                    , Column.dated (DatedColumn.init "Tomorrow" <| DatedColumn.Between { from = 1, to = 1 })
+                                                    , Column.dated (DatedColumn.init "The Future" <| DatedColumn.After 1)
+                                                    , Column.completed (CompletedColumn.init "Completed" 4 4)
+                                                    ]
+                                            , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.tagFilter "tag1" ]
+                                            , filterPolarity = Filter.Deny
+                                            , filterScope = Filter.TopLevelOnly
+                                            , showColumnTags = False
+                                            , showFilteredTags = True
+                                            , name = "date board name"
+                                            }
+                                        , BoardConfig
+                                            { columns =
+                                                Columns.fromList
+                                                    [ Column.untagged "Untagged"
+                                                    , Column.namedTag "name 1" "tag1" |> Column.setCollapse True
+                                                    , Column.completed (CompletedColumn.init "Completed" 2 5)
+                                                    ]
+                                            , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag2" ]
+                                            , filterPolarity = Filter.Allow
+                                            , filterScope = Filter.SubTasksOnly
+                                            , showColumnTags = False
+                                            , showFilteredTags = False
+                                            , name = "tag board name"
+                                            }
+                                        ]
+                                , globalSettings =
+                                    { defaultColumnNames =
+                                        { today = Just "Do Today"
+                                        , tomorrow = Nothing
+                                        , future = Just "The Future"
+                                        , undated = Nothing
+                                        , otherTags = Just "The Others"
+                                        , untagged = Nothing
+                                        , completed = Just "Completed"
+                                        }
+                                    , filters = [ FilterHelpers.pathFilter "b/path", FilterHelpers.fileFilter "aFile" ]
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = True
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = True
@@ -140,7 +226,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -185,6 +271,7 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = True
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -207,7 +294,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -252,6 +339,7 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = True
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -274,7 +362,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -319,6 +407,7 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -341,7 +430,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -386,6 +475,7 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -408,7 +498,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -453,6 +543,7 @@ flagsTests =
                                         , completed = Just "Completed"
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -475,7 +566,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -520,6 +611,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -542,7 +634,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -587,6 +679,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianTasks
                                     , taskCompletionInLocalTime = False
@@ -609,7 +702,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -654,6 +747,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                                     , taskCompletionInLocalTime = False
@@ -676,7 +770,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -721,6 +815,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                                     , taskCompletionInLocalTime = False
@@ -743,7 +838,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -788,6 +883,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                                     , taskCompletionInLocalTime = False
@@ -810,7 +906,7 @@ flagsTests =
                     |> Expect.equal
                         (Ok
                             { settings =
-                                { version = Semver.version 0 12 0 [] []
+                                { version = Semver.version 0 13 0 [] []
                                 , boardConfigs =
                                     SafeZipper.fromList
                                         [ BoardConfig
@@ -855,6 +951,7 @@ flagsTests =
                                         , completed = Nothing
                                         }
                                     , filters = []
+                                    , firstDayOfWeek = GlobalSettings.FromLocale
                                     , ignoreFileNameDates = False
                                     , taskCompletionFormat = GlobalSettings.ObsidianCardBoard
                                     , taskCompletionInLocalTime = False
@@ -1058,49 +1155,49 @@ toElmTests =
                 """{"tag":"settingsUpdated","data":{"version":"0.8.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.7.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.7.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview","columnNames":{"today":"","tomorrow":"","future":"","undated":"","others":"","untagged":"","completed":""}}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.6.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.6.0","data":{"boardConfigs":[],"globalSettings":{"taskCompletionFormat":"ObsidianDataview"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianDataview, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.5.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.5.0","data":{"boardConfigs":[],"globalSettings":{"taskUpdateFormat":"ObsidianCardBoard"}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.4.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.4.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.3.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.3.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.2.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.2.0","data":{"boardConfigs":[],"globalSettings":{"hideCompletedSubtasks":false,"ignorePaths":[],"subTaskDisplayLimit":null}}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "decodes version 0.1.0 settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"0.1.0","data":{"boardConfigs":[]}}}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 12 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
+                    |> Expect.equal (Ok <| InteropDefinitions.SettingsUpdated { version = Semver.version 0 13 0 [] [], boardConfigs = SafeZipper.fromList [], globalSettings = { defaultColumnNames = DefaultColumnNames.default, filters = [], firstDayOfWeek = GlobalSettings.FromLocale, ignoreFileNameDates = False, taskCompletionFormat = GlobalSettings.ObsidianCardBoard, taskCompletionInLocalTime = False, taskCompletionShowUtcOffset = False } })
         , test "fails to decode an unsupported version of settings data" <|
             \() ->
                 """{"tag":"settingsUpdated","data":{"version":"99999.0.0","data":{"boardConfigs":[]}}}"""
