@@ -355,6 +355,7 @@ export class CardBoardView extends ItemView {
     menu.addItem((item) =>
       item
         .setTitle("Edit due date")
+        .setIcon("calendar-days")
         .onClick(() => {
           this.elm.ports.interopToElm.send({
             tag: "editCardDueDate",
