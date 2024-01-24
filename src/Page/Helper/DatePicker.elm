@@ -23,15 +23,24 @@ type DatePicker
 
 
 type alias Model =
-    { inputText : String
+    { calendarStart : Date
+    , inputText : String
     , showPicker : Bool
     }
 
 
-init : Maybe Date -> DatePicker
-init date =
+init : Date -> Maybe Date -> DatePicker
+init today date =
+    let
+        calendarStart =
+            Date.fromCalendarDate (Date.year startDate) (Date.month startDate) 1
+
+        startDate =
+            Maybe.withDefault today date
+    in
     DatePicker
-        { inputText = toDateString date
+        { calendarStart = calendarStart
+        , inputText = toDateString date
         , showPicker = False
         }
 
@@ -107,9 +116,7 @@ pickerView model =
                     )
                 ]
             , Html.tbody [ class "datepicker-days" ]
-                (1706045230000
-                    |> Time.millisToPosix
-                    |> Date.fromPosix Time.utc
+                (model.calendarStart
                     |> displayDates
                     |> dateGrid
                     |> List.map
@@ -151,17 +158,14 @@ dateGrid dates =
 
 
 displayDates : Date -> List Date
-displayDates date =
+displayDates calendarStart =
     let
-        firstOfMonth =
-            Date.fromCalendarDate (Date.year date) (Date.month date) 1
-
         start =
-            firstOfMonth
+            calendarStart
                 |> Date.floor Date.Monday
 
         end =
-            Date.add Date.Months 1 firstOfMonth
+            Date.add Date.Months 1 calendarStart
                 |> Date.ceiling Date.Monday
     in
     Date.range Date.Day 1 start end

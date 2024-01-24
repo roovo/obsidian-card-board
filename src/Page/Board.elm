@@ -91,8 +91,14 @@ editCardDueDateRequested cardId model =
                     cardToEdit
                         |> Card.taskItem
                         |> TaskItem.due
+
+                today : Date
+                today =
+                    toSession model
+                        |> Session.timeWithZone
+                        |> TimeWithZone.toDate
             in
-            EditingCardDueDate (DatePicker.init date) cardToEdit (toSession model)
+            EditingCardDueDate (DatePicker.init today date) cardToEdit (toSession model)
 
         Nothing ->
             model
