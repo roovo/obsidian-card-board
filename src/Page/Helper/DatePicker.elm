@@ -82,7 +82,7 @@ update msg (DatePicker model) =
             DatePicker { model | showPicker = model.mouseDownInPicker }
 
         DateClicked date ->
-            DatePicker { model | inputText = Date.toIsoString date }
+            DatePicker { model | inputText = Date.toIsoString date, showPicker = False }
 
         EnteredDate dateString ->
             DatePicker { model | inputText = dateString }
