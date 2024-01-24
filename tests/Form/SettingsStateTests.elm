@@ -1038,6 +1038,7 @@ exampleSettingsForm =
     { boardConfigForms = SafeZipper.empty
     , completed = ""
     , filters = []
+    , firstDayOfWeek = ""
     , future = ""
     , ignoreFileNameDates = False
     , otherTags = ""

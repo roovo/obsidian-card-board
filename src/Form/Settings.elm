@@ -18,6 +18,7 @@ module Form.Settings exposing
     , toggleTaskCompletionInLocalTime
     , toggleTaskCompletionShowUtcOffset
     , updateDefaultColumnName
+    , updateFirstDayOfWeek
     , updateTaskCompletionFormat
     )
 
@@ -35,6 +36,7 @@ import GlobalSettings exposing (GlobalSettings)
 import Maybe.Extra as ME
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
+import Time
 
 
 
@@ -45,6 +47,7 @@ type alias SettingsForm =
     { boardConfigForms : SafeZipper BoardConfigForm
     , completed : String
     , filters : List Filter
+    , firstDayOfWeek : String
     , future : String
     , ignoreFileNameDates : Bool
     , otherTags : String
@@ -68,6 +71,33 @@ init settings =
         boardConfigForms_ : SafeZipper BoardConfigForm
         boardConfigForms_ =
             SafeZipper.map BoardConfigForm.init (Settings.boardConfigs settings)
+
+        firstDayOfWeek_ : String
+        firstDayOfWeek_ =
+            case Settings.globalSettings settings |> .firstDayOfWeek of
+                GlobalSettings.FromLocale ->
+                    "Locale"
+
+                GlobalSettings.SpecificWeekday Time.Mon ->
+                    "Mon"
+
+                GlobalSettings.SpecificWeekday Time.Tue ->
+                    "Tue"
+
+                GlobalSettings.SpecificWeekday Time.Wed ->
+                    "Wed"
+
+                GlobalSettings.SpecificWeekday Time.Thu ->
+                    "Thu"
+
+                GlobalSettings.SpecificWeekday Time.Fri ->
+                    "Fri"
+
+                GlobalSettings.SpecificWeekday Time.Sat ->
+                    "Sat"
+
+                GlobalSettings.SpecificWeekday Time.Sun ->
+                    "Sun"
 
         taskCompletionFormat_ : String
         taskCompletionFormat_ =
@@ -95,6 +125,7 @@ init settings =
     { boardConfigForms = boardConfigForms_
     , completed = Maybe.withDefault "" defaultColumnNames_.completed
     , filters = globalSettings_.filters
+    , firstDayOfWeek = firstDayOfWeek_
     , future = Maybe.withDefault "" defaultColumnNames_.future
     , ignoreFileNameDates = globalSettings_.ignoreFileNameDates
     , otherTags = Maybe.withDefault "" defaultColumnNames_.otherTags
@@ -114,10 +145,11 @@ init settings =
 
 safeDecoder : SD.Decoder SettingsForm Settings
 safeDecoder =
-    SD.map13 settingsBuilder
+    SD.map14 settingsBuilder
         boardConfigFormsDecoder
         completedDecoder
         filtersDecoder
+        firstDayOfWeekDecoder
         futureDecoder
         ignoreFileNameDatesDecoder
         otherTagsDecoder
@@ -277,6 +309,11 @@ updateDefaultColumnName column newName settingsForm =
             settingsForm
 
 
+updateFirstDayOfWeek : String -> SettingsForm -> SettingsForm
+updateFirstDayOfWeek newValue settingsForm =
+    { settingsForm | firstDayOfWeek = newValue }
+
+
 updateTaskCompletionFormat : String -> SettingsForm -> SettingsForm
 updateTaskCompletionFormat newFormat settingsForm =
     { settingsForm | taskCompletionFormat = newFormat }
@@ -323,6 +360,41 @@ filtersDecoder =
         |> SD.lift .filters
 
 
+firstDayOfWeekDecoder : SD.Decoder SettingsForm GlobalSettings.FirstDayOfWeek
+firstDayOfWeekDecoder =
+    (SD.custom <|
+        \fdow ->
+            case fdow of
+                "Locale" ->
+                    Ok <| GlobalSettings.FromLocale
+
+                "Mon" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Mon
+
+                "Tue" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Tue
+
+                "Wed" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Wed
+
+                "Thu" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Thu
+
+                "Fri" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Fri
+
+                "Sat" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Sat
+
+                "Sun" ->
+                    Ok <| GlobalSettings.SpecificWeekday Time.Sun
+
+                _ ->
+                    Ok <| GlobalSettings.FromLocale
+    )
+        |> SD.lift .firstDayOfWeek
+
+
 futureDecoder : SD.Decoder SettingsForm (Maybe String)
 futureDecoder =
     SD.identity
@@ -349,6 +421,7 @@ settingsBuilder :
     SafeZipper BoardConfig
     -> Maybe String
     -> List Filter
+    -> GlobalSettings.FirstDayOfWeek
     -> Maybe String
     -> Bool
     -> Maybe String
@@ -360,7 +433,7 @@ settingsBuilder :
     -> Maybe String
     -> Maybe String
     -> Settings
-settingsBuilder bc com fts fut ifn ots tcf clt cso tod tom und unt =
+settingsBuilder bc com fts fdw fut ifn ots tcf clt cso tod tom und unt =
     let
         defaultColumnNames_ : DefaultColumnNames
         defaultColumnNames_ =
@@ -377,7 +450,7 @@ settingsBuilder bc com fts fut ifn ots tcf clt cso tod tom und unt =
         globalSettings =
             { defaultColumnNames = defaultColumnNames_
             , filters = fts
-            , firstDayOfWeek = GlobalSettings.FromLocale
+            , firstDayOfWeek = fdw
             , ignoreFileNameDates = ifn
             , taskCompletionFormat = tcf
             , taskCompletionInLocalTime = clt

@@ -67,7 +67,6 @@ export class CardBoardView extends ItemView {
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
       firstDayOfWeek:     moment.localeData().firstDayOfWeek(),
-      // firstDayOfWeek:     1,
       settings:           this.plugin.settings,
       rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {

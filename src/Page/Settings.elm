@@ -44,6 +44,7 @@ import Settings exposing (Settings)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
+import Time
 import TimeWithZone exposing (TimeWithZone)
 import UpdatedTaskItem
 
@@ -127,6 +128,7 @@ type Msg
     | EnteredNewColumnName String
     | EnteredName String
     | FilterCandidatesReceived (List Filter)
+    | FirstDayOfWeekSelected String
     | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
@@ -330,6 +332,15 @@ update msg model =
                 { model
                     | pathCache = State.Loaded filterCandidates
                     , multiSelect = multiSelectModel
+                }
+
+        FirstDayOfWeekSelected firstDayOfWeek ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            (SettingsForm.updateFirstDayOfWeek firstDayOfWeek)
+                            model.settingsState
                 }
 
         GotMultiSelectMsg mulSelMsg ->
@@ -631,6 +642,7 @@ view model =
             globalSettingsView
                 (Session.dataviewTaskCompletion <| toSession model)
                 (Session.timeWithZone <| toSession model)
+                (Session.firstDayOfWeek <| toSession model)
                 model.multiSelect
                 settingsForm
                 dragTracker
@@ -993,15 +1005,15 @@ boardSettingsView settingsForm multiSelect dragTracker =
         |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion timeWithZone multiSelect settingsForm dragTracker =
+globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> Time.Weekday -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect settingsForm dragTracker =
     settingsForm
-        |> globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect
+        |> globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect
         |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm =
+globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> Time.Weekday -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect settingsForm =
     let
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
@@ -1152,6 +1164,25 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
                     ]
                     []
                 ]
+            ]
+         , Html.div [ class "setting-item setting-item-heading" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Date Selection" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Which day to use as the first day of the week." ]
+                ]
+            , Html.div [ class "setting-item-control" ] []
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Start week on" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Select 'Locale default' to use the day from your locale." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ firstDayOfWeekSelect defaultFirstDayOfWeek settingsForm.firstDayOfWeek ]
             ]
          ]
             ++ columNamesForm settingsForm
@@ -1704,6 +1735,80 @@ rangeInputsView index datedColumnForm =
                 ]
                 []
             ]
+
+
+firstDayOfWeekSelect : Time.Weekday -> String -> Html Msg
+firstDayOfWeekSelect defaultFirstDayOfWeek firstDayOfWeek =
+    let
+        weekdayToString : Time.Weekday -> String
+        weekdayToString weekday =
+            case weekday of
+                Time.Mon ->
+                    "Monday"
+
+                Time.Tue ->
+                    "Tuesday"
+
+                Time.Wed ->
+                    "Wednesday"
+
+                Time.Thu ->
+                    "Thursday"
+
+                Time.Fri ->
+                    "Friday"
+
+                Time.Sat ->
+                    "Saturday"
+
+                Time.Sun ->
+                    "Sunday"
+    in
+    Html.select
+        [ class "dropdown"
+        , onInput FirstDayOfWeekSelected
+        ]
+        [ Html.option
+            [ value "Locale"
+            , selected (firstDayOfWeek == "Locale")
+            ]
+            [ Html.text <| "Locale default (" ++ weekdayToString defaultFirstDayOfWeek ++ ")" ]
+        , Html.option
+            [ value "Mon"
+            , selected (firstDayOfWeek == "Mon")
+            ]
+            [ Html.text "Monday" ]
+        , Html.option
+            [ value "Tue"
+            , selected (firstDayOfWeek == "Tue")
+            ]
+            [ Html.text "Tuesday" ]
+        , Html.option
+            [ value "Wed"
+            , selected (firstDayOfWeek == "Wed")
+            ]
+            [ Html.text "Wednesday" ]
+        , Html.option
+            [ value "Thu"
+            , selected (firstDayOfWeek == "Thu")
+            ]
+            [ Html.text "Thursday" ]
+        , Html.option
+            [ value "Fri"
+            , selected (firstDayOfWeek == "Fri")
+            ]
+            [ Html.text "Friday" ]
+        , Html.option
+            [ value "Sat"
+            , selected (firstDayOfWeek == "Sat")
+            ]
+            [ Html.text "Saturday" ]
+        , Html.option
+            [ value "Sun"
+            , selected (firstDayOfWeek == "Sun")
+            ]
+            [ Html.text "Sunday" ]
+        ]
 
 
 taskCompletionFormatSelect : String -> Html Msg
