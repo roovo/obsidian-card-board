@@ -628,6 +628,10 @@ h3.setting-heading-compact {
   outline: 0;
 }
 
+.datepicker-input.datepicker-error {
+  background-color: rgba(var(--background-modifier-error-rgb), 0.2);
+}
+
 .datepicker-picker {
   position: absolute;
   border: 1px solid #CCC;

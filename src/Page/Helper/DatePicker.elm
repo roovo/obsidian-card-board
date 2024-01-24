@@ -2,6 +2,7 @@ module Page.Helper.DatePicker exposing
     ( DatePicker
     , Msg
     , init
+    , isValid
     , pickedDate
     , update
     , view
@@ -55,6 +56,11 @@ init firstDayOfWeek today date =
 
 
 -- INFO
+
+
+isValid : DatePicker -> Bool
+isValid datePicker =
+    pickedDate datePicker == Nothing && hasInput datePicker
 
 
 pickedDate : DatePicker -> Maybe Date
@@ -120,11 +126,20 @@ update msg (DatePicker model) =
 
 
 view : DatePicker -> Html Msg
-view (DatePicker model) =
+view ((DatePicker model) as datePicker) =
+    let
+        validityClass =
+            if isValid datePicker then
+                "datepicker-error"
+
+            else
+                ""
+    in
     Html.div [ class "datepicker-container" ]
         [ Html.input
             [ type_ "text"
             , class "datepicker-input"
+            , class validityClass
             , placeholder "Due date"
             , value model.inputText
             , onInput EnteredDate
@@ -275,3 +290,11 @@ weekdayToInterval weekday =
 
         Time.Sun ->
             Date.Sunday
+
+
+hasInput : DatePicker -> Bool
+hasInput (DatePicker model) =
+    model.inputText
+        |> String.trim
+        |> String.isEmpty
+        |> not
