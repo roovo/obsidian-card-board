@@ -60,7 +60,7 @@ init firstDayOfWeek today date =
 
 isValid : DatePicker -> Bool
 isValid datePicker =
-    pickedDate datePicker == Nothing && hasInput datePicker
+    not <| pickedDate datePicker == Nothing && hasInput datePicker
 
 
 pickedDate : DatePicker -> Maybe Date
@@ -130,10 +130,10 @@ view ((DatePicker model) as datePicker) =
     let
         validityClass =
             if isValid datePicker then
-                "datepicker-error"
+                ""
 
             else
-                ""
+                "datepicker-error"
     in
     Html.div [ class "datepicker-container" ]
         [ Html.input

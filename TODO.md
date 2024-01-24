@@ -1,7 +1,5 @@
-- should I colour the input to show if the date is valid or not (red background if invalid)
 - what happens in the dialog if the task has a long title
 
-- make the modal look better
 - I could even let the user know which columns the card will appear in whilst
   editing
 

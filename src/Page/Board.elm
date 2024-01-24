@@ -20,7 +20,7 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (attribute, checked, class, hidden, id, placeholder, style, type_, value)
+import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, placeholder, style, type_, value)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
@@ -390,6 +390,10 @@ view model =
 
 modalEditCardDueDate : DatePicker -> TaskItem -> Html Msg
 modalEditCardDueDate datePicker taskItem =
+    let
+        isInvalid =
+            not <| DatePicker.isValid datePicker
+    in
     Html.div [ class "modal-container" ]
         [ Html.div
             [ class "modal-bg"
@@ -432,8 +436,10 @@ modalEditCardDueDate datePicker taskItem =
                 ]
             , Html.div [ class "modal-button-container" ]
                 [ Html.button
-                    [ class "mod-warning"
+                    [ attributeIf (not isInvalid) (class "mod-cta")
+                    , attributeIf isInvalid (attribute "aria-disabled" "true")
                     , onClick EditCardDueDateConfirmed
+                    , disabled isInvalid
                     ]
                     [ Html.text "Save"
                     ]
