@@ -1,6 +1,7 @@
 module Column.Untagged exposing
     ( UntaggedColumn
     , addTaskItem
+    , containsTask
     , decoder
     , encoder
     , init
@@ -67,6 +68,11 @@ encoder =
 
 
 -- INFO
+
+
+containsTask : String -> UntaggedColumn -> Bool
+containsTask taskId (UntaggedColumn _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 name : UntaggedColumn -> String

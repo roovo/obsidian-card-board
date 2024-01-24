@@ -1,7 +1,11 @@
-- what happens in the dialog if the task has a long title
-
 - I could even let the user know which columns the card will appear in whilst
   editing
+
+  - Session.boardConfigs
+        |> SafeZipper.current
+        |> Board.init uniqueId config taskList
+        |> Board.columns
+        |> List.filter (Column.containsTask taskId)
 
 - respect Tasks setting to use either Tasks or Dataview format for tasks
 

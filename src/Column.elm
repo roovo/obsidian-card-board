@@ -5,6 +5,7 @@ module Column exposing
     , cardCount
     , cards
     , completed
+    , containsTask
     , dated
     , decoder
     , encoder
@@ -164,6 +165,28 @@ cards boardId column =
     in
     toList column
         |> List.map (Card.fromTaskItem cardIdPrefix (tagsToHide column))
+
+
+containsTask : String -> Column -> Bool
+containsTask taskId column =
+    case column of
+        Completed completedColumn ->
+            CompletedColumn.containsTask taskId completedColumn
+
+        Dated datedColumn ->
+            DatedColumn.containsTask taskId datedColumn
+
+        NamedTag namedTagColumn ->
+            NamedTagColumn.containsTask taskId namedTagColumn
+
+        OtherTags otherTagsColumn ->
+            OtherTagsColumn.containsTask taskId otherTagsColumn
+
+        Undated undatedColumn ->
+            UndatedColumn.containsTask taskId undatedColumn
+
+        Untagged untaggedColumn ->
+            UntaggedColumn.containsTask taskId untaggedColumn
 
 
 isCollapsed : Column -> Bool

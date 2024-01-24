@@ -9,9 +9,11 @@ module Page.Board exposing
     )
 
 import Board exposing (Board)
+import BoardConfig exposing (BoardConfig)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
+import Columns
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -35,6 +37,7 @@ import SafeZipper
 import Session exposing (Session, TaskCompletionSettings)
 import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
+import TaskList
 import TextDirection
 import Time
 import TimeWithZone exposing (TimeWithZone)
@@ -384,15 +387,45 @@ view model =
         EditingCardDueDate datePicker taskItem session ->
             Html.div []
                 [ boardsView session
-                , modalEditCardDueDate datePicker taskItem
+                , modalEditCardDueDate datePicker taskItem session
                 ]
 
 
-modalEditCardDueDate : DatePicker -> TaskItem -> Html Msg
-modalEditCardDueDate datePicker taskItem =
+modalEditCardDueDate : DatePicker -> TaskItem -> Session -> Html Msg
+modalEditCardDueDate datePicker taskItem session =
     let
+        isInvalid : Bool
         isInvalid =
             not <| DatePicker.isValid datePicker
+
+        ignoreFileNameDates : Bool
+        ignoreFileNameDates =
+            Session.ignoreFileNameDates session
+
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
+        currentBoardConfig : Maybe BoardConfig
+        currentBoardConfig =
+            Session.boardConfigs session
+                |> SafeZipper.current
+
+        containingColumns : List String
+        containingColumns =
+            case currentBoardConfig of
+                Just boardConfig ->
+                    Board.init "" boardConfig TaskList.empty
+                        |> Board.columns ignoreFileNameDates today
+                        |> Columns.fromList
+                        |> Columns.addTaskItem today taskItem
+                        |> Columns.toList
+                        |> List.filter (\c -> Column.cardCount c /= 0)
+                        |> List.map Column.name
+
+                Nothing ->
+                    []
     in
     Html.div [ class "modal-container" ]
         [ Html.div
@@ -433,6 +466,18 @@ modalEditCardDueDate datePicker taskItem =
                             |> Html.map DatePickerMsg
                         ]
                     ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Containing columns" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "If you save with this due date, this task will appear in the following columns on this board." ]
+                        ]
+                    , Html.div
+                        [ class "multiselect-items"
+                        ]
+                        (List.map columnNamePill containingColumns)
+                    ]
                 ]
             , Html.div [ class "modal-button-container" ]
                 [ Html.button
@@ -449,6 +494,16 @@ modalEditCardDueDate datePicker taskItem =
                     ]
                 ]
             ]
+        ]
+
+
+columnNamePill : String -> Html Msg
+columnNamePill name =
+    Html.div [ class "multiselect-item" ]
+        [ Html.span [ class "multiselect-item-key" ]
+            [ Html.text name ]
+        , Html.span [ class "multiselect-item-value" ]
+            [ Html.text "" ]
         ]
 
 

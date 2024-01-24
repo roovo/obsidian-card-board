@@ -3,6 +3,7 @@ module Column.Dated exposing
     , Range
     , RelativeDateRange(..)
     , addTaskItem
+    , containsTask
     , decoder
     , encoder
     , init
@@ -86,6 +87,11 @@ encoder =
 
 
 -- INFO
+
+
+containsTask : String -> DatedColumn -> Bool
+containsTask taskId (DatedColumn _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 isCollapsed : DatedColumn -> Bool

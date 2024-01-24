@@ -1,5 +1,6 @@
 module Columns exposing
     ( Columns
+    , addTaskItem
     , addTaskList
     , cleanupNames
     , collapseColumn
@@ -101,6 +102,25 @@ namedTagColumnTags columns =
 
 
 -- MODIFICATION
+
+
+addTaskItem : Date -> TaskItem -> Columns -> Columns
+addTaskItem today taskItem columns =
+    case columns of
+        WithCompleted nonCompletedConfigs completedConfig ->
+            let
+                ( newConfigs, allPlacementResults ) =
+                    addWithPlacement today taskItem nonCompletedConfigs
+            in
+            WithCompleted newConfigs
+                (CompletedColumn.addTaskItem allPlacementResults taskItem completedConfig)
+
+        WithoutCompleted nonCompletedConfigs ->
+            let
+                ( newConfigs, _ ) =
+                    addWithPlacement today taskItem nonCompletedConfigs
+            in
+            WithoutCompleted newConfigs
 
 
 addTaskList : Date -> List String -> Columns -> TaskList -> Columns
@@ -244,25 +264,6 @@ toList columns =
 
 
 -- PRIVATE
-
-
-addTaskItem : Date -> TaskItem -> Columns -> Columns
-addTaskItem today taskItem columns =
-    case columns of
-        WithCompleted nonCompletedConfigs completedConfig ->
-            let
-                ( newConfigs, allPlacementResults ) =
-                    addWithPlacement today taskItem nonCompletedConfigs
-            in
-            WithCompleted newConfigs
-                (CompletedColumn.addTaskItem allPlacementResults taskItem completedConfig)
-
-        WithoutCompleted nonCompletedConfigs ->
-            let
-                ( newConfigs, _ ) =
-                    addWithPlacement today taskItem nonCompletedConfigs
-            in
-            WithoutCompleted newConfigs
 
 
 addWithPlacement : Date -> TaskItem -> List Column -> ( List Column, List PlacementResult )

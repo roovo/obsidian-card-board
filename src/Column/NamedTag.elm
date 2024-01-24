@@ -2,6 +2,7 @@ module Column.NamedTag exposing
     ( NamedTagColumn
     , addTaskItem
     , asInputString
+    , containsTask
     , decoder
     , encoder
     , init
@@ -74,6 +75,11 @@ encoder =
 asInputString : NamedTagColumn -> String
 asInputString (NamedTagColumn c _ _) =
     "#" ++ c.tag ++ " " ++ c.name
+
+
+containsTask : String -> NamedTagColumn -> Bool
+containsTask taskId (NamedTagColumn _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 isCollapsed : NamedTagColumn -> Bool

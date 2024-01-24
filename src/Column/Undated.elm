@@ -1,6 +1,7 @@
 module Column.Undated exposing
     ( UndatedColumn
     , addTaskItem
+    , containsTask
     , decoder
     , encoder
     , init
@@ -67,6 +68,11 @@ encoder =
 
 
 -- INFO
+
+
+containsTask : String -> UndatedColumn -> Bool
+containsTask taskId (UndatedColumn _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 name : UndatedColumn -> String
