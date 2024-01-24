@@ -9,7 +9,7 @@ module Page.Helper.DatePicker exposing
 
 import Date exposing (Date)
 import Html exposing (Html)
-import Html.Attributes exposing (class, classList, placeholder, type_, value)
+import Html.Attributes exposing (class, classList, placeholder, tabindex, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, stopPropagationOn)
 import Json.Decode as JD
 import List.Extra as LE
@@ -71,8 +71,10 @@ type Msg
     | DateClicked Date
     | EnteredDate String
     | Focussed
+    | NextMonthClicked
     | PickerMouseDown
     | PickerMouseUp
+    | PreviousMonthClicked
 
 
 update : Msg -> DatePicker -> DatePicker
@@ -90,11 +92,17 @@ update msg (DatePicker model) =
         Focussed ->
             DatePicker { model | showPicker = True, mouseDownInPicker = False }
 
+        NextMonthClicked ->
+            DatePicker { model | calendarStart = Date.add Date.Months 1 model.calendarStart }
+
         PickerMouseDown ->
             DatePicker { model | mouseDownInPicker = True }
 
         PickerMouseUp ->
             DatePicker { model | mouseDownInPicker = False }
+
+        PreviousMonthClicked ->
+            DatePicker { model | calendarStart = Date.add Date.Months -1 model.calendarStart }
 
 
 
@@ -129,7 +137,17 @@ pickerView model =
         , stopPropagationOn "mouseup" <| JD.succeed ( PickerMouseUp, True )
         ]
         [ Html.div [ class "datepicker-header" ]
-            []
+            [ Html.div [ class "datepicker-prev-container" ]
+                [ arrow "datepicker-prev" PreviousMonthClicked ]
+            , Html.div [ class "datepicker-month-container" ]
+                [ Html.span [ class "datepicker-month" ]
+                    [ Html.text <| formatMonth <| Date.month model.calendarStart ]
+                , Html.span [ class "datepicker-year" ]
+                    [ Html.text <| String.fromInt <| Date.year model.calendarStart ]
+                ]
+            , Html.div [ class "datepicker-next-container" ]
+                [ arrow "datepicker-next" NextMonthClicked ]
+            ]
         , Html.table [ class "datepicker-table" ]
             [ Html.thead [ class "datepicker-weekdays" ]
                 [ Html.tr []
@@ -148,6 +166,55 @@ pickerView model =
                 )
             ]
         ]
+
+
+arrow : String -> Msg -> Html Msg
+arrow className msg =
+    Html.div
+        [ class className
+        , onClick msg
+        ]
+        []
+
+
+formatMonth : Date.Month -> String
+formatMonth month =
+    case month of
+        Time.Jan ->
+            "January"
+
+        Time.Feb ->
+            "February"
+
+        Time.Mar ->
+            "March"
+
+        Time.Apr ->
+            "April"
+
+        Time.May ->
+            "May"
+
+        Time.Jun ->
+            "June"
+
+        Time.Jul ->
+            "July"
+
+        Time.Aug ->
+            "August"
+
+        Time.Sep ->
+            "September"
+
+        Time.Oct ->
+            "October"
+
+        Time.Nov ->
+            "November"
+
+        Time.Dec ->
+            "December"
 
 
 dayView : Model -> Date -> Html Msg

@@ -12,9 +12,11 @@
   if the editing is done in a modal.
 - I could even let the user know which columns the card will appear in whilst
   editing
-- when selected, open a modal with a calendar picker and an option to remove
-  the due date.  User cancels or saves the change for it to take effect.
 - support weekday start other than Monday??
+- have a way to jump to today in the picker
+- rounded corners
+- if I click on the next/prev month button then click outside the calendar
+  the calendar doesn't close
 
 - improve general modal behaviour so tabbing and hitting enter work as expected
   ...save having to use the mouse!!

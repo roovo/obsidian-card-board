@@ -637,11 +637,6 @@ ul.card-board-column-list > li.card-board-card::before {
   align-items: center;
 }
 
-.datepicker-prev-container, .datepicker-next-container {
-  flex: 0 1 auto;
-  cursor: pointer;
-}
-
 .datepicker-month-container {
   flex: 1 1 auto;
   padding: 0.5em;
@@ -656,39 +651,40 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .datepicker-year {
-  font-size: var(-font-small);
+  font-size: var(--font-small);
   font-weight: 700;
 }
 
+.datepicker-prev-container, .datepicker-next-container {
+  cursor: pointer;
+  padding: 8px;
+}
+
 .datepicker-prev, .datepicker-next {
-  border: 6px solid transparent;
-  background-color: inherit;
   display: block;
-  width: 0;
-  height: 0;
-  padding: 0 0.2em;
+  width: var(--font-smaller);
+  height: var(--font-smaller);
+  border-left: 2px solid rgba(0,0,0,0.54);
+  border-bottom: 2px solid rgba(0,0,0,0.54);
+}
+
+.datepicker-prev:hover, .datepicker-next:hover {
+  border-left-color: #BBB;
+  border-bottom-color: #BBB;
 }
 
 .datepicker-prev {
-  border-right-color: #AAA;
-}
-
-.datepicker-prev:hover {
-  border-right-color: #BBB;
+  transform: rotate(45deg);
 }
 
 .datepicker-next {
-  border-left-color: #AAA;
-}
-
-.datepicker-next:hover {
-  border-left-color: #BBB;
+  transform: rotate(-135deg);
 }
 
 .datepicker-table {
   border-spacing: 0;
   border-collapse: collapse;
-  font-size: var(--font-small);
+  font-size: var(--font-smaller);
 }
 
 .datepicker-table td {
