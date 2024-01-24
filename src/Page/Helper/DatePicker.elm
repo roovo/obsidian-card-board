@@ -146,15 +146,25 @@ pickerView model =
         ]
         [ Html.div [ class "datepicker-header" ]
             [ Html.div [ class "datepicker-prev-container" ]
-                [ arrow "datepicker-prev" PreviousMonthClicked ]
+                [ Html.div
+                    [ class "datepicker-prev"
+                    , onClick PreviousMonthClicked
+                    ]
+                    []
+                ]
             , Html.div [ class "datepicker-month-container" ]
                 [ Html.span [ class "datepicker-month" ]
-                    [ Html.text <| formatMonth <| Date.month model.calendarStart ]
+                    [ Html.text <| Date.format "MMMM" model.calendarStart ]
                 , Html.span [ class "datepicker-year" ]
                     [ Html.text <| String.fromInt <| Date.year model.calendarStart ]
                 ]
             , Html.div [ class "datepicker-next-container" ]
-                [ arrow "datepicker-next" NextMonthClicked ]
+                [ Html.div
+                    [ class "datepicker-next"
+                    , onClick NextMonthClicked
+                    ]
+                    []
+                ]
             ]
         , Html.div [ class "datepicker-this-month-jump-container" ]
             [ Html.span
@@ -181,55 +191,6 @@ pickerView model =
                 )
             ]
         ]
-
-
-arrow : String -> Msg -> Html Msg
-arrow className msg =
-    Html.div
-        [ class className
-        , onClick msg
-        ]
-        []
-
-
-formatMonth : Date.Month -> String
-formatMonth month =
-    case month of
-        Time.Jan ->
-            "January"
-
-        Time.Feb ->
-            "February"
-
-        Time.Mar ->
-            "March"
-
-        Time.Apr ->
-            "April"
-
-        Time.May ->
-            "May"
-
-        Time.Jun ->
-            "June"
-
-        Time.Jul ->
-            "July"
-
-        Time.Aug ->
-            "August"
-
-        Time.Sep ->
-            "September"
-
-        Time.Oct ->
-            "October"
-
-        Time.Nov ->
-            "November"
-
-        Time.Dec ->
-            "December"
 
 
 dayView : Model -> Date -> Html Msg

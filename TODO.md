@@ -2,6 +2,8 @@
 - if I click on the next/prev month button then click outside the calendar
   the calendar doesn't close
 
+- add icon to context menu
+
 - should I search for the taskItem instead of the card as this is what I actually need for the
   modal (I think)
 - if it updates an inline due date it should put it in the same place in the line as the
