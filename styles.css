@@ -624,6 +624,7 @@ ul.card-board-column-list > li.card-board-card::before {
 .datepicker-picker {
   position: absolute;
   border: 1px solid #CCC;
+  border-radius: 3px;
   z-index: 100;
   background-color: white;
 }
@@ -701,10 +702,7 @@ ul.card-board-column-list > li.card-board-card::before {
   width: 2em;
   height: 2em;
   text-align: center;
-}
-
-.datepicker-row {
-  border-top: 1px solid #F2F2F2;
+  border-radius: 3px;
 }
 
 .datepicker-dow {

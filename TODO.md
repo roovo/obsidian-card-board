@@ -1,22 +1,20 @@
-- if it updates an inline due date it should put it in the same place in the line as the
-  existing one (or where the first one is if there are more than one)
-- check I ignore due dates on sub-tasks
-- re-visit global settings as now they set both due and completed date format
-- respect Tasks setting to use either Tasks or Dataview format for tasks
-- would be nice if the due date was placed before any completion date(s) that may be present
-- should I colour the input to show if the date is valid or not (red background if invalid)
-- should I search for the taskItem instead of the card as this is what I actually need for the
-  modal (I think)
-- need to realise that a card could move to a different column on the board
-  or be removed entirely from the board if the due date is edited, so best
-  if the editing is done in a modal.
-- I could even let the user know which columns the card will appear in whilst
-  editing
 - support weekday start other than Monday??
-- have a way to jump to today in the picker
-- rounded corners
 - if I click on the next/prev month button then click outside the calendar
   the calendar doesn't close
+
+- should I search for the taskItem instead of the card as this is what I actually need for the
+  modal (I think)
+- if it updates an inline due date it should put it in the same place in the line as the
+  existing one (or where the first one is if there are more than one)
+- would be nice if the due date was placed before any completion date(s) that may be present
+- should I colour the input to show if the date is valid or not (red background if invalid)
+
+- make the modal look better
+- I could even let the user know which columns the card will appear in whilst
+  editing
+
+- re-visit global settings as now they set both due and completed date format
+- respect Tasks setting to use either Tasks or Dataview format for tasks
 
 - improve general modal behaviour so tabbing and hitting enter work as expected
   ...save having to use the mouse!!
