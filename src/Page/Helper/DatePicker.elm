@@ -75,6 +75,7 @@ type Msg
     | PickerMouseDown
     | PickerMouseUp
     | PreviousMonthClicked
+    | ThisMonthClicked
 
 
 update : Msg -> DatePicker -> DatePicker
@@ -103,6 +104,13 @@ update msg (DatePicker model) =
 
         PreviousMonthClicked ->
             DatePicker { model | calendarStart = Date.add Date.Months -1 model.calendarStart }
+
+        ThisMonthClicked ->
+            let
+                calendarStart =
+                    Date.fromCalendarDate (Date.year model.today) (Date.month model.today) 1
+            in
+            DatePicker { model | calendarStart = calendarStart }
 
 
 
@@ -147,6 +155,13 @@ pickerView model =
                 ]
             , Html.div [ class "datepicker-next-container" ]
                 [ arrow "datepicker-next" NextMonthClicked ]
+            ]
+        , Html.div [ class "datepicker-this-month-jump-container" ]
+            [ Html.span
+                [ class "datepicker-this-month-jump"
+                , onClick ThisMonthClicked
+                ]
+                [ Html.text "this month" ]
             ]
         , Html.table [ class "datepicker-table" ]
             [ Html.thead [ class "datepicker-weekdays" ]

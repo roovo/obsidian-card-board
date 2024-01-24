@@ -629,7 +629,7 @@ ul.card-board-column-list > li.card-board-card::before {
 }
 
 .datepicker-header, .datepicker-weekdays {
-  background: #F2F2F2;
+  background: var(--background-secondary);
 }
 
 .datepicker-header {
@@ -639,7 +639,7 @@ ul.card-board-column-list > li.card-board-card::before {
 
 .datepicker-month-container {
   flex: 1 1 auto;
-  padding: 0.5em;
+  padding-top: 0.5em;
   display: flex;
   flex-direction: column;
 }
@@ -653,6 +653,16 @@ ul.card-board-column-list > li.card-board-card::before {
 .datepicker-year {
   font-size: var(--font-small);
   font-weight: 700;
+}
+
+.datepicker-this-month-jump-container {
+  text-align: center;
+  background: var(--background-secondary);
+}
+
+.datepicker-this-month-jump {
+  cursor: pointer;
+  color: var(--interactive-accent);
 }
 
 .datepicker-prev-container, .datepicker-next-container {
