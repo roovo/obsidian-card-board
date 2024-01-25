@@ -394,24 +394,6 @@ view model =
 modalEditCardDueDate : DatePicker -> TaskItem -> Session -> Html Msg
 modalEditCardDueDate datePicker taskItem session =
     let
-        isInvalid : Bool
-        isInvalid =
-            not <| DatePicker.isValid datePicker
-
-        ignoreFileNameDates : Bool
-        ignoreFileNameDates =
-            Session.ignoreFileNameDates session
-
-        today : Date
-        today =
-            Session.timeWithZone session
-                |> TimeWithZone.toDate
-
-        currentBoardConfig : Maybe BoardConfig
-        currentBoardConfig =
-            Session.boardConfigs session
-                |> SafeZipper.current
-
         containingColumns : List String
         containingColumns =
             case currentBoardConfig of
@@ -419,13 +401,39 @@ modalEditCardDueDate datePicker taskItem session =
                     Board.init "" boardConfig TaskList.empty
                         |> Board.columns ignoreFileNameDates today
                         |> Columns.fromList
-                        |> Columns.addTaskItem today taskItem
+                        |> Columns.addTaskItem today updatedTaskItem
                         |> Columns.toList
                         |> List.filter (\c -> Column.cardCount c /= 0)
                         |> List.map Column.name
 
                 Nothing ->
                     []
+
+        currentBoardConfig : Maybe BoardConfig
+        currentBoardConfig =
+            Session.boardConfigs session
+                |> SafeZipper.current
+
+        ignoreFileNameDates : Bool
+        ignoreFileNameDates =
+            Session.ignoreFileNameDates session
+
+        isInvalid : Bool
+        isInvalid =
+            not <| DatePicker.isValid datePicker
+
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
+        updatedTaskItem : TaskItem
+        updatedTaskItem =
+            if isInvalid then
+                taskItem
+
+            else
+                TaskItem.updateDueDate (DatePicker.pickedDate datePicker) taskItem
     in
     Html.div [ class "modal-container" ]
         [ Html.div
@@ -470,13 +478,9 @@ modalEditCardDueDate datePicker taskItem session =
                     [ Html.div [ class "setting-item-info" ]
                         [ Html.div [ class "setting-item-name" ]
                             [ Html.text "Containing columns" ]
-                        , Html.div [ class "setting-item-description" ]
-                            [ Html.text "If you save with this due date, this task will appear in the following columns on this board." ]
+                        , containingColumnsText containingColumns
                         ]
-                    , Html.div
-                        [ class "multiselect-items"
-                        ]
-                        (List.map columnNamePill containingColumns)
+                    , containingColumnsList containingColumns
                     ]
                 ]
             , Html.div [ class "modal-button-container" ]
@@ -495,6 +499,30 @@ modalEditCardDueDate datePicker taskItem session =
                 ]
             ]
         ]
+
+
+containingColumnsText : List String -> Html Msg
+containingColumnsText containingColumns =
+    if List.length containingColumns == 0 then
+        Html.div
+            [ class "setting-item-description"
+            , class "mod-warning"
+            ]
+            [ Html.text "If you save with this due date, this task will no longer appear on this board." ]
+
+    else
+        Html.div [ class "setting-item-description" ]
+            [ Html.text "If you save with this due date, this task will appear in the following columns on this board." ]
+
+
+containingColumnsList : List String -> Html Msg
+containingColumnsList containingColumns =
+    if List.length containingColumns == 0 then
+        Html.text ""
+
+    else
+        Html.div [ class "multiselect-items" ]
+            (List.map columnNamePill containingColumns)
 
 
 columnNamePill : String -> Html Msg

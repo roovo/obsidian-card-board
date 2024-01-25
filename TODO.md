@@ -1,11 +1,5 @@
-- I could even let the user know which columns the card will appear in whilst
-  editing
-
-  - Session.boardConfigs
-        |> SafeZipper.current
-        |> Board.init uniqueId config taskList
-        |> Board.columns
-        |> List.filter (Column.containsTask taskId)
+- move exisitng columns to the right of the faux multiselect div
+- remove the boarder from the faux multiselect div
 
 - respect Tasks setting to use either Tasks or Dataview format for tasks
 
