@@ -38,9 +38,11 @@ type alias Model =
 init : Time.Weekday -> Date -> Maybe Date -> DatePicker
 init firstDayOfWeek today date =
     let
+        calendarStart : Date
         calendarStart =
             Date.fromCalendarDate (Date.year startDate) (Date.month startDate) 1
 
+        startDate : Date
         startDate =
             Maybe.withDefault today date
     in
@@ -115,6 +117,7 @@ update msg (DatePicker model) =
 
         ThisMonthClicked ->
             let
+                calendarStart : Date
                 calendarStart =
                     Date.fromCalendarDate (Date.year model.today) (Date.month model.today) 1
             in
@@ -128,6 +131,7 @@ update msg (DatePicker model) =
 view : DatePicker -> Html Msg
 view ((DatePicker model) as datePicker) =
     let
+        validityClass : String
         validityClass =
             if isValid datePicker then
                 ""
@@ -219,12 +223,15 @@ pickerView model =
 dayView : Model -> Date -> Html Msg
 dayView model date =
     let
+        isOtherMonth : Bool
         isOtherMonth =
             Date.month date /= Date.month model.calendarStart
 
+        isPicked : Bool
         isPicked =
             Date.toIsoString date == model.inputText
 
+        isToday : Bool
         isToday =
             Date.toRataDie date == Date.toRataDie model.today
     in
@@ -248,13 +255,16 @@ dayView model date =
 dateGrid : Time.Weekday -> Date -> List (List Date)
 dateGrid firstDayOfWeek calendarStart =
     let
+        firstDayAsInterval : Date.Interval
         firstDayAsInterval =
             weekdayToInterval firstDayOfWeek
 
+        start : Date
         start =
             calendarStart
                 |> Date.floor firstDayAsInterval
 
+        end : Date
         end =
             Date.add Date.Months 1 calendarStart
                 |> Date.ceiling firstDayAsInterval

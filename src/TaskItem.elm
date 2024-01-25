@@ -47,19 +47,15 @@ import Date exposing (Date)
 import DueDate exposing (DueDate)
 import FNV1a
 import Filter exposing (Filter, Scope)
-import GlobalSettings exposing (TaskCompletionSettings)
 import List.Extra as LE
 import Maybe.Extra as ME
 import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
-import Regex exposing (Regex)
-import String.Extra as SE
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
-import TimeWithZone exposing (TimeWithZone)
 
 
 

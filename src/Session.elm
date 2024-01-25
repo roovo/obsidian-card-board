@@ -122,6 +122,7 @@ default =
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
     let
+        momentToWeekdayNumber : Int -> Int
         momentToWeekdayNumber dayNumber =
             if dayNumber == 0 then
                 7

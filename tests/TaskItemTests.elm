@@ -4,11 +4,9 @@ import DataviewTaskCompletion
 import Date
 import Expect
 import Filter
-import GlobalSettings
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
-import Maybe.Extra as ME
 import Parser exposing ((|=))
 import TagList
 import TaskItem exposing (Completion(..))

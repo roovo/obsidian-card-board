@@ -6,7 +6,6 @@ import Column
 import Column.Completed as CompletedColumn
 import Columns
 import DataviewTaskCompletion
-import Date
 import DragAndDrop.DragData as DragData
 import DragAndDrop.DragTracker as DragTracker
 import Expect

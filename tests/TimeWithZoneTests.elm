@@ -1,9 +1,6 @@
 module TimeWithZoneTests exposing (suite)
 
-import DataviewTaskCompletion
 import Expect
-import Fuzz
-import GlobalSettings
 import Test exposing (..)
 import Time
 import TimeWithZone

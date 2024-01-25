@@ -10,13 +10,13 @@ module UpdatedTaskItem exposing
     , updateDate
     )
 
-import DataviewTaskCompletion
+import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import GlobalSettings
 import Regex exposing (Regex)
 import Session exposing (TaskCompletionSettings)
 import String.Extra as SE
-import TaskItem exposing (Completion, TaskItem)
+import TaskItem exposing (TaskItem)
 import TimeWithZone exposing (TimeWithZone)
 
 
@@ -54,6 +54,7 @@ completionString taskCompletionSettings timeWithZone =
         timeStamp =
             TimeWithZone.toString taskCompletionSettings timeWithZone
 
+        dataviewTaskCompletion : DataviewTaskCompletion
         dataviewTaskCompletion =
             taskCompletionSettings.dataviewTaskCompletion
     in

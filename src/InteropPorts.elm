@@ -15,15 +15,11 @@ port module InteropPorts exposing
     )
 
 import Card exposing (Card)
-import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DragAndDrop.Coords exposing (Coords)
-import GlobalSettings exposing (TaskCompletionSettings)
 import InteropDefinitions
 import Json.Decode
 import Json.Encode
 import Settings exposing (Settings)
-import TaskItem exposing (TaskItem)
-import TimeWithZone exposing (TimeWithZone)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 import UpdatedTaskItem exposing (UpdatedTaskItem)

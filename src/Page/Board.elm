@@ -22,7 +22,7 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, placeholder, style, tabindex, type_, value)
+import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, style, tabindex, type_)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
@@ -31,7 +31,6 @@ import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
-import Maybe.Extra as ME
 import Page.Helper.DatePicker as DatePicker exposing (DatePicker)
 import SafeZipper
 import Session exposing (Session, TaskCompletionSettings)
@@ -194,6 +193,7 @@ update msg model =
             case model of
                 EditingCardDueDate datePicker card session ->
                     let
+                        newPicker : DatePicker
                         newPicker =
                             DatePicker.update subMsg datePicker
                     in

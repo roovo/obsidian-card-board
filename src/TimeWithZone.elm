@@ -5,9 +5,7 @@ module TimeWithZone exposing
     , updateTime
     )
 
-import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
-import GlobalSettings exposing (TaskCompletionSettings)
 import Time exposing (Zone)
 import Time.Extra as TE
 

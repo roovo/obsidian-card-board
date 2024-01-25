@@ -163,7 +163,7 @@ update msg model =
             BoardPage.update (BoardPage.EditCardDueDateRequested cardId) subModel
                 |> updateWith Boards GotBoardPageMsg
 
-        ( EditCardDueDateRequested cardId, Settings subModel ) ->
+        ( EditCardDueDateRequested _, Settings _ ) ->
             ( model, Cmd.none )
 
         ( ElementDragged dragData, Boards subModel ) ->
