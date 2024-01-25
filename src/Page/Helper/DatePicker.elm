@@ -145,6 +145,7 @@ view ((DatePicker model) as datePicker) =
             , onInput EnteredDate
             , onFocus Focussed
             , onBlur Blurred
+            , tabindex 1
             ]
             []
         , if model.showPicker then

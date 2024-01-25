@@ -1,8 +1,3 @@
-- respect Tasks setting to use either Tasks or Dataview format for tasks
-
-- improve general modal behaviour so tabbing and hitting enter work as expected
-  ...save having to use the mouse!!
-
 ---
 - touch events - iPad ??
 - show errors on settings pane ??

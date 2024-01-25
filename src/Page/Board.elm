@@ -22,7 +22,7 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, placeholder, style, type_, value)
+import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, placeholder, style, tabindex, type_, value)
 import Html.Events exposing (onClick)
 import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
@@ -489,11 +489,14 @@ modalEditCardDueDate datePicker taskItem session =
                     , attributeIf isInvalid (attribute "aria-disabled" "true")
                     , onClick EditCardDueDateConfirmed
                     , disabled isInvalid
+                    , tabindex 2
                     ]
                     [ Html.text "Save"
                     ]
                 , Html.button
-                    [ onClick ModalCancelClicked ]
+                    [ onClick ModalCancelClicked
+                    , tabindex 3
+                    ]
                     [ Html.text "Cancel"
                     ]
                 ]
@@ -565,11 +568,14 @@ modalDeleteCardConfirm title cardId =
                 [ Html.button
                     [ class "mod-warning"
                     , onClick <| DeleteConfirmed cardId
+                    , tabindex 1
                     ]
                     [ Html.text "Delete"
                     ]
                 , Html.button
-                    [ onClick <| ModalCancelClicked ]
+                    [ onClick <| ModalCancelClicked
+                    , tabindex 2
+                    ]
                     [ Html.text "Cancel"
                     ]
                 ]
