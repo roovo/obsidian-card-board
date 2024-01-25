@@ -37,6 +37,7 @@ module TaskItem exposing
     , title
     , titleWithTags
     , topLevelTags
+    , updateDueDate
     , updateFilePath
     )
 
@@ -458,6 +459,16 @@ removeTags toRemove (TaskItem fields_ subtasks_) =
     TaskItem
         (removeFromFields fields_)
         (List.map removeFromFields subtasks_)
+
+
+updateDueDate : Maybe Date -> TaskItem -> TaskItem
+updateDueDate date (TaskItem fields_ subtasks_) =
+    case date of
+        Just dueDate ->
+            TaskItem { fields_ | dueTag = DueDate.SetToDate dueDate } subtasks_
+
+        Nothing ->
+            TaskItem { fields_ | dueTag = DueDate.SetToNone } subtasks_
 
 
 updateFilePath : String -> String -> TaskItem -> TaskItem

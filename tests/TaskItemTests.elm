@@ -48,6 +48,7 @@ suite =
         , title
         , titleWithTags
         , topLevelTags
+        , updateDueDate
         , updateFilePath
         ]
 
@@ -1313,6 +1314,68 @@ topLevelTags =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing (TagList.fromList []) 0)
                     |> Result.map TaskItem.topLevelTags
                     |> Expect.equal (Ok (TagList.fromList [ "tag1", "tag2" ]))
+        ]
+
+
+updateDueDate : Test
+updateDueDate =
+    describe "updateDueDate"
+        [ test "can clear the date of a task with no file date or inline due date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with no file date or inline due date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with just an inline date" <|
+            \() ->
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with just an inline date" <|
+            \() ->
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with just a file date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with just a file date" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with both inline and file dates" <|
+            \() ->
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with both inline and file dates" <|
+            \() ->
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
         ]
 
 
