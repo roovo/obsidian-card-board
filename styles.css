@@ -496,6 +496,13 @@ h3.setting-heading-compact {
   gap: 3px;
 }
 
+.multiselect-items.mod-faux {
+  justify-content: flex-end;
+  background: var(--background-modifier-form-field);
+  border: 0px;
+  font-size: var(--font-ui-medium);
+}
+
 .multiselect-items input.multiselect-input {
   border: 0;
   min-width: 100px;
@@ -522,6 +529,17 @@ h3.setting-heading-compact {
   border-right: 0px;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-bottom: 2px;
+  line-height: 1.5em;
+  vertical-align: middle;
+}
+
+.multiselect-item-single {
+  background-color: var(--background-secondary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
   padding-left: 4px;
   padding-right: 4px;
   padding-bottom: 2px;

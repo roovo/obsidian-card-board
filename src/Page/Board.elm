@@ -521,17 +521,18 @@ containingColumnsList containingColumns =
         Html.text ""
 
     else
-        Html.div [ class "multiselect-items" ]
+        Html.div
+            [ class "multiselect-items"
+            , class "mod-faux"
+            ]
             (List.map columnNamePill containingColumns)
 
 
 columnNamePill : String -> Html Msg
 columnNamePill name =
     Html.div [ class "multiselect-item" ]
-        [ Html.span [ class "multiselect-item-key" ]
+        [ Html.span [ class "multiselect-item-single" ]
             [ Html.text name ]
-        , Html.span [ class "multiselect-item-value" ]
-            [ Html.text "" ]
         ]
 
 

@@ -1,6 +1,3 @@
-- move exisitng columns to the right of the faux multiselect div
-- remove the boarder from the faux multiselect div
-
 - respect Tasks setting to use either Tasks or Dataview format for tasks
 
 - improve general modal behaviour so tabbing and hitting enter work as expected
