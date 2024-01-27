@@ -9,12 +9,15 @@ export default class CardBoardPlugin extends Plugin {
   async onload() {
     console.log('loading CardBoard plugin');
 
+    await this.loadSettings();
+    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+  }
+
+  async onLayoutReady() {
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
       (leaf) => new CardBoardView(this, leaf)
     );
-
-    await this.loadSettings();
 
     addIcon("card-board",
       '<rect x="2" y="2" width="96" height="96" rx="12" ry="12" fill="none" stroke="currentColor" stroke-width="5"></rect>' +
