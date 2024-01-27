@@ -1148,7 +1148,7 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Use local time" ]
                 , Html.div [ class "setting-item-description" ]
-                    [ Html.text "UTC will be used otherwise." ]
+                    [ Html.text "For completion stamps. UTC will be used otherwise." ]
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
@@ -1162,7 +1162,8 @@ globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek mul
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Include UTC offset" ]
-                , Html.div [ class "setting-item-description" ] []
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "For completion stamps." ]
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
