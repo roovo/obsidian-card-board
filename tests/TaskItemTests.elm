@@ -4,11 +4,9 @@ import DataviewTaskCompletion
 import Date
 import Expect
 import Filter
-import GlobalSettings
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
-import Maybe.Extra as ME
 import Parser exposing ((|=))
 import TagList
 import TaskItem exposing (Completion(..))
@@ -48,7 +46,7 @@ suite =
         , title
         , titleWithTags
         , topLevelTags
-        , toToggledString
+        , updateDueDate
         , updateFilePath
         ]
 
@@ -417,6 +415,12 @@ due =
         , test "@due(YYYY-MM-DD) over-rides the file date" <|
             \() ->
                 "- [ ] foo @due(2021-03-03)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
+        , test "uses the last due date on the line if there are more than one" <|
+            \() ->
+                "- [ ] @due(2021-03-02) foo @due(2021-03-03)"
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2021-03-01") TagList.empty 0)
                     |> Result.map TaskItem.due
                     |> Expect.equal (Ok <| Just <| Date.fromRataDie 737852)
@@ -1311,215 +1315,65 @@ topLevelTags =
         ]
 
 
-toToggledString : Test
-toToggledString =
-    describe "toToggledString"
-        [ test "given an INCOMPLETE item it outputs a string for a completed task with no completed tag in NoCompletion format" <|
+updateDueDate : Test
+updateDueDate =
+    describe "updateDueDate"
+        [ test "can clear the date of a task with no file date or inline due date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
+                "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.NoCompletion
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = False, offset = False)" <|
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with no file date or inline due date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
+                "- [ ] foo"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T00:00:00) ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianCardBoard format (local = True, offset = True)" <|
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with just an inline date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
+                "- [ ] foo @due(1999-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = True
-                            , showUtcOffset = True
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 300 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 @completed(1970-01-01T05:00:00+05:00) ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianTasks format" <|
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with just an inline date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
+                "- [ ] foo @due(1999-01-01)"
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianTasks
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview custom format" <|
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with just a file date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            (DataviewTaskCompletion.Text "done")
-                            { format = GlobalSettings.ObsidianDataview
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 [done:: 1970-01-01] ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview emoji format" <|
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with just a file date" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.Emoji
-                            { format = GlobalSettings.ObsidianDataview
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ✅ 1970-01-01 ^12345")
-        , test "given an INCOMPLETE item it outputs a string for a completed task in ObsidianDataview no completion" <|
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
+        , test "can clear the date of a task with both inline and file dates" <|
             \() ->
-                "- [ ] foo #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianDataview
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [x] foo #tag1 bar #tag2 ^12345")
-        , test "given an item with an 'x' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate Nothing)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok Nothing)
+        , test "can set the date of a task with both inline and file dates" <|
             \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            (DataviewTaskCompletion.Text "done")
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 ^12345")
-        , test "doesn't remove dataview format if it has been set to NoCompletion" <|
-            \() ->
-                "- [x] foo #tag1 bar #tag2 @completed(2020-03-22T00:00:00) ✅ 1970-01-01 [done:: 2021-01-01] ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2 [done:: 2021-01-01] ^12345")
-        , test "given an item with an 'X' in the checkbox outputs a string for an incomplete task removing all formats of completed marks" <|
-            \() ->
-                "- [X] [custom:: 2021-01-01] foo #tag1 @completed(2020-03-22T00:00:00Z) @completed(2020-03-22T00:00:00-01:00) @completed(2020-03-22T00:00:00+01:00) @completed(2020-03-22T00:00:00) ✅ 1970-01-01 bar #tag2"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            (DataviewTaskCompletion.Text "custom")
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "- [ ] foo #tag1 bar #tag2")
-        , test "preserves leading whitespace for descendant tasks" <|
-            \() ->
-                "- [X] the task\n   \t- [ ] a subtask"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.descendantTasks
-                    |> Result.withDefault []
-                    |> List.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.ObsidianCardBoard
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal [ "   \t- [x] a subtask @completed(1970-01-01T00:00:00)" ]
-        , test "preserves leading whitepace" <|
-            \() ->
-                "- [ ] foo\n   - [ ] bar #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.toMaybe
-                    |> Maybe.map TaskItem.descendantTasks
-                    |> Maybe.map List.head
-                    |> ME.join
-                    |> Maybe.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.NoCompletion
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Just "   - [x] bar #tag1 bar #tag2 ^12345")
-        , test "preserves a '+' list marker" <|
-            \() ->
-                "+ [ ] foo #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.NoCompletion
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Ok "+ [x] foo #tag1 bar #tag2 ^12345")
-        , test "preserves leading whitepace with a '*' list marker" <|
-            \() ->
-                "- [ ] foo\n   * [ ] bar #tag1 bar #tag2 ^12345"
-                    |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.toMaybe
-                    |> Maybe.map TaskItem.descendantTasks
-                    |> Maybe.map List.head
-                    |> ME.join
-                    |> Maybe.map
-                        (TaskItem.toToggledString
-                            DataviewTaskCompletion.NoCompletion
-                            { format = GlobalSettings.NoCompletion
-                            , inLocalTime = False
-                            , showUtcOffset = False
-                            }
-                            { time = Time.millisToPosix 0, zone = Time.customZone 0 [] }
-                        )
-                    |> Expect.equal (Just "   * [x] bar #tag1 bar #tag2 ^12345")
+                "- [ ] foo @due(1999-01-01)"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" (Just "2020-01-07") TagList.empty 0)
+                    |> Result.map (TaskItem.updateDueDate <| Just <| Date.fromRataDie 123456)
+                    |> Result.map TaskItem.due
+                    |> Expect.equal (Ok <| Just <| Date.fromRataDie 123456)
         ]
 
 

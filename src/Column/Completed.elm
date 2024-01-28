@@ -1,6 +1,7 @@
 module Column.Completed exposing
     ( CompletedColumn
     , addTaskItem
+    , containsTask
     , decoder
     , encoder
     , index
@@ -74,6 +75,11 @@ encoder =
 
 
 -- INFO
+
+
+containsTask : String -> CompletedColumn -> Bool
+containsTask taskId (CompletedColumn _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 index : CompletedColumn -> Int

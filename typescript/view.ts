@@ -4,11 +4,13 @@ import {
   ItemView,
   MarkdownRenderer,
   MarkdownView,
+  Menu,
   TAbstractFile,
   TFile,
   TFolder,
   Vault,
-  WorkspaceLeaf
+  WorkspaceLeaf,
+  moment
 } from 'obsidian';
 
 import { Elm, ElmApp, Flags } from '../src/Main';
@@ -64,6 +66,7 @@ export class CardBoardView extends ItemView {
       uniqueId:           this.randomId(5),
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
+      firstDayOfWeek:     moment.localeData().firstDayOfWeek(),
       settings:           this.plugin.settings,
       rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {
@@ -111,6 +114,9 @@ export class CardBoardView extends ItemView {
           break;
         case "requestFilterCandidates":
           that.handleRequestFilterCandidates();
+          break;
+        case "showCardContextMenu":
+          that.handleShowCardContextMenu(fromElm.data);
           break;
         case "trackDraggable":
           that.handleTrackDraggable(fromElm.data);
@@ -297,6 +303,7 @@ export class CardBoardView extends ItemView {
     });
   }
 
+
   async handleOpenTaskSourceFile(
     data: {
       filePath: string,
@@ -335,6 +342,29 @@ export class CardBoardView extends ItemView {
       tag: "filterCandidates",
       data: filterCandidates
     });
+  }
+
+  handleShowCardContextMenu(
+    data: {
+      clientPos: [number, number],
+      cardId: string
+    }
+  ) {
+    const menu = new Menu();
+
+    menu.addItem((item) =>
+      item
+        .setTitle("Edit due date")
+        .setIcon("calendar-days")
+        .onClick(() => {
+          this.elm.ports.interopToElm.send({
+            tag: "editCardDueDate",
+            data: data.cardId
+          });
+        })
+    );
+
+    menu.showAtPosition({x : data.clientPos[0], y : data.clientPos[1]})
   }
 
   async handleTrackDraggable(
@@ -387,57 +417,6 @@ export class CardBoardView extends ItemView {
       document.removeEventListener("mouseup", stopAwaitingDrag);
     }
 
-    // function scrollDiv(scrollable: HTMLElement, leftEdgeDistance: number, rightEdgeDistance: number, topEdgeDistance: number, bottomEdgeDistance: number, event: MouseEvent) : boolean {
-    //   const SCROLL_MARGIN   = 20;
-    //   const MAX_STEP        = 20;
-
-    //   const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
-    //   const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
-    //   const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
-    //   const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
-
-    //   const maxScrollX      = scrollable.scrollWidth - scrollable.clientWidth;
-    //   const maxScrollY      = scrollable.scrollHeight - scrollable.clientHeight;
-
-    //   const currentScrollX  = scrollable.scrollLeft;
-    //   const currentScrollY  = scrollable.scrollTop;
-
-    //   const canScrollLeft   = currentScrollX > 0;
-    //   const canScrollRight  = currentScrollX < maxScrollX;
-    //   const canScrollUp     = currentScrollY > 0;
-    //   const canScrollDown   = currentScrollY < maxScrollY;
-
-    //   var nextScrollX = currentScrollX;
-    //   var nextScrollY = currentScrollY;
-
-    //   if (isInLeftEdge && canScrollLeft) {
-    //     var intensity = (SCROLL_MARGIN - leftEdgeDistance) / SCROLL_MARGIN;
-    //     nextScrollX -= (MAX_STEP * intensity);
-    //   } else if (isInRightEdge && canScrollRight) {
-    //     var intensity = (SCROLL_MARGIN - rightEdgeDistance) / SCROLL_MARGIN;
-    //     nextScrollX += (MAX_STEP * intensity);
-    //   }
-
-    //   if (isInTopEdge && canScrollUp) {
-    //     var intensity = (SCROLL_MARGIN - topEdgeDistance) / SCROLL_MARGIN;
-    //     nextScrollY -= (MAX_STEP * intensity);
-    //   } else if (isInBottomEdge && canScrollDown) {
-    //     var intensity = (SCROLL_MARGIN - bottomEdgeDistance) / SCROLL_MARGIN;
-    //     nextScrollY += (MAX_STEP * intensity);
-    //   }
-
-    //   nextScrollX = Math.max(0, Math.min(maxScrollX, nextScrollX));
-    //   nextScrollY = Math.max(0, Math.min(maxScrollY, nextScrollY));
-
-    //   if ((nextScrollX != currentScrollX) || (nextScrollY != currentScrollY)) {
-    //     scrollable.scrollLeft = nextScrollX;
-    //     scrollable.scrollTop  = nextScrollY;
-
-    //     return true;
-    //   }
-    //   return false;
-    // }
-
     function dragEvent(dragAction: "move" | "stop", event: MouseEvent) {
       const tabHeader   = document.getElementsByClassName("workspace-tab-header-container")[1];
       const ribbon      = document.getElementsByClassName("workspace-ribbon")[0];
@@ -459,33 +438,6 @@ export class CardBoardView extends ItemView {
             }
           })();
         }
-        // const scrollableRect  = scrollable.getBoundingClientRect();
-        // const SCROLL_MARGIN   = 20;
-
-        // const bottom          = scrollableRect.y + scrollableRect.height;
-        // const right           = scrollableRect.x + scrollableRect.width;
-
-        // const leftEdgeDistance    = Math.abs(event.clientX - scrollableRect.x);
-        // const rightEdgeDistance   = Math.abs(event.clientX - right);
-        // const topEdgeDistance     = Math.abs(event.clientY - scrollableRect.y);
-        // const bottomEdgeDistance  = Math.abs(event.clientY - bottom);
-
-        // const isInLeftEdge    = leftEdgeDistance < SCROLL_MARGIN;
-        // const isInRightEdge   = rightEdgeDistance < SCROLL_MARGIN;
-        // const isInTopEdge     = topEdgeDistance < SCROLL_MARGIN;
-        // const isInBottomEdge  = bottomEdgeDistance < SCROLL_MARGIN;
-
-        // if (!(isInLeftEdge || isInRightEdge || isInTopEdge || isInBottomEdge)) {
-        //   clearTimeout(timer);
-        // } else {
-        //   (function checkForWindowScroll() {
-        //     clearTimeout(timer);
-
-        //     if (scrollDiv(scrollable, leftEdgeDistance, rightEdgeDistance, topEdgeDistance, bottomEdgeDistance, event)) {
-        //       timer = setTimeout(checkForWindowScroll, 30);
-        //     }
-        //   })();
-        // }
       }
 
       if (dragAction == "move") {

@@ -25,6 +25,7 @@ suite =
         , asCompletedColumn
         , cardCount
         , cards
+        , containsTask
         , decoder
         , encoder
         , isCompleted
@@ -217,6 +218,36 @@ cards =
                     |> List.map Card.id
                     |> List.map (String.left 3)
                     |> Expect.equal [ "bar", "bar", "bar" ]
+        ]
+
+
+containsTask : Test
+containsTask =
+    describe "containsTask"
+        [ test "returns False if there are no taskItems" <|
+            \() ->
+                Column.undated ""
+                    |> Column.containsTask ""
+                    |> Expect.equal False
+        , test "returns False if there is a non-matching taskItem" <|
+            \() ->
+                Column.undated ""
+                    |> Column.addTaskItem today (taskItem "- [] foo")
+                    |> Tuple.first
+                    |> Column.containsTask "non-matching-id"
+                    |> Expect.equal False
+        , test "returns True if there is a matching taskItem" <|
+            \() ->
+                let
+                    matchingTaskItem : TaskItem
+                    matchingTaskItem =
+                        taskItem "- [] foo"
+                in
+                Column.undated ""
+                    |> Column.addTaskItem today matchingTaskItem
+                    |> Tuple.first
+                    |> Column.containsTask (TaskItem.id matchingTaskItem)
+                    |> Expect.equal True
         ]
 
 

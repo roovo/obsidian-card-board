@@ -73,6 +73,7 @@ export type CardBoardPluginSettingsPostV11 = {
         completed : string;
       }
       filters : Filter[];
+      firstDayOfWeek : "FromLocale" | "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
       ignoreFileNameDates : boolean;
       taskCompletionFormat : "NoCompletion" | "ObsidianCardBoard" | "ObsidianDataview" | "ObsidianTasks";
       taskCompletionInLocalTime : boolean;

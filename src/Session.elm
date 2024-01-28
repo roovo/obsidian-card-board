@@ -1,6 +1,7 @@
 module Session exposing
     ( Msg(..)
     , Session
+    , TaskCompletionSettings
     , addTaskList
     , boardConfigs
     , cards
@@ -8,7 +9,9 @@ module Session exposing
     , default
     , deleteItemsFromFile
     , dragTracker
+    , findCard
     , finishAdding
+    , firstDayOfWeek
     , fromFlags
     , globalSettings
     , ignoreFileNameDates
@@ -42,11 +45,13 @@ import BoardConfig exposing (BoardConfig)
 import Boards
 import Card exposing (Card)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import Date
 import DragAndDrop.BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.DragData exposing (DragData)
 import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
-import GlobalSettings exposing (GlobalSettings, TaskCompletionSettings)
+import GlobalSettings exposing (GlobalSettings, TaskCompletionFormat)
 import InteropDefinitions
+import List.Extra as LE
 import SafeZipper exposing (SafeZipper)
 import Settings exposing (Settings)
 import State exposing (State)
@@ -68,12 +73,21 @@ type Session
 type alias Config =
     { dataviewTaskCompletion : DataviewTaskCompletion
     , dragTracker : DragTracker
+    , firstDayOfWeek : Time.Weekday
     , isActiveView : Bool
     , settings : Settings
     , taskList : State TaskList
     , textDirection : TextDirection
     , timeWithZone : TimeWithZone
     , uniqueId : String
+    }
+
+
+type alias TaskCompletionSettings =
+    { dataviewTaskCompletion : DataviewTaskCompletion
+    , format : TaskCompletionFormat
+    , inLocalTime : Bool
+    , showUtcOffset : Bool
     }
 
 
@@ -92,6 +106,7 @@ default =
     Session
         { dataviewTaskCompletion = DataviewTaskCompletion.default
         , dragTracker = DragTracker.init
+        , firstDayOfWeek = Time.Mon
         , isActiveView = False
         , settings = Settings.default
         , taskList = State.Waiting
@@ -106,9 +121,19 @@ default =
 
 fromFlags : InteropDefinitions.Flags -> Session
 fromFlags flags =
+    let
+        momentToWeekdayNumber : Int -> Int
+        momentToWeekdayNumber dayNumber =
+            if dayNumber == 0 then
+                7
+
+            else
+                dayNumber
+    in
     Session
         { dataviewTaskCompletion = flags.dataviewTaskCompletion
         , dragTracker = DragTracker.init
+        , firstDayOfWeek = Date.numberToWeekday <| momentToWeekdayNumber flags.firstDayOfWeek
         , isActiveView = False
         , settings = flags.settings
         , taskList = State.Waiting
@@ -143,9 +168,25 @@ dataviewTaskCompletion (Session config) =
     config.dataviewTaskCompletion
 
 
+findCard : String -> Session -> Maybe Card
+findCard cardId session =
+    cards session
+        |> LE.find (\c -> Card.id c == cardId)
+
+
 dragTracker : Session -> DragTracker
 dragTracker (Session config) =
     config.dragTracker
+
+
+firstDayOfWeek : Session -> Date.Weekday
+firstDayOfWeek ((Session config) as session) =
+    case globalSettings session |> .firstDayOfWeek of
+        GlobalSettings.FromLocale ->
+            config.firstDayOfWeek
+
+        GlobalSettings.SpecificWeekday weekday ->
+            weekday
 
 
 globalSettings : Session -> GlobalSettings
@@ -174,8 +215,18 @@ settings (Session config) =
 
 
 taskCompletionSettings : Session -> TaskCompletionSettings
-taskCompletionSettings =
-    GlobalSettings.taskCompletionSettings << globalSettings
+taskCompletionSettings session =
+    let
+        globalCompletionSettings : GlobalSettings.TaskCompletionSettings
+        globalCompletionSettings =
+            globalSettings session
+                |> GlobalSettings.taskCompletionSettings
+    in
+    { dataviewTaskCompletion = dataviewTaskCompletion session
+    , format = globalCompletionSettings.format
+    , inLocalTime = globalCompletionSettings.inLocalTime
+    , showUtcOffset = globalCompletionSettings.showUtcOffset
+    }
 
 
 taskContainingId : String -> Session -> Maybe TaskItem

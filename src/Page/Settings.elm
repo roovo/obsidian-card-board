@@ -28,7 +28,7 @@ import Form.NewColumn as NewColumnForm exposing (NewColumnForm)
 import Form.SafeDecoder as SD
 import Form.Settings as SettingsForm exposing (SettingsForm)
 import Form.SettingsState as SettingsState exposing (SettingsState)
-import GlobalSettings exposing (TaskCompletionSettings)
+import GlobalSettings
 import Html exposing (Attribute, Html)
 import Html.Attributes exposing (attribute, class, id, placeholder, selected, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -39,12 +39,14 @@ import List.Extra as LE
 import Maybe.Extra as ME
 import Page.Helper.Multiselect as MultiSelect
 import SafeZipper exposing (SafeZipper)
-import Session exposing (Session)
+import Session exposing (Session, TaskCompletionSettings)
 import Settings exposing (Settings)
 import State exposing (State)
 import Svg
 import Svg.Attributes as Svg
+import Time
 import TimeWithZone exposing (TimeWithZone)
+import UpdatedTaskItem
 
 
 
@@ -126,6 +128,7 @@ type Msg
     | EnteredNewColumnName String
     | EnteredName String
     | FilterCandidatesReceived (List Filter)
+    | FirstDayOfWeekSelected String
     | GlobalSettingsClicked
     | GotMultiSelectMsg (MultiSelect.Msg Msg Filter)
     | ModalCancelClicked
@@ -329,6 +332,15 @@ update msg model =
                 { model
                     | pathCache = State.Loaded filterCandidates
                     , multiSelect = multiSelectModel
+                }
+
+        FirstDayOfWeekSelected firstDayOfWeek ->
+            wrap
+                { model
+                    | settingsState =
+                        SettingsState.mapGlobalSettings
+                            (SettingsForm.updateFirstDayOfWeek firstDayOfWeek)
+                            model.settingsState
                 }
 
         GotMultiSelectMsg mulSelMsg ->
@@ -630,6 +642,7 @@ view model =
             globalSettingsView
                 (Session.dataviewTaskCompletion <| toSession model)
                 (Session.timeWithZone <| toSession model)
+                (Session.firstDayOfWeek <| toSession model)
                 model.multiSelect
                 settingsForm
                 dragTracker
@@ -992,16 +1005,22 @@ boardSettingsView settingsForm multiSelect dragTracker =
         |> settingsSurroundView Boards settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
-globalSettingsView dataviewTaskCompletion timeWithZone multiSelect settingsForm dragTracker =
+globalSettingsView : DataviewTaskCompletion -> TimeWithZone -> Time.Weekday -> MultiSelect.Model Msg Filter -> SettingsForm -> DragTracker -> Html Msg
+globalSettingsView dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect settingsForm dragTracker =
     settingsForm
-        |> globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect
+        |> globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect
         |> settingsSurroundView Options settingsForm.boardConfigForms dragTracker
 
 
-globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
-globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm =
+globalSettingsForm : DataviewTaskCompletion -> TimeWithZone -> Time.Weekday -> MultiSelect.Model Msg Filter -> SettingsForm -> List (Html Msg)
+globalSettingsForm dataviewTaskCompletion timeWithZone defaultFirstDayOfWeek multiSelect settingsForm =
     let
+        dueDateExample : String
+        dueDateExample =
+            UpdatedTaskItem.dueString
+                taskCompletionSettings
+                (TimeWithZone.toDate timeWithZone)
+
         ignoreFileNameDatesStyle : String
         ignoreFileNameDatesStyle =
             if settingsForm.ignoreFileNameDates then
@@ -1010,35 +1029,17 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
             else
                 ""
 
-        taskCompletionInLocalTimeStyle : String
-        taskCompletionInLocalTimeStyle =
-            if settingsForm.taskCompletionInLocalTime then
-                " is-enabled"
-
-            else
-                ""
-
-        taskCompletionShowUtcOffsetStyle : String
-        taskCompletionShowUtcOffsetStyle =
-            if settingsForm.taskCompletionShowUtcOffset then
-                " is-enabled"
-
-            else
-                ""
+        proposedSettings : GlobalSettings.TaskCompletionSettings
+        proposedSettings =
+            settingsForm
+                |> SD.run SettingsForm.safeDecoder
+                |> Result.withDefault Settings.default
+                |> Settings.globalSettings
+                |> GlobalSettings.taskCompletionSettings
 
         taskCompletionExample : String
         taskCompletionExample =
-            let
-                taskCompletionSettings : TaskCompletionSettings
-                taskCompletionSettings =
-                    settingsForm
-                        |> SD.run SettingsForm.safeDecoder
-                        |> Result.map Settings.globalSettings
-                        |> Result.withDefault GlobalSettings.default
-                        |> GlobalSettings.taskCompletionSettings
-            in
-            TimeWithZone.completionString
-                dataviewTaskCompletion
+            UpdatedTaskItem.completionString
                 taskCompletionSettings
                 timeWithZone
                 |> (\str ->
@@ -1048,39 +1049,33 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
                         else
                             str
                    )
+
+        taskCompletionInLocalTimeStyle : String
+        taskCompletionInLocalTimeStyle =
+            if settingsForm.taskCompletionInLocalTime then
+                " is-enabled"
+
+            else
+                ""
+
+        taskCompletionSettings : TaskCompletionSettings
+        taskCompletionSettings =
+            { dataviewTaskCompletion = dataviewTaskCompletion
+            , format = proposedSettings.format
+            , inLocalTime = proposedSettings.inLocalTime
+            , showUtcOffset = proposedSettings.showUtcOffset
+            }
+
+        taskCompletionShowUtcOffsetStyle : String
+        taskCompletionShowUtcOffsetStyle =
+            if settingsForm.taskCompletionShowUtcOffset then
+                " is-enabled"
+
+            else
+                ""
     in
     [ Html.div [ class "setting-items-inner" ]
-        ([ Html.div [ class "setting-item setting-item-heading" ]
-            [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Daily/Periodic Notes Compatibility" ]
-                , Html.div [ class "setting-item-description" ] []
-                ]
-            , Html.div [ class "setting-item-control" ] []
-            ]
-         , Html.div [ class "setting-item" ]
-            [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Ignore file name dates" ]
-                , Html.div [ class "setting-item-description" ]
-                    [ Html.text "If turned on tasks placed in daily note files will not use the date of the note as their due date." ]
-                ]
-            , Html.div [ class "setting-item-control" ]
-                [ Html.div
-                    [ class <| "checkbox-container" ++ ignoreFileNameDatesStyle
-                    , onClick ToggleIgnoreFileNameDate
-                    ]
-                    []
-                ]
-            ]
-         , Html.div [ class "setting-item setting-item-heading" ]
-            [ Html.div [ class "setting-item-info" ]
-                [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "File/Path Filters" ]
-                , Html.div [ class "setting-item-description" ] []
-                ]
-            , Html.div [ class "setting-item-control" ] []
-            ]
+        ([ Html.h3 [] [ Html.text "Miscellaneous" ]
          , Html.div [ class "setting-item" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
@@ -1098,12 +1093,44 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
                 [ MultiSelect.view multiSelect
                 ]
             ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Ignore file name dates" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "If turned on, tasks placed in daily note files will not use the date of the note as their due date." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ Html.div
+                    [ class <| "checkbox-container" ++ ignoreFileNameDatesStyle
+                    , onClick ToggleIgnoreFileNameDate
+                    ]
+                    []
+                ]
+            ]
+         , Html.div [ class "setting-item" ]
+            [ Html.div [ class "setting-item-info" ]
+                [ Html.div [ class "setting-item-name" ]
+                    [ Html.text "Start week on" ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Select 'Locale default' to use the day from your locale." ]
+                ]
+            , Html.div [ class "setting-item-control" ]
+                [ firstDayOfWeekSelect defaultFirstDayOfWeek settingsForm.firstDayOfWeek ]
+            ]
+         , Html.h3 [ class "setting-heading-compact" ] [ Html.text "Due and Completion Stamps" ]
          , Html.div [ class "setting-item setting-item-heading" ]
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
-                    [ Html.text "Task Completion" ]
+                    [ Html.text "" ]
                 , Html.div [ class "setting-item-description" ]
-                    [ Html.text <| "Current completion string: " ++ taskCompletionExample ]
+                    [ Html.text "Completion: "
+                    , Html.span [ class "example-stamp" ] [ Html.text taskCompletionExample ]
+                    ]
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "Due: "
+                    , Html.span [ class "example-stamp" ] [ Html.text dueDateExample ]
+                    ]
                 ]
             , Html.div [ class "setting-item-control" ] []
             ]
@@ -1121,7 +1148,7 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Use local time" ]
                 , Html.div [ class "setting-item-description" ]
-                    [ Html.text "UTC will be used otherwise." ]
+                    [ Html.text "For completion stamps. UTC will be used otherwise." ]
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
@@ -1135,7 +1162,8 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
             [ Html.div [ class "setting-item-info" ]
                 [ Html.div [ class "setting-item-name" ]
                     [ Html.text "Include UTC offset" ]
-                , Html.div [ class "setting-item-description" ] []
+                , Html.div [ class "setting-item-description" ]
+                    [ Html.text "For completion stamps." ]
                 ]
             , Html.div [ class "setting-item-control" ]
                 [ Html.div
@@ -1153,15 +1181,8 @@ globalSettingsForm dataviewTaskCompletion timeWithZone multiSelect settingsForm 
 
 columNamesForm : SettingsForm -> List (Html Msg)
 columNamesForm settingsForm =
-    [ Html.div [ class "setting-item setting-item-heading" ]
-        [ Html.div [ class "setting-item-info" ]
-            [ Html.div [ class "setting-item-name" ]
-                [ Html.text "Default Column Names" ]
-            , Html.div [ class "setting-item-description" ]
-                [ Html.text "Customise names used for auto-generated columns." ]
-            ]
-        , Html.div [ class "setting-item-control" ] []
-        ]
+    [ Html.h3 []
+        [ Html.text "Default Column Names" ]
     , Html.div [ class "setting-item" ]
         [ Html.div [ class "setting-item-info" ]
             [ Html.div [ class "setting-item-name" ]
@@ -1344,14 +1365,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect drag
                         []
                     ]
                 ]
-            , Html.div [ class "setting-item setting-item-heading" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Filters" ]
-                    , Html.div [ class "setting-item-description" ] []
-                    ]
-                , Html.div [ class "setting-item-control" ] []
-                ]
+            , Html.h3 [] [ Html.text "Filters" ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "setting-item-info" ]
                     [ Html.div [ class "setting-item-name" ]
@@ -1398,14 +1412,7 @@ boardSettingsForm boardConfigForm boardIndex defaultColumnNames multiSelect drag
                         []
                     ]
                 ]
-            , Html.div [ class "setting-item setting-item-heading" ]
-                [ Html.div [ class "setting-item-info" ]
-                    [ Html.div [ class "setting-item-name" ]
-                        [ Html.text "Columns" ]
-                    , Html.div [ class "setting-item-description" ] []
-                    ]
-                , Html.div [ class "setting-item-control" ] []
-                ]
+            , Html.h3 [] [ Html.text "Columns" ]
             , Html.div [ class "setting-item" ]
                 [ Html.div [ class "cardboard-settings-columns-list" ]
                     ((configForm.columnsForm
@@ -1696,6 +1703,80 @@ rangeInputsView index datedColumnForm =
                 ]
                 []
             ]
+
+
+firstDayOfWeekSelect : Time.Weekday -> String -> Html Msg
+firstDayOfWeekSelect defaultFirstDayOfWeek firstDayOfWeek =
+    let
+        weekdayToString : Time.Weekday -> String
+        weekdayToString weekday =
+            case weekday of
+                Time.Mon ->
+                    "Monday"
+
+                Time.Tue ->
+                    "Tuesday"
+
+                Time.Wed ->
+                    "Wednesday"
+
+                Time.Thu ->
+                    "Thursday"
+
+                Time.Fri ->
+                    "Friday"
+
+                Time.Sat ->
+                    "Saturday"
+
+                Time.Sun ->
+                    "Sunday"
+    in
+    Html.select
+        [ class "dropdown"
+        , onInput FirstDayOfWeekSelected
+        ]
+        [ Html.option
+            [ value "Locale"
+            , selected (firstDayOfWeek == "Locale")
+            ]
+            [ Html.text <| "Locale default (" ++ weekdayToString defaultFirstDayOfWeek ++ ")" ]
+        , Html.option
+            [ value "Mon"
+            , selected (firstDayOfWeek == "Mon")
+            ]
+            [ Html.text "Monday" ]
+        , Html.option
+            [ value "Tue"
+            , selected (firstDayOfWeek == "Tue")
+            ]
+            [ Html.text "Tuesday" ]
+        , Html.option
+            [ value "Wed"
+            , selected (firstDayOfWeek == "Wed")
+            ]
+            [ Html.text "Wednesday" ]
+        , Html.option
+            [ value "Thu"
+            , selected (firstDayOfWeek == "Thu")
+            ]
+            [ Html.text "Thursday" ]
+        , Html.option
+            [ value "Fri"
+            , selected (firstDayOfWeek == "Fri")
+            ]
+            [ Html.text "Friday" ]
+        , Html.option
+            [ value "Sat"
+            , selected (firstDayOfWeek == "Sat")
+            ]
+            [ Html.text "Saturday" ]
+        , Html.option
+            [ value "Sun"
+            , selected (firstDayOfWeek == "Sun")
+            ]
+            [ Html.text "Sunday" ]
+        ]
 
 
 taskCompletionFormatSelect : String -> Html Msg

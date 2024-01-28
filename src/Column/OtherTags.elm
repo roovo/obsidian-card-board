@@ -1,6 +1,7 @@
 module Column.OtherTags exposing
     ( OtherTagsColumn
     , addTaskItem
+    , containsTask
     , decoder
     , encoder
     , init
@@ -69,6 +70,11 @@ encoder =
 
 
 -- INFO
+
+
+containsTask : String -> OtherTagsColumn -> Bool
+containsTask taskId (OtherTagsColumn _ _ _ tl) =
+    TaskList.containsTask taskId tl
 
 
 isCollapsed : OtherTagsColumn -> Bool

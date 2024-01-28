@@ -15,30 +15,15 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define columns).
 
 ## New
-- Re-order columns by drag and drop.
-- Choose files or directories to ignore when loading
-  tasks from notes.  Handy if you use templates which contain
-  tasks that you don't want to see on your boards, or if you
-  want to speed up loading by skipping any files or folders
-  you know will not contain tasks you with to use with CardBoard.
-- Confirmation step added when deleting cards.
-- Can now choose to use either local or UTC time when marking tasks as complete.
-- Shows the year of a task on the card if it is not due in
-  the current year.
-- Bugfix: filter definitions dropdown is now scrollable.
-- Bugfix: card content respects the _Text Font_ setting in
-  Obsidian _Appearance_ settings.
-- Bugfix: use Obsidian _Font size_ for the CardBoard font size.
-- Bugfix: fix issue where cards which move columns when
-  the date changes (at midnight) loose their content.
-- Bugfix: (hopefully) fixed issues with where cards could appear
-  in unexpected columns when there is an `Other Tags` column.
+- Due dates can be edited on the board - right click on a card
+  to bring up the context menu.  See the [Editing due date section](#editing-due-date).
 
 
-![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Installation
 Please install via the regular Community Plugins setting tab within Obsidian.
+
+![date based board screenshot](/images/dateBoard.png?raw=true)
 
 ## Use
 When installed, you can launch the plugin:
@@ -129,6 +114,14 @@ the task from your vault, it simply surrounds it with markdown `<del>` tags:
 ```
 <del>- [x] Task title</del>
 ```
+
+### Editing due date
+You can change the due date of a task by right clicking on a card and selecting
+the only option currently available on the context menu.
+
+You can enter the date directly in the input (uses `YYYY-MM-DD` format), use the calendar dropdown
+which will appear when you click in the input, or clear the date to remove the
+due date from the task.
 
 ### Editing tasks (and hover preview)
 Click on the edit icon to open the note containing the task.  Cmd (or Ctrl on windows)

@@ -1,30 +1,44 @@
 module SessionTests exposing (suite)
 
+import BoardConfig
+import Card
+import Column
+import Column.Completed as CompletedColumn
+import Columns
 import DataviewTaskCompletion
 import DragAndDrop.DragData as DragData
 import DragAndDrop.DragTracker as DragTracker
 import Expect
-import GlobalSettings
+import Filter
+import GlobalSettings exposing (GlobalSettings)
+import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import InteropDefinitions exposing (Flags)
+import SafeZipper
 import Session
-import Settings
+import Settings exposing (Settings)
+import TaskItem
 import TaskList
 import Test exposing (..)
+import Time
 
 
 suite : Test
 suite =
     concat
         [ addTaskList
+        , cards
         , default
         , deleteItemsFromFile
+        , findCard
         , finishAdding
+        , firstDayOfWeek
+        , fromFlags
         , globalSettings
         , moveDragable
         , replaceTaskItems
         , stopTrackingDragable
-
-        -- , updatePath
+        , updatePath
         , waitForDrag
         ]
 
@@ -59,6 +73,37 @@ addTaskList =
         ]
 
 
+cards : Test
+cards =
+    describe "cards"
+        [ test "returns an empty list if there are no tasks and no boards" <|
+            \() ->
+                Session.default
+                    |> Session.cards
+                    |> Expect.equal []
+        , test "returns an empty list if there are tasks but no boards" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.cards
+                    |> Expect.equal []
+        , test "returns an empty list if there is a board but no tasks" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings untaggedAndCompleted
+                    |> Session.cards
+                    |> Expect.equal []
+        , test "returns the cards if there is a board and tasks that go on it" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings untaggedAndCompleted
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.cards
+                    |> List.map Card.title
+                    |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
 default : Test
 default =
     describe "default"
@@ -88,6 +133,11 @@ default =
                 Session.default
                     |> Session.dataviewTaskCompletion
                     |> Expect.equal (DataviewTaskCompletion.Text "completion")
+        , test "starts the week on a Monday" <|
+            \() ->
+                Session.default
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Mon
         ]
 
 
@@ -123,6 +173,25 @@ deleteItemsFromFile =
         ]
 
 
+findCard : Test
+findCard =
+    describe "findCard"
+        [ test "returns Nothing if there are no tasks and no boards" <|
+            \() ->
+                Session.default
+                    |> Session.findCard ""
+                    |> Expect.equal Nothing
+        , test "returns Just the card if there is one with the given ID" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings untaggedAndCompleted
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.findCard "xXxXx:A_Name:Untagged:3826002220:2"
+                    |> Maybe.map Card.title
+                    |> Expect.equal (Just "a1")
+        ]
+
+
 finishAdding : Test
 finishAdding =
     describe "finishAdding"
@@ -149,6 +218,64 @@ finishAdding =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "a1", "a2" ]
+        ]
+
+
+firstDayOfWeek : Test
+firstDayOfWeek =
+    describe "firstDayOfWeek"
+        [ test "respects the global setting if it is for a specific day" <|
+            \() ->
+                exampleFlags
+                    |> Session.fromFlags
+                    |> Session.updateSettings exampleSettings
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Fri
+        , test "respects the locale if that is what has been set" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 2 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Tue
+        ]
+
+
+fromFlags : Test
+fromFlags =
+    describe "fromFlags"
+        [ test "copies the dataviewTaskCompletion value from the flags" <|
+            \() ->
+                { exampleFlags | dataviewTaskCompletion = DataviewTaskCompletion.Emoji }
+                    |> Session.fromFlags
+                    |> Session.dataviewTaskCompletion
+                    |> Expect.equal DataviewTaskCompletion.Emoji
+        , test "sets the firstDayOfWeek to Mon if the flag value is 1" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 1 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Mon
+        , test "sets the firstDayOfWeek to Sun if the flag value is 0" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 0 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Sun
+        , test "sets the firstDayOfWeek to Sat if the flag value is 6" <|
+            \() ->
+                { exampleFlags | firstDayOfWeek = 6 }
+                    |> Session.fromFlags
+                    |> Session.firstDayOfWeek
+                    |> Expect.equal Time.Sat
+        , test "builds TimeWithZone from the flag values for now and zone" <|
+            \() ->
+                { exampleFlags | now = 123, zone = 456 }
+                    |> Session.fromFlags
+                    |> Session.timeWithZone
+                    |> Expect.equal
+                        { time = Time.millisToPosix 123
+                        , zone = Time.customZone 456 []
+                        }
         ]
 
 
@@ -288,38 +415,97 @@ stopTrackingDragable =
         ]
 
 
+updatePath : Test
+updatePath =
+    describe "updatePath"
+        [ test "updates taskList paths" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.updatePath "a" "b"
+                    |> Session.taskList
+                    |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
+                    |> Expect.equal [ "b", "b" ]
+        , test "updates filter paths" <|
+            \() ->
+                Session.default
+                    |> Session.updateSettings exampleSettings
+                    |> Session.updatePath "a/path" "a"
+                    |> Session.updatePath "b/path" "b"
+                    |> Session.boardConfigs
+                    |> SafeZipper.toList
+                    |> List.concatMap BoardConfig.filters
+                    |> List.map Filter.value
+                    |> Expect.equal [ "a", "b", "tag1", "tag2" ]
+        ]
 
--- updatePath : Test
--- updatePath =
---     describe "updatePath"
---         [ test "updates taskList paths" <|
---             \() ->
---                 Session.default
---                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
---                     |> Session.updatePath "a" "b"
---                     |> Session.taskList
---                     |> TaskList.foldl (\i acc -> TaskItem.filePath i :: acc) []
---                     |> Expect.equal [ "b", "b" ]
---         , test "updates filter paths" <|
---             \() ->
---                 Session.default
---                     |> Session.updateSettings exampleSettings
---                     |> Session.updatePath "a/path" "a"
---                     |> Session.updatePath "b/path" "b"
---                     |> Session.boardConfigs
---                     |> SafeZipper.toList
---                     |> List.concatMap BoardConfig.filters
---                     |> List.map Filter.value
---                     |> Expect.equal [ "a", "b", "tag1", "tag2" ]
---         ]
---
---
---
+
+
 -- HELPERS
--- exampleSettings : Settings
--- exampleSettings =
---     Settings.default
---         |> Settings.updateBoardConfigs
---             (SafeZipper.fromList
---                 [ BoardConfigHelpers.exampleDateBoardConfig ]
---             )
+
+
+exampleFlags : Flags
+exampleFlags =
+    { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
+    , firstDayOfWeek = 0
+    , now = 0
+    , rightToLeft = False
+    , settings = Settings.default
+    , uniqueId = "youNeeq"
+    , zone = 123
+    }
+
+
+exampleSettings : Settings
+exampleSettings =
+    Settings.default
+        |> (\s ->
+                { s
+                    | boardConfigs =
+                        SafeZipper.fromList
+                            [ BoardConfig.fromConfig
+                                { columns = Columns.fromList []
+                                , filters = [ FilterHelpers.pathFilter "a/path", FilterHelpers.pathFilter "b/path", FilterHelpers.tagFilter "tag1", FilterHelpers.tagFilter "tag2" ]
+                                , filterPolarity = Filter.Deny
+                                , filterScope = Filter.TopLevelOnly
+                                , showColumnTags = False
+                                , showFilteredTags = True
+                                , name = "A Name"
+                                }
+                            ]
+                    , globalSettings =
+                        { defaultGlobalSettings
+                            | firstDayOfWeek = GlobalSettings.SpecificWeekday Time.Fri
+                        }
+                }
+           )
+
+
+defaultGlobalSettings : GlobalSettings
+defaultGlobalSettings =
+    GlobalSettings.default
+
+
+untaggedAndCompleted : Settings
+untaggedAndCompleted =
+    Settings.default
+        |> (\s ->
+                { s
+                    | boardConfigs =
+                        SafeZipper.fromList
+                            [ BoardConfig.fromConfig
+                                { columns =
+                                    Columns.fromList
+                                        [ Column.untagged "Untagged"
+                                        , Column.completed <| CompletedColumn.init "Completed" 0 10
+                                        ]
+                                , filters = []
+                                , filterPolarity = Filter.Deny
+                                , filterScope = Filter.TopLevelOnly
+                                , showColumnTags = True
+                                , showFilteredTags = True
+                                , name = "A Name"
+                                }
+                            ]
+                }
+           )

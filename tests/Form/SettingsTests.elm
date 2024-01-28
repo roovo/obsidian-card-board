@@ -17,6 +17,7 @@ import GlobalSettings
 import SafeZipper
 import Settings
 import Test exposing (..)
+import Time
 
 
 suite : Test
@@ -32,6 +33,7 @@ suite =
         , toggleTaskCompletionInLocalTime
         , toggleTaskCompletionShowUtcOffset
         , updateDefaultColumnName
+        , updateFirstDayOfWeek
         , updateTaskCompletionFormat
         ]
 
@@ -344,6 +346,20 @@ safeDecoder =
                     |> Result.map .defaultColumnNames
                     |> Result.map (DefaultColumnNames.nameFor "otherTags")
                     |> Expect.equal (Ok "Other Tags")
+        , test "decodes the FromLocale FirstDayOfWeek" <|
+            \() ->
+                { exampleSettingsForm | firstDayOfWeek = "Locale" }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .firstDayOfWeek
+                    |> Expect.equal (Ok <| GlobalSettings.FromLocale)
+        , test "decodes a SpecificWeekday FirstDayOfWeek" <|
+            \() ->
+                { exampleSettingsForm | firstDayOfWeek = "Thu" }
+                    |> SD.run SettingsForm.safeDecoder
+                    |> Result.map Settings.globalSettings
+                    |> Result.map .firstDayOfWeek
+                    |> Expect.equal (Ok <| GlobalSettings.SpecificWeekday Time.Thu)
         , test "decodes the NoCompletion TaskCompletionFormat" <|
             \() ->
                 { exampleSettingsForm | taskCompletionFormat = "NoCompletion" }
@@ -608,6 +624,18 @@ updateDefaultColumnName =
         ]
 
 
+updateFirstDayOfWeek : Test
+updateFirstDayOfWeek =
+    describe "updateFirstDayOfWeek"
+        [ test "updates the first day of the week" <|
+            \() ->
+                exampleSettingsForm
+                    |> SettingsForm.updateFirstDayOfWeek "a day"
+                    |> .firstDayOfWeek
+                    |> Expect.equal "a day"
+        ]
+
+
 updateTaskCompletionFormat : Test
 updateTaskCompletionFormat =
     describe "updateTaskCompletionFormat"
@@ -629,6 +657,7 @@ exampleSettingsForm =
     { boardConfigForms = SafeZipper.empty
     , completed = ""
     , filters = []
+    , firstDayOfWeek = ""
     , future = ""
     , ignoreFileNameDates = False
     , otherTags = ""

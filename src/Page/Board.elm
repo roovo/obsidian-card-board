@@ -9,9 +9,11 @@ module Page.Board exposing
     )
 
 import Board exposing (Board)
+import BoardConfig exposing (BoardConfig)
 import Boards exposing (Boards)
 import Card exposing (Card)
 import Column exposing (Column)
+import Columns
 import Date exposing (Date)
 import DragAndDrop.BeaconPosition as BeaconPosition exposing (BeaconPosition)
 import DragAndDrop.Coords as Coords
@@ -20,21 +22,25 @@ import DragAndDrop.DragTracker as DragTracker exposing (DragTracker)
 import DragAndDrop.Rect as Rect
 import FeatherIcons
 import Html exposing (Attribute, Html)
-import Html.Attributes exposing (attribute, checked, class, hidden, id, style, type_)
+import Html.Attributes exposing (attribute, checked, class, disabled, hidden, id, style, tabindex, type_)
 import Html.Events exposing (onClick)
-import Html.Events.Extra.Mouse as Mouse exposing (onDown)
+import Html.Events.Extra.Mouse as Mouse exposing (onContextMenu, onDown)
 import Html.Keyed
 import Html.Lazy
 import InteropPorts
 import Json.Decode as JD
 import Json.Encode as JE
 import List.Extra as LE
+import Page.Helper.DatePicker as DatePicker exposing (DatePicker)
 import SafeZipper
-import Session exposing (Session)
+import Session exposing (Session, TaskCompletionSettings)
 import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
+import TaskList
 import TextDirection
+import Time
 import TimeWithZone exposing (TimeWithZone)
+import UpdatedTaskItem exposing (UpdatedTaskItem)
 
 
 
@@ -42,8 +48,9 @@ import TimeWithZone exposing (TimeWithZone)
 
 
 type Model
-    = ViewingBoard Session
-    | DeletingCard String String Session
+    = DeletingCard String String Session
+    | EditingCardDueDate DatePicker TaskItem Session
+    | ViewingBoard Session
 
 
 init : Session -> Model
@@ -66,6 +73,44 @@ deleteCardConfirmed model =
     ViewingBoard (toSession model)
 
 
+editCardDueDateConfirmed : Model -> Model
+editCardDueDateConfirmed model =
+    ViewingBoard (toSession model)
+
+
+editCardDueDateRequested : String -> Model -> Model
+editCardDueDateRequested cardId model =
+    let
+        taskItem : Maybe TaskItem
+        taskItem =
+            toSession model
+                |> Session.findCard cardId
+                |> Maybe.map Card.taskItem
+    in
+    case taskItem of
+        Just taskToEdit ->
+            let
+                date : Maybe Date
+                date =
+                    TaskItem.due taskToEdit
+
+                today : Date
+                today =
+                    toSession model
+                        |> Session.timeWithZone
+                        |> TimeWithZone.toDate
+
+                firstDayOfWeek : Time.Weekday
+                firstDayOfWeek =
+                    toSession model
+                        |> Session.firstDayOfWeek
+            in
+            EditingCardDueDate (DatePicker.init firstDayOfWeek today date) taskToEdit (toSession model)
+
+        Nothing ->
+            model
+
+
 mapSession : (Session -> Session) -> Model -> Model
 mapSession fn model =
     case model of
@@ -74,6 +119,9 @@ mapSession fn model =
 
         DeletingCard title cardId session ->
             DeletingCard title cardId <| fn session
+
+        EditingCardDueDate datePicker card session ->
+            EditingCardDueDate datePicker card <| fn session
 
 
 toSession : Model -> Session
@@ -85,6 +133,9 @@ toSession model =
         DeletingCard _ _ session ->
             session
 
+        EditingCardDueDate _ _ session ->
+            session
+
 
 
 -- UPDATE
@@ -92,8 +143,12 @@ toSession model =
 
 type Msg
     = CardMouseDown
+    | CardRightMouseDown String Mouse.Event
     | ColumnMouseDown ( String, DragTracker.ClientData )
+    | DatePickerMsg DatePicker.Msg
     | DeleteConfirmed String
+    | EditCardDueDateConfirmed
+    | EditCardDueDateRequested String
     | ElementDragged DragData
     | ModalCancelClicked
     | ModalCloseClicked
@@ -122,15 +177,72 @@ update msg model =
         CardMouseDown ->
             ( model, Cmd.none, Session.NoOp )
 
+        CardRightMouseDown cardId event ->
+            ( model
+            , InteropPorts.showCardContextMenu event.clientPos cardId
+            , Session.NoOp
+            )
+
         ColumnMouseDown ( domId, clientData ) ->
             ( mapSession (Session.waitForDrag clientData) model
             , InteropPorts.trackDraggable columnDragType clientData.clientPos domId
             , Session.NoOp
             )
 
+        DatePickerMsg subMsg ->
+            case model of
+                EditingCardDueDate datePicker card session ->
+                    let
+                        newPicker : DatePicker
+                        newPicker =
+                            DatePicker.update subMsg datePicker
+                    in
+                    ( EditingCardDueDate newPicker card session
+                    , Cmd.none
+                    , Session.NoOp
+                    )
+
+                _ ->
+                    ( model, Cmd.none, Session.NoOp )
+
         DeleteConfirmed cardId ->
             ( deleteCardConfirmed model
             , cmdIfHasTask cardId model InteropPorts.deleteTask
+            , Session.NoOp
+            )
+
+        EditCardDueDateConfirmed ->
+            case model of
+                EditingCardDueDate datePicker taskItem session ->
+                    let
+                        cmd : Cmd Msg
+                        cmd =
+                            InteropPorts.rewriteTasks
+                                (TaskItem.filePath taskItem)
+                                updatedTaskItems
+
+                        taskCompletionSettings : TaskCompletionSettings
+                        taskCompletionSettings =
+                            Session.taskCompletionSettings session
+
+                        updatedTaskItems : List UpdatedTaskItem
+                        updatedTaskItems =
+                            taskItem
+                                |> UpdatedTaskItem.init
+                                |> UpdatedTaskItem.updateDate taskCompletionSettings (DatePicker.pickedDate datePicker)
+                                |> List.singleton
+                    in
+                    ( editCardDueDateConfirmed model
+                    , cmd
+                    , Session.NoOp
+                    )
+
+                _ ->
+                    ( model, Cmd.none, Session.NoOp )
+
+        EditCardDueDateRequested cardId ->
+            ( editCardDueDateRequested cardId model
+            , Cmd.none
             , Session.NoOp
             )
 
@@ -206,26 +318,37 @@ update msg model =
 
         TaskItemToggled id ->
             let
+                cmd : Cmd Msg
+                cmd =
+                    session
+                        |> Session.taskContainingId id
+                        |> Maybe.map toggleCmd
+                        |> Maybe.withDefault Cmd.none
+
+                updatedTaskItems : TaskItem -> List UpdatedTaskItem
+                updatedTaskItems taskItem =
+                    taskItem
+                        |> TaskItem.tasksToToggle id timeWithZone
+                        |> List.map UpdatedTaskItem.init
+                        |> List.map (UpdatedTaskItem.toggleCompletion taskCompletionSettings timeWithZone)
+
+                session : Session
+                session =
+                    toSession model
+
+                taskCompletionSettings : TaskCompletionSettings
+                taskCompletionSettings =
+                    Session.taskCompletionSettings session
+
                 timeWithZone : TimeWithZone
                 timeWithZone =
-                    Session.timeWithZone (toSession model)
+                    Session.timeWithZone session
 
                 toggleCmd : TaskItem -> Cmd Msg
                 toggleCmd taskItem =
                     InteropPorts.rewriteTasks
-                        (Session.dataviewTaskCompletion <| toSession model)
-                        (Session.taskCompletionSettings <| toSession model)
-                        timeWithZone
                         (TaskItem.filePath taskItem)
-                        (TaskItem.tasksToToggle id timeWithZone taskItem)
-
-                cmd : Cmd Msg
-                cmd =
-                    model
-                        |> toSession
-                        |> Session.taskContainingId id
-                        |> Maybe.map toggleCmd
-                        |> Maybe.withDefault Cmd.none
+                        (updatedTaskItems taskItem)
             in
             ( model
             , cmd
@@ -261,6 +384,160 @@ view model =
                 , modalDeleteCardConfirm title cardId
                 ]
 
+        EditingCardDueDate datePicker taskItem session ->
+            Html.div []
+                [ boardsView session
+                , modalEditCardDueDate datePicker taskItem session
+                ]
+
+
+modalEditCardDueDate : DatePicker -> TaskItem -> Session -> Html Msg
+modalEditCardDueDate datePicker taskItem session =
+    let
+        containingColumns : List String
+        containingColumns =
+            case currentBoardConfig of
+                Just boardConfig ->
+                    Board.init "" boardConfig TaskList.empty
+                        |> Board.columns ignoreFileNameDates today
+                        |> Columns.fromList
+                        |> Columns.addTaskItem today updatedTaskItem
+                        |> Columns.toList
+                        |> List.filter (\c -> Column.cardCount c /= 0)
+                        |> List.map Column.name
+
+                Nothing ->
+                    []
+
+        currentBoardConfig : Maybe BoardConfig
+        currentBoardConfig =
+            Session.boardConfigs session
+                |> SafeZipper.current
+
+        ignoreFileNameDates : Bool
+        ignoreFileNameDates =
+            Session.ignoreFileNameDates session
+
+        isInvalid : Bool
+        isInvalid =
+            not <| DatePicker.isValid datePicker
+
+        today : Date
+        today =
+            Session.timeWithZone session
+                |> TimeWithZone.toDate
+
+        updatedTaskItem : TaskItem
+        updatedTaskItem =
+            if isInvalid then
+                taskItem
+
+            else
+                TaskItem.updateDueDate (DatePicker.pickedDate datePicker) taskItem
+    in
+    Html.div [ class "modal-container" ]
+        [ Html.div
+            [ class "modal-bg"
+            , style "opacity" "0.85"
+            ]
+            []
+        , Html.div
+            [ class "modal"
+            , class "edit-date"
+            ]
+            [ Html.div
+                [ class "modal-close-button"
+                , onClick ModalCloseClicked
+                ]
+                []
+            , Html.div [ class "modal-title" ]
+                []
+            , Html.div [ class "modal-content" ]
+                [ Html.div [ class "setting-item setting-item-heading" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text <| "Task: " ++ TaskItem.title taskItem ]
+                        , Html.div [ class "setting-item-description" ]
+                            []
+                        ]
+                    , Html.div [ class "setting-item-control" ] []
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Due date" ]
+                        , Html.div [ class "setting-item-description" ]
+                            [ Html.text "Leave blank to clear the due date." ]
+                        ]
+                    , Html.div [ class "setting-item-control" ]
+                        [ DatePicker.view datePicker
+                            |> Html.map DatePickerMsg
+                        ]
+                    ]
+                , Html.div [ class "setting-item" ]
+                    [ Html.div [ class "setting-item-info" ]
+                        [ Html.div [ class "setting-item-name" ]
+                            [ Html.text "Containing columns" ]
+                        , containingColumnsText containingColumns
+                        ]
+                    , containingColumnsList containingColumns
+                    ]
+                ]
+            , Html.div [ class "modal-button-container" ]
+                [ Html.button
+                    [ attributeIf (not isInvalid) (class "mod-cta")
+                    , attributeIf isInvalid (attribute "aria-disabled" "true")
+                    , onClick EditCardDueDateConfirmed
+                    , disabled isInvalid
+                    , tabindex 2
+                    ]
+                    [ Html.text "Save"
+                    ]
+                , Html.button
+                    [ onClick ModalCancelClicked
+                    , tabindex 3
+                    ]
+                    [ Html.text "Cancel"
+                    ]
+                ]
+            ]
+        ]
+
+
+containingColumnsText : List String -> Html Msg
+containingColumnsText containingColumns =
+    if List.length containingColumns == 0 then
+        Html.div
+            [ class "setting-item-description"
+            , class "mod-warning"
+            ]
+            [ Html.text "If you save with this due date, this task will no longer appear on this board." ]
+
+    else
+        Html.div [ class "setting-item-description" ]
+            [ Html.text "If you save with this due date, this task will appear in the following columns on this board." ]
+
+
+containingColumnsList : List String -> Html Msg
+containingColumnsList containingColumns =
+    if List.length containingColumns == 0 then
+        Html.text ""
+
+    else
+        Html.div
+            [ class "multiselect-items"
+            , class "mod-faux"
+            ]
+            (List.map columnNamePill containingColumns)
+
+
+columnNamePill : String -> Html Msg
+columnNamePill name =
+    Html.div [ class "multiselect-item" ]
+        [ Html.span [ class "multiselect-item-single" ]
+            [ Html.text name ]
+        ]
+
 
 modalDeleteCardConfirm : String -> String -> Html Msg
 modalDeleteCardConfirm title cardId =
@@ -291,11 +568,14 @@ modalDeleteCardConfirm title cardId =
                 [ Html.button
                     [ class "mod-warning"
                     , onClick <| DeleteConfirmed cardId
+                    , tabindex 1
                     ]
                     [ Html.text "Delete"
                     ]
                 , Html.button
-                    [ onClick <| ModalCancelClicked ]
+                    [ onClick <| ModalCancelClicked
+                    , tabindex 2
+                    ]
                     [ Html.text "Cancel"
                     ]
                 ]
@@ -703,6 +983,7 @@ cardView today card =
         [ class "card-board-card cm-s-obsidian"
         , attributeIf (not <| String.isEmpty dataTags) (attribute "data-tags" dataTags)
         , nonPropogatingOnDown <| always CardMouseDown
+        , onContextMenu <| CardRightMouseDown (Card.id card)
         ]
         [ Html.div [ class ("card-board-card-highlight-area " ++ highlightAreaClass) ]
             []

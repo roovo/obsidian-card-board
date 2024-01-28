@@ -3,6 +3,7 @@ module TaskList exposing
     , add
     , append
     , concat
+    , containsTask
     , empty
     , filter
     , foldl
@@ -119,6 +120,13 @@ removeForFile filePath =
 
 
 -- UTILITIES
+
+
+containsTask : String -> TaskList -> Bool
+containsTask taskId taskList =
+    taskList
+        |> topLevelTasks
+        |> List.any (\ti -> TaskItem.id ti == taskId)
 
 
 taskTitles : TaskList -> List String
