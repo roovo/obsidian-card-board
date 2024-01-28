@@ -1,6 +1,10 @@
 module Worker exposing (main)
 
+import InteropDefinitions
+import InteropPorts
 import Json.Decode as JD
+import MarkdownFile exposing (MarkdownFile)
+import Session exposing (Session)
 
 
 main : Program JD.Value Model Msg
@@ -12,13 +16,26 @@ main =
         }
 
 
-type alias Model =
-    { foo : String }
+type Model
+    = FlagsError
+    | Yeah Session
 
 
 init : JD.Value -> ( Model, Cmd Msg )
 init flags =
-    ( { foo = "bar" }, Cmd.none )
+    case flags |> InteropPorts.decodeFlags of
+        Err _ ->
+            ( FlagsError, Cmd.none )
+
+        Ok okFlags ->
+            let
+                session : Session
+                session =
+                    Session.fromFlags okFlags
+            in
+            ( Yeah session
+            , InteropPorts.elmInitialized
+            )
 
 
 
@@ -26,12 +43,22 @@ init flags =
 
 
 type Msg
-    = NoOp
+    = BadInputFromTypeScript
+    | VaultFileAdded MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update _ model =
-    ( model, Cmd.none )
+update msg model =
+    case msg of
+        BadInputFromTypeScript ->
+            ( model, Cmd.none )
+
+        VaultFileAdded markdownFile ->
+            let
+                foo =
+                    Debug.log "markdownFile" markdownFile.filePath
+            in
+            ( model, Cmd.none )
 
 
 
@@ -40,4 +67,20 @@ update _ model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Sub.batch
+        [ InteropPorts.toElm
+            |> Sub.map
+                (\result ->
+                    case result of
+                        Ok toElm ->
+                            case toElm of
+                                InteropDefinitions.FileAdded markdownFile ->
+                                    VaultFileAdded markdownFile
+
+                                _ ->
+                                    BadInputFromTypeScript
+
+                        Err _ ->
+                            BadInputFromTypeScript
+                )
+        ]

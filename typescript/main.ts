@@ -1,17 +1,39 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, moment, normalizePath } from 'obsidian';
+import {
+  App,
+  Modal,
+  Notice,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+  TFile,
+  addIcon,
+  moment,
+  normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './types';
 import { Elm, ElmApp, Flags } from '../src/Worker';
+import { FileFilter } from './fileFilter'
+import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
   private worker:     ElmApp;
+  private fileFilter: FileFilter;
   settings:           CardBoardPluginSettings;
 
   async onload() {
     console.log('loading CardBoard plugin');
 
     await this.loadSettings();
+
+    const globalSettings : any = this.settings?.data.globalSettings;
+
+    if ((!(globalSettings === undefined)) && globalSettings.hasOwnProperty('filters')) {
+      this.fileFilter = new FileFilter(globalSettings.filters);
+    } else {
+      this.fileFilter = new FileFilter([]);
+    }
+
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
 
@@ -19,7 +41,7 @@ export default class CardBoardPlugin extends Plugin {
     // @ts-ignore
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
 
-    const mySettings:Flags = {
+    const workerFlags:Flags = {
       uniqueId:           "random",
       now:                Date.now(),
       zone:               new Date().getTimezoneOffset(),
@@ -33,9 +55,39 @@ export default class CardBoardPlugin extends Plugin {
       }
     };
 
-    this.worker = Elm.Main.init({
-      flags: mySettings
+    // @ts-ignore
+    this.worker = Elm.Worker.init({
+      flags: workerFlags
     });
+
+    const that = this;
+
+    this.worker.ports.interopFromElm.subscribe((fromElm) => {
+      switch (fromElm.tag) {
+        case "elmInitialized":
+          that.handleElmInitialized();
+          break;
+      }
+    });
+
+    const markdownFiles = this.app.vault.getMarkdownFiles();
+    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
+
+    for (const file of filteredFiles) {
+      const fileDate      = this.formattedFileDate(file);
+      const fileContents  = await this.app.vault.cachedRead(file);
+
+      // console.log("file added: " + file.name);
+
+      this.worker.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: {
+          filePath:     file.path,
+          fileDate:     fileDate,
+          fileContents: fileContents
+        }
+      });
+    }
 
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
@@ -54,6 +106,10 @@ export default class CardBoardPlugin extends Plugin {
     this.addCommands();
   }
 
+
+  async handleElmInitialized() {
+    console.log("Elm worker intialized");
+  }
   onunload() {
     console.log('unloading CardBoard plugin');
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);
@@ -136,5 +192,13 @@ export default class CardBoardPlugin extends Plugin {
       }
       this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
     }
+  }
+
+  // HELPERS
+
+  formattedFileDate(
+    file: TFile
+  ): string | null {
+    return getDateFromFile(file, "day")?.format('YYYY-MM-DD') || null;
   }
 }
