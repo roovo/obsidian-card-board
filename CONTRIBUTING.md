@@ -7,7 +7,8 @@ To get up and running:
 
 ```
 npm install             # install dependencies
-npm run generate        # generate ts type definitions for elm ports
+npm run generate        # generate ts type definitions for the main app
+npm run generate-worker # generate ts type definitions for the worker app
 npm run dev             # run dev build
 ```
 

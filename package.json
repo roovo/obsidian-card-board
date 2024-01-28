@@ -7,6 +7,7 @@
     "build": "webpack --progress --color --mode=production",
     "dev": "webpack --mode=development --watch --progress --color",
     "generate": "elm-ts-interop --definition-module InteropDefinitions --output src/Main/index.d.ts",
+    "generate-worker": "elm-ts-interop --definition-module InteropDefinitions --entrypoint Worker --output src/Worker/index.d.ts",
     "test": "elm-test tests",
     "test-ts": "jest"
   },

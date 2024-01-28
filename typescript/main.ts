@@ -1,10 +1,12 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, moment, normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
 import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './types';
+import { Elm, ElmApp, Flags } from '../src/Worker';
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
-  settings: CardBoardPluginSettings;
+  private worker:     ElmApp;
+  settings:           CardBoardPluginSettings;
 
   async onload() {
     console.log('loading CardBoard plugin');
@@ -14,6 +16,27 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async onLayoutReady() {
+    // @ts-ignore
+    const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
+
+    const mySettings:Flags = {
+      uniqueId:           "random",
+      now:                Date.now(),
+      zone:               new Date().getTimezoneOffset(),
+      firstDayOfWeek:     moment.localeData().firstDayOfWeek(),
+      settings:           this.settings,
+      rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
+      dataviewTaskCompletion:   {
+        taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
+        taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
+        taskCompletionText:               dataviewSettings  === undefined ? "completion"  : dataviewSettings['taskCompletionText']
+      }
+    };
+
+    this.worker = Elm.Main.init({
+      flags: mySettings
+    });
+
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
       (leaf) => new CardBoardView(this, leaf)
