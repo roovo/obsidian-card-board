@@ -77,8 +77,6 @@ export default class CardBoardPlugin extends Plugin {
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.app.vault.cachedRead(file);
 
-      // console.log("file added: " + file.name);
-
       this.worker.ports.interopToElm.send({
         tag: "fileAdded",
         data: {
@@ -88,6 +86,11 @@ export default class CardBoardPlugin extends Plugin {
         }
       });
     }
+
+    this.worker.ports.interopToElm.send({
+      tag: "allMarkdownLoaded",
+      data: { }
+    });
 
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
@@ -110,6 +113,7 @@ export default class CardBoardPlugin extends Plugin {
   async handleElmInitialized() {
     console.log("Elm worker intialized");
   }
+
   onunload() {
     console.log('unloading CardBoard plugin');
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_CARD_BOARD);

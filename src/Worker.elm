@@ -4,7 +4,9 @@ import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
-import Session exposing (Session)
+import TaskItem
+import TaskList exposing (TaskList)
+import Worker.Session as Session exposing (Session)
 
 
 main : Program JD.Value Model Msg
@@ -17,7 +19,7 @@ main =
 
 
 type Model
-    = FlagsError
+    = FlagsError Session
     | Yeah Session
 
 
@@ -25,7 +27,7 @@ init : JD.Value -> ( Model, Cmd Msg )
 init flags =
     case flags |> InteropPorts.decodeFlags of
         Err _ ->
-            ( FlagsError, Cmd.none )
+            ( FlagsError Session.default, Cmd.none )
 
         Ok okFlags ->
             let
@@ -38,27 +40,67 @@ init flags =
             )
 
 
+toSession : Model -> Session
+toSession model =
+    case model of
+        FlagsError session ->
+            session
+
+        Yeah session ->
+            session
+
+
+mapSession : (Session -> Session) -> Model -> Model
+mapSession fn model =
+    case model of
+        FlagsError session ->
+            FlagsError <| fn session
+
+        Yeah session ->
+            Yeah <| fn session
+
+
 
 -- UPDATE
 
 
 type Msg
-    = BadInputFromTypeScript
+    = AllMarkdownLoaded
+    | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AllMarkdownLoaded ->
+            let
+                foo =
+                    model
+                        |> toSession
+                        |> Session.taskList
+                        |> TaskList.tasks
+                        |> List.map TaskItem.title
+                        |> Debug.log "loaded tasks"
+            in
+            ( mapSession Session.finishAdding model, Cmd.none )
+
         BadInputFromTypeScript ->
             ( model, Cmd.none )
 
         VaultFileAdded markdownFile ->
             let
-                foo =
-                    Debug.log "markdownFile" markdownFile.filePath
+                newTasks : TaskList
+                newTasks =
+                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
+
+                newModel : Model
+                newModel =
+                    mapSession (\s -> Session.addTaskList newTasks s) model
             in
-            ( model, Cmd.none )
+            ( newModel
+            , Cmd.none
+            )
 
 
 
@@ -76,6 +118,9 @@ subscriptions _ =
                             case toElm of
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile
+
+                                InteropDefinitions.AllMarkdownLoaded ->
+                                    AllMarkdownLoaded
 
                                 _ ->
                                     BadInputFromTypeScript
