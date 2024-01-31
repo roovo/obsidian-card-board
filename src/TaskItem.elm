@@ -13,6 +13,7 @@ module TaskItem exposing
     , due
     , dueRataDie
     , dummy
+    , encoder
     , fields
     , filePath
     , hasNotes
@@ -45,6 +46,7 @@ import DataviewDate
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
 import DueDate exposing (DueDate)
+import EncodeHelpers
 import FNV1a
 import Filter exposing (Filter, Scope)
 import List.Extra as LE
@@ -56,6 +58,7 @@ import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
+import TsJson.Encode as TsEncode
 
 
 
@@ -125,6 +128,96 @@ defaultFields =
     , title = []
     , contents = []
     }
+
+
+
+-- ENCODE / DECODE
+
+
+contentEncoder : TsEncode.Encoder Content
+contentEncoder =
+    TsEncode.union
+        (\vAutoCompleteTag vCompletedTag vDueTag vObsidianTag vWord value ->
+            case value of
+                AutoCompleteTag autoCompletion ->
+                    vAutoCompleteTag autoCompletion
+
+                CompletedTag timeStamp ->
+                    vCompletedTag timeStamp
+
+                DueTag date ->
+                    vDueTag date
+
+                ObsidianTag tag ->
+                    vObsidianTag tag
+
+                Word word ->
+                    vWord word
+        )
+        |> TsEncode.variantTagged "AutoCompleteTag" autoCompletionEncoder
+        |> TsEncode.variantTagged "CompletedTag" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variantTagged "DueTag" DueDate.encoder
+        |> TsEncode.variantTagged "ObsidianTag" Tag.encoder
+        |> TsEncode.variantTagged "Word" TsEncode.string
+        |> TsEncode.buildUnion
+
+
+autoCompletionEncoder : TsEncode.Encoder AutoCompletion
+autoCompletionEncoder =
+    TsEncode.union
+        (\vFalseSpecified vNotSpecifed vTrueSpecified value ->
+            case value of
+                FalseSpecified ->
+                    vFalseSpecified
+
+                NotSpecifed ->
+                    vNotSpecifed
+
+                TrueSpecified ->
+                    vTrueSpecified
+        )
+        |> TsEncode.variant0 "FalseSpecified"
+        |> TsEncode.variant0 "NotSpecifed"
+        |> TsEncode.variant0 "TrueSpecified"
+        |> TsEncode.buildUnion
+
+
+completionEncoder : TsEncode.Encoder Completion
+completionEncoder =
+    TsEncode.union
+        (\vCompleted vCompletedAt vIncomplete value ->
+            case value of
+                Completed ->
+                    vCompleted
+
+                CompletedAt timeStamp ->
+                    vCompletedAt timeStamp
+
+                Incomplete ->
+                    vIncomplete
+        )
+        |> TsEncode.variant0 "Completed"
+        |> TsEncode.variantTagged "CompletedAt" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variant0 "Incomplete"
+        |> TsEncode.buildUnion
+
+
+encoder : TsEncode.Encoder TaskItem
+encoder =
+    TsEncode.map fields <|
+        TsEncode.object
+            [ TsEncode.required "autoComplete" .autoComplete autoCompletionEncoder
+            , TsEncode.required "completion" .completion completionEncoder
+            , TsEncode.required "contents" .contents (TsEncode.list contentEncoder)
+            , TsEncode.required "dueFile" .dueFile (TsEncode.maybe EncodeHelpers.dateEncoder)
+            , TsEncode.required "dueTag" .dueTag DueDate.encoder
+            , TsEncode.required "filePath" .filePath TsEncode.string
+            , TsEncode.required "lineNumber" .lineNumber TsEncode.int
+            , TsEncode.required "notes" .notes TsEncode.string
+            , TsEncode.required "originalText" .originalText TsEncode.string
+            , TsEncode.required "tags" .tags TagList.encoder
+            , TsEncode.required "title" .title (TsEncode.list TsEncode.string)
+            ]
 
 
 

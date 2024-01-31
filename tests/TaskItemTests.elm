@@ -12,6 +12,7 @@ import TagList
 import TaskItem exposing (Completion(..))
 import Test exposing (..)
 import Time
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -24,6 +25,7 @@ suite =
         , containsId
         , descendantTasks
         , due
+        , encoder
         , filePath
         , hasTags
         , hasThisTagBasic
@@ -496,6 +498,19 @@ due =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @due(2020-51-01)x bar")
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes a basic TaskItem" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]}""")
         ]
 
 
