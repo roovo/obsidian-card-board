@@ -6,6 +6,7 @@ import Helpers.UnicodeHelpers as UnicodeHelpers
 import Parser exposing ((|.), (|=))
 import Tag
 import Test exposing (..)
+import TsJson.Encode as TsEncode
 import Unicode
 
 
@@ -13,6 +14,7 @@ suite : Test
 suite =
     concat
         [ containsInvalidCharacters
+        , encoder
         , equals
         , matches
         , parser
@@ -44,6 +46,19 @@ containsInvalidCharacters =
                 ("as" ++ String.fromChar fuzzedWhitespace ++ "r")
                     |> Tag.containsInvalidCharacters
                     |> Expect.equal True
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes the tag contents as a string" <|
+            \() ->
+                "#foo"
+                    |> Parser.run Tag.parser
+                    |> Result.map (TsEncode.runExample Tag.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok "\"foo\"")
         ]
 
 
