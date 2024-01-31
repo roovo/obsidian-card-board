@@ -5,6 +5,7 @@ import {
   Plugin,
   PluginSettingTab,
   Setting,
+  TAbstractFile,
   TFile,
   addIcon,
   moment,
@@ -17,8 +18,8 @@ import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-int
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
-  private worker:     ElmApp;
   private fileFilter: FileFilter;
+  private worker:     ElmApp;
   settings:           CardBoardPluginSettings;
 
   async onload() {
@@ -34,10 +35,6 @@ export default class CardBoardPlugin extends Plugin {
       this.fileFilter = new FileFilter([]);
     }
 
-    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
-  }
-
-  async onLayoutReady() {
     // @ts-ignore
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
 
@@ -69,6 +66,14 @@ export default class CardBoardPlugin extends Plugin {
           break;
       }
     });
+
+    this.registerEvent(this.app.vault.on("create",
+      (file) => this.handleFileCreated(file)));
+
+    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+  }
+
+  async onLayoutReady() {
 
     const markdownFiles = this.app.vault.getMarkdownFiles();
     const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
@@ -195,6 +200,26 @@ export default class CardBoardPlugin extends Plugin {
         await this.app.vault.adapter.remove(pathToSavedSettings);
       }
       this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
+    }
+  }
+
+  async handleFileCreated(
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.app.vault.read(file);
+
+        this.worker.ports.interopToElm.send({
+          tag: "fileAdded",
+          data: {
+            filePath: file.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
+      }
     }
   }
 

@@ -21,6 +21,8 @@ STEP 3
      hmmmmmmm
 
 
+- can I make it so I load any settings at startup but save the latest version
+  when I get them back from elm?
 
 ---
 - touch events - iPad ??
