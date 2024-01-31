@@ -25,6 +25,7 @@ type ToElm
     = AllMarkdownLoaded
     | FileAdded MarkdownFile
     | FileDeleted String
+    | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
 
 
@@ -70,6 +71,7 @@ toElm =
         [ DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
+        , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         ]
 
@@ -84,3 +86,14 @@ fromElm =
         )
         |> TsEncode.variant0 "allTasksLoaded"
         |> TsEncode.buildUnion
+
+
+
+-- HELPERS
+
+
+renamedFileDecoder : TsDecode.Decoder ( String, String )
+renamedFileDecoder =
+    TsDecode.succeed Tuple.pair
+        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)

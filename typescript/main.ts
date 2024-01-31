@@ -76,6 +76,9 @@ export default class CardBoardPlugin extends Plugin {
     this.registerEvent(this.app.vault.on("modify",
       (file) => this.handleFileModified(file)));
 
+    this.registerEvent(this.app.vault.on("rename",
+      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
 
@@ -256,6 +259,37 @@ export default class CardBoardPlugin extends Plugin {
             fileContents: fileContents
           }
         });
+      }
+    }
+  }
+
+  async handleFileRenamed(
+    file: TAbstractFile,
+    oldPath: string
+  ) {
+    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
+
+    switch(oldNew.join(",")) {
+      case 'false,true': {
+        this.handleFileCreated(file)
+        break;
+      }
+      case 'true,false': {
+        this.worker.ports.interopToElm.send({
+          tag: "fileDeleted",
+          data: oldPath
+        });
+        break;
+      }
+      case 'true,true': {
+        this.worker.ports.interopToElm.send({
+          tag: "fileRenamed",
+          data: {
+            oldPath: oldPath,
+            newPath: file.path
+          }
+        });
+        break;
       }
     }
   }

@@ -69,6 +69,7 @@ type Msg
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
+    | VaultFileRenamed ( String, String )
     | VaultFileUpdated MarkdownFile
 
 
@@ -97,6 +98,16 @@ update msg model =
 
         VaultFileDeleted filePath ->
             ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
+            , Cmd.none
+            )
+
+        VaultFileRenamed ( oldPath, newPath ) ->
+            let
+                newModel : Model
+                newModel =
+                    mapSession (Session.updatePath oldPath newPath) model
+            in
+            ( newModel
             , Cmd.none
             )
 
@@ -136,6 +147,9 @@ subscriptions _ =
 
                                 InteropDefinitions.FileDeleted filePath ->
                                     VaultFileDeleted filePath
+
+                                InteropDefinitions.FileRenamed oldAndNewPath ->
+                                    VaultFileRenamed oldAndNewPath
 
                                 InteropDefinitions.FileUpdated markdownFile ->
                                     VaultFileUpdated markdownFile

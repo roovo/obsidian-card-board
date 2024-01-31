@@ -8,11 +8,14 @@ module Worker.Session exposing
     , fromFlags
     , replaceTaskItems
     , taskList
+    , updatePath
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import InteropDefinitions
+import Settings
 import State exposing (State)
+import TaskItem
 import TaskList exposing (TaskList)
 
 
@@ -126,6 +129,19 @@ replaceTaskItems filePath updatedList ((Session config) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
+
+
+updatePath : String -> String -> Session -> Session
+updatePath oldPath newPath (Session config) =
+    let
+        updateTaskListPaths : TaskList -> TaskList
+        updateTaskListPaths tasks =
+            TaskList.map (TaskItem.updateFilePath oldPath newPath) tasks
+    in
+    Session
+        { config
+            | taskList = State.map updateTaskListPaths config.taskList
+        }
 
 
 
