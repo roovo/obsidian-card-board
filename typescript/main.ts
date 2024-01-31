@@ -252,7 +252,7 @@ export default class CardBoardPlugin extends Plugin {
         const fileContents  = await this.app.vault.read(file);
 
         this.worker.ports.interopToElm.send({
-          tag: "fileUpdated",
+          tag: "fileModified",
           data: {
             filePath: file.path,
             fileDate: fileDate,

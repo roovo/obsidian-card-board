@@ -69,8 +69,8 @@ type Msg
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
+    | VaultFileModified MarkdownFile
     | VaultFileRenamed ( String, String )
-    | VaultFileUpdated MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -101,17 +101,7 @@ update msg model =
             , Cmd.none
             )
 
-        VaultFileRenamed ( oldPath, newPath ) ->
-            let
-                newModel : Model
-                newModel =
-                    mapSession (Session.updatePath oldPath newPath) model
-            in
-            ( newModel
-            , Cmd.none
-            )
-
-        VaultFileUpdated markdownFile ->
+        VaultFileModified markdownFile ->
             let
                 newTaskItems : TaskList
                 newTaskItems =
@@ -120,6 +110,16 @@ update msg model =
                 newModel : Model
                 newModel =
                     mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
+        VaultFileRenamed ( oldPath, newPath ) ->
+            let
+                newModel : Model
+                newModel =
+                    mapSession (Session.updatePath oldPath newPath) model
             in
             ( newModel
             , Cmd.none
@@ -148,11 +148,11 @@ subscriptions _ =
                                 InteropDefinitions.FileDeleted filePath ->
                                     VaultFileDeleted filePath
 
+                                InteropDefinitions.FileModified markdownFile ->
+                                    VaultFileModified markdownFile
+
                                 InteropDefinitions.FileRenamed oldAndNewPath ->
                                     VaultFileRenamed oldAndNewPath
-
-                                InteropDefinitions.FileUpdated markdownFile ->
-                                    VaultFileUpdated markdownFile
 
                         Err _ ->
                             BadInputFromTypeScript

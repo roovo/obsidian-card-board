@@ -1,8 +1,6 @@
 STEP 1
 -----
-- fileUpdated -> fileModified
 - W: watch for markdown file events (add, modify, rename, delete)
-    - update taskList
     - broadcast changes (initially add, delete TaskItems)
 - V: ask for all tasks
 - V: subscribe to taskList change events
