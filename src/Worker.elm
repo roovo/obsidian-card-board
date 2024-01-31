@@ -68,21 +68,13 @@ type Msg
     = AllMarkdownLoaded
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
+    | VaultFileDeleted String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         AllMarkdownLoaded ->
-            let
-                foo =
-                    model
-                        |> toSession
-                        |> Session.taskList
-                        |> TaskList.tasks
-                        |> List.map TaskItem.title
-                        |> Debug.log "loaded tasks"
-            in
             ( mapSession Session.finishAdding model, InteropPorts.allTasksLoaded )
 
         BadInputFromTypeScript ->
@@ -102,6 +94,11 @@ update msg model =
             , Cmd.none
             )
 
+        VaultFileDeleted filePath ->
+            ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -116,11 +113,14 @@ subscriptions _ =
                     case result of
                         Ok toElm ->
                             case toElm of
+                                InteropDefinitions.AllMarkdownLoaded ->
+                                    AllMarkdownLoaded
+
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile
 
-                                InteropDefinitions.AllMarkdownLoaded ->
-                                    AllMarkdownLoaded
+                                InteropDefinitions.FileDeleted filePath ->
+                                    VaultFileDeleted filePath
 
                         Err _ ->
                             BadInputFromTypeScript

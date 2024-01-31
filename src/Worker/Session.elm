@@ -3,6 +3,7 @@ module Worker.Session exposing
     , addTaskList
     , dataviewTaskCompletion
     , default
+    , deleteItemsFromFile
     , finishAdding
     , fromFlags
     , taskList
@@ -85,6 +86,19 @@ addTaskList list ((Session model) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.append currentList list)) session
+
+
+deleteItemsFromFile : String -> Session -> Session
+deleteItemsFromFile filePath ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loading (TaskList.removeForFile filePath currentList)) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loaded (TaskList.removeForFile filePath currentList)) session
 
 
 finishAdding : Session -> Session

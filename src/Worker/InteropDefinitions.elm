@@ -24,6 +24,7 @@ type FromElm
 type ToElm
     = AllMarkdownLoaded
     | FileAdded MarkdownFile
+    | FileDeleted String
 
 
 type alias Flags =
@@ -67,6 +68,7 @@ toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
+        , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         ]
 
 

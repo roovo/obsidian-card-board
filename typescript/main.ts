@@ -70,6 +70,9 @@ export default class CardBoardPlugin extends Plugin {
     this.registerEvent(this.app.vault.on("create",
       (file) => this.handleFileCreated(file)));
 
+    this.registerEvent(this.app.vault.on("delete",
+      (file) => this.handleFileDeleted(file)));
+
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
 
@@ -220,6 +223,17 @@ export default class CardBoardPlugin extends Plugin {
           }
         });
       }
+    }
+  }
+
+  async handleFileDeleted(
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      this.worker.ports.interopToElm.send({
+        tag: "fileDeleted",
+        data: file.path
+      });
     }
   }
 
