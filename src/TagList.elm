@@ -6,6 +6,7 @@ module TagList exposing
     , containsTagMatchingOneOf
     , containsTagOtherThanThese
     , empty
+    , encoder
     , filter
     , fromList
     , isEmpty
@@ -19,6 +20,7 @@ import List.Extra as LE
 import Parser
 import Set exposing (Set)
 import Tag exposing (Tag)
+import TsJson.Encode as TsEncode
 
 
 
@@ -59,6 +61,15 @@ fromList cs =
 cons : Tag -> TagList -> TagList
 cons tag (TagList tags) =
     TagList (tag :: tags)
+
+
+
+-- SERIALISE
+
+
+encoder : TsEncode.Encoder TagList
+encoder =
+    TsEncode.map toList <| TsEncode.list Tag.encoder
 
 
 
@@ -145,6 +156,11 @@ toStrings (TagList ts) =
 
 
 -- PRIVATE
+
+
+toList : TagList -> List Tag
+toList (TagList ts) =
+    ts
 
 
 toTags : TagList -> List Tag

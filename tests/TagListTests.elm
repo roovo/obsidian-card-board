@@ -5,6 +5,7 @@ import Parser
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import Test exposing (..)
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -16,6 +17,7 @@ suite =
         , containsTagMatchingOneOf
         , containsTagOtherThanThese
         , empty
+        , encoder
         , filter
         , fromList
         , isEmpty
@@ -205,6 +207,18 @@ empty =
                 TagList.empty
                     |> TagList.toString
                     |> Expect.equal ""
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes the list as a list of strings" <|
+            \() ->
+                TagList.fromList [ "atag", "btag" ]
+                    |> TsEncode.runExample TagList.encoder
+                    |> .output
+                    |> Expect.equal "[\"atag\",\"btag\"]"
         ]
 
 
