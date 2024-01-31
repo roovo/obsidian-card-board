@@ -69,6 +69,7 @@ type Msg
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
+    | VaultFileUpdated MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,6 +100,20 @@ update msg model =
             , Cmd.none
             )
 
+        VaultFileUpdated markdownFile ->
+            let
+                newTaskItems : TaskList
+                newTaskItems =
+                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
+
+                newModel : Model
+                newModel =
+                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
+            in
+            ( newModel
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -121,6 +136,9 @@ subscriptions _ =
 
                                 InteropDefinitions.FileDeleted filePath ->
                                     VaultFileDeleted filePath
+
+                                InteropDefinitions.FileUpdated markdownFile ->
+                                    VaultFileUpdated markdownFile
 
                         Err _ ->
                             BadInputFromTypeScript

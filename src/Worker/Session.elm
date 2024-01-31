@@ -6,6 +6,7 @@ module Worker.Session exposing
     , deleteItemsFromFile
     , finishAdding
     , fromFlags
+    , replaceTaskItems
     , taskList
     )
 
@@ -112,6 +113,19 @@ finishAdding ((Session config) as session) =
 
         State.Loaded _ ->
             session
+
+
+replaceTaskItems : String -> TaskList -> Session -> Session
+replaceTaskItems filePath updatedList ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loading (TaskList.replaceForFile filePath updatedList currentList)) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
 
 
 
