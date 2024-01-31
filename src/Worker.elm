@@ -1,11 +1,11 @@
 module Worker exposing (main)
 
-import InteropDefinitions
-import InteropPorts
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
 import TaskItem
 import TaskList exposing (TaskList)
+import Worker.InteropDefinitions as InteropDefinitions
+import Worker.InteropPorts as InteropPorts
 import Worker.Session as Session exposing (Session)
 
 
@@ -36,7 +36,7 @@ init flags =
                     Session.fromFlags okFlags
             in
             ( Yeah session
-            , InteropPorts.elmInitialized
+            , Cmd.none
             )
 
 
@@ -83,7 +83,7 @@ update msg model =
                         |> List.map TaskItem.title
                         |> Debug.log "loaded tasks"
             in
-            ( mapSession Session.finishAdding model, Cmd.none )
+            ( mapSession Session.finishAdding model, InteropPorts.allTasksLoaded )
 
         BadInputFromTypeScript ->
             ( model, Cmd.none )
@@ -121,9 +121,6 @@ subscriptions _ =
 
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded
-
-                                _ ->
-                                    BadInputFromTypeScript
 
                         Err _ ->
                             BadInputFromTypeScript

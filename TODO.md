@@ -1,3 +1,27 @@
+STEP 1
+-----
+- W: watch for markdown file events (add, modify, rename, delete)
+    - update taskList
+    - broadcast changes (initially add, delete TaskItems)
+- V: ask for all tasks
+- V: subscribe to taskList change events
+
+STEP 2
+------
+- W: detect if tasks have been changed so I can broadcast a taskItem changed event
+     instead of a delete and add.
+
+STEP 3
+------
+- V: maintains (via W) file(s) to hold the order of cards
+     W needs to maintain the files as it needs keeping up to date
+     irrespcetive of whether the view is active
+     V needs to read the file at startup so it puts cards in the right places
+     if user DnDs then V sends postion changes to W which writes them to the file
+     hmmmmmmm
+
+
+
 ---
 - touch events - iPad ??
 - show errors on settings pane ??

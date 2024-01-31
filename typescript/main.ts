@@ -64,8 +64,8 @@ export default class CardBoardPlugin extends Plugin {
 
     this.worker.ports.interopFromElm.subscribe((fromElm) => {
       switch (fromElm.tag) {
-        case "elmInitialized":
-          that.handleElmInitialized();
+        case "allTasksLoaded":
+          that.handleAllTasksLoaded();
           break;
       }
     });
@@ -91,6 +91,11 @@ export default class CardBoardPlugin extends Plugin {
       tag: "allMarkdownLoaded",
       data: { }
     });
+  }
+
+
+  async handleAllTasksLoaded() {
+    console.log("All tasks loaded");
 
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
@@ -107,11 +112,6 @@ export default class CardBoardPlugin extends Plugin {
     });
 
     this.addCommands();
-  }
-
-
-  async handleElmInitialized() {
-    console.log("Elm worker intialized");
   }
 
   onunload() {
