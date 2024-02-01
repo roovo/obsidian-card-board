@@ -10,6 +10,7 @@ import TagList
 import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -17,6 +18,7 @@ suite =
     concat
         [ add
         , combine
+        , encoder
         , filter
         , map
         , parsing
@@ -62,6 +64,26 @@ combine =
                     |> TaskList.concat
                     |> TaskList.taskTitles
                     |> Expect.equal [ "g1", "g2", "a1", "a2" ]
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes an empty TaskList" <|
+            \() ->
+                TaskList.empty
+                    |> TsEncode.runExample TaskList.encoder
+                    |> .output
+                    |> Expect.equal """[]"""
+        , test "encodes an TaskList containing tasks" <|
+            \() ->
+                TaskList.empty
+                    |> TaskList.add (taskItem "- [ ] foo")
+                    |> TaskList.add (taskItem "- [ ] bar")
+                    |> TsEncode.runExample TaskList.encoder
+                    |> .output
+                    |> Expect.equal """[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]},{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]"""
         ]
 
 

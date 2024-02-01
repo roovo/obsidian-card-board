@@ -5,6 +5,7 @@ module TaskList exposing
     , concat
     , containsTask
     , empty
+    , encoder
     , filter
     , foldl
     , fromMarkdown
@@ -27,6 +28,7 @@ import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TagList exposing (TagList)
 import TaskItem exposing (TaskItem)
+import TsJson.Encode as TsEncode
 
 
 
@@ -73,6 +75,15 @@ parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> P
 parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
     P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
         |> P.map (\ts -> TaskList ts)
+
+
+
+-- SERIALIZE
+
+
+encoder : TsEncode.Encoder TaskList
+encoder =
+    TsEncode.map topLevelTasks (TsEncode.list TaskItem.encoder)
 
 
 
