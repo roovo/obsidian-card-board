@@ -134,90 +134,21 @@ defaultFields =
 -- ENCODE / DECODE
 
 
-contentEncoder : TsEncode.Encoder Content
-contentEncoder =
-    TsEncode.union
-        (\vAutoCompleteTag vCompletedTag vDueTag vObsidianTag vWord value ->
-            case value of
-                AutoCompleteTag autoCompletion ->
-                    vAutoCompleteTag autoCompletion
-
-                CompletedTag timeStamp ->
-                    vCompletedTag timeStamp
-
-                DueTag date ->
-                    vDueTag date
-
-                ObsidianTag tag ->
-                    vObsidianTag tag
-
-                Word word ->
-                    vWord word
-        )
-        |> TsEncode.variantTagged "AutoCompleteTag" autoCompletionEncoder
-        |> TsEncode.variantTagged "CompletedTag" (TsEncode.map Time.posixToMillis TsEncode.int)
-        |> TsEncode.variantTagged "DueTag" DueDate.encoder
-        |> TsEncode.variantTagged "ObsidianTag" Tag.encoder
-        |> TsEncode.variantTagged "Word" TsEncode.string
-        |> TsEncode.buildUnion
-
-
-autoCompletionEncoder : TsEncode.Encoder AutoCompletion
-autoCompletionEncoder =
-    TsEncode.union
-        (\vFalseSpecified vNotSpecifed vTrueSpecified value ->
-            case value of
-                FalseSpecified ->
-                    vFalseSpecified
-
-                NotSpecifed ->
-                    vNotSpecifed
-
-                TrueSpecified ->
-                    vTrueSpecified
-        )
-        |> TsEncode.variant0 "FalseSpecified"
-        |> TsEncode.variant0 "NotSpecifed"
-        |> TsEncode.variant0 "TrueSpecified"
-        |> TsEncode.buildUnion
-
-
-completionEncoder : TsEncode.Encoder Completion
-completionEncoder =
-    TsEncode.union
-        (\vCompleted vCompletedAt vIncomplete value ->
-            case value of
-                Completed ->
-                    vCompleted
-
-                CompletedAt timeStamp ->
-                    vCompletedAt timeStamp
-
-                Incomplete ->
-                    vIncomplete
-        )
-        |> TsEncode.variant0 "Completed"
-        |> TsEncode.variantTagged "CompletedAt" (TsEncode.map Time.posixToMillis TsEncode.int)
-        |> TsEncode.variant0 "Incomplete"
-        |> TsEncode.buildUnion
-
-
 encoder : TsEncode.Encoder TaskItem
 encoder =
-    TsEncode.map fields <|
-        TsEncode.object
-            [ TsEncode.required "autoComplete" .autoComplete autoCompletionEncoder
-            , TsEncode.required "completion" .completion completionEncoder
-            , TsEncode.required "contents" .contents (TsEncode.list contentEncoder)
-            , TsEncode.required "dueFile" .dueFile (TsEncode.maybe EncodeHelpers.dateEncoder)
-            , TsEncode.required "dueTag" .dueTag DueDate.encoder
-            , TsEncode.required "filePath" .filePath TsEncode.string
-            , TsEncode.required "lineNumber" .lineNumber TsEncode.int
-            , TsEncode.required "notes" .notes TsEncode.string
-            , TsEncode.required "originalText" .originalText TsEncode.string
-            , TsEncode.required "tags" .tags TagList.encoder
-            , TsEncode.required "title" .title (TsEncode.list TsEncode.string)
+    let
+        foo : TaskItem -> { fields : TaskItemFields, subFields : List TaskItemFields }
+        foo (TaskItem fields_ subFields_) =
+            { fields = fields_
+            , subFields = subFields_
+            }
+    in
+    TsEncode.map foo
+        (TsEncode.object
+            [ TsEncode.required "fields" .fields taskItemFieldsEncoder
+            , TsEncode.required "subFields" .subFields (TsEncode.list taskItemFieldsEncoder)
             ]
+        )
 
 
 
@@ -876,6 +807,74 @@ tokenParser dataviewTaskCompletion =
 -- PRIVATE
 
 
+autoCompletionEncoder : TsEncode.Encoder AutoCompletion
+autoCompletionEncoder =
+    TsEncode.union
+        (\vFalseSpecified vNotSpecifed vTrueSpecified value ->
+            case value of
+                FalseSpecified ->
+                    vFalseSpecified
+
+                NotSpecifed ->
+                    vNotSpecifed
+
+                TrueSpecified ->
+                    vTrueSpecified
+        )
+        |> TsEncode.variant0 "FalseSpecified"
+        |> TsEncode.variant0 "NotSpecifed"
+        |> TsEncode.variant0 "TrueSpecified"
+        |> TsEncode.buildUnion
+
+
+completionEncoder : TsEncode.Encoder Completion
+completionEncoder =
+    TsEncode.union
+        (\vCompleted vCompletedAt vIncomplete value ->
+            case value of
+                Completed ->
+                    vCompleted
+
+                CompletedAt timeStamp ->
+                    vCompletedAt timeStamp
+
+                Incomplete ->
+                    vIncomplete
+        )
+        |> TsEncode.variant0 "Completed"
+        |> TsEncode.variantTagged "CompletedAt" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variant0 "Incomplete"
+        |> TsEncode.buildUnion
+
+
+contentEncoder : TsEncode.Encoder Content
+contentEncoder =
+    TsEncode.union
+        (\vAutoCompleteTag vCompletedTag vDueTag vObsidianTag vWord value ->
+            case value of
+                AutoCompleteTag autoCompletion ->
+                    vAutoCompleteTag autoCompletion
+
+                CompletedTag timeStamp ->
+                    vCompletedTag timeStamp
+
+                DueTag date ->
+                    vDueTag date
+
+                ObsidianTag tag ->
+                    vObsidianTag tag
+
+                Word word ->
+                    vWord word
+        )
+        |> TsEncode.variantTagged "AutoCompleteTag" autoCompletionEncoder
+        |> TsEncode.variantTagged "CompletedTag" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variantTagged "DueTag" DueDate.encoder
+        |> TsEncode.variantTagged "ObsidianTag" Tag.encoder
+        |> TsEncode.variantTagged "Word" TsEncode.string
+        |> TsEncode.buildUnion
+
+
 descendantTaskHasThisTag : String -> TaskItem -> Bool
 descendantTaskHasThisTag tagToMatch =
     let
@@ -898,6 +897,23 @@ mapFields fn (TaskItem fields_ subtasks_) =
 mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
 mapTags fn taskItem =
     mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+taskItemFieldsEncoder : TsEncode.Encoder TaskItemFields
+taskItemFieldsEncoder =
+    TsEncode.object
+        [ TsEncode.required "autoComplete" .autoComplete autoCompletionEncoder
+        , TsEncode.required "completion" .completion completionEncoder
+        , TsEncode.required "contents" .contents (TsEncode.list contentEncoder)
+        , TsEncode.required "dueFile" .dueFile (TsEncode.maybe EncodeHelpers.dateEncoder)
+        , TsEncode.required "dueTag" .dueTag DueDate.encoder
+        , TsEncode.required "filePath" .filePath TsEncode.string
+        , TsEncode.required "lineNumber" .lineNumber TsEncode.int
+        , TsEncode.required "notes" .notes TsEncode.string
+        , TsEncode.required "originalText" .originalText TsEncode.string
+        , TsEncode.required "tags" .tags TagList.encoder
+        , TsEncode.required "title" .title (TsEncode.list TsEncode.string)
+        ]
 
 
 topLevelTaskHasThisTag : String -> TaskItem -> Bool

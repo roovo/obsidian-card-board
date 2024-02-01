@@ -22,6 +22,7 @@ STEP 3
 
 - can I make it so I load any settings at startup but save the latest version
   when I get them back from elm?
+- can I make the taskItem encoding a bit more compact -> specially encoding Union types!
 
 ---
 - touch events - iPad ??

@@ -510,7 +510,21 @@ encoder =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                     |> Result.map (TsEncode.runExample TaskItem.encoder)
                     |> Result.map .output
-                    |> Expect.equal (Ok """{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]}""")
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}""")
+        , test "encodes a well decorated TaskItem" <|
+            \() ->
+                "- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalText":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}""")
+        , test "encodes a TaskItem with subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalText":"  - [ ] bar","tags":[],"title":["bar"]}]}""")
         ]
 
 
