@@ -239,8 +239,6 @@ export default class CardBoardPlugin extends Plugin {
         const fileDate      = this.formattedFileDate(file);
         const fileContents  = await this.app.vault.read(file);
 
-        console.log("file added");
-
         this.worker.ports.interopToElm.send({
           tag: "fileAdded",
           data: {

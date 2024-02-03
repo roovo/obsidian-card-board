@@ -2,7 +2,7 @@ module Worker exposing (main)
 
 import Json.Decode as JD
 import MarkdownFile exposing (MarkdownFile)
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import Worker.InteropDefinitions as InteropDefinitions
 import Worker.InteropPorts as InteropPorts
@@ -124,8 +124,22 @@ update msg model =
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->
-            ( mapSession (Session.updatePath oldPath newPath) model
-            , Cmd.none
+            let
+                updatedTaskItems : List TaskItem
+                updatedTaskItems =
+                    List.map (TaskItem.updateFilePath oldPath newPath) toUpdate
+
+                ( toUpdate, remaining ) =
+                    toSession model
+                        |> Session.taskList
+                        |> TaskList.topLevelTasks
+                        |> List.partition (TaskItem.isFromFile oldPath)
+            in
+            ( mapSession (Session.replaceTaskList <| TaskList.fromList (remaining ++ updatedTaskItems)) model
+            , Cmd.batch
+                [ InteropPorts.tasksDeleted toUpdate
+                , InteropPorts.tasksAdded (TaskList.fromList updatedTaskItems)
+                ]
             )
 
 
