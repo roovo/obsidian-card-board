@@ -65,9 +65,11 @@ displayTaskMarkdown cards =
         |> interopFromElm
 
 
-elmInitialized : Cmd msg
-elmInitialized =
-    encodeVariant "elmInitialized" (TsEncode.object []) ()
+elmInitialized : String -> Cmd msg
+elmInitialized uniqueId =
+    uniqueId
+        |> InteropDefinitions.ElmInitialized
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 

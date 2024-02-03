@@ -29,7 +29,7 @@ type FromElm
     | CloseView
     | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
-    | ElmInitialized
+    | ElmInitialized String
     | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
     | RequestFilterCandidates
     | ShowCardContextMenu { clientPos : ( Float, Float ), cardId : String }
@@ -189,8 +189,8 @@ fromElm =
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
 
-                ElmInitialized ->
-                    vElmInitialized
+                ElmInitialized uniqueId ->
+                    vElmInitialized uniqueId
 
                 OpenTaskSourceFile info ->
                     vOpenTaskSourceFile info
@@ -211,7 +211,7 @@ fromElm =
         |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
-        |> TsEncode.variant0 "elmInitialized"
+        |> TsEncode.variantTagged "elmInitialized" TsEncode.string
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
         |> TsEncode.variantTagged "showCardContextMenu" showCardContextMenuEncoder

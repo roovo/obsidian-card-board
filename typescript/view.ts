@@ -16,7 +16,7 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-import { CardBoardPluginSettingsPostV11 } from './types';
+import { CardBoardPluginSettingsPostV11, TaskItem } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 import { FileFilter } from './fileFilter'
 import { Scrollable } from './scrollable'
@@ -107,7 +107,7 @@ export class CardBoardView extends ItemView {
           that.handleDisplayTaskMarkdown(fromElm.data);
           break;
         case "elmInitialized":
-          that.handleElmInitialized();
+          that.handleElmInitialized(fromElm.data);
           break;
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
@@ -279,7 +279,7 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleElmInitialized() {
+  async handleElmInitialized(uniqueId : string) {
     const markdownFiles = this.vault.getMarkdownFiles();
     const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
 
@@ -300,6 +300,10 @@ export class CardBoardView extends ItemView {
     this.elm.ports.interopToElm.send({
       tag: "allMarkdownLoaded",
       data: { }
+    });
+
+    this.plugin.allTaskItems(uniqueId, (taskItems: TaskItem[]) => {
+      console.log("got all tasks");
     });
   }
 

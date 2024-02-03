@@ -44,7 +44,7 @@ init flags =
             ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
-                , InteropPorts.elmInitialized
+                , InteropPorts.elmInitialized ""
                 ]
             )
 
@@ -58,7 +58,7 @@ init flags =
                 |> forceAddWhenNoBoards
             , Cmd.batch
                 [ InteropPorts.updateSettings <| Session.settings session
-                , InteropPorts.elmInitialized
+                , InteropPorts.elmInitialized okFlags.uniqueId
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
             )

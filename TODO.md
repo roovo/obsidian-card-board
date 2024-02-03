@@ -28,6 +28,7 @@ STEP 3
     - original strings and parse to decode
 - can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
 - do I want to deal with Settings (as in ensure they are the latest version) in the worker?
+- ensure InteropPorts uses the tested code in InteropDefinitions (as per the worker versions)
 
 ---
 - touch events - iPad ??

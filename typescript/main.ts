@@ -128,6 +128,9 @@ export default class CardBoardPlugin extends Plugin {
     this.addCommands();
   }
 
+  async allTaskItems(viewUniqueId : string, cb : (taskItems: TaskItem[]) => any) {
+  }
+
 
   async handleTasksAdded(taskItems : TaskItem[]) {
     for (const taskItem of taskItems) {

@@ -1008,10 +1008,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"displayTaskMarkdown","data":[{"filePath":"a path","taskMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
         , test "encodes ElmInitialized" <|
             \() ->
-                InteropDefinitions.ElmInitialized
+                "a_unique_id"
+                    |> InteropDefinitions.ElmInitialized
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"elmInitialized"}"""
+                    |> Expect.equal """{"tag":"elmInitialized","data":"a_unique_id"}"""
         , test "encodes OpenTaskSourceFile data" <|
             \() ->
                 { filePath = "a path", lineNumber = 33, originalText = "the text" }
