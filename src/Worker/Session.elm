@@ -11,11 +11,11 @@ module Worker.Session exposing
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
-import InteropDefinitions
 import Settings
 import State exposing (State)
 import TaskItem
 import TaskList exposing (TaskList)
+import Worker.InteropDefinitions as InteropDefinitions
 
 
 

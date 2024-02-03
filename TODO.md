@@ -27,6 +27,7 @@ STEP 3
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
 - can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
+- do I want to deal with Settings (as in ensure they are the latest version) in the worker?
 
 ---
 - touch events - iPad ??

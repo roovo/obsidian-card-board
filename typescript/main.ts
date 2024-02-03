@@ -39,12 +39,6 @@ export default class CardBoardPlugin extends Plugin {
     const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
 
     const workerFlags:Flags = {
-      uniqueId:           "random",
-      now:                Date.now(),
-      zone:               new Date().getTimezoneOffset(),
-      firstDayOfWeek:     moment.localeData().firstDayOfWeek(),
-      settings:           this.settings,
-      rightToLeft:        (this.app.vault as any).getConfig("rightToLeft"),
       dataviewTaskCompletion:   {
         taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
         taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
