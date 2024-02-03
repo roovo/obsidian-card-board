@@ -88,7 +88,7 @@ update msg model =
                 newTasks =
                     TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
             in
-            ( mapSession (\s -> Session.addTaskList newTasks s) model
+            ( mapSession (Session.addTaskList newTasks) model
             , InteropPorts.tasksAdded newTasks
             )
 
@@ -97,10 +97,10 @@ update msg model =
                 ( toDelete, remaining ) =
                     toSession model
                         |> Session.taskList
-                        |> TaskList.toList
+                        |> TaskList.topLevelTasks
                         |> List.partition (TaskItem.isFromFile filePath)
             in
-            ( mapSession (\s -> Session.replaceTaskList (TaskList.fromList remaining) s) model
+            ( mapSession (Session.replaceTaskList <| TaskList.fromList remaining) model
             , InteropPorts.tasksDeleted toDelete
             )
 
@@ -109,9 +109,18 @@ update msg model =
                 newTaskItems : TaskList
                 newTaskItems =
                     TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
+
+                ( toDelete, remaining ) =
+                    toSession model
+                        |> Session.taskList
+                        |> TaskList.topLevelTasks
+                        |> List.partition (TaskItem.isFromFile markdownFile.filePath)
             in
-            ( mapSession (\s -> Session.replaceTaskListForFile markdownFile.filePath newTaskItems s) model
-            , Cmd.none
+            ( mapSession (Session.replaceTaskList <| TaskList.append (TaskList.fromList remaining) newTaskItems) model
+            , Cmd.batch
+                [ InteropPorts.tasksDeleted toDelete
+                , InteropPorts.tasksAdded newTaskItems
+                ]
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->
