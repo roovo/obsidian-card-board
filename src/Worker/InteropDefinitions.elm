@@ -12,6 +12,7 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
@@ -19,6 +20,7 @@ import TsJson.Encode as TsEncode exposing (required)
 
 type FromElm
     = AllTasksLoaded
+    | TasksAdded TaskList
 
 
 type ToElm
@@ -79,12 +81,16 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vElmInitialized value ->
+        (\vAllTasksLoaded vTasksAdded value ->
             case value of
                 AllTasksLoaded ->
-                    vElmInitialized
+                    vAllTasksLoaded
+
+                TasksAdded taskList ->
+                    vTasksAdded taskList
         )
         |> TsEncode.variant0 "allTasksLoaded"
+        |> TsEncode.variantTagged "tasksAdded" TaskList.encoder
         |> TsEncode.buildUnion
 
 

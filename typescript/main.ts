@@ -11,7 +11,7 @@ import {
   moment,
   normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
-import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './types';
+import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11, TaskItem } from './types';
 import { Elm, ElmApp, Flags } from '../src/Worker';
 import { FileFilter } from './fileFilter'
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
@@ -63,6 +63,9 @@ export default class CardBoardPlugin extends Plugin {
       switch (fromElm.tag) {
         case "allTasksLoaded":
           that.handleAllTasksLoaded();
+          break;
+        case "tasksAdded":
+          that.handleTasksAdded(fromElm.data);
           break;
       }
     });
@@ -126,6 +129,13 @@ export default class CardBoardPlugin extends Plugin {
     });
 
     this.addCommands();
+  }
+
+
+  async handleTasksAdded(taskItems : TaskItem[]) {
+    for (const taskItem of taskItems) {
+      console.log("Added: " + taskItem.fields.originalText);
+    }
   }
 
   onunload() {
@@ -219,6 +229,8 @@ export default class CardBoardPlugin extends Plugin {
       if (this.fileFilter.isAllowed(file.path)) {
         const fileDate      = this.formattedFileDate(file);
         const fileContents  = await this.app.vault.read(file);
+
+        console.log("file added");
 
         this.worker.ports.interopToElm.send({
           tag: "fileAdded",

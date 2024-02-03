@@ -93,7 +93,7 @@ update msg model =
                     mapSession (\s -> Session.addTaskList newTasks s) model
             in
             ( newModel
-            , Cmd.none
+            , InteropPorts.tasksAdded newTasks
             )
 
         VaultFileDeleted filePath ->

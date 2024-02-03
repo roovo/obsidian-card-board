@@ -1,12 +1,14 @@
 port module Worker.InteropPorts exposing
     ( allTasksLoaded
     , decodeFlags
+    , tasksAdded
     , toElm
     )
 
 import Json.Decode
 import Json.Encode
 import Settings exposing (Settings)
+import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 import Worker.InteropDefinitions as InteropDefinitions
@@ -33,6 +35,13 @@ decodeFlags flags =
 allTasksLoaded : Cmd msg
 allTasksLoaded =
     encodeVariant "allTasksLoaded" (TsEncode.object []) ()
+        |> interopFromElm
+
+
+tasksAdded : TaskList -> Cmd msg
+tasksAdded taskList =
+    taskList
+        |> encodeVariant "tasksAdded" TaskList.encoder
         |> interopFromElm
 
 
