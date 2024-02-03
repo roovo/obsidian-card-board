@@ -8,6 +8,7 @@ module TaskList exposing
     , encoder
     , filter
     , foldl
+    , fromList
     , fromMarkdown
     , map
     , parser
@@ -17,7 +18,7 @@ module TaskList exposing
     , taskFromId
     , taskIds
     , taskTitles
-    , tasks
+    , toList
     , topLevelTasks
     )
 
@@ -46,6 +47,11 @@ type TaskList
 empty : TaskList
 empty =
     TaskList []
+
+
+fromList : List TaskItem -> TaskList
+fromList =
+    TaskList
 
 
 fromMarkdown : DataviewTaskCompletion -> MarkdownFile -> TaskList
@@ -152,16 +158,16 @@ taskIds =
 
 taskContainingId : String -> TaskList -> Maybe TaskItem
 taskContainingId id =
-    LE.find (TaskItem.containsId id) << tasks
+    LE.find (TaskItem.containsId id) << toList
 
 
 taskFromId : String -> TaskList -> Maybe TaskItem
 taskFromId id =
-    LE.find (\i -> TaskItem.id i == id) << tasks
+    LE.find (\i -> TaskItem.id i == id) << toList
 
 
-tasks : TaskList -> List TaskItem
-tasks =
+toList : TaskList -> List TaskItem
+toList =
     List.concatMap (\t -> t :: TaskItem.descendantTasks t) << topLevelTasks
 
 

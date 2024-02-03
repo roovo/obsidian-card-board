@@ -20,13 +20,14 @@ suite =
         , combine
         , encoder
         , filter
+        , fromList
         , map
         , parsing
         , replaceForFile
         , removeForFile
         , taskContainingId
         , taskFromId
-        , tasks
+        , toList
         ]
 
 
@@ -108,6 +109,23 @@ filter =
                     |> Result.map (TaskList.filter TaskItem.hasTags)
                     |> Result.map TaskList.taskTitles
                     |> Expect.equal (Ok [ "bar", "baz" ])
+        ]
+
+
+fromList : Test
+fromList =
+    describe "fromList"
+        [ test "returns an empty TaskList if given an empty list" <|
+            \() ->
+                []
+                    |> TaskList.fromList
+                    |> Expect.equal TaskList.empty
+        , test "returns a TaskList containing the items in the list" <|
+            \() ->
+                [ taskItem "- [ ] foo", taskItem "- [ ] bar" ]
+                    |> TaskList.fromList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "foo", "bar" ]
         ]
 
 
@@ -264,7 +282,7 @@ not a task
 """
                     |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "file_a" Nothing (TagList.fromList [ "fm_tag1", "fm_tag2" ]) 0)
                     |> Result.withDefault TaskList.empty
-                    |> TaskList.tasks
+                    |> TaskList.toList
                     |> List.map TaskItem.tags
                     |> Expect.equal
                         [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
@@ -399,13 +417,13 @@ taskFromId =
         ]
 
 
-tasks : Test
-tasks =
+toList : Test
+toList =
     describe "tasks"
         [ test "returns an empty list if there are no tasks" <|
             \() ->
                 TaskListHelpers.parsedTasks ( "a", Nothing, "" )
-                    |> TaskList.tasks
+                    |> TaskList.toList
                     |> Expect.equal []
         , test "returns a list of all tasks and subtasks" <|
             \() ->
@@ -413,7 +431,7 @@ tasks =
 - [ ] g1
   - [x] subtask complete
 """ )
-                    |> TaskList.tasks
+                    |> TaskList.toList
                     |> List.map TaskItem.title
                     |> Expect.equal [ "g1", "subtask complete" ]
         ]

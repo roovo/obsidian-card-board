@@ -3,10 +3,10 @@ module Worker.Session exposing
     , addTaskList
     , dataviewTaskCompletion
     , default
-    , deleteItemsFromFile
     , finishAdding
     , fromFlags
-    , replaceTaskItems
+    , replaceTaskList
+    , replaceTaskListForFile
     , taskList
     , updatePath
     )
@@ -92,19 +92,6 @@ addTaskList list ((Session model) as session) =
             updateTaskListState (State.Loaded (TaskList.append currentList list)) session
 
 
-deleteItemsFromFile : String -> Session -> Session
-deleteItemsFromFile filePath ((Session config) as session) =
-    case config.taskList of
-        State.Waiting ->
-            session
-
-        State.Loading currentList ->
-            updateTaskListState (State.Loading (TaskList.removeForFile filePath currentList)) session
-
-        State.Loaded currentList ->
-            updateTaskListState (State.Loaded (TaskList.removeForFile filePath currentList)) session
-
-
 finishAdding : Session -> Session
 finishAdding ((Session config) as session) =
     case config.taskList of
@@ -118,8 +105,21 @@ finishAdding ((Session config) as session) =
             session
 
 
-replaceTaskItems : String -> TaskList -> Session -> Session
-replaceTaskItems filePath updatedList ((Session config) as session) =
+replaceTaskList : TaskList -> Session -> Session
+replaceTaskList newList ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loading newList) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loaded newList) session
+
+
+replaceTaskListForFile : String -> TaskList -> Session -> Session
+replaceTaskListForFile filePath updatedList ((Session config) as session) =
     case config.taskList of
         State.Waiting ->
             session

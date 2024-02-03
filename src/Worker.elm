@@ -87,18 +87,21 @@ update msg model =
                 newTasks : TaskList
                 newTasks =
                     TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.addTaskList newTasks s) model
             in
-            ( newModel
+            ( mapSession (\s -> Session.addTaskList newTasks s) model
             , InteropPorts.tasksAdded newTasks
             )
 
         VaultFileDeleted filePath ->
-            ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
-            , Cmd.none
+            let
+                ( toDelete, remaining ) =
+                    toSession model
+                        |> Session.taskList
+                        |> TaskList.toList
+                        |> List.partition (TaskItem.isFromFile filePath)
+            in
+            ( mapSession (\s -> Session.replaceTaskList (TaskList.fromList remaining) s) model
+            , InteropPorts.tasksDeleted toDelete
             )
 
         VaultFileModified markdownFile ->
@@ -106,22 +109,13 @@ update msg model =
                 newTaskItems : TaskList
                 newTaskItems =
                     TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
             in
-            ( newModel
+            ( mapSession (\s -> Session.replaceTaskListForFile markdownFile.filePath newTaskItems s) model
             , Cmd.none
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->
-            let
-                newModel : Model
-                newModel =
-                    mapSession (Session.updatePath oldPath newPath) model
-            in
-            ( newModel
+            ( mapSession (Session.updatePath oldPath newPath) model
             , Cmd.none
             )
 

@@ -2,12 +2,14 @@ port module Worker.InteropPorts exposing
     ( allTasksLoaded
     , decodeFlags
     , tasksAdded
+    , tasksDeleted
     , toElm
     )
 
 import Json.Decode
 import Json.Encode
 import Settings exposing (Settings)
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
@@ -34,14 +36,24 @@ decodeFlags flags =
 
 allTasksLoaded : Cmd msg
 allTasksLoaded =
-    encodeVariant "allTasksLoaded" (TsEncode.object []) ()
+    InteropDefinitions.AllTasksLoaded
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
 tasksAdded : TaskList -> Cmd msg
 tasksAdded taskList =
     taskList
-        |> encodeVariant "tasksAdded" TaskList.encoder
+        |> InteropDefinitions.TasksAdded
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
+        |> interopFromElm
+
+
+tasksDeleted : List TaskItem -> Cmd msg
+tasksDeleted taskItems =
+    taskItems
+        |> InteropDefinitions.TasksDeleted
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -53,18 +65,3 @@ port interopFromElm : Json.Encode.Value -> Cmd msg
 
 
 port interopToElm : (Json.Decode.Value -> msg) -> Sub msg
-
-
-
--- HELPERS
-
-
-encodeVariant : String -> TsEncode.Encoder arg1 -> arg1 -> Json.Encode.Value
-encodeVariant variantName encoder_ arg1 =
-    arg1
-        |> (TsEncode.object
-                [ TsEncode.required "tag" identity (TsEncode.literal (Json.Encode.string variantName))
-                , TsEncode.required "data" identity encoder_
-                ]
-                |> TsEncode.encoder
-           )

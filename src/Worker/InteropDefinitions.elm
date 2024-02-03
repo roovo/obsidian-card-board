@@ -2,6 +2,7 @@ module Worker.InteropDefinitions exposing
     ( Flags
     , FromElm(..)
     , ToElm(..)
+    , fromElm
     , interop
     )
 
@@ -12,6 +13,7 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
@@ -21,6 +23,7 @@ import TsJson.Encode as TsEncode exposing (required)
 type FromElm
     = AllTasksLoaded
     | TasksAdded TaskList
+    | TasksDeleted (List TaskItem)
 
 
 type ToElm
@@ -51,7 +54,6 @@ interop =
 
 
 
--- ENCODERS
 -- INTEROP
 
 
@@ -81,16 +83,20 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAllTasksLoaded vTasksAdded value ->
+        (\vAllTasksLoaded vTasksAdded vTasksDeleted value ->
             case value of
                 AllTasksLoaded ->
                     vAllTasksLoaded
 
                 TasksAdded taskList ->
                     vTasksAdded taskList
+
+                TasksDeleted taskItems ->
+                    vTasksDeleted taskItems
         )
         |> TsEncode.variant0 "allTasksLoaded"
         |> TsEncode.variantTagged "tasksAdded" TaskList.encoder
+        |> TsEncode.variantTagged "tasksDeleted" tasksDeletedEncoder
         |> TsEncode.buildUnion
 
 
@@ -103,3 +109,8 @@ renamedFileDecoder =
     TsDecode.succeed Tuple.pair
         |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
+
+
+tasksDeletedEncoder : TsEncode.Encoder (List TaskItem)
+tasksDeletedEncoder =
+    TsEncode.list <| TsEncode.map TaskItem.id TsEncode.string

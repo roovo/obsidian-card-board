@@ -67,6 +67,9 @@ export default class CardBoardPlugin extends Plugin {
         case "tasksAdded":
           that.handleTasksAdded(fromElm.data);
           break;
+        case "tasksDeleted":
+          that.handleTasksDeleted(fromElm.data);
+          break;
       }
     });
 
@@ -135,6 +138,12 @@ export default class CardBoardPlugin extends Plugin {
   async handleTasksAdded(taskItems : TaskItem[]) {
     for (const taskItem of taskItems) {
       console.log("Added: " + taskItem.fields.originalText);
+    }
+  }
+
+  async handleTasksDeleted(taskIds : String[]) {
+    for (const taskId of taskIds) {
+      console.log("Deleted: " + taskId);
     }
   }
 

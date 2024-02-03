@@ -1,6 +1,7 @@
 module Helpers.TaskItemHelpers exposing
     ( basicParser
     , exampleTaskItem
+    , safeTaskItem
     )
 
 import DataviewTaskCompletion
@@ -17,4 +18,10 @@ basicParser =
 exampleTaskItem : String -> String -> TaskItem
 exampleTaskItem markdown path =
     Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion path Nothing TagList.empty 0) markdown
+        |> Result.withDefault TaskItem.dummy
+
+
+safeTaskItem : String -> TaskItem
+safeTaskItem markdown =
+    Parser.run basicParser markdown
         |> Result.withDefault TaskItem.dummy
