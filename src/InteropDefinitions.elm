@@ -19,6 +19,7 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
@@ -39,6 +40,7 @@ type FromElm
 
 type ToElm
     = ActiveStateUpdated Bool
+    | AllMarkdownLoaded
     | ConfigChanged TextDirection
     | EditCardDueDate String
     | ElementDragged DragData
@@ -47,7 +49,7 @@ type ToElm
     | FileRenamed ( String, String )
     | FileUpdated MarkdownFile
     | FilterCandidates (List Filter)
-    | AllMarkdownLoaded
+    | LoadTaskItems TaskList
     | SettingsUpdated Settings
     | ShowBoard Int
 
@@ -158,6 +160,7 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
+        , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
@@ -166,7 +169,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
-        , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
+        , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems (TsDecode.succeed TaskList.empty)
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]

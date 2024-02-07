@@ -281,6 +281,7 @@ export class CardBoardView extends ItemView {
 
   async handleElmInitialized(uniqueId : string) {
     console.log("view: handling elm initialised");
+
     this.plugin.broadcastAllTaskItems();
   }
 
@@ -506,6 +507,13 @@ export class CardBoardView extends ItemView {
     this.elm.ports.interopToElm.send({
       tag: "settingsUpdated",
       data: data
+    });
+  }
+
+  loadTaskItems(taskItems: TaskItem[]) {
+    this.elm.ports.interopToElm.send({
+      tag: "loadTaskItems",
+      data: taskItems
     });
   }
 

@@ -123,12 +123,13 @@ type Msg
     | ConfigChanged TextDirection
     | EditCardDueDateRequested String
     | ElementDragged DragData
-    | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
+    | LoadTaskItems TaskList
     | ReceiveTime ( Time.Zone, Posix )
+    | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
     | VaultFileAdded MarkdownFile
@@ -209,6 +210,9 @@ update msg model =
                     ( model, Cmd.none )
 
         ( KeyDown _, _ ) ->
+            ( model, Cmd.none )
+
+        ( LoadTaskItems _, _ ) ->
             ( model, Cmd.none )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
@@ -444,6 +448,9 @@ subscriptions _ =
                                 InteropDefinitions.ActiveStateUpdated flag ->
                                     ActiveStateUpdated flag
 
+                                InteropDefinitions.AllMarkdownLoaded ->
+                                    AllMarkdownLoaded
+
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
 
@@ -468,8 +475,8 @@ subscriptions _ =
                                 InteropDefinitions.FilterCandidates filterCandidates ->
                                     FilterCandidatesReceived filterCandidates
 
-                                InteropDefinitions.AllMarkdownLoaded ->
-                                    AllMarkdownLoaded
+                                InteropDefinitions.LoadTaskItems taskItems ->
+                                    LoadTaskItems taskItems
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     SettingsUpdated newSettings

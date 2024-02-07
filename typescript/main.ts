@@ -114,6 +114,14 @@ export default class CardBoardPlugin extends Plugin {
 
   async handleAllTaskItems(taskItems: TaskItem[]) {
     console.log("main: handling all task items");
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.loadTaskItems(taskItems);
+      }
+    }
   }
 
   async handleAllTasksLoaded() {
