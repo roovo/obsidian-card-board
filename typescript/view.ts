@@ -280,6 +280,7 @@ export class CardBoardView extends ItemView {
   }
 
   async handleElmInitialized(uniqueId : string) {
+    console.log("view: handling elm initialised");
     this.plugin.broadcastAllTaskItems();
   }
 

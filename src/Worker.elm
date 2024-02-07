@@ -81,7 +81,7 @@ update msg model =
             ( mapSession Session.finishAdding model, InteropPorts.allTasksLoaded )
 
         BroadcastAllTaskItems ->
-            ( model, Cmd.none )
+            ( model, InteropPorts.allTaskItems <| Session.taskList <| toSession model )
 
         BadInputFromTypeScript ->
             ( model, Cmd.none )

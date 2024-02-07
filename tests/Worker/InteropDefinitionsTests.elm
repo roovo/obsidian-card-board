@@ -27,6 +27,21 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"allTasksLoaded"}"""
+        , test "encodes AllTaskItems with an empty TaskList" <|
+            \() ->
+                TaskList.empty
+                    |> InteropDefinitions.AllTaskItems
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"allTaskItems","data":[]}"""
+        , test "encodes AllTaskItems with an non-empty TaskList" <|
+            \() ->
+                [ safeTaskItem "- [ ] foo", safeTaskItem "- [ ] bar" ]
+                    |> TaskList.fromList
+                    |> InteropDefinitions.AllTaskItems
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"allTaskItems","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]},{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]}"""
         , test "encodes TasksAdded with an empty TaskList" <|
             \() ->
                 TaskList.empty

@@ -1,5 +1,6 @@
 port module Worker.InteropPorts exposing
-    ( allTasksLoaded
+    ( allTaskItems
+    , allTasksLoaded
     , decodeFlags
     , tasksAdded
     , tasksDeleted
@@ -24,7 +25,7 @@ toElm =
 
 
 
--- COMMANDS
+-- FLAGS
 
 
 decodeFlags : Json.Decode.Value -> Result Json.Decode.Error InteropDefinitions.Flags
@@ -32,6 +33,18 @@ decodeFlags flags =
     Json.Decode.decodeValue
         (InteropDefinitions.interop.flags |> TsDecode.decoder)
         flags
+
+
+
+-- COMMANDS
+
+
+allTaskItems : TaskList -> Cmd msg
+allTaskItems taskList =
+    taskList
+        |> InteropDefinitions.AllTaskItems
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
+        |> interopFromElm
 
 
 allTasksLoaded : Cmd msg

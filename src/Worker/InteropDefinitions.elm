@@ -22,6 +22,7 @@ import TsJson.Encode as TsEncode exposing (required)
 
 type FromElm
     = AllTasksLoaded
+    | AllTaskItems TaskList
     | TasksAdded TaskList
     | TasksDeleted (List TaskItem)
 
@@ -72,10 +73,13 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAllTasksLoaded vTasksAdded vTasksDeleted value ->
+        (\vAllTasksLoaded vAllTaskItems vTasksAdded vTasksDeleted value ->
             case value of
                 AllTasksLoaded ->
                     vAllTasksLoaded
+
+                AllTaskItems taskList ->
+                    vAllTaskItems taskList
 
                 TasksAdded taskList ->
                     vTasksAdded taskList
@@ -84,6 +88,7 @@ fromElm =
                     vTasksDeleted taskItems
         )
         |> TsEncode.variant0 "allTasksLoaded"
+        |> TsEncode.variantTagged "allTaskItems" TaskList.encoder
         |> TsEncode.variantTagged "tasksAdded" TaskList.encoder
         |> TsEncode.variantTagged "tasksDeleted" tasksDeletedEncoder
         |> TsEncode.buildUnion
