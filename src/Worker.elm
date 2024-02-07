@@ -66,6 +66,7 @@ mapSession fn model =
 
 type Msg
     = AllMarkdownLoaded
+    | BroadcastAllTaskItems
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
@@ -78,6 +79,9 @@ update msg model =
     case msg of
         AllMarkdownLoaded ->
             ( mapSession Session.finishAdding model, InteropPorts.allTasksLoaded )
+
+        BroadcastAllTaskItems ->
+            ( model, Cmd.none )
 
         BadInputFromTypeScript ->
             ( model, Cmd.none )
@@ -158,6 +162,9 @@ subscriptions _ =
                             case toElm of
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded
+
+                                InteropDefinitions.BroadcastAllTaskItems ->
+                                    BroadcastAllTaskItems
 
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile

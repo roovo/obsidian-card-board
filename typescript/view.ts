@@ -280,31 +280,7 @@ export class CardBoardView extends ItemView {
   }
 
   async handleElmInitialized(uniqueId : string) {
-    const markdownFiles = this.vault.getMarkdownFiles();
-    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
-
-    for (const file of filteredFiles) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.cachedRead(file);
-
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath:     file.path,
-          fileDate:     fileDate,
-          fileContents: fileContents
-        }
-      });
-    }
-
-    this.elm.ports.interopToElm.send({
-      tag: "allMarkdownLoaded",
-      data: { }
-    });
-
-    this.plugin.allTaskItems(uniqueId, (taskItems: TaskItem[]) => {
-      console.log("got all tasks");
-    });
+    this.plugin.broadcastAllTaskItems();
   }
 
 

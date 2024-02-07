@@ -128,7 +128,10 @@ export default class CardBoardPlugin extends Plugin {
     this.addCommands();
   }
 
-  async allTaskItems(viewUniqueId : string, cb : (taskItems: TaskItem[]) => any) {
+  async broadcastAllTaskItems() {
+    this.worker.ports.interopToElm.send({
+      tag: "broadcastAllTaskItems"
+    });
   }
 
 

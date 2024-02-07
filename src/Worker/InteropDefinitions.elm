@@ -28,6 +28,7 @@ type FromElm
 
 type ToElm
     = AllMarkdownLoaded
+    | BroadcastAllTaskItems
     | FileAdded MarkdownFile
     | FileDeleted String
     | FileModified MarkdownFile
@@ -60,6 +61,7 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
+        , DecodeHelpers.toElmVariant0 "broadcastAllTaskItems" BroadcastAllTaskItems
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileModified" FileModified MarkdownFile.decoder
