@@ -23,9 +23,16 @@ export default class CardBoardPlugin extends Plugin {
   settings:           CardBoardPluginSettings;
 
   async onload() {
-    console.log('loading CardBoard plugin');
+    // console.log('loading CardBoard plugin');
+    console.log('main: onload');
 
     await this.loadSettings();
+
+    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+  }
+
+  async onLayoutReady() {
+    console.log("main: onLayoutReady");
 
     const globalSettings : any = this.settings?.data.globalSettings;
 
@@ -82,14 +89,12 @@ export default class CardBoardPlugin extends Plugin {
     this.registerEvent(this.app.vault.on("rename",
       (file, oldPath) => this.handleFileRenamed(file, oldPath)));
 
-    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
-  }
-
-  async onLayoutReady() {
     const markdownFiles = this.app.vault.getMarkdownFiles();
     const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
 
     for (const file of filteredFiles) {
+      console.log("main: toElm -> fileAdded");
+
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.app.vault.cachedRead(file);
 
@@ -103,7 +108,7 @@ export default class CardBoardPlugin extends Plugin {
       });
     }
 
-    console.log("main: all markdown loaded");
+    console.log("main: toElm -> allMarkdownLoaded");
 
     this.worker.ports.interopToElm.send({
       tag: "allMarkdownLoaded",
@@ -113,7 +118,7 @@ export default class CardBoardPlugin extends Plugin {
 
 
   async handleAllTaskItems(taskItems: TaskItem[]) {
-    console.log("main: handling all task items");
+    console.log("main: fromElm <- allTasksItems");
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
@@ -125,7 +130,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleAllTasksLoaded() {
-    console.log("main: handling all tasks loaded");
+    console.log("main: fromElm <- allTasksLoaded");
 
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
@@ -152,7 +157,7 @@ export default class CardBoardPlugin extends Plugin {
 
 
   async handleTasksAdded(taskItems : TaskItem[]) {
-    console.log("main: handling tasks added");
+    console.log("main: fromElm <- tasksAdded: " + taskItems.length);
 
     // for (const taskItem of taskItems) {
     //   console.log("Added: " + taskItem.fields.originalText);
@@ -160,7 +165,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleTasksDeleted(taskIds : String[]) {
-    console.log("main: handling tasks deleted");
+    console.log("main: fromElm <- tasksAdded");
 
     // for (const taskId of taskIds) {
     //   console.log("Deleted: " + taskId);
