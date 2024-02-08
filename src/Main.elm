@@ -118,7 +118,6 @@ type KeyValue
 
 type Msg
     = ActiveStateUpdated Bool
-    | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
     | EditCardDueDateRequested String
@@ -132,10 +131,6 @@ type Msg
     | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
-    | VaultFileAdded MarkdownFile
-    | VaultFileDeleted String
-    | VaultFileRenamed ( String, String )
-    | VaultFileUpdated MarkdownFile
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,14 +139,6 @@ update msg model =
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
-            )
-
-        ( AllMarkdownLoaded, _ ) ->
-            ( mapSession Session.finishAdding model
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession model)
-                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession model)
-                ]
             )
 
         ( BadInputFromTypeScript, _ ) ->
@@ -295,52 +282,6 @@ update msg model =
             , cmd
             )
 
-        ( VaultFileAdded markdownFile, _ ) ->
-            let
-                newTasks : TaskList
-                newTasks =
-                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.addTaskList newTasks s) model
-            in
-            ( newModel
-            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
-            )
-
-        ( VaultFileDeleted filePath, _ ) ->
-            ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
-            , Cmd.none
-            )
-
-        ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
-            let
-                newModel : Model
-                newModel =
-                    mapSession (Session.updatePath oldPath newPath) model
-            in
-            ( newModel
-            , Cmd.batch
-                [ cmdForTaskRedraws newPath (toSession newModel)
-                , cmdForFilterPathRename newPath (toSession newModel)
-                ]
-            )
-
-        ( VaultFileUpdated markdownFile, _ ) ->
-            let
-                newTaskItems : TaskList
-                newTaskItems =
-                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
-            in
-            ( newModel
-            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
-            )
-
 
 cmdForFilterPathRename : String -> Session -> Cmd msg
 cmdForFilterPathRename newPath session =
@@ -450,9 +391,6 @@ subscriptions _ =
                                 InteropDefinitions.ActiveStateUpdated flag ->
                                     ActiveStateUpdated flag
 
-                                InteropDefinitions.AllMarkdownLoaded ->
-                                    AllMarkdownLoaded
-
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
 
@@ -461,18 +399,6 @@ subscriptions _ =
 
                                 InteropDefinitions.ElementDragged dragData ->
                                     ElementDragged dragData
-
-                                InteropDefinitions.FileAdded markdownFile ->
-                                    VaultFileAdded markdownFile
-
-                                InteropDefinitions.FileDeleted filePath ->
-                                    VaultFileDeleted filePath
-
-                                InteropDefinitions.FileRenamed oldAndNewPath ->
-                                    VaultFileRenamed oldAndNewPath
-
-                                InteropDefinitions.FileUpdated markdownFile ->
-                                    VaultFileUpdated markdownFile
 
                                 InteropDefinitions.FilterCandidates filterCandidates ->
                                     FilterCandidatesReceived filterCandidates

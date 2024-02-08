@@ -1063,12 +1063,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
-        , test "decodes allMarkdownLoaded" <|
-            \() ->
-                """{"tag":"allMarkdownLoaded","data":{}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes configChanged data" <|
             \() ->
                 """{"tag":"configChanged","data":{"rightToLeft":true}}"""
@@ -1095,54 +1089,12 @@ toElmTests =
                                     ]
                                 }
                         )
-        , test "decodes fileAdded data" <|
-            \() ->
-                """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal
-                        (Ok <|
-                            InteropDefinitions.FileAdded
-                                { filePath = "a path"
-                                , fileDate = Just "a date"
-                                , frontMatterTags = TagList.fromList [ "a_tag" ]
-                                , bodyOffset = 3
-                                , body = "some contents"
-                                }
-                        )
-        , test "decodes fileDeleted data" <|
-            \() ->
-                """{"tag":"fileDeleted","data":"a path"}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
         , test "decodes editCardDueDate data" <|
             \() ->
                 """{"tag":"editCardDueDate","data":"a card"}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.EditCardDueDate "a card")
-        , test "decodes fileRenamed data" <|
-            \() ->
-                """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileRenamed ( "the old path", "the new path" ))
-        , test "decodes fileUpdated data" <|
-            \() ->
-                """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","frontMatterTags":["a_tag"],"fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal
-                        (Ok <|
-                            InteropDefinitions.FileUpdated
-                                { filePath = "a path"
-                                , fileDate = Just "a date"
-                                , frontMatterTags = TagList.fromList [ "a_tag" ]
-                                , bodyOffset = 3
-                                , body = "some contents"
-                                }
-                        )
         , test "decodes filterCandidates data" <|
             \() ->
                 """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""

@@ -40,14 +40,9 @@ type FromElm
 
 type ToElm
     = ActiveStateUpdated Bool
-    | AllMarkdownLoaded
     | ConfigChanged TextDirection
     | EditCardDueDate String
     | ElementDragged DragData
-    | FileAdded MarkdownFile
-    | FileDeleted String
-    | FileRenamed ( String, String )
-    | FileUpdated MarkdownFile
     | FilterCandidates (List Filter)
     | LoadTaskItems TaskList
     | SettingsUpdated Settings
@@ -160,14 +155,9 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
-        , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
-        , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
-        , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
-        , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
-        , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
         , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems TaskList.decoder
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder

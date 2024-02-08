@@ -133,18 +133,6 @@ export class CardBoardView extends ItemView {
     this.registerEvent(this.app.workspace.on("active-leaf-change",
       (leaf) => this.handleActiveLeafChange(leaf)));
 
-    this.registerEvent(this.app.vault.on("create",
-      (file) => this.handleFileCreated(file)));
-
-    this.registerEvent(this.app.vault.on("delete",
-      (file) => this.handleFileDeleted(file)));
-
-    this.registerEvent(this.app.vault.on("modify",
-      (file) => this.handleFileModified(file)));
-
-    this.registerEvent(this.app.vault.on("rename",
-      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
-
     // @ts-ignore
     this.registerEvent(this.app.vault.on("config-changed",
       () => this.handleConfigChanged()));
@@ -562,88 +550,6 @@ export class CardBoardView extends ItemView {
         rightToLeft: (this.app.vault as any).getConfig("rightToLeft"),
       }
     });
-  }
-
-  async handleFileCreated(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      if (this.fileFilter.isAllowed(file.path)) {
-        const fileDate      = this.formattedFileDate(file);
-        const fileContents  = await this.vault.read(file);
-
-        this.elm.ports.interopToElm.send({
-          tag: "fileAdded",
-          data: {
-            filePath: file.path,
-            fileDate: fileDate,
-            fileContents: fileContents
-          }
-        });
-      }
-    }
-  }
-
-  async handleFileDeleted(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      this.elm.ports.interopToElm.send({
-        tag: "fileDeleted",
-        data: file.path
-      });
-    }
-  }
-
-  async handleFileModified(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      if (this.fileFilter.isAllowed(file.path)) {
-        const fileDate      = this.formattedFileDate(file);
-        const fileContents  = await this.vault.read(file);
-
-        this.elm.ports.interopToElm.send({
-          tag: "fileUpdated",
-          data: {
-            filePath: file.path,
-            fileDate: fileDate,
-            fileContents: fileContents
-          }
-        });
-      }
-    }
-  }
-
-  async handleFileRenamed(
-    file: TAbstractFile,
-    oldPath: string
-  ) {
-    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
-
-    switch(oldNew.join(",")) {
-      case 'false,true': {
-        this.handleFileCreated(file)
-        break;
-      }
-      case 'true,false': {
-        this.elm.ports.interopToElm.send({
-          tag: "fileDeleted",
-          data: oldPath
-        });
-        break;
-      }
-      case 'true,true': {
-        this.elm.ports.interopToElm.send({
-          tag: "fileRenamed",
-          data: {
-            oldPath: oldPath,
-            newPath: file.path
-          }
-        });
-        break;
-      }
-    }
   }
 
   // HELPERS
