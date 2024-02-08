@@ -268,7 +268,7 @@ export class CardBoardView extends ItemView {
   }
 
   async handleElmInitialized(uniqueId : string) {
-    console.log("view: handling elm initialised");
+    console.log("view: fromView -> elmInitialised");
 
     this.plugin.broadcastAllTaskItems();
   }
@@ -499,12 +499,30 @@ export class CardBoardView extends ItemView {
   }
 
   loadTaskItems(taskItems: TaskItem[]) {
-    console.log("view: loading taskItems: " + taskItems.length);
+    console.log("view: toView <- loadTaskItems: " + taskItems.length);
 
     this.elm.ports.interopToElm.send({
       tag: "loadTaskItems",
       data: taskItems
     });
+  }
+
+  addTaskItems(taskItems: TaskItem[]) {
+    console.log("view: toView <- addTaskItems: " + taskItems.length);
+
+    // this.elm.ports.interopToElm.send({
+    //   tag: "addTaskItems",
+    //   data: taskItems
+    // });
+  }
+
+  removeTaskItems(taskIds: string[]) {
+    console.log("view: toView <- removeTaskItems: " + taskIds.length);
+
+    // this.elm.ports.interopToElm.send({
+    //   tag: "addTaskItems",
+    //   data: taskItems
+    // });
   }
 
   async handleUpdateTasks(
