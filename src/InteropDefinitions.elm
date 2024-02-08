@@ -40,6 +40,7 @@ type FromElm
 
 type ToElm
     = ActiveStateUpdated Bool
+    | AddTaskItems TaskList
     | ConfigChanged TextDirection
     | EditCardDueDate String
     | ElementDragged DragData
@@ -155,6 +156,7 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
+        , DecodeHelpers.toElmVariant "addTaskItems" AddTaskItems TaskList.decoder
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder

@@ -510,10 +510,10 @@ export class CardBoardView extends ItemView {
   addTaskItems(taskItems: TaskItem[]) {
     console.log("view: toView <- addTaskItems: " + taskItems.length);
 
-    // this.elm.ports.interopToElm.send({
-    //   tag: "addTaskItems",
-    //   data: taskItems
-    // });
+    this.elm.ports.interopToElm.send({
+      tag: "addTaskItems",
+      data: taskItems
+    });
   }
 
   removeTaskItems(taskIds: string[]) {

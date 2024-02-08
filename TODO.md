@@ -31,6 +31,11 @@ STEP 3
 - do I want to deal with Settings (as in ensure they are the latest version) in the worker?
 - ensure InteropPorts uses the tested code in InteropDefinitions (as per the worker versions)
 - TaskItemFields -> make alphabetical (contents is at the end atm)
+- perhaps when I am removing taskItems from the view I could request a reload of all if
+  the taskItem I am deleting doesn't exist
+- howabout when adding taskItems communicating the expected total and if this doesn't match
+  what the view has it can request a reload.
+- do I need the same states in the view now that I am not loading markdown?
 
 ---
 - touch events - iPad ??

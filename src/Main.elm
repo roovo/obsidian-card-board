@@ -118,6 +118,7 @@ type KeyValue
 
 type Msg
     = ActiveStateUpdated Bool
+    | AddTaskItems TaskList
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
     | EditCardDueDateRequested String
@@ -139,6 +140,11 @@ update msg model =
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
+            )
+
+        ( AddTaskItems taskList, _ ) ->
+            ( mapSession (Session.addTaskList taskList) model
+            , cmdForTaskRedraws taskList (toSession model)
             )
 
         ( BadInputFromTypeScript, _ ) ->
@@ -326,8 +332,8 @@ cmdForDateChange session =
             ]
 
 
-cmdForTaskRedraws : String -> Session -> Cmd Msg
-cmdForTaskRedraws newPath session =
+cmdForTaskRedraws : TaskList -> Session -> Cmd Msg
+cmdForTaskRedraws taskList session =
     let
         today : Date
         today =
@@ -336,8 +342,7 @@ cmdForTaskRedraws newPath session =
 
         cards : List Card
         cards =
-            Session.taskList session
-                |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
+            taskList
                 |> Boards.init (Session.uniqueId session) (Session.boardConfigs session)
                 |> Boards.cards (Session.ignoreFileNameDates session) today
     in
@@ -390,6 +395,9 @@ subscriptions _ =
                             case toElm of
                                 InteropDefinitions.ActiveStateUpdated flag ->
                                     ActiveStateUpdated flag
+
+                                InteropDefinitions.AddTaskItems taskItems ->
+                                    AddTaskItems taskItems
 
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection

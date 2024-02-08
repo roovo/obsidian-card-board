@@ -1063,6 +1063,18 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
+        , test "decodes addTaskItems data" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"addTaskItems","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.AddTaskItems taskList)
         , test "decodes configChanged data" <|
             \() ->
                 """{"tag":"configChanged","data":{"rightToLeft":true}}"""
