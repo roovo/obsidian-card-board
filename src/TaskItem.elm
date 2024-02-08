@@ -9,6 +9,7 @@ module TaskItem exposing
     , completedPosix
     , completion
     , containsId
+    , decoder
     , descendantTasks
     , due
     , dueRataDie
@@ -45,6 +46,7 @@ module TaskItem exposing
 import DataviewDate
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
+import DecodeHelpers
 import DueDate exposing (DueDate)
 import EncodeHelpers
 import FNV1a
@@ -58,6 +60,7 @@ import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
+import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -132,6 +135,13 @@ defaultFields =
 
 
 -- ENCODE / DECODE
+
+
+decoder : TsDecode.Decoder TaskItem
+decoder =
+    TsDecode.succeed TaskItem
+        |> TsDecode.andMap (TsDecode.field "fields" taskItemFieldsDecoder)
+        |> TsDecode.andMap (TsDecode.field "subFields" (TsDecode.list taskItemFieldsDecoder))
 
 
 encoder : TsEncode.Encoder TaskItem
@@ -807,6 +817,15 @@ tokenParser dataviewTaskCompletion =
 -- PRIVATE
 
 
+autoCompletionDecoder : TsDecode.Decoder AutoCompletion
+autoCompletionDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant0 "FalseSpecified" FalseSpecified
+        , DecodeHelpers.toElmVariant0 "NotSpecifed" NotSpecifed
+        , DecodeHelpers.toElmVariant0 "TrueSpecified" TrueSpecified
+        ]
+
+
 autoCompletionEncoder : TsEncode.Encoder AutoCompletion
 autoCompletionEncoder =
     TsEncode.union
@@ -827,6 +846,15 @@ autoCompletionEncoder =
         |> TsEncode.buildUnion
 
 
+completionDecoder : TsDecode.Decoder Completion
+completionDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant0 "Completed" Completed
+        , DecodeHelpers.toElmVariant "CompletedAt" CompletedAt (TsDecode.map Time.millisToPosix TsDecode.int)
+        , DecodeHelpers.toElmVariant0 "Incomplete" Incomplete
+        ]
+
+
 completionEncoder : TsEncode.Encoder Completion
 completionEncoder =
     TsEncode.union
@@ -845,6 +873,17 @@ completionEncoder =
         |> TsEncode.variantTagged "CompletedAt" (TsEncode.map Time.posixToMillis TsEncode.int)
         |> TsEncode.variant0 "Incomplete"
         |> TsEncode.buildUnion
+
+
+contentDecoder : TsDecode.Decoder Content
+contentDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "AutoCompleteTag" AutoCompleteTag autoCompletionDecoder
+        , DecodeHelpers.toElmVariant "CompletedTag" CompletedTag (TsDecode.map Time.millisToPosix TsDecode.int)
+        , DecodeHelpers.toElmVariant "DueTag" DueTag DueDate.decoder
+        , DecodeHelpers.toElmVariant "ObsidianTag" ObsidianTag Tag.decoder
+        , DecodeHelpers.toElmVariant "Word" Word TsDecode.string
+        ]
 
 
 contentEncoder : TsEncode.Encoder Content
@@ -897,6 +936,22 @@ mapFields fn (TaskItem fields_ subtasks_) =
 mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
 mapTags fn taskItem =
     mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+taskItemFieldsDecoder : TsDecode.Decoder TaskItemFields
+taskItemFieldsDecoder =
+    TsDecode.succeed TaskItemFields
+        |> TsDecode.andMap (TsDecode.field "autoComplete" autoCompletionDecoder)
+        |> TsDecode.andMap (TsDecode.field "completion" completionDecoder)
+        |> TsDecode.andMap (TsDecode.field "dueFile" (TsDecode.maybe DecodeHelpers.dateDecoder))
+        |> TsDecode.andMap (TsDecode.field "dueTag" DueDate.decoder)
+        |> TsDecode.andMap (TsDecode.field "filePath" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "lineNumber" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "notes" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "originalText" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "tags" TagList.decoder)
+        |> TsDecode.andMap (TsDecode.field "title" (TsDecode.list TsDecode.string))
+        |> TsDecode.andMap (TsDecode.field "contents" (TsDecode.list contentDecoder))
 
 
 taskItemFieldsEncoder : TsEncode.Encoder TaskItemFields

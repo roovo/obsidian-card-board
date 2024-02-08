@@ -2,6 +2,7 @@ module TagTests exposing (suite)
 
 import Expect
 import Fuzz exposing (Fuzzer)
+import Helpers.DecodeHelpers as DecodeTestHelpers
 import Helpers.UnicodeHelpers as UnicodeHelpers
 import Parser exposing ((|.), (|=))
 import Tag
@@ -14,6 +15,7 @@ suite : Test
 suite =
     concat
         [ containsInvalidCharacters
+        , decoder
         , encoder
         , equals
         , matches
@@ -46,6 +48,19 @@ containsInvalidCharacters =
                 ("as" ++ String.fromChar fuzzedWhitespace ++ "r")
                     |> Tag.containsInvalidCharacters
                     |> Expect.equal True
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes a tag from a string" <|
+            \() ->
+                "\"foo\""
+                    |> DecodeTestHelpers.runDecoder Tag.decoder
+                    |> .decoded
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo")
         ]
 
 

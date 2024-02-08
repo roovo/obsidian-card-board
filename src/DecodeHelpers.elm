@@ -1,10 +1,17 @@
 module DecodeHelpers exposing
-    ( toElmVariant
+    ( dateDecoder
+    , toElmVariant
     , toElmVariant0
     )
 
+import Date exposing (Date)
 import Json.Encode as JE
 import TsJson.Decode as TsDecode
+
+
+dateDecoder : TsDecode.Decoder Date
+dateDecoder =
+    TsDecode.map Date.fromRataDie TsDecode.int
 
 
 toElmVariant : String -> (value -> a) -> TsDecode.Decoder value -> TsDecode.Decoder a

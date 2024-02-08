@@ -1,6 +1,7 @@
 module TagListTests exposing (suite)
 
 import Expect
+import Helpers.DecodeHelpers as DecodeTestHelpers
 import Parser
 import Tag exposing (Tag)
 import TagList exposing (TagList)
@@ -16,6 +17,7 @@ suite =
         , containsTagMatching
         , containsTagMatchingOneOf
         , containsTagOtherThanThese
+        , decoder
         , empty
         , encoder
         , filter
@@ -196,6 +198,18 @@ containsTagOtherThanThese =
                 TagList.fromList [ "atag", "btag" ]
                     |> TagList.containsTagOtherThanThese [ "btag" ]
                     |> Expect.equal True
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes from a list of strings" <|
+            \() ->
+                "[\"atag\",\"btag\"]"
+                    |> DecodeTestHelpers.runDecoder TagList.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok <| TagList.fromList [ "atag", "btag" ])
         ]
 
 
