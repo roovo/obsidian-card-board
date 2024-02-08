@@ -37,6 +37,7 @@ suite =
         , globalSettings
         , moveDragable
         , replaceTaskItems
+        , replaceTaskList
         , stopTrackingDragable
         , updatePath
         , waitForDrag
@@ -380,6 +381,38 @@ replaceTaskItems =
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal [ "n1", "n2", "a1", "a2" ]
+        ]
+
+
+replaceTaskList : Test
+replaceTaskList =
+    describe "replaceTaskList"
+        [ test "replaces all tasks with those given if a new session" <|
+            \() ->
+                Session.default
+                    |> Session.replaceTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
+        , test "replaces all tasks with those given whilst loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.replaceTaskList (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2" ]
+        , test "replaces all tasks with those given whilst loading tasklists even if finished adding" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.finishAdding
+                    |> Session.replaceTaskList (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2" ]
         ]
 
 

@@ -14,10 +14,14 @@ import Filter
 import GlobalSettings
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import InteropDefinitions exposing (interop)
+import Parser
 import SafeZipper
 import Semver
 import TagList
+import TaskItem exposing (TaskItem)
+import TaskList exposing (TaskList)
 import Test exposing (..)
 import TextDirection
 import Time
@@ -1145,6 +1149,18 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
+        , test "decodes loadTaskItems data" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"loadTaskItems","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.LoadTaskItems taskList)
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""
@@ -1214,3 +1230,13 @@ toElmTests =
                     |> Result.toMaybe
                     |> Expect.equal Nothing
         ]
+
+
+
+-- HELPERS
+
+
+taskItem : String -> TaskItem
+taskItem markdown =
+    Parser.run TaskItemHelpers.basicParser markdown
+        |> Result.withDefault TaskItem.dummy

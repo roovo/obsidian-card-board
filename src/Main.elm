@@ -212,8 +212,10 @@ update msg model =
         ( KeyDown _, _ ) ->
             ( model, Cmd.none )
 
-        ( LoadTaskItems _, _ ) ->
-            ( model, Cmd.none )
+        ( LoadTaskItems taskList, _ ) ->
+            ( mapSession (Session.replaceTaskList taskList) model
+            , Cmd.none
+            )
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( mapSession (Session.timeWithZoneIs zone posix) model

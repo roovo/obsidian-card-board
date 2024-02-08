@@ -27,6 +27,7 @@ STEP 3
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
 - can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
+  Session.replaceTaskItems
 - do I want to deal with Settings (as in ensure they are the latest version) in the worker?
 - ensure InteropPorts uses the tested code in InteropDefinitions (as per the worker versions)
 - TaskItemFields -> make alphabetical (contents is at the end atm)

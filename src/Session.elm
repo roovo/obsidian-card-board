@@ -22,6 +22,7 @@ module Session exposing
     , moveColumn
     , moveDragable
     , replaceTaskItems
+    , replaceTaskList
     , settings
     , stopTrackingDragable
     , switchToBoardAt
@@ -407,6 +408,19 @@ replaceTaskItems filePath updatedList ((Session config) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
+
+
+replaceTaskList : TaskList -> Session -> Session
+replaceTaskList newList ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            updateTaskListState (State.Loaded newList) session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loaded newList) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loaded newList) session
 
 
 updatePath : String -> String -> Session -> Session

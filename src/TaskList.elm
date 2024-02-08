@@ -4,6 +4,7 @@ module TaskList exposing
     , append
     , concat
     , containsTask
+    , decoder
     , empty
     , encoder
     , filter
@@ -29,6 +30,7 @@ import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TagList exposing (TagList)
 import TaskItem exposing (TaskItem)
+import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 
 
@@ -85,6 +87,11 @@ parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
 
 
 -- SERIALIZE
+
+
+decoder : TsDecode.Decoder TaskList
+decoder =
+    TsDecode.map TaskList (TsDecode.list TaskItem.decoder)
 
 
 encoder : TsEncode.Encoder TaskList

@@ -2,13 +2,14 @@ module TaskListTests exposing (suite)
 
 import DataviewTaskCompletion
 import Expect
+import Helpers.DecodeHelpers as DecodeTestHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import Parser
 import TagList
 import TaskItem exposing (TaskItem)
-import TaskList
+import TaskList exposing (TaskList)
 import Test exposing (..)
 import TsJson.Encode as TsEncode
 
@@ -18,6 +19,7 @@ suite =
     concat
         [ add
         , combine
+        , decoder
         , encoder
         , filter
         , fromList
@@ -65,6 +67,31 @@ combine =
                     |> TaskList.concat
                     |> TaskList.taskTitles
                     |> Expect.equal [ "g1", "g2", "a1", "a2" ]
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes an empty TaskList" <|
+            \() ->
+                "[]"
+                    |> DecodeTestHelpers.runDecoder TaskList.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok TaskList.empty)
+        , test "decodes a TaskList containing tasks" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                            |> TaskList.add (taskItem "- [ ] bar")
+                in
+                """[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]},{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]"""
+                    |> DecodeTestHelpers.runDecoder TaskList.decoder
+                    |> .decoded
+                    |> Expect.equal (Ok taskList)
         ]
 
 

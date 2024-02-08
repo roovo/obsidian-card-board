@@ -169,7 +169,7 @@ toElm =
         , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
         , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
-        , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems (TsDecode.succeed TaskList.empty)
+        , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems TaskList.decoder
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]

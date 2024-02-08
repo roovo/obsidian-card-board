@@ -511,6 +511,8 @@ export class CardBoardView extends ItemView {
   }
 
   loadTaskItems(taskItems: TaskItem[]) {
+    console.log("view: loading taskItems: " + taskItems.length);
+
     this.elm.ports.interopToElm.send({
       tag: "loadTaskItems",
       data: taskItems
