@@ -1,3 +1,5 @@
+- optimizations of elm build - app is getting a bit big - webpack is warning me now!
+
 STEP 2
 ------
 - W: detect if tasks have been changed so I can broadcast a taskItem changed event
