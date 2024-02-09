@@ -129,6 +129,7 @@ type Msg
     | KeyDown KeyValue
     | LoadTaskItems TaskList
     | ReceiveTime ( Time.Zone, Posix )
+    | RemoveTaskItems (List String)
     | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
@@ -212,6 +213,11 @@ update msg model =
 
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( mapSession (Session.timeWithZoneIs zone posix) model
+            , Cmd.none
+            )
+
+        ( RemoveTaskItems taskItems, _ ) ->
+            ( mapSession (Session.removeTaskItems taskItems) model
             , Cmd.none
             )
 
@@ -413,6 +419,9 @@ subscriptions _ =
 
                                 InteropDefinitions.LoadTaskItems taskItems ->
                                     LoadTaskItems taskItems
+
+                                InteropDefinitions.RemoveTaskItems taskIds ->
+                                    RemoveTaskItems taskIds
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     SettingsUpdated newSettings

@@ -1125,6 +1125,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.LoadTaskItems taskList)
+        , test "decodes removeTaskItems data" <|
+            \() ->
+                """{"tag":"removeTaskItems","data":["foo","bar","baz"]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.RemoveTaskItems [ "foo", "bar", "baz" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""

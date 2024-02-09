@@ -21,6 +21,7 @@ module Session exposing
     , moveBoard
     , moveColumn
     , moveDragable
+    , removeTaskItems
     , replaceTaskItems
     , replaceTaskList
     , settings
@@ -395,6 +396,19 @@ finishAdding ((Session config) as session) =
 
         State.Loaded _ ->
             session
+
+
+removeTaskItems : List String -> Session -> Session
+removeTaskItems taskIds ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loading (TaskList.filter (\i -> not <| List.member (TaskItem.id i) taskIds) currentList)) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loaded (TaskList.filter (\i -> not <| List.member (TaskItem.id i) taskIds) currentList)) session
 
 
 replaceTaskItems : String -> TaskList -> Session -> Session

@@ -36,6 +36,7 @@ suite =
         , fromFlags
         , globalSettings
         , moveDragable
+        , removeTaskItems
         , replaceTaskItems
         , replaceTaskList
         , stopTrackingDragable
@@ -349,6 +350,40 @@ moveDragable =
                             , dragType = "aDragType"
                             }
                         )
+        ]
+
+
+removeTaskItems : Test
+removeTaskItems =
+    describe "removeTaskItems"
+        [ test "does nothing if there are no taskItems in the Session" <|
+            \() ->
+                Session.default
+                    |> Session.removeTaskItems []
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        , test "removes tasks with the given ids whilst loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.removeTaskItems [ "3826002220:2", "3792446982:3" ]
+                    |> Session.taskList
+                    |> TaskList.toList
+                    |> List.map TaskItem.id
+                    |> Expect.equal [ "3826002220:3", "3792446982:2" ]
+        , test "removes tasks with the given ids if finished loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.finishAdding
+                    |> Session.removeTaskItems [ "3826002220:2", "3792446982:3" ]
+                    |> Session.taskList
+                    |> TaskList.toList
+                    |> List.map TaskItem.id
+                    |> Expect.equal [ "3826002220:3", "3792446982:2" ]
         ]
 
 

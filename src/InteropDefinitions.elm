@@ -46,6 +46,7 @@ type ToElm
     | ElementDragged DragData
     | FilterCandidates (List Filter)
     | LoadTaskItems TaskList
+    | RemoveTaskItems (List String)
     | SettingsUpdated Settings
     | ShowBoard Int
 
@@ -162,6 +163,7 @@ toElm =
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
         , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems TaskList.decoder
+        , DecodeHelpers.toElmVariant "removeTaskItems" RemoveTaskItems (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         ]
