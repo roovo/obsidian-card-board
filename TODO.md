@@ -1,9 +1,3 @@
-STEP 1
------
-- bug: if I type out a new task in a file and give it a subtask, the subtask appears as
-  a top level task on the board
-
-
 STEP 2
 ------
 - W: detect if tasks have been changed so I can broadcast a taskItem changed event
@@ -19,15 +13,12 @@ STEP 3
      hmmmmmmm
 
 
-- can I make it so I load any settings at startup but save the latest version
-  when I get them back from elm?
 - compare somne different forms of taskItem serialisation
     - basic TsEncode/Decode
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
 - can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
   Session.replaceTaskItems
-- do I want to deal with Settings (as in ensure they are the latest version) in the worker?
 - ensure InteropPorts uses the tested code in InteropDefinitions (as per the worker versions)
 - TaskItemFields -> make alphabetical (contents is at the end atm)
 - perhaps when I am removing taskItems from the view I could request a reload of all if
@@ -35,15 +26,19 @@ STEP 3
 - howabout when adding taskItems communicating the expected total and if this doesn't match
   what the view has it can request a reload.
 - do I need the same states in the view now that I am not loading markdown?
-- I get an error in the js console if I click on the command icon when the
-  cardboard view is visible
-- bug: if a file is deleted and it includes something which is shown in the completed
-  column then a blank item is added at the end as I do not render the markdown for
-  the newly added card.
 - speed up TaskList.replaceTaskItems as it maps through all the tasks for each replacement
   - can I short circuit when I know I have found the one.  Or should I do a remove followed
   by an add?
 - typescipt tidying -> am I using async only where I need to?
+
+- can I make it so I load any settings at startup but save the latest version
+  when I get them back from elm?
+- do I want to deal with Settings (as in ensure they are the latest version) in the worker?
+- bug: if a file is deleted and it includes something which is shown in the completed
+  column then a blank item is added at the end as I do not render the markdown for
+  the newly added card.
+- I get an error in the js console if I click on the command icon when the
+  cardboard view is visible
 
 ---
 - touch events - iPad ??

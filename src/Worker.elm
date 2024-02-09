@@ -122,7 +122,7 @@ update msg model =
                         |> List.partition (TaskItem.isFromFile markdownFile.filePath)
             in
             ( mapSession (Session.replaceTaskList <| TaskList.append (TaskList.fromList remaining) newTaskItems) model
-            , InteropPorts.tasksDeletedAndAdded toDelete (TaskList.toList newTaskItems)
+            , InteropPorts.tasksDeletedAndAdded toDelete (TaskList.topLevelTasks newTaskItems)
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->
