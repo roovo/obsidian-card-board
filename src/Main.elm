@@ -118,7 +118,6 @@ type KeyValue
 
 type Msg
     = ActiveStateUpdated Bool
-    | AddTaskItems TaskList
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
     | EditCardDueDateRequested String
@@ -127,13 +126,15 @@ type Msg
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
-    | LoadTaskItems TaskList
     | ReceiveTime ( Time.Zone, Posix )
-    | RemoveTaskItems (List String)
     | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
-    | UpdateTaskItems (List ( String, TaskItem ))
+    | TaskItemsAdded TaskList
+    | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
+    | TaskItemsRefreshed TaskList
+    | TaskItemsRemoved (List String)
+    | TaskItemsUpdated (List ( String, TaskItem ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,11 +143,6 @@ update msg model =
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
-            )
-
-        ( AddTaskItems taskList, _ ) ->
-            ( mapSession (Session.addTaskList taskList) model
-            , cmdForTaskRedraws taskList (toSession model)
             )
 
         ( BadInputFromTypeScript, _ ) ->
@@ -207,18 +203,8 @@ update msg model =
         ( KeyDown _, _ ) ->
             ( model, Cmd.none )
 
-        ( LoadTaskItems taskList, _ ) ->
-            ( mapSession (Session.replaceTaskList taskList) model
-            , Cmd.none
-            )
-
         ( ReceiveTime ( zone, posix ), _ ) ->
             ( mapSession (Session.timeWithZoneIs zone posix) model
-            , Cmd.none
-            )
-
-        ( RemoveTaskItems taskItems, _ ) ->
-            ( mapSession (Session.removeTaskItems taskItems) model
             , Cmd.none
             )
 
@@ -295,7 +281,38 @@ update msg model =
             , cmd
             )
 
-        ( UpdateTaskItems updateDetails, _ ) ->
+        ( TaskItemsAdded taskList, _ ) ->
+            ( mapSession (Session.addTaskList taskList) model
+            , cmdForTaskRedraws taskList (toSession model)
+            )
+
+        ( TaskItemsDeletedAndAdded ( toDelete, toAdd ), _ ) ->
+            let
+                deleteIds : List String
+                deleteIds =
+                    List.map TaskItem.id toDelete
+
+                addList : TaskList
+                addList =
+                    TaskList.fromList toAdd
+            in
+            ( model
+                |> mapSession (Session.removeTaskItems deleteIds)
+                |> mapSession (Session.addTaskList addList)
+            , cmdForTaskRedraws addList (toSession model)
+            )
+
+        ( TaskItemsRefreshed taskList, _ ) ->
+            ( mapSession (Session.replaceTaskList taskList) model
+            , Cmd.none
+            )
+
+        ( TaskItemsRemoved taskItems, _ ) ->
+            ( mapSession (Session.removeTaskItems taskItems) model
+            , Cmd.none
+            )
+
+        ( TaskItemsUpdated updateDetails, _ ) ->
             let
                 tasksToRedraw =
                     updateDetails
@@ -414,9 +431,6 @@ subscriptions _ =
                                 InteropDefinitions.ActiveStateUpdated flag ->
                                     ActiveStateUpdated flag
 
-                                InteropDefinitions.AddTaskItems taskItems ->
-                                    AddTaskItems taskItems
-
                                 InteropDefinitions.ConfigChanged textDirection ->
                                     ConfigChanged textDirection
 
@@ -429,20 +443,26 @@ subscriptions _ =
                                 InteropDefinitions.FilterCandidates filterCandidates ->
                                     FilterCandidatesReceived filterCandidates
 
-                                InteropDefinitions.LoadTaskItems taskItems ->
-                                    LoadTaskItems taskItems
-
-                                InteropDefinitions.RemoveTaskItems taskIds ->
-                                    RemoveTaskItems taskIds
-
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     SettingsUpdated newSettings
 
                                 InteropDefinitions.ShowBoard index ->
                                     ShowBoard index
 
-                                InteropDefinitions.UpdateTaskItems updateDetails ->
-                                    UpdateTaskItems updateDetails
+                                InteropDefinitions.TaskItemsAdded taskItems ->
+                                    TaskItemsAdded taskItems
+
+                                InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ) ->
+                                    TaskItemsDeletedAndAdded ( toDelete, toAdd )
+
+                                InteropDefinitions.TaskItemsRefreshed taskItems ->
+                                    TaskItemsRefreshed taskItems
+
+                                InteropDefinitions.TaskItemsRemoved taskIds ->
+                                    TaskItemsRemoved taskIds
+
+                                InteropDefinitions.TaskItemsUpdated updateDetails ->
+                                    TaskItemsUpdated updateDetails
 
                         Err _ ->
                             BadInputFromTypeScript

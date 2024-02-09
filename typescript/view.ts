@@ -270,7 +270,7 @@ export class CardBoardView extends ItemView {
   async handleElmInitialized(uniqueId : string) {
     console.log("view: fromView -> elmInitialised");
 
-    this.plugin.broadcastAllTaskItems();
+    this.plugin.viewInitialized();
   }
 
 
@@ -498,38 +498,47 @@ export class CardBoardView extends ItemView {
     });
   }
 
-  loadTaskItems(taskItems: TaskItem[]) {
-    console.log("view: toView <- loadTaskItems: " + taskItems.length);
+  taskItemsRefreshed(taskItems: TaskItem[]) {
+    console.log("view: toView <- taskItemsRefreshed: " + taskItems.length);
 
     this.elm.ports.interopToElm.send({
-      tag: "loadTaskItems",
+      tag: "taskItemsRefreshed",
       data: taskItems
     });
   }
 
-  addTaskItems(taskItems: TaskItem[]) {
-    console.log("view: toView <- addTaskItems: " + taskItems.length);
+  taskItemsAdded(taskItems: TaskItem[]) {
+    console.log("view: toView <- taskItemsAdded: " + taskItems.length);
 
     this.elm.ports.interopToElm.send({
-      tag: "addTaskItems",
+      tag: "taskItemsAdded",
       data: taskItems
     });
   }
 
-  removeTaskItems(taskIds: string[]) {
-    console.log("view: toView <- removeTaskItems: " + taskIds.length);
+  taskItemsRemoved(taskIds: string[]) {
+    console.log("view: toView <- taskItemsRemoved: " + taskIds.length);
 
     this.elm.ports.interopToElm.send({
-      tag: "removeTaskItems",
+      tag: "taskItemsRemoved",
       data: taskIds
     });
   }
 
-  updateTaskItems(updateDetails : [string, TaskItem][]) {
-    console.log("view: toView <- updateTaskItems: " + updateDetails.length);
+  taskItemsDeletedAndAdded(toDeleteAndAdd : [TaskItem[], TaskItem[]]) {
+    console.log("view: toView <- taskItemsDeletedAndAdded");
 
     this.elm.ports.interopToElm.send({
-      tag: "updateTaskItems",
+      tag: "taskItemsDeletedAndAdded",
+      data: toDeleteAndAdd
+    });
+  }
+
+  taskItemsUpdated(updateDetails : [string, TaskItem][]) {
+    console.log("view: toView <- taskItemsUpdated: " + updateDetails.length);
+
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsUpdated",
       data: updateDetails
     });
   }

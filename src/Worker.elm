@@ -67,7 +67,7 @@ mapSession fn model =
 
 type Msg
     = AllMarkdownLoaded
-    | BroadcastAllTaskItems
+    | ViewInitialized
     | BadInputFromTypeScript
     | VaultFileAdded MarkdownFile
     | VaultFileDeleted String
@@ -81,7 +81,7 @@ update msg model =
         AllMarkdownLoaded ->
             ( mapSession Session.finishAdding model, InteropPorts.allTasksLoaded )
 
-        BroadcastAllTaskItems ->
+        ViewInitialized ->
             ( model, InteropPorts.allTaskItems <| Session.taskList <| toSession model )
 
         BadInputFromTypeScript ->
@@ -122,10 +122,7 @@ update msg model =
                         |> List.partition (TaskItem.isFromFile markdownFile.filePath)
             in
             ( mapSession (Session.replaceTaskList <| TaskList.append (TaskList.fromList remaining) newTaskItems) model
-            , Cmd.batch
-                [ InteropPorts.tasksDeleted toDelete
-                , InteropPorts.tasksAdded newTaskItems
-                ]
+            , InteropPorts.tasksDeletedAndAdded toDelete (TaskList.toList newTaskItems)
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->
@@ -165,8 +162,8 @@ subscriptions _ =
                                 InteropDefinitions.AllMarkdownLoaded ->
                                     AllMarkdownLoaded
 
-                                InteropDefinitions.BroadcastAllTaskItems ->
-                                    BroadcastAllTaskItems
+                                InteropDefinitions.ViewInitialized ->
+                                    ViewInitialized
 
                                 InteropDefinitions.FileAdded markdownFile ->
                                     VaultFileAdded markdownFile

@@ -4,6 +4,7 @@ port module Worker.InteropPorts exposing
     , decodeFlags
     , tasksAdded
     , tasksDeleted
+    , tasksDeletedAndAdded
     , tasksUpdated
     , toElm
     )
@@ -67,6 +68,14 @@ tasksDeleted : List TaskItem -> Cmd msg
 tasksDeleted taskItems =
     taskItems
         |> InteropDefinitions.TasksDeleted
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
+        |> interopFromElm
+
+
+tasksDeletedAndAdded : List TaskItem -> List TaskItem -> Cmd msg
+tasksDeletedAndAdded toDelete toAdd =
+    ( toDelete, toAdd )
+        |> InteropDefinitions.TasksDeletedAndAdded
         |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 

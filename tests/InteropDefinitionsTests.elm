@@ -1063,18 +1063,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
-        , test "decodes addTaskItems data" <|
-            \() ->
-                let
-                    taskList : TaskList
-                    taskList =
-                        TaskList.empty
-                            |> TaskList.add (taskItem "- [ ] foo")
-                in
-                """{"tag":"addTaskItems","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.AddTaskItems taskList)
         , test "decodes configChanged data" <|
             \() ->
                 """{"tag":"configChanged","data":{"rightToLeft":true}}"""
@@ -1113,24 +1101,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.FilterCandidates [ FilterHelpers.pathFilter "a path", FilterHelpers.pathFilter "another path" ])
-        , test "decodes loadTaskItems data" <|
-            \() ->
-                let
-                    taskList : TaskList
-                    taskList =
-                        TaskList.empty
-                            |> TaskList.add (taskItem "- [ ] foo")
-                in
-                """{"tag":"loadTaskItems","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.LoadTaskItems taskList)
-        , test "decodes removeTaskItems data" <|
-            \() ->
-                """{"tag":"removeTaskItems","data":["foo","bar","baz"]}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.RemoveTaskItems [ "foo", "bar", "baz" ])
         , test "decodes showBoard data" <|
             \() ->
                 """{"tag":"showBoard","data":17}"""
@@ -1199,12 +1169,61 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
-        , test "decodes updateTaskItems data" <|
+        , test "decodes taskItemsAdded data" <|
             \() ->
-                """{"tag":"updateTaskItems","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"taskItemsAdded","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.UpdateTaskItems [ ( "bar", taskItem "- [ ] foo" ) ])
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsAdded taskList)
+        , test "decodes taskItemsDeletedAndAdded data" <|
+            \() ->
+                let
+                    toDelete : List TaskItem
+                    toDelete =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                            |> TaskList.toList
+
+                    toAdd : List TaskItem
+                    toAdd =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] bar")
+                            |> TaskList.toList
+                in
+                """{"tag":"taskItemsDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ))
+        , test "decodes taskItemsRefreshed data" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"taskItemsRefreshed","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsRefreshed taskList)
+        , test "decodes taskItemsRemoved data" <|
+            \() ->
+                """{"tag":"taskItemsRemoved","data":["foo","bar","baz"]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsRemoved [ "foo", "bar", "baz" ])
+        , test "decodes taskItemsUpdated data" <|
+            \() ->
+                """{"tag":"taskItemsUpdated","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsUpdated [ ( "bar", taskItem "- [ ] foo" ) ])
         ]
 
 

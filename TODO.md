@@ -1,8 +1,9 @@
 STEP 1
 -----
-- use RemoveThenAdd when file is modified
-- send notifications rather than commands to the view elm app
-  (so tasksUpdated rather than updateTasks)
+- bug: if I type out a new task in a file and give it a subtask, the subtask appears as
+  a top level task on the board
+
+
 STEP 2
 ------
 - W: detect if tasks have been changed so I can broadcast a taskItem changed event

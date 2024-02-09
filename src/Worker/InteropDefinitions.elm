@@ -25,12 +25,13 @@ type FromElm
     | AllTaskItems TaskList
     | TasksAdded TaskList
     | TasksDeleted (List TaskItem)
+    | TasksDeletedAndAdded ( List TaskItem, List TaskItem )
     | TasksUpdated (List ( String, TaskItem ))
 
 
 type ToElm
     = AllMarkdownLoaded
-    | BroadcastAllTaskItems
+    | ViewInitialized
     | FileAdded MarkdownFile
     | FileDeleted String
     | FileModified MarkdownFile
@@ -63,7 +64,7 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
-        , DecodeHelpers.toElmVariant0 "broadcastAllTaskItems" BroadcastAllTaskItems
+        , DecodeHelpers.toElmVariant0 "viewInitialized" ViewInitialized
         , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
         , DecodeHelpers.toElmVariant "fileModified" FileModified MarkdownFile.decoder
@@ -74,7 +75,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAllTasksLoaded vAllTaskItems vTasksAdded vTasksDeleted vTasksUpdated value ->
+        (\vAllTasksLoaded vAllTaskItems vTasksAdded vTasksDeleted vTasksDeletedAndAdded vTasksUpdated value ->
             case value of
                 AllTasksLoaded ->
                     vAllTasksLoaded
@@ -88,6 +89,9 @@ fromElm =
                 TasksDeleted taskItems ->
                     vTasksDeleted taskItems
 
+                TasksDeletedAndAdded taskItems ->
+                    vTasksDeletedAndAdded taskItems
+
                 TasksUpdated tasksToUpdate ->
                     vTasksUpdated tasksToUpdate
         )
@@ -95,6 +99,7 @@ fromElm =
         |> TsEncode.variantTagged "allTaskItems" TaskList.encoder
         |> TsEncode.variantTagged "tasksAdded" TaskList.encoder
         |> TsEncode.variantTagged "tasksDeleted" tasksDeletedEncoder
+        |> TsEncode.variantTagged "tasksDeletedAndAdded" tasksDeletedAndAddedEncoder
         |> TsEncode.variantTagged "tasksUpdated" tasksUpdatedEncoder
         |> TsEncode.buildUnion
 
@@ -108,6 +113,11 @@ renamedFileDecoder =
     TsDecode.succeed Tuple.pair
         |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
+
+
+tasksDeletedAndAddedEncoder : TsEncode.Encoder ( List TaskItem, List TaskItem )
+tasksDeletedAndAddedEncoder =
+    TsEncode.tuple (TsEncode.list TaskItem.encoder) (TsEncode.list TaskItem.encoder)
 
 
 tasksDeletedEncoder : TsEncode.Encoder (List TaskItem)

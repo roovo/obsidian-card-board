@@ -41,16 +41,17 @@ type FromElm
 
 type ToElm
     = ActiveStateUpdated Bool
-    | AddTaskItems TaskList
     | ConfigChanged TextDirection
     | EditCardDueDate String
     | ElementDragged DragData
     | FilterCandidates (List Filter)
-    | LoadTaskItems TaskList
-    | RemoveTaskItems (List String)
     | SettingsUpdated Settings
     | ShowBoard Int
-    | UpdateTaskItems (List ( String, TaskItem ))
+    | TaskItemsAdded TaskList
+    | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
+    | TaskItemsRefreshed TaskList
+    | TaskItemsRemoved (List String)
+    | TaskItemsUpdated (List ( String, TaskItem ))
 
 
 type alias Flags =
@@ -159,22 +160,18 @@ toElm : TsDecode.Decoder ToElm
 toElm =
     TsDecode.oneOf
         [ DecodeHelpers.toElmVariant "activeStateUpdated" ActiveStateUpdated TsDecode.bool
-        , DecodeHelpers.toElmVariant "addTaskItems" AddTaskItems TaskList.decoder
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
-        , DecodeHelpers.toElmVariant "loadTaskItems" LoadTaskItems TaskList.decoder
-        , DecodeHelpers.toElmVariant "removeTaskItems" RemoveTaskItems (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
-        , DecodeHelpers.toElmVariant "updateTaskItems" UpdateTaskItems updateDetailsDecoder
+        , DecodeHelpers.toElmVariant "taskItemsAdded" TaskItemsAdded TaskList.decoder
+        , DecodeHelpers.toElmVariant "taskItemsDeletedAndAdded" TaskItemsDeletedAndAdded deleteAndAddDecoder
+        , DecodeHelpers.toElmVariant "taskItemsRefreshed" TaskItemsRefreshed TaskList.decoder
+        , DecodeHelpers.toElmVariant "taskItemsRemoved" TaskItemsRemoved (TsDecode.list TsDecode.string)
+        , DecodeHelpers.toElmVariant "taskItemsUpdated" TaskItemsUpdated updateDetailsDecoder
         ]
-
-
-updateDetailsDecoder : TsDecode.Decoder (List ( String, TaskItem ))
-updateDetailsDecoder =
-    TsDecode.list <| TsDecode.tuple TsDecode.string TaskItem.decoder
 
 
 fromElm : TsEncode.Encoder FromElm
@@ -236,6 +233,11 @@ configChangedDecoder =
         |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
 
 
+deleteAndAddDecoder : TsDecode.Decoder ( List TaskItem, List TaskItem )
+deleteAndAddDecoder =
+    TsDecode.tuple (TsDecode.list TaskItem.decoder) (TsDecode.list TaskItem.decoder)
+
+
 markdownListEncoder : TsEncode.Encoder { id : String, markdown : String }
 markdownListEncoder =
     TsEncode.object
@@ -258,3 +260,8 @@ taskUpdatesEncoder =
         , required "originalText" .originalText TsEncode.string
         , required "newText" .newText TsEncode.string
         ]
+
+
+updateDetailsDecoder : TsDecode.Decoder (List ( String, TaskItem ))
+updateDetailsDecoder =
+    TsDecode.list <| TsDecode.tuple TsDecode.string TaskItem.decoder

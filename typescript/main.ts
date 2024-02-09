@@ -76,6 +76,9 @@ export default class CardBoardPlugin extends Plugin {
         case "tasksDeleted":
           that.handleTasksDeleted(fromElm.data);
           break;
+        case "tasksDeletedAndAdded":
+          that.handleTasksDeletedAndAdded(fromElm.data);
+          break;
         case "tasksUpdated":
           that.handleTasksUpdated(fromElm.data);
           break;
@@ -128,7 +131,7 @@ export default class CardBoardPlugin extends Plugin {
 
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
-        leaf.view.loadTaskItems(taskItems);
+        leaf.view.taskItemsRefreshed(taskItems);
       }
     }
   }
@@ -154,10 +157,10 @@ export default class CardBoardPlugin extends Plugin {
     this.addCommands();
   }
 
-  async broadcastAllTaskItems() {
-    console.log("main: toWorker <- broadcastAllTaskItems");
+  async viewInitialized() {
+    console.log("main: toWorker <- viewInitialized");
     this.worker.ports.interopToElm.send({
-      tag: "broadcastAllTaskItems"
+      tag: "viewInitialized"
     });
   }
 
@@ -169,7 +172,7 @@ export default class CardBoardPlugin extends Plugin {
 
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
-        leaf.view.addTaskItems(taskItems);
+        leaf.view.taskItemsAdded(taskItems);
       }
     }
   }
@@ -181,7 +184,19 @@ export default class CardBoardPlugin extends Plugin {
 
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
-        leaf.view.removeTaskItems(taskIds);
+        leaf.view.taskItemsRemoved(taskIds);
+      }
+    }
+  }
+
+  async handleTasksDeletedAndAdded(toDeleteAndAdd : [TaskItem[], TaskItem[]]) {
+    console.log("main: fromWorker -> tasksDeletedAndAdded");
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsDeletedAndAdded(toDeleteAndAdd);
       }
     }
   }
@@ -193,7 +208,7 @@ export default class CardBoardPlugin extends Plugin {
 
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
-        leaf.view.updateTaskItems(updateDetails);
+        leaf.view.taskItemsUpdated(updateDetails);
       }
     }
   }

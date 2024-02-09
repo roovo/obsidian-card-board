@@ -67,12 +67,24 @@ fromElmTests =
         , test "encodes TasksDeleted with some TaskItems" <|
             \() ->
                 [ safeTaskItem "- [ ] foo", safeTaskItem "- [ ] bar" ]
-                    |> TaskList.fromList
-                    |> TaskList.toList
                     |> InteropDefinitions.TasksDeleted
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"tasksDeleted","data":["2166136261:1","2166136261:1"]}"""
+        , test "encodes TasksDeletedAndAdded with no TaskItems" <|
+            \() ->
+                ( [], [] )
+                    |> InteropDefinitions.TasksDeletedAndAdded
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"tasksDeletedAndAdded","data":[[],[]]}"""
+        , test "encodes TasksDeletedAndAdded with some TaskItems" <|
+            \() ->
+                ( [ safeTaskItem "- [ ] foo", safeTaskItem "- [ ] bar" ], [ safeTaskItem "- [ ] baz" ] )
+                    |> InteropDefinitions.TasksDeletedAndAdded
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"tasksDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]},{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"baz"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] baz","tags":[],"title":["baz"]},"subFields":[]}]]}"""
         , test "encodes TasksUpdated with no TaskItems" <|
             \() ->
                 []
@@ -99,12 +111,12 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
-        , test "decodes broadcastAllTaskItems" <|
+        , test "decodes viewInitialized" <|
             \() ->
-                """{"tag":"broadcastAllTaskItems"}"""
+                """{"tag":"viewInitialized"}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok InteropDefinitions.BroadcastAllTaskItems)
+                    |> Expect.equal (Ok InteropDefinitions.ViewInitialized)
         , test "decodes fileAdded data" <|
             \() ->
                 """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
