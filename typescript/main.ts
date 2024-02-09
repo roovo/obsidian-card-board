@@ -24,10 +24,13 @@ export default class CardBoardPlugin extends Plugin {
 
   async onload() {
     console.log('loading CardBoard plugin');
-    console.log('main: onload');
 
-    console.log('main: loadSettings');
     await this.loadSettings();
+
+    this.registerView(
+      VIEW_TYPE_CARD_BOARD,
+      (leaf) => new CardBoardView(this, leaf)
+    );
 
     this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
   }
@@ -101,8 +104,6 @@ export default class CardBoardPlugin extends Plugin {
     const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
 
     for (const file of filteredFiles) {
-      console.log("main: toWorker <- fileAdded");
-
       const fileDate      = this.formattedFileDate(file);
       const fileContents  = await this.app.vault.cachedRead(file);
 
@@ -121,6 +122,9 @@ export default class CardBoardPlugin extends Plugin {
       tag: "allMarkdownLoaded",
       data: { }
     });
+
+    console.log("CardBoard: " + markdownFiles.length + " markdown files in vault.");
+    console.log("CardBoard: " + filteredFiles.length + " files scanned for tasks.");
   }
 
 
@@ -138,12 +142,6 @@ export default class CardBoardPlugin extends Plugin {
 
   async handleAllTasksLoaded() {
     console.log("main: fromWorker -> allTasksLoaded");
-
-    console.log("main: registerView");
-    this.registerView(
-      VIEW_TYPE_CARD_BOARD,
-      (leaf) => new CardBoardView(this, leaf)
-    );
 
     addIcon("card-board",
       '<rect x="2" y="2" width="96" height="96" rx="12" ry="12" fill="none" stroke="currentColor" stroke-width="5"></rect>' +
@@ -166,8 +164,6 @@ export default class CardBoardPlugin extends Plugin {
 
 
   async handleTasksAdded(taskItems : TaskItem[]) {
-    console.log("main: fromWorker -> tasksAdded: " + taskItems.length);
-
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
     for (const leaf of leaves) {

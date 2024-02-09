@@ -1,7 +1,15 @@
-STEP 2
-------
-- W: detect if tasks have been changed so I can broadcast a taskItem changed event
-     instead of a delete and add.
+- speed up TaskList.replaceTaskItems as it maps through all the tasks for each replacement
+  - can I short circuit when I know I have found the one.  Or should I do a remove followed
+  by an add?
+- work on different cases of markdown modification
+    - non task line edited => No change to taskItems
+    - line added which changes line of some tasks => update tasks with new line
+    - line deleted which changes line of some tasks => update tasks with new line
+    - task Item deleted => remove deleted task and update lines of any following tasks
+    - task line edited => update edited task
+    - subtask information added => update edited task and lines of any following tasks
+    - subtask line edited => update edited task
+
 
 STEP 3
 ------
@@ -26,9 +34,6 @@ STEP 3
 - howabout when adding taskItems communicating the expected total and if this doesn't match
   what the view has it can request a reload.
 - do I need the same states in the view now that I am not loading markdown?
-- speed up TaskList.replaceTaskItems as it maps through all the tasks for each replacement
-  - can I short circuit when I know I have found the one.  Or should I do a remove followed
-  by an add?
 - typescipt tidying -> am I using async only where I need to?
 
 - can I make it so I load any settings at startup but save the latest version
