@@ -1,10 +1,8 @@
 STEP 1
 -----
-- W: watch for markdown file events (add, modify, rename, delete)
-    - broadcast changes (initially add, delete TaskItems)
-- V: ask for all tasks
-- V: subscribe to taskList change events
-
+- use RemoveThenAdd when file is modified
+- send notifications rather than commands to the view elm app
+  (so tasksUpdated rather than updateTasks)
 STEP 2
 ------
 - W: detect if tasks have been changed so I can broadcast a taskItem changed event
@@ -36,6 +34,15 @@ STEP 3
 - howabout when adding taskItems communicating the expected total and if this doesn't match
   what the view has it can request a reload.
 - do I need the same states in the view now that I am not loading markdown?
+- I get an error in the js console if I click on the command icon when the
+  cardboard view is visible
+- bug: if a file is deleted and it includes something which is shown in the completed
+  column then a blank item is added at the end as I do not render the markdown for
+  the newly added card.
+- speed up TaskList.replaceTaskItems as it maps through all the tasks for each replacement
+  - can I short circuit when I know I have found the one.  Or should I do a remove followed
+  by an add?
+- typescipt tidying -> am I using async only where I need to?
 
 ---
 - touch events - iPad ??

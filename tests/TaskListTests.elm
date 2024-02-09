@@ -26,6 +26,7 @@ suite =
         , map
         , parsing
         , replaceForFile
+        , replaceTaskItems
         , removeForFile
         , taskContainingId
         , taskFromId
@@ -315,6 +316,30 @@ not a task
                         [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         , TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         ]
+        ]
+
+
+replaceTaskItems : Test
+replaceTaskItems =
+    describe "replaceTaskItems"
+        [ test "does nothing if there are no replacement details" <|
+            \() ->
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
+- [ ] foo
+- [x] bar
+""" )
+                    |> TaskList.replaceTaskItems []
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "foo", "bar" ]
+        , test "replaces TaskItems if the id matches" <|
+            \() ->
+                TaskListHelpers.parsedTasks ( "a", Nothing, """
+- [ ] foo
+- [x] bar
+""" )
+                    |> TaskList.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] baz" ) ]
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "foo", "baz" ]
         ]
 
 

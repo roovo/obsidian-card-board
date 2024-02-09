@@ -19,6 +19,7 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
@@ -49,6 +50,7 @@ type ToElm
     | RemoveTaskItems (List String)
     | SettingsUpdated Settings
     | ShowBoard Int
+    | UpdateTaskItems (List ( String, TaskItem ))
 
 
 type alias Flags =
@@ -166,7 +168,13 @@ toElm =
         , DecodeHelpers.toElmVariant "removeTaskItems" RemoveTaskItems (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
+        , DecodeHelpers.toElmVariant "updateTaskItems" UpdateTaskItems updateDetailsDecoder
         ]
+
+
+updateDetailsDecoder : TsDecode.Decoder (List ( String, TaskItem ))
+updateDetailsDecoder =
+    TsDecode.list <| TsDecode.tuple TsDecode.string TaskItem.decoder
 
 
 fromElm : TsEncode.Encoder FromElm

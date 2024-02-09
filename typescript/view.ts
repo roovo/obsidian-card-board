@@ -525,6 +525,15 @@ export class CardBoardView extends ItemView {
     });
   }
 
+  updateTaskItems(updateDetails : [string, TaskItem][]) {
+    console.log("view: toView <- updateTaskItems: " + updateDetails.length);
+
+    this.elm.ports.interopToElm.send({
+      tag: "updateTaskItems",
+      data: updateDetails
+    });
+  }
+
   async handleUpdateTasks(
     data: {
       filePath: string,

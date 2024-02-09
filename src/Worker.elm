@@ -1,6 +1,7 @@
 module Worker exposing (main)
 
 import Json.Decode as JD
+import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
@@ -129,6 +130,10 @@ update msg model =
 
         VaultFileRenamed ( oldPath, newPath ) ->
             let
+                originalIds : List String
+                originalIds =
+                    List.map TaskItem.id toUpdate
+
                 updatedTaskItems : List TaskItem
                 updatedTaskItems =
                     List.map (TaskItem.updateFilePath oldPath newPath) toUpdate
@@ -140,10 +145,7 @@ update msg model =
                         |> List.partition (TaskItem.isFromFile oldPath)
             in
             ( mapSession (Session.replaceTaskList <| TaskList.fromList (remaining ++ updatedTaskItems)) model
-            , Cmd.batch
-                [ InteropPorts.tasksDeleted toUpdate
-                , InteropPorts.tasksAdded (TaskList.fromList updatedTaskItems)
-                ]
+            , InteropPorts.tasksUpdated (LE.zip originalIds updatedTaskItems)
             )
 
 

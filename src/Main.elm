@@ -20,7 +20,7 @@ import SafeZipper
 import Session exposing (Session)
 import Settings exposing (Settings)
 import Task
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import Time exposing (Posix)
@@ -133,6 +133,7 @@ type Msg
     | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
+    | UpdateTaskItems (List ( String, TaskItem ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -294,6 +295,17 @@ update msg model =
             , cmd
             )
 
+        ( UpdateTaskItems updateDetails, _ ) ->
+            let
+                tasksToRedraw =
+                    updateDetails
+                        |> List.map Tuple.second
+                        |> TaskList.fromList
+            in
+            ( mapSession (Session.replaceTaskItems updateDetails) model
+            , cmdForTaskRedraws tasksToRedraw (toSession model)
+            )
+
 
 cmdForFilterPathRename : String -> Session -> Cmd msg
 cmdForFilterPathRename newPath session =
@@ -428,6 +440,9 @@ subscriptions _ =
 
                                 InteropDefinitions.ShowBoard index ->
                                     ShowBoard index
+
+                                InteropDefinitions.UpdateTaskItems updateDetails ->
+                                    UpdateTaskItems updateDetails
 
                         Err _ ->
                             BadInputFromTypeScript

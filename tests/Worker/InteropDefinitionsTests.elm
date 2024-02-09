@@ -73,6 +73,20 @@ fromElmTests =
                     |> TsEncode.runExample interop.fromElm
                     |> .output
                     |> Expect.equal """{"tag":"tasksDeleted","data":["2166136261:1","2166136261:1"]}"""
+        , test "encodes TasksUpdated with no TaskItems" <|
+            \() ->
+                []
+                    |> InteropDefinitions.TasksUpdated
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"tasksUpdated","data":[]}"""
+        , test "encodes TasksUpdated with some TaskItems" <|
+            \() ->
+                [ ( "foo", safeTaskItem "- [ ] foo" ), ( "bar", safeTaskItem "- [ ] bar" ) ]
+                    |> InteropDefinitions.TasksUpdated
+                    |> TsEncode.runExample interop.fromElm
+                    |> .output
+                    |> Expect.equal """{"tag":"tasksUpdated","data":[["foo",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}],["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
         ]
 
 

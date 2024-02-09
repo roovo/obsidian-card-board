@@ -76,6 +76,9 @@ export default class CardBoardPlugin extends Plugin {
         case "tasksDeleted":
           that.handleTasksDeleted(fromElm.data);
           break;
+        case "tasksUpdated":
+          that.handleTasksUpdated(fromElm.data);
+          break;
       }
     });
 
@@ -179,6 +182,18 @@ export default class CardBoardPlugin extends Plugin {
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
         leaf.view.removeTaskItems(taskIds);
+      }
+    }
+  }
+
+  async handleTasksUpdated(updateDetails : [string, TaskItem][]) {
+    console.log("main: fromWorker -> tasksUpdated: " + updateDetails.length);
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.updateTaskItems(updateDetails);
       }
     }
   }

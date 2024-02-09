@@ -1199,6 +1199,12 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        , test "decodes updateTaskItems data" <|
+            \() ->
+                """{"tag":"updateTaskItems","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalText":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.UpdateTaskItems [ ( "bar", taskItem "- [ ] foo" ) ])
         ]
 
 

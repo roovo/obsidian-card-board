@@ -15,6 +15,7 @@ module TaskList exposing
     , parser
     , removeForFile
     , replaceForFile
+    , replaceTaskItems
     , taskContainingId
     , taskFromId
     , taskIds
@@ -135,6 +136,25 @@ map fn =
 replaceForFile : String -> TaskList -> TaskList -> TaskList
 replaceForFile filePath updatedList =
     append updatedList << removeForFile filePath
+
+
+replaceTaskItems : List ( String, TaskItem ) -> TaskList -> TaskList
+replaceTaskItems replacementDetails taskList =
+    let
+        newIfMatches : String -> TaskItem -> TaskItem -> TaskItem
+        newIfMatches taskItemId newTaskItem taskItem =
+            if TaskItem.id taskItem == taskItemId then
+                newTaskItem
+
+            else
+                taskItem
+
+        foo : ( String, TaskItem ) -> List TaskItem -> List TaskItem
+        foo ( taskItemId, newTaskItem ) taskItems =
+            List.map (newIfMatches taskItemId newTaskItem) taskItems
+    in
+    List.foldl foo (topLevelTasks taskList) replacementDetails
+        |> TaskList
 
 
 removeForFile : String -> TaskList -> TaskList

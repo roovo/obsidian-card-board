@@ -411,17 +411,17 @@ removeTaskItems taskIds ((Session config) as session) =
             updateTaskListState (State.Loaded (TaskList.filter (\i -> not <| List.member (TaskItem.id i) taskIds) currentList)) session
 
 
-replaceTaskItems : String -> TaskList -> Session -> Session
-replaceTaskItems filePath updatedList ((Session config) as session) =
+replaceTaskItems : List ( String, TaskItem ) -> Session -> Session
+replaceTaskItems updateDetails ((Session config) as session) =
     case config.taskList of
         State.Waiting ->
             session
 
         State.Loading currentList ->
-            updateTaskListState (State.Loading (TaskList.replaceForFile filePath updatedList currentList)) session
+            updateTaskListState (State.Loading (TaskList.replaceTaskItems updateDetails currentList)) session
 
         State.Loaded currentList ->
-            updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
+            updateTaskListState (State.Loading (TaskList.replaceTaskItems updateDetails currentList)) session
 
 
 replaceTaskList : TaskList -> Session -> Session

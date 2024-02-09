@@ -12,12 +12,14 @@ import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.FilterHelpers as FilterHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import InteropDefinitions exposing (Flags)
+import Parser
 import SafeZipper
 import Session
 import Settings exposing (Settings)
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
 import Time
@@ -393,7 +395,7 @@ replaceTaskItems =
         [ test "does nothing on a new session" <|
             \() ->
                 Session.default
-                    |> Session.replaceTaskItems "" TaskListHelpers.taskListFromFileA
+                    |> Session.replaceTaskItems []
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal []
@@ -402,20 +404,20 @@ replaceTaskItems =
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.replaceTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "n1", "n2", "g1", "g2" ]
-        , test "replaces tasks from the file with those given whilst loading tasklists even if finished adding" <|
+                    |> Expect.equal [ "a1", "foo", "g1", "g2" ]
+        , test "replaces tasks from the file with those given when finished loading tasklists" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.finishAdding
-                    |> Session.replaceTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "n1", "n2", "a1", "a2" ]
+                    |> Expect.equal [ "a1", "foo", "g1", "g2" ]
         ]
 
 
@@ -512,6 +514,11 @@ updatePath =
 -- HELPERS
 
 
+defaultGlobalSettings : GlobalSettings
+defaultGlobalSettings =
+    GlobalSettings.default
+
+
 exampleFlags : Flags
 exampleFlags =
     { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
@@ -549,9 +556,10 @@ exampleSettings =
            )
 
 
-defaultGlobalSettings : GlobalSettings
-defaultGlobalSettings =
-    GlobalSettings.default
+taskItem : String -> TaskItem
+taskItem markdown =
+    Parser.run TaskItemHelpers.basicParser markdown
+        |> Result.withDefault TaskItem.dummy
 
 
 untaggedAndCompleted : Settings

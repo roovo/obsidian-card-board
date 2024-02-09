@@ -25,6 +25,7 @@ type FromElm
     | AllTaskItems TaskList
     | TasksAdded TaskList
     | TasksDeleted (List TaskItem)
+    | TasksUpdated (List ( String, TaskItem ))
 
 
 type ToElm
@@ -73,7 +74,7 @@ toElm =
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAllTasksLoaded vAllTaskItems vTasksAdded vTasksDeleted value ->
+        (\vAllTasksLoaded vAllTaskItems vTasksAdded vTasksDeleted vTasksUpdated value ->
             case value of
                 AllTasksLoaded ->
                     vAllTasksLoaded
@@ -86,11 +87,15 @@ fromElm =
 
                 TasksDeleted taskItems ->
                     vTasksDeleted taskItems
+
+                TasksUpdated tasksToUpdate ->
+                    vTasksUpdated tasksToUpdate
         )
         |> TsEncode.variant0 "allTasksLoaded"
         |> TsEncode.variantTagged "allTaskItems" TaskList.encoder
         |> TsEncode.variantTagged "tasksAdded" TaskList.encoder
         |> TsEncode.variantTagged "tasksDeleted" tasksDeletedEncoder
+        |> TsEncode.variantTagged "tasksUpdated" tasksUpdatedEncoder
         |> TsEncode.buildUnion
 
 
@@ -108,3 +113,8 @@ renamedFileDecoder =
 tasksDeletedEncoder : TsEncode.Encoder (List TaskItem)
 tasksDeletedEncoder =
     TsEncode.list <| TsEncode.map TaskItem.id TsEncode.string
+
+
+tasksUpdatedEncoder : TsEncode.Encoder (List ( String, TaskItem ))
+tasksUpdatedEncoder =
+    TsEncode.list <| TsEncode.tuple TsEncode.string TaskItem.encoder
