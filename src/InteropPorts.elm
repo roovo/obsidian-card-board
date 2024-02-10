@@ -20,9 +20,25 @@ import InteropDefinitions
 import Json.Decode
 import Json.Encode
 import Settings exposing (Settings)
+import TaskItem exposing (TaskItemFields)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode
 import UpdatedTaskItem exposing (UpdatedTaskItem)
+
+
+
+-- FLAGS
+
+
+decodeFlags : Json.Decode.Value -> Result Json.Decode.Error InteropDefinitions.Flags
+decodeFlags flags =
+    Json.Decode.decodeValue
+        (InteropDefinitions.interop.flags |> TsDecode.decoder)
+        flags
+
+
+
+-- SUBSCRIPTIONS
 
 
 toElm : Sub (Result Json.Decode.Error InteropDefinitions.ToElm)
@@ -40,7 +56,8 @@ addHoverToCardEditButtons : List Card -> Cmd msg
 addHoverToCardEditButtons cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, id = Card.editButtonId c })
-        |> encodeVariant "addFilePreviewHovers" InteropDefinitions.addFilePreviewHoversEncoder
+        |> InteropDefinitions.AddFilePreviewHovers
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -50,10 +67,11 @@ closeView =
         |> interopFromElm
 
 
-deleteTask : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
-deleteTask info =
-    info
-        |> encodeVariant "deleteTask" InteropDefinitions.deleteTaskEncoder
+deleteTask : TaskItemFields -> Cmd msg
+deleteTask taskItemFields =
+    taskItemFields
+        |> InteropDefinitions.DeleteTask
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -61,7 +79,8 @@ displayTaskMarkdown : List Card -> Cmd msg
 displayTaskMarkdown cards =
     cards
         |> List.map (\c -> { filePath = Card.filePath c, taskMarkdown = Card.markdownWithIds c })
-        |> encodeVariant "displayTaskMarkdown" InteropDefinitions.displayTaskMarkdownEncoder
+        |> InteropDefinitions.DisplayTaskMarkdown
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -73,10 +92,11 @@ elmInitialized uniqueId =
         |> interopFromElm
 
 
-openTaskSourceFile : { a | filePath : String, lineNumber : Int, originalText : String } -> Cmd msg
-openTaskSourceFile info =
-    info
-        |> encodeVariant "openTaskSourceFile" InteropDefinitions.openTaskSourceFileEncoder
+openTaskSourceFile : TaskItemFields -> Cmd msg
+openTaskSourceFile taskItemFields =
+    taskItemFields
+        |> InteropDefinitions.OpenTaskSourceFile
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -97,21 +117,24 @@ rewriteTasks filePath updatedTaskItems =
             }
     in
     { filePath = filePath, tasks = List.map rewriteDetails updatedTaskItems }
-        |> encodeVariant "updateTasks" InteropDefinitions.updateTasksEncoder
+        |> InteropDefinitions.UpdateTasks
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
 showCardContextMenu : ( Float, Float ) -> String -> Cmd msg
 showCardContextMenu clientPos cardId =
     { clientPos = clientPos, cardId = cardId }
-        |> encodeVariant "showCardContextMenu" InteropDefinitions.showCardContextMenuEncoder
+        |> InteropDefinitions.ShowCardContextMenu
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
 trackDraggable : String -> Coords -> String -> Cmd msg
 trackDraggable dragType clientPos draggableId =
     { dragType = dragType, clientPos = clientPos, draggableId = draggableId }
-        |> encodeVariant "trackDraggable" InteropDefinitions.trackDraggableEncoder
+        |> InteropDefinitions.TrackDraggable
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -135,13 +158,6 @@ encodeVariant variantName encoder_ arg1 =
                 ]
                 |> TsEncode.encoder
            )
-
-
-decodeFlags : Json.Decode.Value -> Result Json.Decode.Error InteropDefinitions.Flags
-decodeFlags flags =
-    Json.Decode.decodeValue
-        (InteropDefinitions.interop.flags |> TsDecode.decoder)
-        flags
 
 
 

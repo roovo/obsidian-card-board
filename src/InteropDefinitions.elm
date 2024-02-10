@@ -2,14 +2,7 @@ module InteropDefinitions exposing
     ( Flags
     , FromElm(..)
     , ToElm(..)
-    , addFilePreviewHoversEncoder
-    , deleteTaskEncoder
-    , displayTaskMarkdownEncoder
     , interop
-    , openTaskSourceFileEncoder
-    , showCardContextMenuEncoder
-    , trackDraggableEncoder
-    , updateTasksEncoder
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
@@ -19,7 +12,7 @@ import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
-import TaskItem exposing (TaskItem)
+import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
@@ -29,10 +22,10 @@ import TsJson.Encode as TsEncode exposing (required)
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | CloseView
-    | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
+    | DeleteTask TaskItemFields
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
     | ElmInitialized String
-    | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
+    | OpenTaskSourceFile TaskItemFields
     | RequestFilterCandidates
     | ShowCardContextMenu { clientPos : ( Float, Float ), cardId : String }
     | TrackDraggable { dragType : String, clientPos : Coords, draggableId : String }
@@ -185,8 +178,8 @@ fromElm =
                 CloseView ->
                     vCloseView
 
-                DeleteTask info ->
-                    vDeleteTask info
+                DeleteTask taskItemFields ->
+                    vDeleteTask taskItemFields
 
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
@@ -194,8 +187,8 @@ fromElm =
                 ElmInitialized uniqueId ->
                     vElmInitialized uniqueId
 
-                OpenTaskSourceFile info ->
-                    vOpenTaskSourceFile info
+                OpenTaskSourceFile taskItemFields ->
+                    vOpenTaskSourceFile taskItemFields
 
                 RequestFilterCandidates ->
                     vRequestPaths

@@ -20,7 +20,7 @@ import Parser
 import SafeZipper
 import Semver
 import TagList
-import TaskItem exposing (TaskItem)
+import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import Test exposing (..)
 import TextDirection
@@ -998,7 +998,7 @@ fromElmTests =
                     |> Expect.equal """{"tag":"closeView"}"""
         , test "encodes DeleteTask data" <|
             \() ->
-                { filePath = "a path", lineNumber = 33, originalText = "the text" }
+                { defaultTaskItemFields | filePath = "a path", lineNumber = 33, originalText = "the text" }
                     |> InteropDefinitions.DeleteTask
                     |> TsEncode.runExample interop.fromElm
                     |> .output
@@ -1019,7 +1019,7 @@ fromElmTests =
                     |> Expect.equal """{"tag":"elmInitialized","data":"a_unique_id"}"""
         , test "encodes OpenTaskSourceFile data" <|
             \() ->
-                { filePath = "a path", lineNumber = 33, originalText = "the text" }
+                { defaultTaskItemFields | filePath = "a path", lineNumber = 33, originalText = "the text" }
                     |> InteropDefinitions.OpenTaskSourceFile
                     |> TsEncode.runExample interop.fromElm
                     |> .output
@@ -1229,6 +1229,11 @@ toElmTests =
 
 
 -- HELPERS
+
+
+defaultTaskItemFields : TaskItemFields
+defaultTaskItemFields =
+    TaskItem.fields TaskItem.dummy
 
 
 taskItem : String -> TaskItem
