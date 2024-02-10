@@ -31,7 +31,6 @@ suite =
         [ addTaskList
         , cards
         , default
-        , deleteItemsFromFile
         , findCard
         , finishAdding
         , firstDayOfWeek
@@ -142,38 +141,6 @@ default =
                 Session.default
                     |> Session.firstDayOfWeek
                     |> Expect.equal Time.Mon
-        ]
-
-
-deleteItemsFromFile : Test
-deleteItemsFromFile =
-    describe "deleteItemsFromFile"
-        [ test "does nothing to the tasklist of a new session" <|
-            \() ->
-                Session.default
-                    |> Session.deleteItemsFromFile ""
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal []
-        , test "remove tasks from the given file during loading" <|
-            \() ->
-                Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.deleteItemsFromFile "g"
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "a2" ]
-        , test "remove tasks from the given file after loading has finished" <|
-            \() ->
-                Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.finishAdding
-                    |> Session.deleteItemsFromFile "g"
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "a2" ]
         ]
 
 

@@ -7,7 +7,6 @@ module Session exposing
     , cards
     , dataviewTaskCompletion
     , default
-    , deleteItemsFromFile
     , dragTracker
     , findCard
     , finishAdding
@@ -370,19 +369,6 @@ addTaskList list ((Session config) as session) =
 
         State.Loaded currentList ->
             updateTaskListState (State.Loaded (TaskList.append currentList list)) session
-
-
-deleteItemsFromFile : String -> Session -> Session
-deleteItemsFromFile filePath ((Session config) as session) =
-    case config.taskList of
-        State.Waiting ->
-            session
-
-        State.Loading currentList ->
-            updateTaskListState (State.Loading (TaskList.removeForFile filePath currentList)) session
-
-        State.Loaded currentList ->
-            updateTaskListState (State.Loaded (TaskList.removeForFile filePath currentList)) session
 
 
 finishAdding : Session -> Session

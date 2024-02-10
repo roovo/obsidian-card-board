@@ -25,9 +25,7 @@ suite =
         , fromList
         , map
         , parsing
-        , replaceForFile
         , replaceTaskItems
-        , removeForFile
         , taskContainingId
         , taskFromId
         , toList
@@ -340,58 +338,6 @@ replaceTaskItems =
                     |> TaskList.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] baz" ) ]
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "baz" ]
-        ]
-
-
-replaceForFile : Test
-replaceForFile =
-    describe "replacing tasks from a chosen file"
-        [ test "adds the tasks if the TaskList is empty" <|
-            \() ->
-                TaskList.empty
-                    |> TaskList.replaceForFile "ignored"
-                        (TaskListHelpers.taskListFromFile "file a")
-                    |> TaskList.taskTitles
-                    |> List.sort
-                    |> Expect.equal (List.sort [ "c1", "c2" ])
-        , test "adds the tasks if the list doesn't contain tasks from the file" <|
-            \() ->
-                TaskListHelpers.taskListFromFileG
-                    |> TaskList.replaceForFile "ignored"
-                        (TaskListHelpers.taskListFromFile "file a")
-                    |> TaskList.taskTitles
-                    |> List.sort
-                    |> Expect.equal (List.sort [ "g1", "g2", "c1", "c2" ])
-        , test "replaces tasks from the file" <|
-            \() ->
-                TaskListHelpers.taskListFromFileG
-                    |> TaskList.append (TaskListHelpers.taskListFromFile "file a")
-                    |> TaskList.replaceForFile "file a"
-                        (TaskListHelpers.taskListFromNewFile "could be another file")
-                    |> TaskList.taskTitles
-                    |> List.sort
-                    |> Expect.equal (List.sort [ "n1", "n2", "g1", "g2" ])
-        ]
-
-
-removeForFile : Test
-removeForFile =
-    describe "removing tasks from a chosen file"
-        [ test "has no effect if the TaskList is empty" <|
-            \() ->
-                TaskList.empty
-                    |> TaskList.removeForFile "a file"
-                    |> TaskList.taskTitles
-                    |> List.sort
-                    |> Expect.equal (List.sort [])
-        , test "remove tasks from the file" <|
-            \() ->
-                TaskListHelpers.taskListFromFileG
-                    |> TaskList.append (TaskListHelpers.taskListFromFile "file a")
-                    |> TaskList.removeForFile "file a"
-                    |> TaskList.taskTitles
-                    |> List.sort
-                    |> Expect.equal (List.sort [ "g1", "g2" ])
         ]
 
 

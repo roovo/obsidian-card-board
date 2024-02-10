@@ -13,8 +13,6 @@ module TaskList exposing
     , fromMarkdown
     , map
     , parser
-    , removeForFile
-    , replaceForFile
     , replaceTaskItems
     , taskContainingId
     , taskFromId
@@ -133,11 +131,6 @@ map fn =
     TaskList << List.map fn << topLevelTasks
 
 
-replaceForFile : String -> TaskList -> TaskList -> TaskList
-replaceForFile filePath updatedList =
-    append updatedList << removeForFile filePath
-
-
 replaceTaskItems : List ( String, TaskItem ) -> TaskList -> TaskList
 replaceTaskItems replacementDetails taskList =
     let
@@ -155,11 +148,6 @@ replaceTaskItems replacementDetails taskList =
     in
     List.foldl foo (topLevelTasks taskList) replacementDetails
         |> TaskList
-
-
-removeForFile : String -> TaskList -> TaskList
-removeForFile filePath =
-    TaskList << itemsNotFromFile filePath << topLevelTasks
 
 
 

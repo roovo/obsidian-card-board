@@ -26,8 +26,6 @@ STEP 3
     - basic TsEncode/Decode
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
-- can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
-  Session.replaceTaskItems
 - TaskItemFields -> make alphabetical (contents is at the end atm)
 - perhaps when I am removing taskItems from the view I could request a reload of all if
   the taskItem I am deleting doesn't exist
