@@ -9,6 +9,7 @@
     - task line edited => update edited task
     - subtask information added => update edited task and lines of any following tasks
     - subtask line edited => update edited task
+- can I make it so that tasks are not sent to the view before the initial load of all markdown?
 
 
 STEP 3
@@ -27,7 +28,6 @@ STEP 3
     - original strings and parse to decode
 - can I remove TaskList.removeForFile, TaskList.replaceForFile, TaskList.replaceForFile
   Session.replaceTaskItems
-- ensure InteropPorts uses the tested code in InteropDefinitions (as per the worker versions)
 - TaskItemFields -> make alphabetical (contents is at the end atm)
 - perhaps when I am removing taskItems from the view I could request a reload of all if
   the taskItem I am deleting doesn't exist

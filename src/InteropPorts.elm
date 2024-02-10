@@ -63,7 +63,8 @@ addHoverToCardEditButtons cards =
 
 closeView : Cmd msg
 closeView =
-    encodeVariant "closeView" (TsEncode.object []) ()
+    InteropDefinitions.CloseView
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -102,7 +103,8 @@ openTaskSourceFile taskItemFields =
 
 requestFilterCandidates : Cmd msg
 requestFilterCandidates =
-    encodeVariant "requestFilterCandidates" (TsEncode.object []) ()
+    InteropDefinitions.RequestFilterCandidates
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
 
 
@@ -141,23 +143,9 @@ trackDraggable dragType clientPos draggableId =
 updateSettings : Settings -> Cmd msg
 updateSettings settings =
     { settings | version = Settings.currentVersion }
-        |> encodeVariant "updateSettings" Settings.encoder
+        |> InteropDefinitions.UpdateSettings
+        |> TsEncode.encoder InteropDefinitions.interop.fromElm
         |> interopFromElm
-
-
-
--- HELPERS
-
-
-encodeVariant : String -> TsEncode.Encoder arg1 -> arg1 -> Json.Encode.Value
-encodeVariant variantName encoder_ arg1 =
-    arg1
-        |> (TsEncode.object
-                [ TsEncode.required "tag" identity (TsEncode.literal (Json.Encode.string variantName))
-                , TsEncode.required "data" identity encoder_
-                ]
-                |> TsEncode.encoder
-           )
 
 
 
