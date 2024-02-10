@@ -1,6 +1,3 @@
-- speed up TaskList.replaceTaskItems as it maps through all the tasks for each replacement
-  - can I short circuit when I know I have found the one.  Or should I do a remove followed
-  by an add?
 - work on different cases of markdown modification
     - non task line edited => No change to taskItems
     - line added which changes line of some tasks => update tasks with new line
@@ -26,7 +23,7 @@ STEP 3
     - basic TsEncode/Decode
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
-- TaskItemFields -> make alphabetical (contents is at the end atm)
+t statgggg- TaskItemFields -> make alphabetical (contents is at the end atm)
 - perhaps when I am removing taskItems from the view I could request a reload of all if
   the taskItem I am deleting doesn't exist
 - howabout when adding taskItems communicating the expected total and if this doesn't match

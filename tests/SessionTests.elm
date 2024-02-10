@@ -374,7 +374,8 @@ replaceTaskItems =
                     |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "foo", "g1", "g2" ]
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "a1", "foo", "g1", "g2" ])
         , test "replaces tasks from the file with those given when finished loading tasklists" <|
             \() ->
                 Session.default
@@ -384,7 +385,8 @@ replaceTaskItems =
                     |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "foo", "g1", "g2" ]
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "a1", "foo", "g1", "g2" ])
         ]
 
 

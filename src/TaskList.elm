@@ -134,20 +134,17 @@ map fn =
 replaceTaskItems : List ( String, TaskItem ) -> TaskList -> TaskList
 replaceTaskItems replacementDetails taskList =
     let
-        newIfMatches : String -> TaskItem -> TaskItem -> TaskItem
-        newIfMatches taskItemId newTaskItem taskItem =
-            if TaskItem.id taskItem == taskItemId then
-                newTaskItem
+        idsToRemove : List String
+        idsToRemove =
+            List.map Tuple.first replacementDetails
 
-            else
-                taskItem
-
-        foo : ( String, TaskItem ) -> List TaskItem -> List TaskItem
-        foo ( taskItemId, newTaskItem ) taskItems =
-            List.map (newIfMatches taskItemId newTaskItem) taskItems
+        taskListToAdd : TaskList
+        taskListToAdd =
+            TaskList <| List.map Tuple.second replacementDetails
     in
-    List.foldl foo (topLevelTasks taskList) replacementDetails
-        |> TaskList
+    taskList
+        |> filter (\i -> not <| List.member (TaskItem.id i) idsToRemove)
+        |> append taskListToAdd
 
 
 

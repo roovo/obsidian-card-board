@@ -337,7 +337,8 @@ replaceTaskItems =
 """ )
                     |> TaskList.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] baz" ) ]
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "foo", "baz" ]
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "foo", "baz" ])
         ]
 
 
