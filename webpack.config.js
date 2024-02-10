@@ -2,6 +2,9 @@ const path = require('path');
 
 module.exports = {
   entry: './typescript/main.ts',
+  performance: {
+    hints: false
+  },
   output: {
     path: path.resolve(__dirname, '.'),
     libraryTarget: 'commonjs',
