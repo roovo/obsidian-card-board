@@ -12,7 +12,6 @@ module TaskList exposing
     , fromList
     , fromMarkdown
     , map
-    , parser
     , replaceTaskItems
     , taskContainingId
     , taskFromId
@@ -72,16 +71,6 @@ fromMarkdown dataviewTaskCompletion markdownFile =
 add : TaskItem -> TaskList -> TaskList
 add item (TaskList list) =
     TaskList (item :: list)
-
-
-
--- PARSE
-
-
-parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
-parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
-    P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
-        |> P.map (\ts -> TaskList ts)
 
 
 
@@ -195,6 +184,12 @@ topLevelTasks (TaskList taskList) =
 itemsNotFromFile : String -> List TaskItem -> List TaskItem
 itemsNotFromFile pathToFile =
     List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
+
+
+parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
+parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
+        |> P.map (\ts -> TaskList ts)
 
 
 taskItemsHelp : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))

@@ -1,6 +1,5 @@
 module Helpers.TaskListHelpers exposing
-    ( basicParser
-    , exampleDateBoardTaskList
+    ( exampleDateBoardTaskList
     , exampleTagBoardTaskList
     , parsedTasks
     , taskListFromFile
@@ -11,20 +10,30 @@ module Helpers.TaskListHelpers exposing
 
 import DataviewTaskCompletion
 import Helpers.DateTimeHelpers as DateTimeHelpers
+import MarkdownFile exposing (MarkdownFile)
 import Parser exposing (Parser)
 import TagList
 import TaskList exposing (TaskList)
 
 
-basicParser : Parser TaskList
-basicParser =
-    TaskList.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0
+exampleDateBoardTaskList : TaskList
+exampleDateBoardTaskList =
+    exampleDateBoardTasks
+        |> List.map parsedTasks
+        |> TaskList.concat
+
+
+exampleTagBoardTaskList : TaskList
+exampleTagBoardTaskList =
+    exampleTagBoardTasks
+        |> List.map parsedTasks
+        |> TaskList.concat
 
 
 parsedTasks : ( String, Maybe String, String ) -> TaskList
 parsedTasks ( p, d, ts ) =
-    Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion p d TagList.empty 0) ts
-        |> Result.withDefault TaskList.empty
+    basicMarkdown p d ts
+        |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
 
 
 taskListFromFile : String -> TaskList
@@ -49,20 +58,6 @@ taskListFromNewFile path =
     path
         |> tasksFromNewFile
         |> parsedTasks
-
-
-exampleDateBoardTaskList : TaskList
-exampleDateBoardTaskList =
-    exampleDateBoardTasks
-        |> List.map parsedTasks
-        |> TaskList.concat
-
-
-exampleTagBoardTaskList : TaskList
-exampleTagBoardTaskList =
-    exampleTagBoardTasks
-        |> List.map parsedTasks
-        |> TaskList.concat
 
 
 
@@ -189,3 +184,17 @@ exampleTagBoardTasks =
 - [x] c.tag4 #tag4
 """ )
     ]
+
+
+
+-- HELPERS
+
+
+basicMarkdown : String -> Maybe String -> String -> MarkdownFile
+basicMarkdown path date body =
+    { filePath = path
+    , fileDate = date
+    , frontMatterTags = TagList.empty
+    , bodyOffset = 0
+    , body = body
+    }

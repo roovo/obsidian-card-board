@@ -1,4 +1,5 @@
 - work on different cases of markdown modification
+    - nothing changed
     - non task line edited => No change to taskItems
     - line added which changes line of some tasks => update tasks with new line
     - line deleted which changes line of some tasks => update tasks with new line
@@ -8,6 +9,8 @@
     - subtask line edited => update edited task
 - can I make it so that tasks are not sent to the view before the initial load of all markdown?
 
+- column sorting
+    - title, due date, path
 
 STEP 3
 ------
@@ -23,7 +26,7 @@ STEP 3
     - basic TsEncode/Decode
     - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
     - original strings and parse to decode
-t statgggg- TaskItemFields -> make alphabetical (contents is at the end atm)
+- TaskItemFields -> make alphabetical (contents is at the end atm)
 - perhaps when I am removing taskItems from the view I could request a reload of all if
   the taskItem I am deleting doesn't exist
 - howabout when adding taskItems communicating the expected total and if this doesn't match

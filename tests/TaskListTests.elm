@@ -6,6 +6,7 @@ import Helpers.DecodeHelpers as DecodeTestHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
+import MarkdownFile exposing (MarkdownFile)
 import Parser
 import TagList
 import TaskItem exposing (TaskItem)
@@ -23,8 +24,8 @@ suite =
         , encoder
         , filter
         , fromList
+        , fromMarkdown
         , map
-        , parsing
         , replaceTaskItems
         , taskContainingId
         , taskFromId
@@ -120,10 +121,11 @@ filter =
         [ test "returns an empty TaskList if given an one" <|
             \() ->
                 ""
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.map (TaskList.filter (always True))
-                    |> Result.map TaskList.taskTitles
-                    |> Expect.equal (Ok [])
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.filter (always True)
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
         , test "filters a TaskList based on a TaskItem property" <|
             \() ->
                 """- [ ] foo
@@ -131,10 +133,11 @@ filter =
 - [X] baz #tag2
 - [X] boo
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.map (TaskList.filter TaskItem.hasTags)
-                    |> Result.map TaskList.taskTitles
-                    |> Expect.equal (Ok [ "bar", "baz" ])
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.filter TaskItem.hasTags
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "bar", "baz" ]
         ]
 
 
@@ -155,44 +158,20 @@ fromList =
         ]
 
 
-map : Test
-map =
-    describe "map"
-        [ test "returns an empty TaskList if given an one" <|
-            \() ->
-                ""
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.map (TaskList.map identity)
-                    |> Result.map TaskList.taskTitles
-                    |> Expect.equal (Ok [])
-        , test "maps the contents of a TaskList throgh a function" <|
-            \() ->
-                """- [ ] foo
-- [x] bar #tag1
-"""
-                    |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "old/path" Nothing TagList.empty 0)
-                    |> Result.map (TaskList.map <| TaskItem.updateFilePath "old/path" "new/path")
-                    |> Result.map TaskList.topLevelTasks
-                    |> Result.map (List.map TaskItem.filePath)
-                    |> Expect.equal (Ok [ "new/path", "new/path" ])
-        ]
-
-
-parsing : Test
-parsing =
-    describe "todo parsing"
+fromMarkdown : Test
+fromMarkdown =
+    describe "todo fromMarkdown"
         [ test "parses an empty file" <|
             \() ->
                 ""
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
-                    |> TaskList.taskTitles
-                    |> Expect.equal []
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> Expect.equal TaskList.empty
         , test "parses a single incomplete TaskList item" <|
             \() ->
                 "- [ ] foo"
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo" ]
         , test "parses a contiguous block of TaskList items" <|
@@ -201,8 +180,8 @@ parsing =
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses non contiguous TaskList items" <|
@@ -215,8 +194,8 @@ parsing =
 - [X] baz
 
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses TaskList items with non-tasks interspersed" <|
@@ -230,8 +209,8 @@ not a task
 - [X] baz
 
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "ignores indented tasks" <|
@@ -246,8 +225,8 @@ not a task
   - [ ] a subtask
 
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the first line of the file is blank" <|
@@ -257,8 +236,8 @@ not a task
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks ignoring any that don't have a title" <|
@@ -269,22 +248,22 @@ not a task
 - [x] bar
 - [X] baz
 """
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar", "baz" ]
         , test "parses tasks when the last line is a task and has NO line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar"
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar" ]
         , test "parses tasks when the last line is a non-task and has a line ending" <|
             \() ->
                 "- [ ] foo\n- [x] bar\n\n## Log\n"
-                    |> Parser.run TaskListHelpers.basicParser
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskTitles
                     |> Expect.equal [ "foo", "bar" ]
         , test "parses ids consiting of the filePath and line number" <|
@@ -297,23 +276,49 @@ not a task
 - [X] baz
 
 """
-                    |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "file_a" Nothing TagList.empty 0)
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown "file_a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.taskIds
                     |> Expect.equal [ "4275677999:1", "4275677999:4", "4275677999:6" ]
-        , test "adds frontmatter tags to the tasks" <|
+        , test "adds frontmatter tags to all the tasks" <|
             \() ->
                 """- [ ] foo
 - [x] bar
 """
-                    |> Parser.run (TaskList.parser DataviewTaskCompletion.NoCompletion "file_a" Nothing (TagList.fromList [ "fm_tag1", "fm_tag2" ]) 0)
-                    |> Result.withDefault TaskList.empty
+                    |> basicMarkdown "file_a"
+                    |> (\md -> { md | frontMatterTags = TagList.fromList [ "fm_tag1", "fm_tag2" ] })
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.toList
                     |> List.map TaskItem.tags
                     |> Expect.equal
                         [ TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         , TagList.fromList [ "fm_tag1", "fm_tag2" ]
                         ]
+        ]
+
+
+map : Test
+map =
+    describe "map"
+        [ test "returns an empty TaskList if given an one" <|
+            \() ->
+                ""
+                    |> basicMarkdown ""
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.map identity
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        , test "maps the contents of a TaskList throgh a function" <|
+            \() ->
+                """- [ ] foo
+- [x] bar #tag1
+"""
+                    |> basicMarkdown "old/path"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> (TaskList.map <| TaskItem.updateFilePath "old/path" "new/path")
+                    |> TaskList.topLevelTasks
+                    |> List.map TaskItem.filePath
+                    |> Expect.equal [ "new/path", "new/path" ]
         ]
 
 
@@ -438,6 +443,16 @@ toList =
 
 
 -- HELPERS
+
+
+basicMarkdown : String -> String -> MarkdownFile
+basicMarkdown path body =
+    { filePath = path
+    , fileDate = Nothing
+    , frontMatterTags = TagList.empty
+    , bodyOffset = 0
+    , body = body
+    }
 
 
 taskItem : String -> TaskItem
