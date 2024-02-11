@@ -26,6 +26,7 @@ suite =
         , fromList
         , fromMarkdown
         , map
+        , markdownDiffs
         , replaceTaskItems
         , taskContainingId
         , taskFromId
@@ -297,6 +298,80 @@ not a task
         ]
 
 
+markdownDiffs : Test
+markdownDiffs =
+    describe "markdownDiffs"
+        [ test "returns an empty diff if both the original an updated files are empty" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" ""
+                in
+                ""
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
+        , test "returns an empty diff if both the original an updated files are the same" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "- [ ] foo"
+                in
+                "- [ ] foo"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
+        , test "returns a non-task line is edited" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo"
+                in
+                "# LONGER title\n- [ ] foo"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
+        , test "returns a task to add if one has been added" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar"
+                in
+                "# LONGER title\n- [ ] foo"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = [ taskItemPlus "a" 2 "- [ ] bar" ]
+                        , toDelete = []
+                        , toUpdate = []
+                        }
+        , test "returns a task to remove if one has been removed" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo"
+                in
+                "# LONGER title\n- [ ] foo\n- [ ] bar"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = []
+                        , toDelete = [ taskItemPlus "a" 2 "- [ ] bar" ]
+                        , toUpdate = []
+                        }
+        ]
+
+
 map : Test
 map =
     describe "map"
@@ -453,6 +528,16 @@ basicMarkdown path body =
     , bodyOffset = 0
     , body = body
     }
+
+
+
+-- TaskItem.parser (DataviewTaskCompletion.Text "completion") "" Nothing TagList.empty 0
+
+
+taskItemPlus : String -> Int -> String -> TaskItem
+taskItemPlus file offset markdown =
+    Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion file Nothing TagList.empty offset) markdown
+        |> Result.withDefault TaskItem.dummy
 
 
 taskItem : String -> TaskItem

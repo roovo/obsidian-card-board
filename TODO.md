@@ -9,8 +9,12 @@
     - subtask line edited => update edited task
 - can I make it so that tasks are not sent to the view before the initial load of all markdown?
 
+- check that I ignore changes being made to files that are in the
+  exclusion list!
+
 - column sorting
     - title, due date, path
+    - do I want to introduce priority at this point?
 
 STEP 3
 ------

@@ -12,6 +12,7 @@ module TaskList exposing
     , fromList
     , fromMarkdown
     , map
+    , markdownDiffs
     , replaceTaskItems
     , taskContainingId
     , taskFromId
@@ -21,6 +22,7 @@ module TaskList exposing
     , topLevelTasks
     )
 
+import AssocSet exposing (Set)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
@@ -38,6 +40,13 @@ import TsJson.Encode as TsEncode
 
 type TaskList
     = TaskList (List TaskItem)
+
+
+type alias TaskListDiff =
+    { toAdd : List TaskItem
+    , toDelete : List TaskItem
+    , toUpdate : List ( String, TaskItem )
+    }
 
 
 
@@ -145,6 +154,38 @@ containsTask taskId taskList =
     taskList
         |> topLevelTasks
         |> List.any (\ti -> TaskItem.id ti == taskId)
+
+
+markdownDiffs : DataviewTaskCompletion -> MarkdownFile -> TaskList -> TaskListDiff
+markdownDiffs dataviewTaskCompletion updatedMarkdown taskList =
+    let
+        updatedTasks : Set ( String, TaskItem )
+        updatedTasks =
+            fromMarkdown dataviewTaskCompletion updatedMarkdown
+                |> toList
+                |> List.map (\i -> ( TaskItem.id i, i ))
+                |> AssocSet.fromList
+
+        existingTasks : Set ( String, TaskItem )
+        existingTasks =
+            filter (TaskItem.isFromFile updatedMarkdown.filePath) taskList
+                |> toList
+                |> List.map (\i -> ( TaskItem.id i, i ))
+                |> AssocSet.fromList
+
+        toAdd : List TaskItem
+        toAdd =
+            AssocSet.diff updatedTasks existingTasks
+                |> AssocSet.toList
+                |> List.map Tuple.second
+
+        toRemove : List TaskItem
+        toRemove =
+            AssocSet.diff existingTasks updatedTasks
+                |> AssocSet.toList
+                |> List.map Tuple.second
+    in
+    TaskListDiff toAdd toRemove []
 
 
 taskTitles : TaskList -> List String

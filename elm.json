@@ -21,6 +21,7 @@
             "elm-community/list-extra": "8.7.0",
             "elm-community/maybe-extra": "5.3.0",
             "elm-community/string-extra": "4.0.1",
+            "erlandsona/assoc-set": "1.1.2",
             "justinmimbs/date": "4.0.1",
             "justinmimbs/time-extra": "1.1.1",
             "mpizenberg/elm-pointer-events": "5.0.0",
