@@ -1,4 +1,5 @@
 - optimizations of elm build - app is getting a bit big - webpack is warning me now!
+- can I make it so that tasks are not sent to the view before the initial load of all markdown?
 
 STEP 2
 ------
