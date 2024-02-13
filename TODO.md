@@ -111,6 +111,7 @@ STEP 3
 - undo buffer
   - for toggling completion
   - for deletion
+  - see: https://erkal.github.io/UndoRedo/index.html
 - could/should I use some taskpaper tags:
     @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
     @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.
