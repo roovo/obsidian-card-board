@@ -30,7 +30,7 @@ type FromElm
     | ShowCardContextMenu { clientPos : ( Float, Float ), cardId : String }
     | TrackDraggable { dragType : String, clientPos : Coords, draggableId : String }
     | UpdateSettings Settings
-    | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
+    | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalLine : String, newText : String } }
 
 
 type ToElm
@@ -178,12 +178,12 @@ deleteAndAddDecoder =
     TsDecode.tuple (TsDecode.list TaskItem.decoder) (TsDecode.list TaskItem.decoder)
 
 
-deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
+deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalLine : String }
 deleteTaskEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
         , required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
+        , required "originalLine" .originalLine TsEncode.string
         ]
 
 
@@ -205,12 +205,12 @@ markdownListEncoder =
         ]
 
 
-openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
+openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalLine : String }
 openTaskSourceFileEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string
         , required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
+        , required "originalLine" .originalLine TsEncode.string
         ]
 
 
@@ -229,11 +229,11 @@ showCardContextMenuEncoder =
         ]
 
 
-taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalText : String, newText : String }
+taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalLine : String, newText : String }
 taskUpdatesEncoder =
     TsEncode.object
         [ required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
+        , required "originalLine" .originalLine TsEncode.string
         , required "newText" .newText TsEncode.string
         ]
 
@@ -252,7 +252,7 @@ trackDraggableEncoder =
         ]
 
 
-updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
+updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalLine : String, newText : String } }
 updateTasksEncoder =
     TsEncode.object
         [ required "filePath" .filePath TsEncode.string

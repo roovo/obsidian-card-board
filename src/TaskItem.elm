@@ -29,7 +29,7 @@ module TaskItem exposing
     , isFromFile
     , lineNumber
     , notes
-    , originalText
+    , originalLine
     , parser
     , removeFileNameDate
     , removeMatchingTags
@@ -77,7 +77,7 @@ type alias TaskItemFields =
     , filePath : String
     , lineNumber : Int
     , notes : String
-    , originalText : String
+    , originalLine : String
     , tags : TagList
     , title : List String
     }
@@ -126,7 +126,7 @@ defaultFields =
     , filePath = ""
     , lineNumber = 0
     , notes = ""
-    , originalText = ""
+    , originalLine = ""
     , tags = TagList.empty
     , title = []
     , contents = []
@@ -349,9 +349,9 @@ notes =
     .notes << fields
 
 
-originalText : TaskItem -> String
-originalText =
-    .originalText << fields
+originalLine : TaskItem -> String
+originalLine =
+    .originalLine << fields
 
 
 tags : TaskItem -> TagList
@@ -777,7 +777,7 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> (\tif -> { tif | dueFile = dueFromFile })
         |> (\tif -> { tif | filePath = path })
         |> (\tif -> { tif | lineNumber = bodyOffset + row })
-        |> (\tif -> { tif | originalText = sourceText })
+        |> (\tif -> { tif | originalLine = sourceText })
         |> (\tif -> { tif | tags = TagList.append tif.tags frontMatterTags })
         |> (\tif -> { tif | title = List.reverse tif.title })
         |> (\tif -> { tif | contents = List.reverse contents })
@@ -949,7 +949,7 @@ taskItemFieldsDecoder =
         |> TsDecode.andMap (TsDecode.field "filePath" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "lineNumber" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "notes" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "originalText" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "originalLine" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "tags" TagList.decoder)
         |> TsDecode.andMap (TsDecode.field "title" (TsDecode.list TsDecode.string))
 
@@ -965,7 +965,7 @@ taskItemFieldsEncoder =
         , TsEncode.required "filePath" .filePath TsEncode.string
         , TsEncode.required "lineNumber" .lineNumber TsEncode.int
         , TsEncode.required "notes" .notes TsEncode.string
-        , TsEncode.required "originalText" .originalText TsEncode.string
+        , TsEncode.required "originalLine" .originalLine TsEncode.string
         , TsEncode.required "tags" .tags TagList.encoder
         , TsEncode.required "title" .title (TsEncode.list TsEncode.string)
         ]

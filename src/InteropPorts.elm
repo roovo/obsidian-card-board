@@ -111,10 +111,10 @@ requestFilterCandidates =
 rewriteTasks : String -> List UpdatedTaskItem -> Cmd msg
 rewriteTasks filePath updatedTaskItems =
     let
-        rewriteDetails : UpdatedTaskItem -> { lineNumber : Int, originalText : String, newText : String }
+        rewriteDetails : UpdatedTaskItem -> { lineNumber : Int, originalLine : String, newText : String }
         rewriteDetails updatedTaskItem =
             { lineNumber = UpdatedTaskItem.lineNumber updatedTaskItem
-            , originalText = UpdatedTaskItem.originalText updatedTaskItem
+            , originalLine = UpdatedTaskItem.originalLine updatedTaskItem
             , newText = UpdatedTaskItem.toString updatedTaskItem
             }
     in
