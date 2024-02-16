@@ -71,6 +71,7 @@ import TsJson.Encode as TsEncode
 type alias TaskItemFields =
     { autoComplete : AutoCompletion
     , completion : Completion
+    , contents : List Content
     , dueFile : Maybe Date
     , dueTag : DueDate
     , filePath : String
@@ -79,7 +80,6 @@ type alias TaskItemFields =
     , originalText : String
     , tags : TagList
     , title : List String
-    , contents : List Content
     }
 
 
@@ -943,6 +943,7 @@ taskItemFieldsDecoder =
     TsDecode.succeed TaskItemFields
         |> TsDecode.andMap (TsDecode.field "autoComplete" autoCompletionDecoder)
         |> TsDecode.andMap (TsDecode.field "completion" completionDecoder)
+        |> TsDecode.andMap (TsDecode.field "contents" (TsDecode.list contentDecoder))
         |> TsDecode.andMap (TsDecode.field "dueFile" (TsDecode.maybe DecodeHelpers.dateDecoder))
         |> TsDecode.andMap (TsDecode.field "dueTag" DueDate.decoder)
         |> TsDecode.andMap (TsDecode.field "filePath" TsDecode.string)
@@ -951,7 +952,6 @@ taskItemFieldsDecoder =
         |> TsDecode.andMap (TsDecode.field "originalText" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "tags" TagList.decoder)
         |> TsDecode.andMap (TsDecode.field "title" (TsDecode.list TsDecode.string))
-        |> TsDecode.andMap (TsDecode.field "contents" (TsDecode.list contentDecoder))
 
 
 taskItemFieldsEncoder : TsEncode.Encoder TaskItemFields

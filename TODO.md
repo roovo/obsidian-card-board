@@ -1,3 +1,16 @@
+- can I save the complete task text (including subtasks/notes) when parsing
+  => allCardText
+
+- look at: line number | originalText | allCardText
+  - same line number & same originalText & same allCardText => no change
+  - same line number  & same originalText & different allCardText => edited
+  - same line number  & similar originalText & _ allCardText => edited
+  - different line number & same originalText & same allCardText => moved
+  - different line number  & same originalText & different allCardText => moved and edited
+  - different line number  & similar originalText & _ allCardText => moved and edited
+
+  - anything 'left over' is either deleted or added
+
 - work on different cases of markdown modification
     - nothing changed
     - non task line edited => No change to taskItems
