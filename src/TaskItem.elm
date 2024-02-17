@@ -29,6 +29,7 @@ module TaskItem exposing
     , isFromFile
     , lineNumber
     , notes
+    , originalBlock
     , originalLine
     , parser
     , removeFileNameDate
@@ -77,6 +78,7 @@ type alias TaskItemFields =
     , filePath : String
     , lineNumber : Int
     , notes : String
+    , originalBlock : String
     , originalLine : String
     , tags : TagList
     , title : List String
@@ -126,6 +128,7 @@ defaultFields =
     , filePath = ""
     , lineNumber = 0
     , notes = ""
+    , originalBlock = ""
     , originalLine = ""
     , tags = TagList.empty
     , title = []
@@ -349,6 +352,11 @@ notes =
     .notes << fields
 
 
+originalBlock : TaskItem -> String
+originalBlock =
+    .originalBlock << fields
+
+
 originalLine : TaskItem -> String
 originalLine =
     .originalLine << fields
@@ -516,23 +524,11 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 
 parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskItem
 parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
-    (P.succeed taskItemFieldsBuilder
+    P.succeed itemWithOriginalBlock
         |= P.getOffset
-        |= P.getCol
-        |= P.succeed pathToFile
-        |= P.succeed frontMatterTags
-        |= P.succeed bodyOffset
-        |= P.getRow
-        |= prefixParser
-        |. P.chompWhile isSpaceOrTab
-        |= fileDateParser fileDate
-        |= contentParser dataviewTaskCompletion
+        |= taskItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset
         |= P.getOffset
-        |. lineEndOrEnd
         |= P.getSource
-    )
-        |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
 
 
 
@@ -652,6 +648,13 @@ indentedItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bo
         [ subTaskParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset
         , notesParser
         ]
+
+
+itemWithOriginalBlock : Int -> TaskItem -> Int -> String -> TaskItem
+itemWithOriginalBlock startOffset (TaskItem fields_ subtasks_) endOffset source =
+    TaskItem
+        { fields_ | originalBlock = String.trimRight <| String.slice startOffset (endOffset - 0) source }
+        subtasks_
 
 
 notesParser : Parser IndentedItem
@@ -782,6 +785,27 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> (\tif -> { tif | title = List.reverse tif.title })
         |> (\tif -> { tif | contents = List.reverse contents })
         |> addCompletionTime
+
+
+taskItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskItem
+taskItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
+    (P.succeed taskItemFieldsBuilder
+        |= P.getOffset
+        |= P.getCol
+        |= P.succeed pathToFile
+        |= P.succeed frontMatterTags
+        |= P.succeed bodyOffset
+        |= P.getRow
+        |= prefixParser
+        |. P.chompWhile isSpaceOrTab
+        |= fileDateParser fileDate
+        |= contentParser dataviewTaskCompletion
+        |= P.getOffset
+        |. lineEndOrEnd
+        |= P.getSource
+    )
+        |> P.andThen rejectIfNoTitle
+        |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
 
 
 toggleCompletion : { a | time : Time.Posix } -> TaskItem -> TaskItem
@@ -949,6 +973,7 @@ taskItemFieldsDecoder =
         |> TsDecode.andMap (TsDecode.field "filePath" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "lineNumber" TsDecode.int)
         |> TsDecode.andMap (TsDecode.field "notes" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "originalBlock" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "originalLine" TsDecode.string)
         |> TsDecode.andMap (TsDecode.field "tags" TagList.decoder)
         |> TsDecode.andMap (TsDecode.field "title" (TsDecode.list TsDecode.string))
@@ -965,6 +990,7 @@ taskItemFieldsEncoder =
         , TsEncode.required "filePath" .filePath TsEncode.string
         , TsEncode.required "lineNumber" .lineNumber TsEncode.int
         , TsEncode.required "notes" .notes TsEncode.string
+        , TsEncode.required "originalBlock" .originalBlock TsEncode.string
         , TsEncode.required "originalLine" .originalLine TsEncode.string
         , TsEncode.required "tags" .tags TagList.encoder
         , TsEncode.required "title" .title (TsEncode.list TsEncode.string)

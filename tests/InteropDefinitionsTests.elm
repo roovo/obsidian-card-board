@@ -1177,7 +1177,7 @@ toElmTests =
                         TaskList.empty
                             |> TaskList.add (taskItem "- [ ] foo")
                 in
-                """{"tag":"taskItemsAdded","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                """{"tag":"taskItemsAdded","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.TaskItemsAdded taskList)
@@ -1196,7 +1196,7 @@ toElmTests =
                             |> TaskList.add (taskItem "- [ ] bar")
                             |> TaskList.toList
                 in
-                """{"tag":"taskItemsDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
+                """{"tag":"taskItemsDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] bar","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ))
@@ -1208,7 +1208,7 @@ toElmTests =
                         TaskList.empty
                             |> TaskList.add (taskItem "- [ ] foo")
                 in
-                """{"tag":"taskItemsRefreshed","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                """{"tag":"taskItemsRefreshed","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.TaskItemsRefreshed taskList)
@@ -1220,7 +1220,7 @@ toElmTests =
                     |> Expect.equal (Ok <| InteropDefinitions.TaskItemsRemoved [ "foo", "bar", "baz" ])
         , test "decodes taskItemsUpdated data" <|
             \() ->
-                """{"tag":"taskItemsUpdated","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
+                """{"tag":"taskItemsUpdated","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.TaskItemsUpdated [ ( "bar", taskItem "- [ ] foo" ) ])

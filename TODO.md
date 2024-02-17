@@ -1,13 +1,11 @@
-- can I save the complete task text (including subtasks/notes) when parsing
-  => allCardText
 
-- look at: line number | originalText | allCardText
-  - same line number & same originalText & same allCardText => no change
-  - same line number  & same originalText & different allCardText => edited
-  - same line number  & similar originalText & _ allCardText => edited
-  - different line number & same originalText & same allCardText => moved
-  - different line number  & same originalText & different allCardText => moved and edited
-  - different line number  & similar originalText & _ allCardText => moved and edited
+- look at: line number | originalLine | originalBlock
+  - same line number & same originalLine & same originalBlock => no change
+  - same line number  & same originalLine & different originalBlock => edited
+  - same line number  & similar originalLine & _ originalBlock => edited
+  - different line number & same originalLine & same originalBlock => moved
+  - different line number  & same originalLine & different originalBlock => moved and edited
+  - different line number  & similar originalLine & _ originalBlock => moved and edited
 
   - anything 'left over' is either deleted or added
 
@@ -24,6 +22,8 @@
 
 - check that I ignore changes being made to files that are in the
   exclusion list!
+- do I need originalLine as it's the first line of originalBlock
+  would need a bit of work as there is no originalBlock for subtasks atm
 
 - column sorting
     - title, due date, path

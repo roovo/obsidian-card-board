@@ -41,6 +41,7 @@ suite =
         , isDated
         , lineNumber
         , notes
+        , originalBlock
         , originalLine
         , parsing
         , removeMatchingTags
@@ -324,7 +325,7 @@ decoder =
     describe "decoder"
         [ test "decodes a basic TaskItem" <|
             \() ->
-                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}"""
+                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}"""
                     |> DecodeTestHelpers.runDecoder TaskItem.decoder
                     |> .decoded
                     |> Result.map TaskItem.title
@@ -338,7 +339,7 @@ decoder =
                             |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                             |> Result.withDefault TaskItem.dummy
                 in
-                """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}"""
+                """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}"""
                     |> DecodeTestHelpers.runDecoder TaskItem.decoder
                     |> .decoded
                     |> Result.toMaybe
@@ -352,7 +353,7 @@ decoder =
                             |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                             |> Result.withDefault TaskItem.dummy
                 in
-                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}"""
+                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo\\n  - [ ] bar","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalBlock":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}"""
                     |> DecodeTestHelpers.runDecoder TaskItem.decoder
                     |> .decoded
                     |> Result.toMaybe
@@ -553,21 +554,21 @@ encoder =
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                     |> Result.map (TsEncode.runExample TaskItem.encoder)
                     |> Result.map .output
-                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}""")
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}""")
         , test "encodes a well decorated TaskItem" <|
             \() ->
                 "- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]"
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                     |> Result.map (TsEncode.runExample TaskItem.encoder)
                     |> Result.map .output
-                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}""")
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}""")
         , test "encodes a TaskItem with subtasks" <|
             \() ->
                 "- [ ] foo\n  - [ ] bar"
                     |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
                     |> Result.map (TsEncode.runExample TaskItem.encoder)
                     |> Result.map .output
-                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}""")
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo\\n  - [ ] bar","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalBlock":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}""")
         ]
 
 
@@ -1043,6 +1044,30 @@ notes =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.notes
                     |> Expect.equal (Ok "some notes\nmore notes\n- [ ]invalid subtask")
+        ]
+
+
+originalBlock : Test
+originalBlock =
+    describe "originalBlock"
+        [ test "retains the original line text for a single line task" <|
+            \() ->
+                "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title "
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title")
+        , test "retains the original line including any indented notes" <|
+            \() ->
+                "- [ ] foo\n some notes\n"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [ ] foo\n some notes")
+        , test "retains the original line including any subtasks" <|
+            \() ->
+                "- [ ] foo\n some notes\n  - [ ] a subtask\n\n  more notes\n  - [ ]invalid subtask\n"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [ ] foo\n some notes\n  - [ ] a subtask\n\n  more notes\n  - [ ]invalid subtask")
         ]
 
 
