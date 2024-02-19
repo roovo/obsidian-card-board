@@ -26,6 +26,7 @@
             "justinmimbs/time-extra": "1.1.1",
             "mpizenberg/elm-pointer-events": "5.0.0",
             "pzp1997/assoc-list": "1.0.0",
+            "rluiten/stringdistance": "1.0.4",
             "robinheghan/fnv1a": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.4",
             "tripokey/elm-fuzzy": "5.2.1"

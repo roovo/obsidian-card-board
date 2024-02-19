@@ -59,6 +59,7 @@ import Maybe.Extra as ME
 import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import StringDistance
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
@@ -481,6 +482,10 @@ titleWithTags taskItem =
 compare : TaskItem -> TaskItem -> CompareResult
 compare other this =
     let
+        otherTitle : String
+        otherTitle =
+            title other
+
         sameBlock : TaskItem -> TaskItem -> Bool
         sameBlock other_ this_ =
             originalBlock this == originalBlock other
@@ -495,16 +500,39 @@ compare other this =
 
         sameTitle : TaskItem -> TaskItem -> Bool
         sameTitle other_ this_ =
-            title this == title other
+            thisTitle == otherTitle
+
+        similarTitle : Float -> TaskItem -> TaskItem -> Bool
+        similarTitle threshold other_ this_ =
+            let
+                distance : Float
+                distance =
+                    StringDistance.sift3Distance otherTitle thisTitle
+
+                maxLength : Float
+                maxLength =
+                    toFloat <| max (String.length otherTitle) (String.length thisTitle)
+            in
+            distance / maxLength < threshold
+
+        thisTitle : String
+        thisTitle =
+            title this
     in
     if samePlace other this && sameBlock other this then
         Identical
+
+    else if samePlace other this && similarTitle 0.25 other this then
+        Updated
 
     else if samePlace other this && sameTitle other this then
         Updated
 
     else if not (samePlace other this) && sameBlock other this then
         Moved
+
+    else if not (samePlace other this) && similarTitle 0.12 other this then
+        MovedAndUpdated
 
     else if not (samePlace other this) && sameTitle other this then
         MovedAndUpdated

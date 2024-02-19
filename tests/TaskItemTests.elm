@@ -9,6 +9,7 @@ import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
+import StringDistance
 import TagList
 import TaskItem exposing (Completion(..), TaskItem)
 import Test exposing (..)
@@ -204,6 +205,15 @@ compare =
                 taskItemPlus "a" 0 "- [ ] foo"
                     |> TaskItem.compare other
                     |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the title 'is similar'" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] this is something I need to do"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
         , test "returns Moved if a basic task block is the same but it is in a different location" <|
             \() ->
                 let
@@ -276,29 +286,34 @@ compare =
                 taskItemPlus "a" 0 "- [ ] foo"
                     |> TaskItem.compare other
                     |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns Updated if the title 'is similar' and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] this is something xxxx"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "is more fussy about similarity when moved and edited than when just edited" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] this is something I need to do"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Different
         , test "returns Different if the top level title is different" <|
             \() ->
                 let
                     other =
-                        taskItemPlus "a" 0 "- [ ] xxxxxx"
+                        taskItemPlus "a" 0 "- [ ] foo"
                 in
-                taskItemPlus "a" 0 "- [ ] aaa"
+                taskItemPlus "a" 0 "- [ ] bar"
                     |> TaskItem.compare other
                     |> Expect.equal TaskItem.Different
         ]
-
-
-
--- - look at: line number | originalLine | originalBlock
---   - same line number  & similar originalLine & _ originalBlock => edited
---   - different line number  & same originalLine & different originalBlock => moved and edited
---   - different line number  & similar originalLine & _ originalBlock => moved and edited
---
---   - anything 'left over' is either deleted or added
---
---   - same line number & same originalLine & same originalBlock => no change
---   - same line number  & same originalLine & different originalBlock => edited
---   - different line number & same originalLine & same originalBlock => moved
 
 
 completedPosix : Test
