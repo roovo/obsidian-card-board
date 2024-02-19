@@ -369,7 +369,36 @@ markdownDiffs =
                         , toDelete = [ taskItemPlus "a" 2 "- [ ] bar" ]
                         , toUpdate = []
                         }
+
+        -- , test "returns a task to update if it has had a subtask added" <|
+        --     \() ->
+        --         let
+        --             updatedMarkdown : MarkdownFile
+        --             updatedMarkdown =
+        --                 basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar\n - [ ] baz"
+        --         in
+        --         "# title\n- [ ] foo\n- [ ] bar"
+        --             |> basicMarkdown "a"
+        --             |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+        --             |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+        --             |> Expect.equal
+        --                 { toAdd = []
+        --                 , toDelete = []
+        --                 , toUpdate = [ ( "", taskItemPlus "a" 2 "- [ ] bar\n - [ ] baz" ) ]
+        --                 }
         ]
+
+
+
+-- - look at: line number | originalLine | originalBlock
+--   - same line number & same originalLine & same originalBlock => no change
+--   - same line number  & same originalLine & different originalBlock => edited
+--   - same line number  & similar originalLine & _ originalBlock => edited
+--   - different line number & same originalLine & same originalBlock => moved
+--   - different line number  & same originalLine & different originalBlock => moved and edited
+--   - different line number  & similar originalLine & _ originalBlock => moved and edited
+--
+--   - anything 'left over' is either deleted or added
 
 
 map : Test

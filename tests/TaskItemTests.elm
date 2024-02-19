@@ -21,6 +21,7 @@ suite =
     concat
         [ allSubtasksWithMatchingTagCompleted
         , blockLink
+        , compare
         , completedPosix
         , completion
         , containsId
@@ -126,6 +127,178 @@ blockLink =
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo ^bar baz")
         ]
+
+
+compare : Test
+compare =
+    describe "compare"
+        [ test "returns Identical for two basic taskItems" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Identical for two taskItems with notes" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Identical for two taskItems with notes and subtasks" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Updated if a subtask has been added" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if a subtask and notes have been added" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the subtask and notes have been edited" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the subtask and notes have been deleted" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if tags have been added" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo #bar @due(2021-01-01)"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Moved if a basic task block is the same but it is in a different location" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns Moved if a task block with notes and subtasks is the same but it is in a different location" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns Moved if a task block with notes is the same but it is in a different location" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns MovedAndUpdated if a subtask has been added and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if a subtask and notes have been added and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if the subtask and notes have been edited and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if the subtask and notes have been deleted and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if tags have been added and it has been moved" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo #bar @due(2021-01-01)"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns Different if the top level title is different" <|
+            \() ->
+                let
+                    other =
+                        taskItemPlus "a" 0 "- [ ] xxxxxx"
+                in
+                taskItemPlus "a" 0 "- [ ] aaa"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Different
+        ]
+
+
+
+-- - look at: line number | originalLine | originalBlock
+--   - same line number  & similar originalLine & _ originalBlock => edited
+--   - different line number  & same originalLine & different originalBlock => moved and edited
+--   - different line number  & similar originalLine & _ originalBlock => moved and edited
+--
+--   - anything 'left over' is either deleted or added
+--
+--   - same line number & same originalLine & same originalBlock => no change
+--   - same line number  & same originalLine & different originalBlock => edited
+--   - different line number & same originalLine & same originalBlock => moved
 
 
 completedPosix : Test
@@ -1496,3 +1669,13 @@ updateFilePath =
                     |> TaskItem.filePath
                     |> Expect.equal "old/path"
         ]
+
+
+
+-- HELPERS
+
+
+taskItemPlus : String -> Int -> String -> TaskItem
+taskItemPlus file offset markdown =
+    Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion file Nothing TagList.empty offset) markdown
+        |> Result.withDefault TaskItem.dummy

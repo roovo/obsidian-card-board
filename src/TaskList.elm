@@ -162,14 +162,14 @@ markdownDiffs dataviewTaskCompletion updatedMarkdown taskList =
         updatedTasks : Set ( String, TaskItem )
         updatedTasks =
             fromMarkdown dataviewTaskCompletion updatedMarkdown
-                |> toList
+                |> topLevelTasks
                 |> List.map (\i -> ( TaskItem.id i, i ))
                 |> AssocSet.fromList
 
         existingTasks : Set ( String, TaskItem )
         existingTasks =
             filter (TaskItem.isFromFile updatedMarkdown.filePath) taskList
-                |> toList
+                |> topLevelTasks
                 |> List.map (\i -> ( TaskItem.id i, i ))
                 |> AssocSet.fromList
 

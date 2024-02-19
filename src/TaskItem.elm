@@ -1,11 +1,13 @@
 module TaskItem exposing
     ( AutoCompletion(..)
+    , CompareResult(..)
     , Completion(..)
     , Content
     , TaskItem
     , TaskItemFields
     , allSubtasksWithMatchingTagCompleted
     , asSingleTaskItems
+    , compare
     , completedPosix
     , completion
     , containsId
@@ -112,6 +114,14 @@ type Content
 type IndentedItem
     = Subtask TaskItemFields
     | Note String
+
+
+type CompareResult
+    = Different
+    | Identical
+    | Moved
+    | MovedAndUpdated
+    | Updated
 
 
 dummy : TaskItem
@@ -462,6 +472,45 @@ titleWithTags taskItem =
         |> .contents
         |> buildContents
         |> String.join " "
+
+
+
+-- COMPARE
+
+
+compare : TaskItem -> TaskItem -> CompareResult
+compare other this =
+    let
+        sameBlock : TaskItem -> TaskItem -> Bool
+        sameBlock other_ this_ =
+            originalBlock this == originalBlock other
+
+        sameLine : TaskItem -> TaskItem -> Bool
+        sameLine other_ this_ =
+            originalLine this == originalLine other
+
+        samePlace : TaskItem -> TaskItem -> Bool
+        samePlace other_ this_ =
+            id this == id other
+
+        sameTitle : TaskItem -> TaskItem -> Bool
+        sameTitle other_ this_ =
+            title this == title other
+    in
+    if samePlace other this && sameBlock other this then
+        Identical
+
+    else if samePlace other this && sameTitle other this then
+        Updated
+
+    else if not (samePlace other this) && sameBlock other this then
+        Moved
+
+    else if not (samePlace other this) && sameTitle other this then
+        MovedAndUpdated
+
+    else
+        Different
 
 
 
