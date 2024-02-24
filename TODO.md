@@ -1,5 +1,3 @@
-- can I make it so that tasks are not sent to the view before the initial load of all markdown?
-
 - do I need originalLine as it's the first line of originalBlock
   would need a bit of work as there is no originalBlock for subtasks atm
 

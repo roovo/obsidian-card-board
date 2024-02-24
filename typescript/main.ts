@@ -157,7 +157,7 @@ export default class CardBoardPlugin extends Plugin {
 
   async viewInitialized() {
     console.log("main: toWorker <- viewInitialized");
-    this.worker.ports.interopToElm.send({
+    this.worker?.ports.interopToElm.send({
       tag: "viewInitialized"
     });
   }
