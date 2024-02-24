@@ -133,7 +133,7 @@ type Msg
     | TaskItemsAdded TaskList
     | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
     | TaskItemsRefreshed TaskList
-    | TaskItemsRemoved (List String)
+    | TaskItemsDeleted (List String)
     | TaskItemsUpdated (List ( String, TaskItem ))
 
 
@@ -286,6 +286,11 @@ update msg model =
             , cmdForTaskRedraws taskList (toSession model)
             )
 
+        ( TaskItemsDeleted taskItems, _ ) ->
+            ( mapSession (Session.removeTaskItems taskItems) model
+            , Cmd.none
+            )
+
         ( TaskItemsDeletedAndAdded ( toDelete, toAdd ), _ ) ->
             let
                 deleteIds : List String
@@ -304,11 +309,6 @@ update msg model =
 
         ( TaskItemsRefreshed taskList, _ ) ->
             ( mapSession (Session.replaceTaskList taskList) model
-            , Cmd.none
-            )
-
-        ( TaskItemsRemoved taskItems, _ ) ->
-            ( mapSession (Session.removeTaskItems taskItems) model
             , Cmd.none
             )
 
@@ -452,14 +452,14 @@ subscriptions _ =
                                 InteropDefinitions.TaskItemsAdded taskItems ->
                                     TaskItemsAdded taskItems
 
+                                InteropDefinitions.TaskItemsDeleted taskIds ->
+                                    TaskItemsDeleted taskIds
+
                                 InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ) ->
                                     TaskItemsDeletedAndAdded ( toDelete, toAdd )
 
                                 InteropDefinitions.TaskItemsRefreshed taskItems ->
                                     TaskItemsRefreshed taskItems
-
-                                InteropDefinitions.TaskItemsRemoved taskIds ->
-                                    TaskItemsRemoved taskIds
 
                                 InteropDefinitions.TaskItemsUpdated updateDetails ->
                                     TaskItemsUpdated updateDetails

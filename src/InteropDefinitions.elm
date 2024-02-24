@@ -42,9 +42,9 @@ type ToElm
     | SettingsUpdated Settings
     | ShowBoard Int
     | TaskItemsAdded TaskList
+    | TaskItemsDeleted (List String)
     | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
     | TaskItemsRefreshed TaskList
-    | TaskItemsRemoved (List String)
     | TaskItemsUpdated (List ( String, TaskItem ))
 
 
@@ -94,9 +94,9 @@ toElm =
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
         , DecodeHelpers.toElmVariant "taskItemsAdded" TaskItemsAdded TaskList.decoder
+        , DecodeHelpers.toElmVariant "taskItemsDeleted" TaskItemsDeleted (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "taskItemsDeletedAndAdded" TaskItemsDeletedAndAdded deleteAndAddDecoder
         , DecodeHelpers.toElmVariant "taskItemsRefreshed" TaskItemsRefreshed TaskList.decoder
-        , DecodeHelpers.toElmVariant "taskItemsRemoved" TaskItemsRemoved (TsDecode.list TsDecode.string)
         , DecodeHelpers.toElmVariant "taskItemsUpdated" TaskItemsUpdated updateDetailsDecoder
         ]
 

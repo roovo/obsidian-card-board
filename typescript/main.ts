@@ -180,7 +180,7 @@ export default class CardBoardPlugin extends Plugin {
 
     for (const leaf of leaves) {
       if (leaf.view instanceof CardBoardView) {
-        leaf.view.taskItemsRemoved(taskIds);
+        leaf.view.taskItemsDeleted(taskIds);
       }
     }
   }

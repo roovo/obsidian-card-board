@@ -514,11 +514,11 @@ export class CardBoardView extends ItemView {
     });
   }
 
-  taskItemsRemoved(taskIds: string[]) {
-    console.log("view: toView <- taskItemsRemoved: " + taskIds.length);
+  taskItemsDeleted(taskIds: string[]) {
+    console.log("view: toView <- taskItemsDeleted: " + taskIds.length);
 
     this.elm.ports.interopToElm.send({
-      tag: "taskItemsRemoved",
+      tag: "taskItemsDeleted",
       data: taskIds
     });
   }
