@@ -43,7 +43,8 @@ export type TaskItemFields = {
   filePath : string;
   lineNumber : number;
   notes : string;
-  originalText : string;
+  originalBlock : string;
+  originalLine : string;
   tags : string[];
   title : string[];
 }

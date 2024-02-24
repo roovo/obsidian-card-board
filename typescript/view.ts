@@ -190,7 +190,7 @@ export class CardBoardView extends ItemView {
     data: {
       filePath: string,
       lineNumber: number,
-      originalText: string}
+      originalLine: string}
   ) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
@@ -198,7 +198,7 @@ export class CardBoardView extends ItemView {
       const markdown      = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
 
-      if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
+      if (markdownLines[data.lineNumber - 1].includes(data.originalLine)) {
         markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(.*)$/, "<del>$1</del>")
         this.vault.modify(file, markdownLines.join("\n"))
       }
@@ -278,7 +278,7 @@ export class CardBoardView extends ItemView {
     data: {
       filePath: string,
       lineNumber: number,
-      originalText: string
+      originalLine: string
     }
   ) {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
@@ -544,7 +544,7 @@ export class CardBoardView extends ItemView {
   async handleUpdateTasks(
     data: {
       filePath: string,
-      tasks: { lineNumber: number, originalText: string, newText: string }[]
+      tasks: { lineNumber: number, originalLine: string, newText: string }[]
   }) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
@@ -553,7 +553,7 @@ export class CardBoardView extends ItemView {
       const markdownLines = markdown.split(/\r?\n/)
 
       for (const item of data.tasks) {
-        if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
+        if (markdownLines[item.lineNumber - 1].includes(item.originalLine)) {
           markdownLines[item.lineNumber - 1] = item.newText
         }
       }
