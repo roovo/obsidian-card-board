@@ -80,11 +80,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"tasksDeletedAndAdded","data":[[],[]]}"""
         , test "encodes TasksDeletedAndAdded with some TaskItems" <|
             \() ->
-                ( [ safeTaskItem "- [ ] foo", safeTaskItem "- [ ] bar" ], [ safeTaskItem "- [ ] baz" ] )
+                ( [ "taskId:1", "taskId:2" ], [ safeTaskItem "- [ ] baz" ] )
                     |> InteropDefinitions.TasksDeletedAndAdded
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"tasksDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]},{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] bar","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"baz"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] baz","originalLine":"- [ ] baz","tags":[],"title":["baz"]},"subFields":[]}]]}"""
+                    |> Expect.equal """{"tag":"tasksDeletedAndAdded","data":[["taskId:1","taskId:2"],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"baz"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] baz","originalLine":"- [ ] baz","tags":[],"title":["baz"]},"subFields":[]}]]}"""
         , test "encodes TasksUpdated with no TaskItems" <|
             \() ->
                 []

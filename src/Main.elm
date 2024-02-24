@@ -131,7 +131,7 @@ type Msg
     | ShowBoard Int
     | Tick Posix
     | TaskItemsAdded TaskList
-    | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
+    | TaskItemsDeletedAndAdded ( List String, List TaskItem )
     | TaskItemsRefreshed TaskList
     | TaskItemsDeleted (List String)
     | TaskItemsUpdated (List ( String, TaskItem ))
@@ -291,12 +291,8 @@ update msg model =
             , Cmd.none
             )
 
-        ( TaskItemsDeletedAndAdded ( toDelete, toAdd ), _ ) ->
+        ( TaskItemsDeletedAndAdded ( deleteIds, toAdd ), _ ) ->
             let
-                deleteIds : List String
-                deleteIds =
-                    List.map TaskItem.id toDelete
-
                 addList : TaskList
                 addList =
                     TaskList.fromList toAdd

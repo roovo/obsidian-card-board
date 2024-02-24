@@ -129,7 +129,7 @@ update msg model =
             ( model
                 |> mapSession (Session.removeTaskItems deleteIds)
                 |> mapSession (Session.addTaskList <| TaskList.fromList taskListDiff.toAdd)
-            , InteropPorts.tasksDeletedAndAdded taskListDiff.toDelete taskListDiff.toAdd
+            , InteropPorts.tasksDeletedAndAdded deleteIds taskListDiff.toAdd
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->

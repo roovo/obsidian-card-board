@@ -43,7 +43,7 @@ type ToElm
     | ShowBoard Int
     | TaskItemsAdded TaskList
     | TaskItemsDeleted (List String)
-    | TaskItemsDeletedAndAdded ( List TaskItem, List TaskItem )
+    | TaskItemsDeletedAndAdded ( List String, List TaskItem )
     | TaskItemsRefreshed TaskList
     | TaskItemsUpdated (List ( String, TaskItem ))
 
@@ -173,9 +173,9 @@ configChangedDecoder =
         |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
 
 
-deleteAndAddDecoder : TsDecode.Decoder ( List TaskItem, List TaskItem )
+deleteAndAddDecoder : TsDecode.Decoder ( List String, List TaskItem )
 deleteAndAddDecoder =
-    TsDecode.tuple (TsDecode.list TaskItem.decoder) (TsDecode.list TaskItem.decoder)
+    TsDecode.tuple (TsDecode.list TsDecode.string) (TsDecode.list TaskItem.decoder)
 
 
 deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalLine : String }

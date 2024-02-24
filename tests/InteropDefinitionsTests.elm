@@ -1190,22 +1190,16 @@ toElmTests =
         , test "decodes taskItemsDeletedAndAdded data" <|
             \() ->
                 let
-                    toDelete : List TaskItem
-                    toDelete =
-                        TaskList.empty
-                            |> TaskList.add (taskItem "- [ ] foo")
-                            |> TaskList.toList
-
                     toAdd : List TaskItem
                     toAdd =
                         TaskList.empty
                             |> TaskList.add (taskItem "- [ ] bar")
                             |> TaskList.toList
                 in
-                """{"tag":"taskItemsDeletedAndAdded","data":[[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] bar","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
+                """{"tag":"taskItemsDeletedAndAdded","data":[["taskId:1"],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] bar","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ))
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeletedAndAdded ( [ "taskId:1" ], toAdd ))
         , test "decodes taskItemsRefreshed data" <|
             \() ->
                 let

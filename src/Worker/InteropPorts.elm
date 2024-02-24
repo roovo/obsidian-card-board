@@ -72,7 +72,7 @@ tasksDeleted taskItems =
         |> interopFromElm
 
 
-tasksDeletedAndAdded : List TaskItem -> List TaskItem -> Cmd msg
+tasksDeletedAndAdded : List String -> List TaskItem -> Cmd msg
 tasksDeletedAndAdded toDelete toAdd =
     ( toDelete, toAdd )
         |> InteropDefinitions.TasksDeletedAndAdded

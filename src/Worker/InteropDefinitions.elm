@@ -25,7 +25,7 @@ type FromElm
     | AllTaskItems TaskList
     | TasksAdded TaskList
     | TasksDeleted (List TaskItem)
-    | TasksDeletedAndAdded ( List TaskItem, List TaskItem )
+    | TasksDeletedAndAdded ( List String, List TaskItem )
     | TasksUpdated (List ( String, TaskItem ))
 
 
@@ -89,8 +89,8 @@ fromElm =
                 TasksDeleted taskItems ->
                     vTasksDeleted taskItems
 
-                TasksDeletedAndAdded taskItems ->
-                    vTasksDeletedAndAdded taskItems
+                TasksDeletedAndAdded toDeletedAndAdd ->
+                    vTasksDeletedAndAdded toDeletedAndAdd
 
                 TasksUpdated tasksToUpdate ->
                     vTasksUpdated tasksToUpdate
@@ -115,9 +115,9 @@ renamedFileDecoder =
         |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
 
 
-tasksDeletedAndAddedEncoder : TsEncode.Encoder ( List TaskItem, List TaskItem )
+tasksDeletedAndAddedEncoder : TsEncode.Encoder ( List String, List TaskItem )
 tasksDeletedAndAddedEncoder =
-    TsEncode.tuple (TsEncode.list TaskItem.encoder) (TsEncode.list TaskItem.encoder)
+    TsEncode.tuple (TsEncode.list TsEncode.string) (TsEncode.list TaskItem.encoder)
 
 
 tasksDeletedEncoder : TsEncode.Encoder (List TaskItem)

@@ -1,8 +1,5 @@
 - can I make it so that tasks are not sent to the view before the initial load of all markdown?
 
-- check that I ignore changes being made to files that are in the
-  exclusion list!
-- only need to send the id's of TaskItems to delete - not the complete item
 - do I need originalLine as it's the first line of originalBlock
   would need a bit of work as there is no originalBlock for subtasks atm
 
