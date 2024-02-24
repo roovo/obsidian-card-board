@@ -1,5 +1,6 @@
 module TaskList exposing
     ( TaskList
+    , TaskListDiff
     , add
     , append
     , concat

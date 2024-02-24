@@ -4,7 +4,7 @@ import Json.Decode as JD
 import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import TaskItem exposing (TaskItem)
-import TaskList exposing (TaskList)
+import TaskList exposing (TaskList, TaskListDiff)
 import Worker.InteropDefinitions as InteropDefinitions
 import Worker.InteropPorts as InteropPorts
 import Worker.Session as Session exposing (Session)
@@ -111,18 +111,25 @@ update msg model =
 
         VaultFileModified markdownFile ->
             let
-                newTaskItems : TaskList
-                newTaskItems =
-                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
+                deleteIds : List String
+                deleteIds =
+                    List.map TaskItem.id taskListDiff.toDelete
 
-                ( toDelete, remaining ) =
+                session : Session
+                session =
                     toSession model
-                        |> Session.taskList
-                        |> TaskList.topLevelTasks
-                        |> List.partition (TaskItem.isFromFile markdownFile.filePath)
+
+                taskListDiff : TaskListDiff
+                taskListDiff =
+                    TaskList.markdownDiffs
+                        (Session.dataviewTaskCompletion session)
+                        markdownFile
+                        (Session.taskList session)
             in
-            ( mapSession (Session.replaceTaskList <| TaskList.append (TaskList.fromList remaining) newTaskItems) model
-            , InteropPorts.tasksDeletedAndAdded toDelete (TaskList.topLevelTasks newTaskItems)
+            ( model
+                |> mapSession (Session.removeTaskItems deleteIds)
+                |> mapSession (Session.addTaskList <| TaskList.fromList taskListDiff.toAdd)
+            , InteropPorts.tasksDeletedAndAdded taskListDiff.toDelete taskListDiff.toAdd
             )
 
         VaultFileRenamed ( oldPath, newPath ) ->

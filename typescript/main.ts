@@ -186,7 +186,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleTasksDeletedAndAdded(toDeleteAndAdd : [TaskItem[], TaskItem[]]) {
-    console.log("main: fromWorker -> tasksDeletedAndAdded");
+    console.log("main: fromWorker -> tasksDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 

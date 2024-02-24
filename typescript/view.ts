@@ -524,7 +524,7 @@ export class CardBoardView extends ItemView {
   }
 
   taskItemsDeletedAndAdded(toDeleteAndAdd : [TaskItem[], TaskItem[]]) {
-    console.log("view: toView <- taskItemsDeletedAndAdded");
+    console.log("view: toView <- taskItemsDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
 
     this.elm.ports.interopToElm.send({
       tag: "taskItemsDeletedAndAdded",
