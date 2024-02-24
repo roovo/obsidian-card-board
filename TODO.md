@@ -1,6 +1,3 @@
-- do I need originalLine as it's the first line of originalBlock
-  would need a bit of work as there is no originalBlock for subtasks atm
-
 - column sorting
     - title, due date, path
     - do I want to introduce priority at this point?
@@ -41,6 +38,8 @@ STEP 3
 - show errors on settings pane ??
 
 # Cleanups
+- do I need TaskItem.originalLine as it's the first line of originalBlock
+  would need a bit of work as there is no originalBlock for subtasks atm
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
