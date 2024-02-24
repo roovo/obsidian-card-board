@@ -312,7 +312,7 @@ markdownDiffs =
                     |> basicMarkdown "a"
                     |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
-                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
+                    |> Expect.equal { toAdd = [], toDelete = [] }
         , test "returns an empty diff if both the original an updated files are the same" <|
             \() ->
                 let
@@ -324,8 +324,8 @@ markdownDiffs =
                     |> basicMarkdown "a"
                     |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
-                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
-        , test "returns a non-task line is edited" <|
+                    |> Expect.equal { toAdd = [], toDelete = [] }
+        , test "returns a an empty diff if non-task line is edited" <|
             \() ->
                 let
                     updatedMarkdown : MarkdownFile
@@ -336,7 +336,7 @@ markdownDiffs =
                     |> basicMarkdown "a"
                     |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
-                    |> Expect.equal { toAdd = [], toDelete = [], toUpdate = [] }
+                    |> Expect.equal { toAdd = [], toDelete = [] }
         , test "returns a task to add if one has been added" <|
             \() ->
                 let
@@ -344,14 +344,13 @@ markdownDiffs =
                     updatedMarkdown =
                         basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar"
                 in
-                "# LONGER title\n- [ ] foo"
+                "# title\n- [ ] foo"
                     |> basicMarkdown "a"
                     |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
                     |> Expect.equal
                         { toAdd = [ taskItemPlus "a" 2 "- [ ] bar" ]
                         , toDelete = []
-                        , toUpdate = []
                         }
         , test "returns a task to remove if one has been removed" <|
             \() ->
@@ -360,45 +359,75 @@ markdownDiffs =
                     updatedMarkdown =
                         basicMarkdown "a" "# title\n- [ ] foo"
                 in
-                "# LONGER title\n- [ ] foo\n- [ ] bar"
+                "# title\n- [ ] foo\n- [ ] bar"
                     |> basicMarkdown "a"
                     |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
                     |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
                     |> Expect.equal
                         { toAdd = []
                         , toDelete = [ taskItemPlus "a" 2 "- [ ] bar" ]
-                        , toUpdate = []
                         }
-
-        -- , test "returns a task to update if it has had a subtask added" <|
-        --     \() ->
-        --         let
-        --             updatedMarkdown : MarkdownFile
-        --             updatedMarkdown =
-        --                 basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar\n - [ ] baz"
-        --         in
-        --         "# title\n- [ ] foo\n- [ ] bar"
-        --             |> basicMarkdown "a"
-        --             |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
-        --             |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
-        --             |> Expect.equal
-        --                 { toAdd = []
-        --                 , toDelete = []
-        --                 , toUpdate = [ ( "", taskItemPlus "a" 2 "- [ ] bar\n - [ ] baz" ) ]
-        --                 }
+        , test "returns tasks to remove and add if one has been edited" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] xxx"
+                in
+                "# title\n- [ ] foo"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = [ taskItemPlus "a" 1 "- [ ] xxx" ]
+                        , toDelete = [ taskItemPlus "a" 1 "- [ ] foo" ]
+                        }
+        , test "returns deletes and adds if it has had a subtask added" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar\n - [ ] baz"
+                in
+                "# title\n- [ ] foo\n- [ ] bar"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = [ taskItemPlus "a" 2 "- [ ] bar\n - [ ] baz" ]
+                        , toDelete = [ taskItemPlus "a" 2 "- [ ] bar" ]
+                        }
+        , test "returns deletes and adds if it has had a subtask edited" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo\n- [ ] bar\n - [ ] bazzer"
+                in
+                "# title\n- [ ] foo\n- [ ] bar\n - [ ] baz"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = [ taskItemPlus "a" 2 "- [ ] bar\n - [ ] bazzer" ]
+                        , toDelete = [ taskItemPlus "a" 2 "- [ ] bar\n - [ ] baz" ]
+                        }
+        , test "returns deletes and adds if it has had notes deleted" <|
+            \() ->
+                let
+                    updatedMarkdown : MarkdownFile
+                    updatedMarkdown =
+                        basicMarkdown "a" "# title\n- [ ] foo"
+                in
+                "# title\n- [ ] foo\n  some notes\n"
+                    |> basicMarkdown "a"
+                    |> TaskList.fromMarkdown DataviewTaskCompletion.NoCompletion
+                    |> TaskList.markdownDiffs DataviewTaskCompletion.NoCompletion updatedMarkdown
+                    |> Expect.equal
+                        { toAdd = [ taskItemPlus "a" 1 "- [ ] foo" ]
+                        , toDelete = [ taskItemPlus "a" 1 "- [ ] foo\n  some notes\n" ]
+                        }
         ]
-
-
-
--- - look at: line number | originalLine | originalBlock
---   - same line number & same originalLine & same originalBlock => no change
---   - same line number  & same originalLine & different originalBlock => edited
---   - same line number  & similar originalLine & _ originalBlock => edited
---   - different line number & same originalLine & same originalBlock => moved
---   - different line number  & same originalLine & different originalBlock => moved and edited
---   - different line number  & similar originalLine & _ originalBlock => moved and edited
---
---   - anything 'left over' is either deleted or added
 
 
 map : Test
@@ -557,10 +586,6 @@ basicMarkdown path body =
     , bodyOffset = 0
     , body = body
     }
-
-
-
--- TaskItem.parser (DataviewTaskCompletion.Text "completion") "" Nothing TagList.empty 0
 
 
 taskItemPlus : String -> Int -> String -> TaskItem

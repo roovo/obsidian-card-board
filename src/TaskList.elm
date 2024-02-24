@@ -22,8 +22,8 @@ module TaskList exposing
     , topLevelTasks
     )
 
-import AssocSet exposing (Set)
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import Dict exposing (Dict)
 import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
@@ -45,7 +45,6 @@ type TaskList
 type alias TaskListDiff =
     { toAdd : List TaskItem
     , toDelete : List TaskItem
-    , toUpdate : List ( String, TaskItem )
     }
 
 
@@ -159,33 +158,33 @@ containsTask taskId taskList =
 markdownDiffs : DataviewTaskCompletion -> MarkdownFile -> TaskList -> TaskListDiff
 markdownDiffs dataviewTaskCompletion updatedMarkdown taskList =
     let
-        updatedTasks : Set ( String, TaskItem )
+        updatedTasks : Dict String TaskItem
         updatedTasks =
             fromMarkdown dataviewTaskCompletion updatedMarkdown
                 |> topLevelTasks
-                |> List.map (\i -> ( TaskItem.id i, i ))
-                |> AssocSet.fromList
+                |> List.map (\i -> ( TaskItem.id i ++ ":" ++ TaskItem.originalBlock i, i ))
+                |> Dict.fromList
 
-        existingTasks : Set ( String, TaskItem )
+        existingTasks : Dict String TaskItem
         existingTasks =
             filter (TaskItem.isFromFile updatedMarkdown.filePath) taskList
                 |> topLevelTasks
-                |> List.map (\i -> ( TaskItem.id i, i ))
-                |> AssocSet.fromList
+                |> List.map (\i -> ( TaskItem.id i ++ ":" ++ TaskItem.originalBlock i, i ))
+                |> Dict.fromList
 
         toAdd : List TaskItem
         toAdd =
-            AssocSet.diff updatedTasks existingTasks
-                |> AssocSet.toList
+            Dict.diff updatedTasks existingTasks
+                |> Dict.toList
                 |> List.map Tuple.second
 
         toRemove : List TaskItem
         toRemove =
-            AssocSet.diff existingTasks updatedTasks
-                |> AssocSet.toList
+            Dict.diff existingTasks updatedTasks
+                |> Dict.toList
                 |> List.map Tuple.second
     in
-    TaskListDiff toAdd toRemove []
+    TaskListDiff toAdd toRemove
 
 
 taskTitles : TaskList -> List String
