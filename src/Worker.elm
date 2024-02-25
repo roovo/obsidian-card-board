@@ -1,4 +1,4 @@
-module Worker exposing (main)
+module Worker exposing (Model, Msg, main)
 
 import Json.Decode as JD
 import List.Extra as LE

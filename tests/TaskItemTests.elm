@@ -9,7 +9,6 @@ import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
-import StringDistance
 import TagList
 import TaskItem exposing (Completion(..), TaskItem)
 import Test exposing (..)
@@ -136,6 +135,7 @@ compare =
         [ test "returns Identical for two basic taskItems" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo"
                 in
@@ -145,6 +145,7 @@ compare =
         , test "returns Identical for two taskItems with notes" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
                 in
@@ -154,6 +155,7 @@ compare =
         , test "returns Identical for two taskItems with notes and subtasks" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
                 in
@@ -163,6 +165,7 @@ compare =
         , test "returns Updated if a subtask has been added" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo\n - [ ] bar\n"
                 in
@@ -172,6 +175,7 @@ compare =
         , test "returns Updated if a subtask and notes have been added" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
                 in
@@ -181,6 +185,7 @@ compare =
         , test "returns Updated if the subtask and notes have been edited" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
                 in
@@ -190,6 +195,7 @@ compare =
         , test "returns Updated if the subtask and notes have been deleted" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo"
                 in
@@ -199,6 +205,7 @@ compare =
         , test "returns Updated if tags have been added" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo #bar @due(2021-01-01)"
                 in
@@ -208,6 +215,7 @@ compare =
         , test "returns Updated if the title 'is similar'" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] this is something I need to do"
                 in
@@ -217,6 +225,7 @@ compare =
         , test "returns Moved if a basic task block is the same but it is in a different location" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo"
                 in
@@ -226,6 +235,7 @@ compare =
         , test "returns Moved if a task block with notes and subtasks is the same but it is in a different location" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
                 in
@@ -235,6 +245,7 @@ compare =
         , test "returns Moved if a task block with notes is the same but it is in a different location" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo\n some notes\n"
                 in
@@ -244,6 +255,7 @@ compare =
         , test "returns MovedAndUpdated if a subtask has been added and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo\n - [ ] bar\n"
                 in
@@ -253,6 +265,7 @@ compare =
         , test "returns MovedAndUpdated if a subtask and notes have been added and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
                 in
@@ -262,6 +275,7 @@ compare =
         , test "returns MovedAndUpdated if the subtask and notes have been edited and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
                 in
@@ -271,6 +285,7 @@ compare =
         , test "returns MovedAndUpdated if the subtask and notes have been deleted and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo"
                 in
@@ -280,6 +295,7 @@ compare =
         , test "returns MovedAndUpdated if tags have been added and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] foo #bar @due(2021-01-01)"
                 in
@@ -289,6 +305,7 @@ compare =
         , test "returns Updated if the title 'is similar' and it has been moved" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] this is something xxxx"
                 in
@@ -298,6 +315,7 @@ compare =
         , test "is more fussy about similarity when moved and edited than when just edited" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 1 "- [ ] this is something I need to do"
                 in
@@ -307,6 +325,7 @@ compare =
         , test "returns Different if the top level title is different" <|
             \() ->
                 let
+                    other : TaskItem
                     other =
                         taskItemPlus "a" 0 "- [ ] foo"
                 in

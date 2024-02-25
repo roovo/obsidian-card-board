@@ -416,10 +416,10 @@ replaceTaskList newList ((Session config) as session) =
         State.Waiting ->
             updateTaskListState (State.Loaded newList) session
 
-        State.Loading currentList ->
+        State.Loading _ ->
             updateTaskListState (State.Loaded newList) session
 
-        State.Loaded currentList ->
+        State.Loaded _ ->
             updateTaskListState (State.Loaded newList) session
 
 

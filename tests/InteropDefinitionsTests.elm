@@ -19,7 +19,6 @@ import InteropDefinitions exposing (interop)
 import Parser
 import SafeZipper
 import Semver
-import TagList
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
 import Test exposing (..)

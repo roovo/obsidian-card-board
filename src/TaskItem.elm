@@ -486,24 +486,20 @@ compare other this =
         otherTitle =
             title other
 
-        sameBlock : TaskItem -> TaskItem -> Bool
-        sameBlock other_ this_ =
+        sameBlock : Bool
+        sameBlock =
             originalBlock this == originalBlock other
 
-        sameLine : TaskItem -> TaskItem -> Bool
-        sameLine other_ this_ =
-            originalLine this == originalLine other
-
-        samePlace : TaskItem -> TaskItem -> Bool
-        samePlace other_ this_ =
+        samePlace : Bool
+        samePlace =
             id this == id other
 
-        sameTitle : TaskItem -> TaskItem -> Bool
-        sameTitle other_ this_ =
+        sameTitle : Bool
+        sameTitle =
             thisTitle == otherTitle
 
-        similarTitle : Float -> TaskItem -> TaskItem -> Bool
-        similarTitle threshold other_ this_ =
+        similarTitle : Float -> Bool
+        similarTitle threshold =
             let
                 distance : Float
                 distance =
@@ -519,22 +515,22 @@ compare other this =
         thisTitle =
             title this
     in
-    if samePlace other this && sameBlock other this then
+    if samePlace && sameBlock then
         Identical
 
-    else if samePlace other this && similarTitle 0.25 other this then
+    else if samePlace && similarTitle 0.25 then
         Updated
 
-    else if samePlace other this && sameTitle other this then
+    else if samePlace && sameTitle then
         Updated
 
-    else if not (samePlace other this) && sameBlock other this then
+    else if not samePlace && sameBlock then
         Moved
 
-    else if not (samePlace other this) && similarTitle 0.12 other this then
+    else if not samePlace && similarTitle 0.12 then
         MovedAndUpdated
 
-    else if not (samePlace other this) && sameTitle other this then
+    else if not samePlace && sameTitle then
         MovedAndUpdated
 
     else

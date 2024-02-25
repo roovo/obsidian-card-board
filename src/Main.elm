@@ -1,6 +1,5 @@
 module Main exposing (Model, Msg, main)
 
-import BoardConfig
 import Boards
 import Browser
 import Browser.Events as Browser
@@ -12,7 +11,6 @@ import Html exposing (Html)
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
-import MarkdownFile exposing (MarkdownFile)
 import Page
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
@@ -310,6 +308,7 @@ update msg model =
 
         ( TaskItemsUpdated updateDetails, _ ) ->
             let
+                tasksToRedraw : TaskList
                 tasksToRedraw =
                     updateDetails
                         |> List.map Tuple.second
@@ -318,24 +317,6 @@ update msg model =
             ( mapSession (Session.replaceTaskItems updateDetails) model
             , cmdForTaskRedraws tasksToRedraw (toSession model)
             )
-
-
-cmdForFilterPathRename : String -> Session -> Cmd msg
-cmdForFilterPathRename newPath session =
-    let
-        anyUpdatedFilters : Bool
-        anyUpdatedFilters =
-            Session.boardConfigs session
-                |> SafeZipper.toList
-                |> List.concatMap BoardConfig.filters
-                |> List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths")
-                |> List.any (\f -> Filter.value f == newPath)
-    in
-    if anyUpdatedFilters then
-        InteropPorts.updateSettings <| Session.settings session
-
-    else
-        Cmd.none
 
 
 cmdForDateChange : Session -> Cmd Msg

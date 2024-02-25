@@ -2,22 +2,16 @@ module Worker.InteropDefinitions exposing
     ( Flags
     , FromElm(..)
     , ToElm(..)
-    , fromElm
     , interop
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import DecodeHelpers
-import DragAndDrop.Coords as Coords exposing (Coords)
-import DragAndDrop.DragData as DragData exposing (DragData)
-import Filter exposing (Filter)
 import MarkdownFile exposing (MarkdownFile)
-import Settings exposing (Settings)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
-import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
-import TsJson.Encode as TsEncode exposing (required)
+import TsJson.Encode as TsEncode
 
 
 type FromElm

@@ -10,7 +10,6 @@ import DecodeHelpers
 import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
-import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
 import TaskItem exposing (TaskItem, TaskItemFields)
 import TaskList exposing (TaskList)
@@ -212,13 +211,6 @@ openTaskSourceFileEncoder =
         , required "lineNumber" .lineNumber TsEncode.int
         , required "originalLine" .originalLine TsEncode.string
         ]
-
-
-renamedFileDecoder : TsDecode.Decoder ( String, String )
-renamedFileDecoder =
-    TsDecode.succeed Tuple.pair
-        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
 
 
 showCardContextMenuEncoder : TsEncode.Encoder { a | clientPos : ( Float, Float ), cardId : String }

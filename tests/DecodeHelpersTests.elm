@@ -5,7 +5,6 @@ import DecodeHelpers
 import Expect
 import Helpers.DecodeHelpers as DecodeTestHelpers
 import Test exposing (..)
-import TsJson.Decode as TsDecode
 
 
 suite : Test

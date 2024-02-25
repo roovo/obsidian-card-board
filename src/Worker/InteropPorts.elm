@@ -11,7 +11,6 @@ port module Worker.InteropPorts exposing
 
 import Json.Decode
 import Json.Encode
-import Settings exposing (Settings)
 import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TsJson.Decode as TsDecode

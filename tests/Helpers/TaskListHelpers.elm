@@ -11,7 +11,6 @@ module Helpers.TaskListHelpers exposing
 import DataviewTaskCompletion
 import Helpers.DateTimeHelpers as DateTimeHelpers
 import MarkdownFile exposing (MarkdownFile)
-import Parser exposing (Parser)
 import TagList
 import TaskList exposing (TaskList)
 

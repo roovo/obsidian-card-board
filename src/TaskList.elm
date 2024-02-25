@@ -222,11 +222,6 @@ topLevelTasks (TaskList taskList) =
 -- PRIVATE
 
 
-itemsNotFromFile : String -> List TaskItem -> List TaskItem
-itemsNotFromFile pathToFile =
-    List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
-
-
 parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
 parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
     P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
