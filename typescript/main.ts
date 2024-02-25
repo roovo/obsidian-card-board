@@ -1,23 +1,147 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, addIcon, normalizePath } from 'obsidian';
+import {
+  App,
+  Modal,
+  Notice,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+  TAbstractFile,
+  TFile,
+  addIcon,
+  moment,
+  normalizePath } from 'obsidian';
 import { CardBoardView, VIEW_TYPE_CARD_BOARD } from './view';
-import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11 } from './types';
+import { CardBoardPluginSettings, CardBoardPluginSettingsPostV11, TaskItem } from './types';
+import { Elm, ElmApp, Flags } from '../src/Worker';
+import { FileFilter } from './fileFilter'
+import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 
 export default class CardBoardPlugin extends Plugin {
   private commandIds: string[] = [];
-  settings: CardBoardPluginSettings;
+  private fileFilter: FileFilter;
+  private worker:     ElmApp;
+  settings:           CardBoardPluginSettings;
 
   async onload() {
-    console.log('loading CardBoard plugin');
+    console.log('CardBoard: loading plugin');
 
     await this.loadSettings();
-    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
-  }
 
-  async onLayoutReady() {
     this.registerView(
       VIEW_TYPE_CARD_BOARD,
       (leaf) => new CardBoardView(this, leaf)
     );
+
+    this.app.workspace.onLayoutReady(this.onLayoutReady.bind(this));
+  }
+
+  async onLayoutReady() {
+    console.debug("Cardboard: [main] onLayoutReady");
+
+    const globalSettings : any = this.settings?.data.globalSettings;
+
+    if ((!(globalSettings === undefined)) && globalSettings.hasOwnProperty('filters')) {
+      this.fileFilter = new FileFilter(globalSettings.filters);
+    } else {
+      this.fileFilter = new FileFilter([]);
+    }
+
+    // @ts-ignore
+    const dataviewSettings = this.app.plugins.getPlugin("dataview")?.settings
+
+    const workerFlags:Flags = {
+      dataviewTaskCompletion:   {
+        taskCompletionTracking:           dataviewSettings  === undefined ? true          : dataviewSettings['taskCompletionTracking'],
+        taskCompletionUseEmojiShorthand:  dataviewSettings  === undefined ? false         : dataviewSettings['taskCompletionUseEmojiShorthand'],
+        taskCompletionText:               dataviewSettings  === undefined ? "completion"  : dataviewSettings['taskCompletionText']
+      }
+    };
+
+    console.debug("CardBoard: [main] Elm.Worker.init");
+    // @ts-ignore
+    this.worker = Elm.Worker.init({
+      flags: workerFlags
+    });
+
+    const that = this;
+
+    this.worker.ports.interopFromElm.subscribe((fromElm) => {
+      switch (fromElm.tag) {
+        case "allTaskItems":
+          that.handleAllTaskItems(fromElm.data);
+          break;
+        case "allTasksLoaded":
+          that.handleAllTasksLoaded();
+          break;
+        case "tasksAdded":
+          that.handleTasksAdded(fromElm.data);
+          break;
+        case "tasksDeleted":
+          that.handleTasksDeleted(fromElm.data);
+          break;
+        case "tasksDeletedAndAdded":
+          that.handleTasksDeletedAndAdded(fromElm.data);
+          break;
+        case "tasksUpdated":
+          that.handleTasksUpdated(fromElm.data);
+          break;
+      }
+    });
+
+    this.registerEvent(this.app.vault.on("create",
+      (file) => this.handleFileCreated(file)));
+
+    this.registerEvent(this.app.vault.on("delete",
+      (file) => this.handleFileDeleted(file)));
+
+    this.registerEvent(this.app.vault.on("modify",
+      (file) => this.handleFileModified(file)));
+
+    this.registerEvent(this.app.vault.on("rename",
+      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
+
+    const markdownFiles = this.app.vault.getMarkdownFiles();
+    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
+
+    for (const file of filteredFiles) {
+      const fileDate      = this.formattedFileDate(file);
+      const fileContents  = await this.app.vault.cachedRead(file);
+
+      this.worker.ports.interopToElm.send({
+        tag: "fileAdded",
+        data: {
+          filePath:     file.path,
+          fileDate:     fileDate,
+          fileContents: fileContents
+        }
+      });
+    }
+
+    console.debug("CardBoard: [main] toWorker <- allMarkdownLoaded");
+    this.worker.ports.interopToElm.send({
+      tag: "allMarkdownLoaded",
+      data: { }
+    });
+
+    console.debug("CardBoard: " + markdownFiles.length + " markdown files in vault.");
+    console.log("CardBoard: " + filteredFiles.length + " files scanned for tasks.");
+  }
+
+
+  async handleAllTaskItems(taskItems: TaskItem[]) {
+    console.debug("CardBoard: [main] fromWorker -> allTasksItems");
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsRefreshed(taskItems);
+      }
+    }
+  }
+
+  async handleAllTasksLoaded() {
+    console.debug("CardBoard: [main] fromWorker -> allTasksLoaded");
 
     addIcon("card-board",
       '<rect x="2" y="2" width="96" height="96" rx="12" ry="12" fill="none" stroke="currentColor" stroke-width="5"></rect>' +
@@ -29,6 +153,60 @@ export default class CardBoardPlugin extends Plugin {
     });
 
     this.addCommands();
+  }
+
+  async viewInitialized() {
+    console.debug("CardBoard: [main] toWorker <- viewInitialized");
+    this.worker?.ports.interopToElm.send({
+      tag: "viewInitialized"
+    });
+  }
+
+
+  async handleTasksAdded(taskItems : TaskItem[]) {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsAdded(taskItems);
+      }
+    }
+  }
+
+  async handleTasksDeleted(taskIds : string[]) {
+    console.debug("CardBoard: [main] fromWorker -> tasksDeleted");
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsDeleted(taskIds);
+      }
+    }
+  }
+
+  async handleTasksDeletedAndAdded(toDeleteAndAdd : [string[], TaskItem[]]) {
+    console.debug("CardBoard: [main] fromWorker -> tasksDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsDeletedAndAdded(toDeleteAndAdd);
+      }
+    }
+  }
+
+  async handleTasksUpdated(updateDetails : [string, TaskItem][]) {
+    console.debug("CardBoard: [main] fromWorker -> tasksUpdated: " + updateDetails.length);
+
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
+
+    for (const leaf of leaves) {
+      if (leaf.view instanceof CardBoardView) {
+        leaf.view.taskItemsUpdated(updateDetails);
+      }
+    }
   }
 
   onunload() {
@@ -113,5 +291,95 @@ export default class CardBoardPlugin extends Plugin {
       }
       this.app.vault.adapter.copy(pathToSettings, pathToSavedSettings);
     }
+  }
+
+  async handleFileCreated(
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.app.vault.read(file);
+
+        this.worker.ports.interopToElm.send({
+          tag: "fileAdded",
+          data: {
+            filePath: file.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
+      }
+    }
+  }
+
+  async handleFileDeleted(
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      this.worker.ports.interopToElm.send({
+        tag: "fileDeleted",
+        data: file.path
+      });
+    }
+  }
+
+  async handleFileModified(
+    file: TAbstractFile
+  ) {
+    if (file instanceof TFile) {
+      if (this.fileFilter.isAllowed(file.path)) {
+        const fileDate      = this.formattedFileDate(file);
+        const fileContents  = await this.app.vault.read(file);
+
+        this.worker.ports.interopToElm.send({
+          tag: "fileModified",
+          data: {
+            filePath: file.path,
+            fileDate: fileDate,
+            fileContents: fileContents
+          }
+        });
+      }
+    }
+  }
+
+  async handleFileRenamed(
+    file: TAbstractFile,
+    oldPath: string
+  ) {
+    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
+
+    switch(oldNew.join(",")) {
+      case 'false,true': {
+        this.handleFileCreated(file)
+        break;
+      }
+      case 'true,false': {
+        this.worker.ports.interopToElm.send({
+          tag: "fileDeleted",
+          data: oldPath
+        });
+        break;
+      }
+      case 'true,true': {
+        this.worker.ports.interopToElm.send({
+          tag: "fileRenamed",
+          data: {
+            oldPath: oldPath,
+            newPath: file.path
+          }
+        });
+        break;
+      }
+    }
+  }
+
+  // HELPERS
+
+  formattedFileDate(
+    file: TFile
+  ): string | null {
+    return getDateFromFile(file, "day")?.format('YYYY-MM-DD') || null;
   }
 }

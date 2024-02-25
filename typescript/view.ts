@@ -16,7 +16,7 @@ import {
 import { Elm, ElmApp, Flags } from '../src/Main';
 
 import CardBoardPlugin from './main';
-import { CardBoardPluginSettingsPostV11 } from './types';
+import { CardBoardPluginSettingsPostV11, TaskItem } from './types';
 import { getDateFromFile, IPeriodicNoteSettings } from 'obsidian-daily-notes-interface';
 import { FileFilter } from './fileFilter'
 import { Scrollable } from './scrollable'
@@ -107,7 +107,7 @@ export class CardBoardView extends ItemView {
           that.handleDisplayTaskMarkdown(fromElm.data);
           break;
         case "elmInitialized":
-          that.handleElmInitialized();
+          that.handleElmInitialized(fromElm.data);
           break;
         case "openTaskSourceFile":
           that.handleOpenTaskSourceFile(fromElm.data);
@@ -132,18 +132,6 @@ export class CardBoardView extends ItemView {
 
     this.registerEvent(this.app.workspace.on("active-leaf-change",
       (leaf) => this.handleActiveLeafChange(leaf)));
-
-    this.registerEvent(this.app.vault.on("create",
-      (file) => this.handleFileCreated(file)));
-
-    this.registerEvent(this.app.vault.on("delete",
-      (file) => this.handleFileDeleted(file)));
-
-    this.registerEvent(this.app.vault.on("modify",
-      (file) => this.handleFileModified(file)));
-
-    this.registerEvent(this.app.vault.on("rename",
-      (file, oldPath) => this.handleFileRenamed(file, oldPath)));
 
     // @ts-ignore
     this.registerEvent(this.app.vault.on("config-changed",
@@ -202,7 +190,7 @@ export class CardBoardView extends ItemView {
     data: {
       filePath: string,
       lineNumber: number,
-      originalText: string}
+      originalLine: string}
   ) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
@@ -210,7 +198,7 @@ export class CardBoardView extends ItemView {
       const markdown      = await this.vault.read(file)
       const markdownLines = markdown.split(/\r?\n/)
 
-      if (markdownLines[data.lineNumber - 1].includes(data.originalText)) {
+      if (markdownLines[data.lineNumber - 1].includes(data.originalLine)) {
         markdownLines[data.lineNumber - 1] = markdownLines[data.lineNumber - 1].replace(/^(.*)$/, "<del>$1</del>")
         this.vault.modify(file, markdownLines.join("\n"))
       }
@@ -279,28 +267,10 @@ export class CardBoardView extends ItemView {
     })
   }
 
-  async handleElmInitialized() {
-    const markdownFiles = this.vault.getMarkdownFiles();
-    const filteredFiles = markdownFiles.filter((file) => this.fileFilter.isAllowed(file.path));
+  async handleElmInitialized(uniqueId : string) {
+    console.debug("CardBoard: [view] fromView -> elmInitialised");
 
-    for (const file of filteredFiles) {
-      const fileDate      = this.formattedFileDate(file);
-      const fileContents  = await this.vault.cachedRead(file);
-
-      this.elm.ports.interopToElm.send({
-        tag: "fileAdded",
-        data: {
-          filePath:     file.path,
-          fileDate:     fileDate,
-          fileContents: fileContents
-        }
-      });
-    }
-
-    this.elm.ports.interopToElm.send({
-      tag: "allMarkdownLoaded",
-      data: { }
-    });
+    this.plugin.viewInitialized();
   }
 
 
@@ -308,7 +278,7 @@ export class CardBoardView extends ItemView {
     data: {
       filePath: string,
       lineNumber: number,
-      originalText: string
+      originalLine: string
     }
   ) {
     await this.openOrSwitchWithHighlight(this.app, data.filePath, data.lineNumber);
@@ -528,10 +498,53 @@ export class CardBoardView extends ItemView {
     });
   }
 
+  taskItemsRefreshed(taskItems: TaskItem[]) {
+    console.debug("CardBoard: [view] toView <- taskItemsRefreshed: " + taskItems.length);
+
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsRefreshed",
+      data: taskItems
+    });
+  }
+
+  taskItemsAdded(taskItems: TaskItem[]) {
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsAdded",
+      data: taskItems
+    });
+  }
+
+  taskItemsDeleted(taskIds: string[]) {
+    console.debug("CardBoard: [view] toView <- taskItemsDeleted: " + taskIds.length);
+
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsDeleted",
+      data: taskIds
+    });
+  }
+
+  taskItemsDeletedAndAdded(toDeleteAndAdd : [string[], TaskItem[]]) {
+    console.debug("CardBoard: [view] toView <- taskItemsDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
+
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsDeletedAndAdded",
+      data: toDeleteAndAdd
+    });
+  }
+
+  taskItemsUpdated(updateDetails : [string, TaskItem][]) {
+    console.debug("CardBoard: [view] toView <- taskItemsUpdated: " + updateDetails.length);
+
+    this.elm.ports.interopToElm.send({
+      tag: "taskItemsUpdated",
+      data: updateDetails
+    });
+  }
+
   async handleUpdateTasks(
     data: {
       filePath: string,
-      tasks: { lineNumber: number, originalText: string, newText: string }[]
+      tasks: { lineNumber: number, originalLine: string, newText: string }[]
   }) {
     const file = this.app.vault.getAbstractFileByPath(data.filePath)
 
@@ -540,7 +553,7 @@ export class CardBoardView extends ItemView {
       const markdownLines = markdown.split(/\r?\n/)
 
       for (const item of data.tasks) {
-        if (markdownLines[item.lineNumber - 1].includes(item.originalText)) {
+        if (markdownLines[item.lineNumber - 1].includes(item.originalLine)) {
           markdownLines[item.lineNumber - 1] = item.newText
         }
       }
@@ -571,88 +584,6 @@ export class CardBoardView extends ItemView {
         rightToLeft: (this.app.vault as any).getConfig("rightToLeft"),
       }
     });
-  }
-
-  async handleFileCreated(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      if (this.fileFilter.isAllowed(file.path)) {
-        const fileDate      = this.formattedFileDate(file);
-        const fileContents  = await this.vault.read(file);
-
-        this.elm.ports.interopToElm.send({
-          tag: "fileAdded",
-          data: {
-            filePath: file.path,
-            fileDate: fileDate,
-            fileContents: fileContents
-          }
-        });
-      }
-    }
-  }
-
-  async handleFileDeleted(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      this.elm.ports.interopToElm.send({
-        tag: "fileDeleted",
-        data: file.path
-      });
-    }
-  }
-
-  async handleFileModified(
-    file: TAbstractFile
-  ) {
-    if (file instanceof TFile) {
-      if (this.fileFilter.isAllowed(file.path)) {
-        const fileDate      = this.formattedFileDate(file);
-        const fileContents  = await this.vault.read(file);
-
-        this.elm.ports.interopToElm.send({
-          tag: "fileUpdated",
-          data: {
-            filePath: file.path,
-            fileDate: fileDate,
-            fileContents: fileContents
-          }
-        });
-      }
-    }
-  }
-
-  async handleFileRenamed(
-    file: TAbstractFile,
-    oldPath: string
-  ) {
-    let oldNew : [boolean, boolean] = [this.fileFilter.isAllowed(oldPath), this.fileFilter.isAllowed(file.path)];
-
-    switch(oldNew.join(",")) {
-      case 'false,true': {
-        this.handleFileCreated(file)
-        break;
-      }
-      case 'true,false': {
-        this.elm.ports.interopToElm.send({
-          tag: "fileDeleted",
-          data: oldPath
-        });
-        break;
-      }
-      case 'true,true': {
-        this.elm.ports.interopToElm.send({
-          tag: "fileRenamed",
-          data: {
-            oldPath: oldPath,
-            newPath: file.path
-          }
-        });
-        break;
-      }
-    }
   }
 
   // HELPERS

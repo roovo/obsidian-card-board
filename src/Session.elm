@@ -7,7 +7,6 @@ module Session exposing
     , cards
     , dataviewTaskCompletion
     , default
-    , deleteItemsFromFile
     , dragTracker
     , findCard
     , finishAdding
@@ -21,7 +20,9 @@ module Session exposing
     , moveBoard
     , moveColumn
     , moveDragable
+    , removeTaskItems
     , replaceTaskItems
+    , replaceTaskList
     , settings
     , stopTrackingDragable
     , switchToBoardAt
@@ -370,19 +371,6 @@ addTaskList list ((Session config) as session) =
             updateTaskListState (State.Loaded (TaskList.append currentList list)) session
 
 
-deleteItemsFromFile : String -> Session -> Session
-deleteItemsFromFile filePath ((Session config) as session) =
-    case config.taskList of
-        State.Waiting ->
-            session
-
-        State.Loading currentList ->
-            updateTaskListState (State.Loading (TaskList.removeForFile filePath currentList)) session
-
-        State.Loaded currentList ->
-            updateTaskListState (State.Loaded (TaskList.removeForFile filePath currentList)) session
-
-
 finishAdding : Session -> Session
 finishAdding ((Session config) as session) =
     case config.taskList of
@@ -396,17 +384,43 @@ finishAdding ((Session config) as session) =
             session
 
 
-replaceTaskItems : String -> TaskList -> Session -> Session
-replaceTaskItems filePath updatedList ((Session config) as session) =
+removeTaskItems : List String -> Session -> Session
+removeTaskItems taskIds ((Session config) as session) =
     case config.taskList of
         State.Waiting ->
             session
 
         State.Loading currentList ->
-            updateTaskListState (State.Loading (TaskList.replaceForFile filePath updatedList currentList)) session
+            updateTaskListState (State.Loading (TaskList.filter (\i -> not <| List.member (TaskItem.id i) taskIds) currentList)) session
 
         State.Loaded currentList ->
-            updateTaskListState (State.Loaded (TaskList.replaceForFile filePath updatedList currentList)) session
+            updateTaskListState (State.Loaded (TaskList.filter (\i -> not <| List.member (TaskItem.id i) taskIds) currentList)) session
+
+
+replaceTaskItems : List ( String, TaskItem ) -> Session -> Session
+replaceTaskItems updateDetails ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            session
+
+        State.Loading currentList ->
+            updateTaskListState (State.Loading (TaskList.replaceTaskItems updateDetails currentList)) session
+
+        State.Loaded currentList ->
+            updateTaskListState (State.Loading (TaskList.replaceTaskItems updateDetails currentList)) session
+
+
+replaceTaskList : TaskList -> Session -> Session
+replaceTaskList newList ((Session config) as session) =
+    case config.taskList of
+        State.Waiting ->
+            updateTaskListState (State.Loaded newList) session
+
+        State.Loading _ ->
+            updateTaskListState (State.Loaded newList) session
+
+        State.Loaded _ ->
+            updateTaskListState (State.Loaded newList) session
 
 
 updatePath : String -> String -> Session -> Session

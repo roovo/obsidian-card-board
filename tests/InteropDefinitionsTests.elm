@@ -14,10 +14,13 @@ import Filter
 import GlobalSettings
 import Helpers.DecodeHelpers as DecodeHelpers
 import Helpers.FilterHelpers as FilterHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import InteropDefinitions exposing (interop)
+import Parser
 import SafeZipper
 import Semver
-import TagList
+import TaskItem exposing (TaskItem, TaskItemFields)
+import TaskList exposing (TaskList)
 import Test exposing (..)
 import TextDirection
 import Time
@@ -994,11 +997,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"closeView"}"""
         , test "encodes DeleteTask data" <|
             \() ->
-                { filePath = "a path", lineNumber = 33, originalText = "the text" }
+                { defaultTaskItemFields | filePath = "a path", lineNumber = 33, originalLine = "the text" }
                     |> InteropDefinitions.DeleteTask
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"deleteTask","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
+                    |> Expect.equal """{"tag":"deleteTask","data":{"filePath":"a path","lineNumber":33,"originalLine":"the text"}}"""
         , test "encodes DisplayTaskMarkdown data" <|
             \() ->
                 [ { filePath = "a path", taskMarkdown = [ { id = "an id", markdown = "some markdown" } ] } ]
@@ -1008,17 +1011,18 @@ fromElmTests =
                     |> Expect.equal """{"tag":"displayTaskMarkdown","data":[{"filePath":"a path","taskMarkdown":[{"id":"an id","markdown":"some markdown"}]}]}"""
         , test "encodes ElmInitialized" <|
             \() ->
-                InteropDefinitions.ElmInitialized
+                "a_unique_id"
+                    |> InteropDefinitions.ElmInitialized
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"elmInitialized"}"""
+                    |> Expect.equal """{"tag":"elmInitialized","data":"a_unique_id"}"""
         , test "encodes OpenTaskSourceFile data" <|
             \() ->
-                { filePath = "a path", lineNumber = 33, originalText = "the text" }
+                { defaultTaskItemFields | filePath = "a path", lineNumber = 33, originalLine = "the text" }
                     |> InteropDefinitions.OpenTaskSourceFile
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalText":"the text"}}"""
+                    |> Expect.equal """{"tag":"openTaskSourceFile","data":{"filePath":"a path","lineNumber":33,"originalLine":"the text"}}"""
         , test "encodes RequestFilterCandidates" <|
             \() ->
                 InteropDefinitions.RequestFilterCandidates
@@ -1041,11 +1045,11 @@ fromElmTests =
                     |> Expect.equal """{"tag":"trackDraggable","data":{"dragType":"someDragType","clientPos":{"x":1.1,"y":2.2},"draggableId":"id of draggable"}}"""
         , test "encodes UpdateTasks data" <|
             \() ->
-                { filePath = "a path", tasks = [ { lineNumber = 12, originalText = "what was there", newText = "new text" } ] }
+                { filePath = "a path", tasks = [ { lineNumber = 12, originalLine = "what was there", newText = "new text" } ] }
                     |> InteropDefinitions.UpdateTasks
                     |> TsEncode.runExample interop.fromElm
                     |> .output
-                    |> Expect.equal """{"tag":"updateTasks","data":{"filePath":"a path","tasks":[{"lineNumber":12,"originalText":"what was there","newText":"new text"}]}}"""
+                    |> Expect.equal """{"tag":"updateTasks","data":{"filePath":"a path","tasks":[{"lineNumber":12,"originalLine":"what was there","newText":"new text"}]}}"""
         ]
 
 
@@ -1058,12 +1062,6 @@ toElmTests =
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.ActiveStateUpdated False)
-        , test "decodes allMarkdownLoaded" <|
-            \() ->
-                """{"tag":"allMarkdownLoaded","data":{}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.AllMarkdownLoaded)
         , test "decodes configChanged data" <|
             \() ->
                 """{"tag":"configChanged","data":{"rightToLeft":true}}"""
@@ -1090,54 +1088,12 @@ toElmTests =
                                     ]
                                 }
                         )
-        , test "decodes fileAdded data" <|
-            \() ->
-                """{"tag":"fileAdded","data":{"filePath":"a path","fileDate":"a date","fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal
-                        (Ok <|
-                            InteropDefinitions.FileAdded
-                                { filePath = "a path"
-                                , fileDate = Just "a date"
-                                , frontMatterTags = TagList.fromList [ "a_tag" ]
-                                , bodyOffset = 3
-                                , body = "some contents"
-                                }
-                        )
-        , test "decodes fileDeleted data" <|
-            \() ->
-                """{"tag":"fileDeleted","data":"a path"}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileDeleted "a path")
         , test "decodes editCardDueDate data" <|
             \() ->
                 """{"tag":"editCardDueDate","data":"a card"}"""
                     |> DecodeHelpers.runDecoder interop.toElm
                     |> .decoded
                     |> Expect.equal (Ok <| InteropDefinitions.EditCardDueDate "a card")
-        , test "decodes fileRenamed data" <|
-            \() ->
-                """{"tag":"fileRenamed","data":{"oldPath":"the old path","newPath":"the new path"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal (Ok <| InteropDefinitions.FileRenamed ( "the old path", "the new path" ))
-        , test "decodes fileUpdated data" <|
-            \() ->
-                """{"tag":"fileUpdated","data":{"filePath":"a path","fileDate":"a date","frontMatterTags":["a_tag"],"fileContents":"---\\ntags: [ a_tag ]\\n---\\nsome contents"}}"""
-                    |> DecodeHelpers.runDecoder interop.toElm
-                    |> .decoded
-                    |> Expect.equal
-                        (Ok <|
-                            InteropDefinitions.FileUpdated
-                                { filePath = "a path"
-                                , fileDate = Just "a date"
-                                , frontMatterTags = TagList.fromList [ "a_tag" ]
-                                , bodyOffset = 3
-                                , body = "some contents"
-                                }
-                        )
         , test "decodes filterCandidates data" <|
             \() ->
                 """{"tag":"filterCandidates","data":[{"tag":"pathFilter","data":"a path"},{"tag":"pathFilter","data":"another path"}]}"""
@@ -1212,4 +1168,68 @@ toElmTests =
                     |> .decoded
                     |> Result.toMaybe
                     |> Expect.equal Nothing
+        , test "decodes taskItemsAdded data" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"taskItemsAdded","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsAdded taskList)
+        , test "decodes taskItemsDeleted data" <|
+            \() ->
+                """{"tag":"taskItemsDeleted","data":["foo","bar","baz"]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeleted [ "foo", "bar", "baz" ])
+        , test "decodes taskItemsDeletedAndAdded data" <|
+            \() ->
+                let
+                    toAdd : List TaskItem
+                    toAdd =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] bar")
+                            |> TaskList.toList
+                in
+                """{"tag":"taskItemsDeletedAndAdded","data":[["taskId:1"],[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] bar","originalLine":"- [ ] bar","tags":[],"title":["bar"]},"subFields":[]}]]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsDeletedAndAdded ( [ "taskId:1" ], toAdd ))
+        , test "decodes taskItemsRefreshed data" <|
+            \() ->
+                let
+                    taskList : TaskList
+                    taskList =
+                        TaskList.empty
+                            |> TaskList.add (taskItem "- [ ] foo")
+                in
+                """{"tag":"taskItemsRefreshed","data":[{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsRefreshed taskList)
+        , test "decodes taskItemsUpdated data" <|
+            \() ->
+                """{"tag":"taskItemsUpdated","data":[["bar",{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}]]}"""
+                    |> DecodeHelpers.runDecoder interop.toElm
+                    |> .decoded
+                    |> Expect.equal (Ok <| InteropDefinitions.TaskItemsUpdated [ ( "bar", taskItem "- [ ] foo" ) ])
         ]
+
+
+
+-- HELPERS
+
+
+defaultTaskItemFields : TaskItemFields
+defaultTaskItemFields =
+    TaskItem.fields TaskItem.dummy
+
+
+taskItem : String -> TaskItem
+taskItem markdown =
+    Parser.run TaskItemHelpers.basicParser markdown
+        |> Result.withDefault TaskItem.dummy

@@ -12,12 +12,14 @@ import Expect
 import Filter
 import GlobalSettings exposing (GlobalSettings)
 import Helpers.FilterHelpers as FilterHelpers
+import Helpers.TaskItemHelpers as TaskItemHelpers
 import Helpers.TaskListHelpers as TaskListHelpers
 import InteropDefinitions exposing (Flags)
+import Parser
 import SafeZipper
 import Session
 import Settings exposing (Settings)
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList
 import Test exposing (..)
 import Time
@@ -29,14 +31,15 @@ suite =
         [ addTaskList
         , cards
         , default
-        , deleteItemsFromFile
         , findCard
         , finishAdding
         , firstDayOfWeek
         , fromFlags
         , globalSettings
         , moveDragable
+        , removeTaskItems
         , replaceTaskItems
+        , replaceTaskList
         , stopTrackingDragable
         , updatePath
         , waitForDrag
@@ -138,38 +141,6 @@ default =
                 Session.default
                     |> Session.firstDayOfWeek
                     |> Expect.equal Time.Mon
-        ]
-
-
-deleteItemsFromFile : Test
-deleteItemsFromFile =
-    describe "deleteItemsFromFile"
-        [ test "does nothing to the tasklist of a new session" <|
-            \() ->
-                Session.default
-                    |> Session.deleteItemsFromFile ""
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal []
-        , test "remove tasks from the given file during loading" <|
-            \() ->
-                Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.deleteItemsFromFile "g"
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "a2" ]
-        , test "remove tasks from the given file after loading has finished" <|
-            \() ->
-                Session.default
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
-                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.finishAdding
-                    |> Session.deleteItemsFromFile "g"
-                    |> Session.taskList
-                    |> TaskList.taskTitles
-                    |> Expect.equal [ "a1", "a2" ]
         ]
 
 
@@ -351,13 +322,47 @@ moveDragable =
         ]
 
 
+removeTaskItems : Test
+removeTaskItems =
+    describe "removeTaskItems"
+        [ test "does nothing if there are no taskItems in the Session" <|
+            \() ->
+                Session.default
+                    |> Session.removeTaskItems []
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal []
+        , test "removes tasks with the given ids whilst loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.removeTaskItems [ "3826002220:2", "3792446982:3" ]
+                    |> Session.taskList
+                    |> TaskList.toList
+                    |> List.map TaskItem.id
+                    |> Expect.equal [ "3826002220:3", "3792446982:2" ]
+        , test "removes tasks with the given ids if finished loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.finishAdding
+                    |> Session.removeTaskItems [ "3826002220:2", "3792446982:3" ]
+                    |> Session.taskList
+                    |> TaskList.toList
+                    |> List.map TaskItem.id
+                    |> Expect.equal [ "3826002220:3", "3792446982:2" ]
+        ]
+
+
 replaceTaskItems : Test
 replaceTaskItems =
     describe "replaceTaskItems"
         [ test "does nothing on a new session" <|
             \() ->
                 Session.default
-                    |> Session.replaceTaskItems "" TaskListHelpers.taskListFromFileA
+                    |> Session.replaceTaskItems []
                     |> Session.taskList
                     |> TaskList.taskTitles
                     |> Expect.equal []
@@ -366,20 +371,54 @@ replaceTaskItems =
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
-                    |> Session.replaceTaskItems "a" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "n1", "n2", "g1", "g2" ]
-        , test "replaces tasks from the file with those given whilst loading tasklists even if finished adding" <|
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "a1", "foo", "g1", "g2" ])
+        , test "replaces tasks from the file with those given when finished loading tasklists" <|
             \() ->
                 Session.default
                     |> Session.addTaskList TaskListHelpers.taskListFromFileA
                     |> Session.addTaskList TaskListHelpers.taskListFromFileG
                     |> Session.finishAdding
-                    |> Session.replaceTaskItems "g" (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.replaceTaskItems [ ( "3826002220:3", taskItem "- [ ] foo" ) ]
                     |> Session.taskList
                     |> TaskList.taskTitles
-                    |> Expect.equal [ "n1", "n2", "a1", "a2" ]
+                    |> List.sort
+                    |> Expect.equal (List.sort [ "a1", "foo", "g1", "g2" ])
+        ]
+
+
+replaceTaskList : Test
+replaceTaskList =
+    describe "replaceTaskList"
+        [ test "replaces all tasks with those given if a new session" <|
+            \() ->
+                Session.default
+                    |> Session.replaceTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "a1", "a2" ]
+        , test "replaces all tasks with those given whilst loading tasklists" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.replaceTaskList (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2" ]
+        , test "replaces all tasks with those given whilst loading tasklists even if finished adding" <|
+            \() ->
+                Session.default
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileA
+                    |> Session.addTaskList TaskListHelpers.taskListFromFileG
+                    |> Session.finishAdding
+                    |> Session.replaceTaskList (TaskListHelpers.taskListFromNewFile "path")
+                    |> Session.taskList
+                    |> TaskList.taskTitles
+                    |> Expect.equal [ "n1", "n2" ]
         ]
 
 
@@ -444,6 +483,11 @@ updatePath =
 -- HELPERS
 
 
+defaultGlobalSettings : GlobalSettings
+defaultGlobalSettings =
+    GlobalSettings.default
+
+
 exampleFlags : Flags
 exampleFlags =
     { dataviewTaskCompletion = DataviewTaskCompletion.NoCompletion
@@ -481,9 +525,10 @@ exampleSettings =
            )
 
 
-defaultGlobalSettings : GlobalSettings
-defaultGlobalSettings =
-    GlobalSettings.default
+taskItem : String -> TaskItem
+taskItem markdown =
+    Parser.run TaskItemHelpers.basicParser markdown
+        |> Result.withDefault TaskItem.dummy
 
 
 untaggedAndCompleted : Settings

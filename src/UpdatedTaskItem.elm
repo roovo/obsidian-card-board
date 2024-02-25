@@ -4,7 +4,7 @@ module UpdatedTaskItem exposing
     , dueString
     , init
     , lineNumber
-    , originalText
+    , originalLine
     , toString
     , toggleCompletion
     , updateDate
@@ -106,9 +106,9 @@ lineNumber (UpdatedTaskItem _ taskItem) =
     TaskItem.lineNumber taskItem
 
 
-originalText : UpdatedTaskItem -> String
-originalText (UpdatedTaskItem _ taskItem) =
-    TaskItem.originalText taskItem
+originalLine : UpdatedTaskItem -> String
+originalLine (UpdatedTaskItem _ taskItem) =
+    TaskItem.originalLine taskItem
 
 
 toString : UpdatedTaskItem -> String
@@ -153,7 +153,7 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
                         >> dataviewRemover
             in
             updatedTaskItem
-                |> originalText
+                |> originalLine
                 |> replaceCheckbox taskItem
                 |> removeCompletionTags
                 |> insertBeforeBlockLink (completionTag taskCompletionSettings now taskItem)
@@ -169,18 +169,18 @@ toString ((UpdatedTaskItem change taskItem) as updatedTaskItem) =
             case newDate of
                 Nothing ->
                     updatedTaskItem
-                        |> originalText
+                        |> originalLine
                         |> removeDueTags
                         |> insertBeforeBlockLink (noneTagIfHasFileDate taskItem)
 
                 Just date ->
                     updatedTaskItem
-                        |> originalText
+                        |> originalLine
                         |> removeDueTags
                         |> insertBeforeBlockLink (dueTag taskCompletionSettings date taskItem)
 
         NoChange ->
-            originalText updatedTaskItem
+            originalLine updatedTaskItem
 
 
 noneTagIfHasFileDate : TaskItem -> String

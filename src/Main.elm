@@ -1,6 +1,5 @@
 module Main exposing (Model, Msg, main)
 
-import BoardConfig
 import Boards
 import Browser
 import Browser.Events as Browser
@@ -12,7 +11,6 @@ import Html exposing (Html)
 import InteropDefinitions
 import InteropPorts
 import Json.Decode as JD
-import MarkdownFile exposing (MarkdownFile)
 import Page
 import Page.Board as BoardPage
 import Page.Settings as SettingsPage
@@ -20,7 +18,7 @@ import SafeZipper
 import Session exposing (Session)
 import Settings exposing (Settings)
 import Task
-import TaskItem
+import TaskItem exposing (TaskItem)
 import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import Time exposing (Posix)
@@ -44,7 +42,7 @@ init flags =
             ( Settings (SettingsPage.init Session.default)
             , Cmd.batch
                 [ Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
-                , InteropPorts.elmInitialized
+                , InteropPorts.elmInitialized ""
                 ]
             )
 
@@ -58,7 +56,7 @@ init flags =
                 |> forceAddWhenNoBoards
             , Cmd.batch
                 [ InteropPorts.updateSettings <| Session.settings session
-                , InteropPorts.elmInitialized
+                , InteropPorts.elmInitialized okFlags.uniqueId
                 , Task.perform ReceiveTime <| Task.map2 Tuple.pair Time.here Time.now
                 ]
             )
@@ -118,23 +116,23 @@ type KeyValue
 
 type Msg
     = ActiveStateUpdated Bool
-    | AllMarkdownLoaded
     | BadInputFromTypeScript
     | ConfigChanged TextDirection
     | EditCardDueDateRequested String
     | ElementDragged DragData
-    | SettingsUpdated Settings
     | FilterCandidatesReceived (List Filter)
     | GotBoardPageMsg BoardPage.Msg
     | GotSettingsPageMsg SettingsPage.Msg
     | KeyDown KeyValue
     | ReceiveTime ( Time.Zone, Posix )
+    | SettingsUpdated Settings
     | ShowBoard Int
     | Tick Posix
-    | VaultFileAdded MarkdownFile
-    | VaultFileDeleted String
-    | VaultFileRenamed ( String, String )
-    | VaultFileUpdated MarkdownFile
+    | TaskItemsAdded TaskList
+    | TaskItemsDeletedAndAdded ( List String, List TaskItem )
+    | TaskItemsRefreshed TaskList
+    | TaskItemsDeleted (List String)
+    | TaskItemsUpdated (List ( String, TaskItem ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -143,14 +141,6 @@ update msg model =
         ( ActiveStateUpdated isActiveView, _ ) ->
             ( mapSession (Session.makeActiveView isActiveView) model
             , Cmd.none
-            )
-
-        ( AllMarkdownLoaded, _ ) ->
-            ( mapSession Session.finishAdding model
-            , Cmd.batch
-                [ InteropPorts.displayTaskMarkdown <| Session.cards (toSession model)
-                , InteropPorts.addHoverToCardEditButtons <| Session.cards (toSession model)
-                ]
             )
 
         ( BadInputFromTypeScript, _ ) ->
@@ -289,69 +279,44 @@ update msg model =
             , cmd
             )
 
-        ( VaultFileAdded markdownFile, _ ) ->
-            let
-                newTasks : TaskList
-                newTasks =
-                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.addTaskList newTasks s) model
-            in
-            ( newModel
-            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
+        ( TaskItemsAdded taskList, _ ) ->
+            ( mapSession (Session.addTaskList taskList) model
+            , cmdForTaskRedraws taskList (toSession model)
             )
 
-        ( VaultFileDeleted filePath, _ ) ->
-            ( mapSession (\s -> Session.deleteItemsFromFile filePath s) model
+        ( TaskItemsDeleted taskItems, _ ) ->
+            ( mapSession (Session.removeTaskItems taskItems) model
             , Cmd.none
             )
 
-        ( VaultFileRenamed ( oldPath, newPath ), _ ) ->
+        ( TaskItemsDeletedAndAdded ( deleteIds, toAdd ), _ ) ->
             let
-                newModel : Model
-                newModel =
-                    mapSession (Session.updatePath oldPath newPath) model
+                addList : TaskList
+                addList =
+                    TaskList.fromList toAdd
             in
-            ( newModel
-            , Cmd.batch
-                [ cmdForTaskRedraws newPath (toSession newModel)
-                , cmdForFilterPathRename newPath (toSession newModel)
-                ]
+            ( model
+                |> mapSession (Session.removeTaskItems deleteIds)
+                |> mapSession (Session.addTaskList addList)
+            , cmdForTaskRedraws addList (toSession model)
             )
 
-        ( VaultFileUpdated markdownFile, _ ) ->
-            let
-                newTaskItems : TaskList
-                newTaskItems =
-                    TaskList.fromMarkdown (Session.dataviewTaskCompletion <| toSession model) markdownFile
-
-                newModel : Model
-                newModel =
-                    mapSession (\s -> Session.replaceTaskItems markdownFile.filePath newTaskItems s) model
-            in
-            ( newModel
-            , cmdForTaskRedraws markdownFile.filePath (toSession newModel)
+        ( TaskItemsRefreshed taskList, _ ) ->
+            ( mapSession (Session.replaceTaskList taskList) model
+            , Cmd.none
             )
 
-
-cmdForFilterPathRename : String -> Session -> Cmd msg
-cmdForFilterPathRename newPath session =
-    let
-        anyUpdatedFilters : Bool
-        anyUpdatedFilters =
-            Session.boardConfigs session
-                |> SafeZipper.toList
-                |> List.concatMap BoardConfig.filters
-                |> List.filter (\f -> Filter.filterType f == "Files" || Filter.filterType f == "Paths")
-                |> List.any (\f -> Filter.value f == newPath)
-    in
-    if anyUpdatedFilters then
-        InteropPorts.updateSettings <| Session.settings session
-
-    else
-        Cmd.none
+        ( TaskItemsUpdated updateDetails, _ ) ->
+            let
+                tasksToRedraw : TaskList
+                tasksToRedraw =
+                    updateDetails
+                        |> List.map Tuple.second
+                        |> TaskList.fromList
+            in
+            ( mapSession (Session.replaceTaskItems updateDetails) model
+            , cmdForTaskRedraws tasksToRedraw (toSession model)
+            )
 
 
 cmdForDateChange : Session -> Cmd Msg
@@ -379,8 +344,8 @@ cmdForDateChange session =
             ]
 
 
-cmdForTaskRedraws : String -> Session -> Cmd Msg
-cmdForTaskRedraws newPath session =
+cmdForTaskRedraws : TaskList -> Session -> Cmd Msg
+cmdForTaskRedraws taskList session =
     let
         today : Date
         today =
@@ -389,8 +354,7 @@ cmdForTaskRedraws newPath session =
 
         cards : List Card
         cards =
-            Session.taskList session
-                |> TaskList.filter (\i -> TaskItem.filePath i == newPath)
+            taskList
                 |> Boards.init (Session.uniqueId session) (Session.boardConfigs session)
                 |> Boards.cards (Session.ignoreFileNameDates session) today
     in
@@ -453,29 +417,29 @@ subscriptions _ =
                                 InteropDefinitions.ElementDragged dragData ->
                                     ElementDragged dragData
 
-                                InteropDefinitions.FileAdded markdownFile ->
-                                    VaultFileAdded markdownFile
-
-                                InteropDefinitions.FileDeleted filePath ->
-                                    VaultFileDeleted filePath
-
-                                InteropDefinitions.FileRenamed oldAndNewPath ->
-                                    VaultFileRenamed oldAndNewPath
-
-                                InteropDefinitions.FileUpdated markdownFile ->
-                                    VaultFileUpdated markdownFile
-
                                 InteropDefinitions.FilterCandidates filterCandidates ->
                                     FilterCandidatesReceived filterCandidates
-
-                                InteropDefinitions.AllMarkdownLoaded ->
-                                    AllMarkdownLoaded
 
                                 InteropDefinitions.SettingsUpdated newSettings ->
                                     SettingsUpdated newSettings
 
                                 InteropDefinitions.ShowBoard index ->
                                     ShowBoard index
+
+                                InteropDefinitions.TaskItemsAdded taskItems ->
+                                    TaskItemsAdded taskItems
+
+                                InteropDefinitions.TaskItemsDeleted taskIds ->
+                                    TaskItemsDeleted taskIds
+
+                                InteropDefinitions.TaskItemsDeletedAndAdded ( toDelete, toAdd ) ->
+                                    TaskItemsDeletedAndAdded ( toDelete, toAdd )
+
+                                InteropDefinitions.TaskItemsRefreshed taskItems ->
+                                    TaskItemsRefreshed taskItems
+
+                                InteropDefinitions.TaskItemsUpdated updateDetails ->
+                                    TaskItemsUpdated updateDetails
 
                         Err _ ->
                             BadInputFromTypeScript

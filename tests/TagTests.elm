@@ -2,10 +2,12 @@ module TagTests exposing (suite)
 
 import Expect
 import Fuzz exposing (Fuzzer)
+import Helpers.DecodeHelpers as DecodeTestHelpers
 import Helpers.UnicodeHelpers as UnicodeHelpers
 import Parser exposing ((|.), (|=))
 import Tag
 import Test exposing (..)
+import TsJson.Encode as TsEncode
 import Unicode
 
 
@@ -13,6 +15,8 @@ suite : Test
 suite =
     concat
         [ containsInvalidCharacters
+        , decoder
+        , encoder
         , equals
         , matches
         , parser
@@ -44,6 +48,32 @@ containsInvalidCharacters =
                 ("as" ++ String.fromChar fuzzedWhitespace ++ "r")
                     |> Tag.containsInvalidCharacters
                     |> Expect.equal True
+        ]
+
+
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes a tag from a string" <|
+            \() ->
+                "\"foo\""
+                    |> DecodeTestHelpers.runDecoder Tag.decoder
+                    |> .decoded
+                    |> Result.map Tag.toString
+                    |> Expect.equal (Ok "foo")
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes the tag contents as a string" <|
+            \() ->
+                "#foo"
+                    |> Parser.run Tag.parser
+                    |> Result.map (TsEncode.runExample Tag.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok "\"foo\"")
         ]
 
 

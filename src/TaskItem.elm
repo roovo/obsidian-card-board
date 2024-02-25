@@ -1,18 +1,22 @@
 module TaskItem exposing
     ( AutoCompletion(..)
+    , CompareResult(..)
     , Completion(..)
     , Content
     , TaskItem
     , TaskItemFields
     , allSubtasksWithMatchingTagCompleted
     , asSingleTaskItems
+    , compare
     , completedPosix
     , completion
     , containsId
+    , decoder
     , descendantTasks
     , due
     , dueRataDie
     , dummy
+    , encoder
     , fields
     , filePath
     , hasNotes
@@ -27,7 +31,8 @@ module TaskItem exposing
     , isFromFile
     , lineNumber
     , notes
-    , originalText
+    , originalBlock
+    , originalLine
     , parser
     , removeFileNameDate
     , removeMatchingTags
@@ -44,7 +49,9 @@ module TaskItem exposing
 import DataviewDate
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
 import Date exposing (Date)
+import DecodeHelpers
 import DueDate exposing (DueDate)
+import EncodeHelpers
 import FNV1a
 import Filter exposing (Filter, Scope)
 import List.Extra as LE
@@ -52,10 +59,13 @@ import Maybe.Extra as ME
 import ObsidianTasksDate
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper exposing (isSpaceOrTab, lineEndOrEnd)
+import StringDistance
 import Tag exposing (Tag)
 import TagList exposing (TagList)
 import TaskPaperTag
 import Time
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -65,15 +75,16 @@ import Time
 type alias TaskItemFields =
     { autoComplete : AutoCompletion
     , completion : Completion
+    , contents : List Content
     , dueFile : Maybe Date
     , dueTag : DueDate
     , filePath : String
     , lineNumber : Int
     , notes : String
-    , originalText : String
+    , originalBlock : String
+    , originalLine : String
     , tags : TagList
     , title : List String
-    , contents : List Content
     }
 
 
@@ -106,6 +117,14 @@ type IndentedItem
     | Note String
 
 
+type CompareResult
+    = Different
+    | Identical
+    | Moved
+    | MovedAndUpdated
+    | Updated
+
+
 dummy : TaskItem
 dummy =
     TaskItem defaultFields []
@@ -120,11 +139,40 @@ defaultFields =
     , filePath = ""
     , lineNumber = 0
     , notes = ""
-    , originalText = ""
+    , originalBlock = ""
+    , originalLine = ""
     , tags = TagList.empty
     , title = []
     , contents = []
     }
+
+
+
+-- ENCODE / DECODE
+
+
+decoder : TsDecode.Decoder TaskItem
+decoder =
+    TsDecode.succeed TaskItem
+        |> TsDecode.andMap (TsDecode.field "fields" taskItemFieldsDecoder)
+        |> TsDecode.andMap (TsDecode.field "subFields" (TsDecode.list taskItemFieldsDecoder))
+
+
+encoder : TsEncode.Encoder TaskItem
+encoder =
+    let
+        foo : TaskItem -> { fields : TaskItemFields, subFields : List TaskItemFields }
+        foo (TaskItem fields_ subFields_) =
+            { fields = fields_
+            , subFields = subFields_
+            }
+    in
+    TsEncode.map foo
+        (TsEncode.object
+            [ TsEncode.required "fields" .fields taskItemFieldsEncoder
+            , TsEncode.required "subFields" .subFields (TsEncode.list taskItemFieldsEncoder)
+            ]
+        )
 
 
 
@@ -315,9 +363,14 @@ notes =
     .notes << fields
 
 
-originalText : TaskItem -> String
-originalText =
-    .originalText << fields
+originalBlock : TaskItem -> String
+originalBlock =
+    .originalBlock << fields
+
+
+originalLine : TaskItem -> String
+originalLine =
+    .originalLine << fields
 
 
 tags : TaskItem -> TagList
@@ -423,6 +476,68 @@ titleWithTags taskItem =
 
 
 
+-- COMPARE
+
+
+compare : TaskItem -> TaskItem -> CompareResult
+compare other this =
+    let
+        otherTitle : String
+        otherTitle =
+            title other
+
+        sameBlock : Bool
+        sameBlock =
+            originalBlock this == originalBlock other
+
+        samePlace : Bool
+        samePlace =
+            id this == id other
+
+        sameTitle : Bool
+        sameTitle =
+            thisTitle == otherTitle
+
+        similarTitle : Float -> Bool
+        similarTitle threshold =
+            let
+                distance : Float
+                distance =
+                    StringDistance.sift3Distance otherTitle thisTitle
+
+                maxLength : Float
+                maxLength =
+                    toFloat <| max (String.length otherTitle) (String.length thisTitle)
+            in
+            distance / maxLength < threshold
+
+        thisTitle : String
+        thisTitle =
+            title this
+    in
+    if samePlace && sameBlock then
+        Identical
+
+    else if samePlace && similarTitle 0.25 then
+        Updated
+
+    else if samePlace && sameTitle then
+        Updated
+
+    else if not samePlace && sameBlock then
+        Moved
+
+    else if not samePlace && similarTitle 0.12 then
+        MovedAndUpdated
+
+    else if not samePlace && sameTitle then
+        MovedAndUpdated
+
+    else
+        Different
+
+
+
 -- MODIFICATION
 
 
@@ -482,23 +597,11 @@ updateFilePath oldPath newPath ((TaskItem fields_ subtasks_) as taskItem) =
 
 parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskItem
 parser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
-    (P.succeed taskItemFieldsBuilder
+    P.succeed itemWithOriginalBlock
         |= P.getOffset
-        |= P.getCol
-        |= P.succeed pathToFile
-        |= P.succeed frontMatterTags
-        |= P.succeed bodyOffset
-        |= P.getRow
-        |= prefixParser
-        |. P.chompWhile isSpaceOrTab
-        |= fileDateParser fileDate
-        |= contentParser dataviewTaskCompletion
+        |= taskItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset
         |= P.getOffset
-        |. lineEndOrEnd
         |= P.getSource
-    )
-        |> P.andThen rejectIfNoTitle
-        |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
 
 
 
@@ -618,6 +721,13 @@ indentedItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bo
         [ subTaskParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset
         , notesParser
         ]
+
+
+itemWithOriginalBlock : Int -> TaskItem -> Int -> String -> TaskItem
+itemWithOriginalBlock startOffset (TaskItem fields_ subtasks_) endOffset source =
+    TaskItem
+        { fields_ | originalBlock = String.trimRight <| String.slice startOffset (endOffset - 0) source }
+        subtasks_
 
 
 notesParser : Parser IndentedItem
@@ -743,11 +853,32 @@ taskItemFieldsBuilder startOffset startColumn path frontMatterTags bodyOffset ro
         |> (\tif -> { tif | dueFile = dueFromFile })
         |> (\tif -> { tif | filePath = path })
         |> (\tif -> { tif | lineNumber = bodyOffset + row })
-        |> (\tif -> { tif | originalText = sourceText })
+        |> (\tif -> { tif | originalLine = sourceText })
         |> (\tif -> { tif | tags = TagList.append tif.tags frontMatterTags })
         |> (\tif -> { tif | title = List.reverse tif.title })
         |> (\tif -> { tif | contents = List.reverse contents })
         |> addCompletionTime
+
+
+taskItemParser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskItem
+taskItemParser dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset =
+    (P.succeed taskItemFieldsBuilder
+        |= P.getOffset
+        |= P.getCol
+        |= P.succeed pathToFile
+        |= P.succeed frontMatterTags
+        |= P.succeed bodyOffset
+        |= P.getRow
+        |= prefixParser
+        |. P.chompWhile isSpaceOrTab
+        |= fileDateParser fileDate
+        |= contentParser dataviewTaskCompletion
+        |= P.getOffset
+        |. lineEndOrEnd
+        |= P.getSource
+    )
+        |> P.andThen rejectIfNoTitle
+        |> P.andThen (addAnySubtasksAndNotes dataviewTaskCompletion pathToFile fileDate frontMatterTags bodyOffset)
 
 
 toggleCompletion : { a | time : Time.Posix } -> TaskItem -> TaskItem
@@ -783,6 +914,103 @@ tokenParser dataviewTaskCompletion =
 -- PRIVATE
 
 
+autoCompletionDecoder : TsDecode.Decoder AutoCompletion
+autoCompletionDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant0 "FalseSpecified" FalseSpecified
+        , DecodeHelpers.toElmVariant0 "NotSpecifed" NotSpecifed
+        , DecodeHelpers.toElmVariant0 "TrueSpecified" TrueSpecified
+        ]
+
+
+autoCompletionEncoder : TsEncode.Encoder AutoCompletion
+autoCompletionEncoder =
+    TsEncode.union
+        (\vFalseSpecified vNotSpecifed vTrueSpecified value ->
+            case value of
+                FalseSpecified ->
+                    vFalseSpecified
+
+                NotSpecifed ->
+                    vNotSpecifed
+
+                TrueSpecified ->
+                    vTrueSpecified
+        )
+        |> TsEncode.variant0 "FalseSpecified"
+        |> TsEncode.variant0 "NotSpecifed"
+        |> TsEncode.variant0 "TrueSpecified"
+        |> TsEncode.buildUnion
+
+
+completionDecoder : TsDecode.Decoder Completion
+completionDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant0 "Completed" Completed
+        , DecodeHelpers.toElmVariant "CompletedAt" CompletedAt (TsDecode.map Time.millisToPosix TsDecode.int)
+        , DecodeHelpers.toElmVariant0 "Incomplete" Incomplete
+        ]
+
+
+completionEncoder : TsEncode.Encoder Completion
+completionEncoder =
+    TsEncode.union
+        (\vCompleted vCompletedAt vIncomplete value ->
+            case value of
+                Completed ->
+                    vCompleted
+
+                CompletedAt timeStamp ->
+                    vCompletedAt timeStamp
+
+                Incomplete ->
+                    vIncomplete
+        )
+        |> TsEncode.variant0 "Completed"
+        |> TsEncode.variantTagged "CompletedAt" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variant0 "Incomplete"
+        |> TsEncode.buildUnion
+
+
+contentDecoder : TsDecode.Decoder Content
+contentDecoder =
+    TsDecode.oneOf
+        [ DecodeHelpers.toElmVariant "AutoCompleteTag" AutoCompleteTag autoCompletionDecoder
+        , DecodeHelpers.toElmVariant "CompletedTag" CompletedTag (TsDecode.map Time.millisToPosix TsDecode.int)
+        , DecodeHelpers.toElmVariant "DueTag" DueTag DueDate.decoder
+        , DecodeHelpers.toElmVariant "ObsidianTag" ObsidianTag Tag.decoder
+        , DecodeHelpers.toElmVariant "Word" Word TsDecode.string
+        ]
+
+
+contentEncoder : TsEncode.Encoder Content
+contentEncoder =
+    TsEncode.union
+        (\vAutoCompleteTag vCompletedTag vDueTag vObsidianTag vWord value ->
+            case value of
+                AutoCompleteTag autoCompletion ->
+                    vAutoCompleteTag autoCompletion
+
+                CompletedTag timeStamp ->
+                    vCompletedTag timeStamp
+
+                DueTag date ->
+                    vDueTag date
+
+                ObsidianTag tag ->
+                    vObsidianTag tag
+
+                Word word ->
+                    vWord word
+        )
+        |> TsEncode.variantTagged "AutoCompleteTag" autoCompletionEncoder
+        |> TsEncode.variantTagged "CompletedTag" (TsEncode.map Time.posixToMillis TsEncode.int)
+        |> TsEncode.variantTagged "DueTag" DueDate.encoder
+        |> TsEncode.variantTagged "ObsidianTag" Tag.encoder
+        |> TsEncode.variantTagged "Word" TsEncode.string
+        |> TsEncode.buildUnion
+
+
 descendantTaskHasThisTag : String -> TaskItem -> Bool
 descendantTaskHasThisTag tagToMatch =
     let
@@ -805,6 +1033,41 @@ mapFields fn (TaskItem fields_ subtasks_) =
 mapTags : (TagList -> TagList) -> TaskItem -> TaskItem
 mapTags fn taskItem =
     mapFields (\fs -> { fs | tags = fn fs.tags }) taskItem
+
+
+taskItemFieldsDecoder : TsDecode.Decoder TaskItemFields
+taskItemFieldsDecoder =
+    TsDecode.succeed TaskItemFields
+        |> TsDecode.andMap (TsDecode.field "autoComplete" autoCompletionDecoder)
+        |> TsDecode.andMap (TsDecode.field "completion" completionDecoder)
+        |> TsDecode.andMap (TsDecode.field "contents" (TsDecode.list contentDecoder))
+        |> TsDecode.andMap (TsDecode.field "dueFile" (TsDecode.maybe DecodeHelpers.dateDecoder))
+        |> TsDecode.andMap (TsDecode.field "dueTag" DueDate.decoder)
+        |> TsDecode.andMap (TsDecode.field "filePath" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "lineNumber" TsDecode.int)
+        |> TsDecode.andMap (TsDecode.field "notes" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "originalBlock" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "originalLine" TsDecode.string)
+        |> TsDecode.andMap (TsDecode.field "tags" TagList.decoder)
+        |> TsDecode.andMap (TsDecode.field "title" (TsDecode.list TsDecode.string))
+
+
+taskItemFieldsEncoder : TsEncode.Encoder TaskItemFields
+taskItemFieldsEncoder =
+    TsEncode.object
+        [ TsEncode.required "autoComplete" .autoComplete autoCompletionEncoder
+        , TsEncode.required "completion" .completion completionEncoder
+        , TsEncode.required "contents" .contents (TsEncode.list contentEncoder)
+        , TsEncode.required "dueFile" .dueFile (TsEncode.maybe EncodeHelpers.dateEncoder)
+        , TsEncode.required "dueTag" .dueTag DueDate.encoder
+        , TsEncode.required "filePath" .filePath TsEncode.string
+        , TsEncode.required "lineNumber" .lineNumber TsEncode.int
+        , TsEncode.required "notes" .notes TsEncode.string
+        , TsEncode.required "originalBlock" .originalBlock TsEncode.string
+        , TsEncode.required "originalLine" .originalLine TsEncode.string
+        , TsEncode.required "tags" .tags TagList.encoder
+        , TsEncode.required "title" .title (TsEncode.list TsEncode.string)
+        ]
 
 
 topLevelTaskHasThisTag : String -> TaskItem -> Bool

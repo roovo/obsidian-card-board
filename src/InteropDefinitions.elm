@@ -2,14 +2,7 @@ module InteropDefinitions exposing
     ( Flags
     , FromElm(..)
     , ToElm(..)
-    , addFilePreviewHoversEncoder
-    , deleteTaskEncoder
-    , displayTaskMarkdownEncoder
     , interop
-    , openTaskSourceFileEncoder
-    , showCardContextMenuEncoder
-    , trackDraggableEncoder
-    , updateTasksEncoder
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
@@ -17,8 +10,9 @@ import DecodeHelpers
 import DragAndDrop.Coords as Coords exposing (Coords)
 import DragAndDrop.DragData as DragData exposing (DragData)
 import Filter exposing (Filter)
-import MarkdownFile exposing (MarkdownFile)
 import Settings exposing (Settings)
+import TaskItem exposing (TaskItem, TaskItemFields)
+import TaskList exposing (TaskList)
 import TextDirection exposing (TextDirection)
 import TsJson.Decode as TsDecode
 import TsJson.Encode as TsEncode exposing (required)
@@ -27,14 +21,15 @@ import TsJson.Encode as TsEncode exposing (required)
 type FromElm
     = AddFilePreviewHovers (List { filePath : String, id : String })
     | CloseView
-    | DeleteTask { filePath : String, lineNumber : Int, originalText : String }
+    | DeleteTask TaskItemFields
     | DisplayTaskMarkdown (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
-    | ElmInitialized
-    | OpenTaskSourceFile { filePath : String, lineNumber : Int, originalText : String }
+    | ElmInitialized String
+    | OpenTaskSourceFile TaskItemFields
     | RequestFilterCandidates
     | ShowCardContextMenu { clientPos : ( Float, Float ), cardId : String }
     | TrackDraggable { dragType : String, clientPos : Coords, draggableId : String }
-    | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
+    | UpdateSettings Settings
+    | UpdateTasks { filePath : String, tasks : List { lineNumber : Int, originalLine : String, newText : String } }
 
 
 type ToElm
@@ -42,14 +37,14 @@ type ToElm
     | ConfigChanged TextDirection
     | EditCardDueDate String
     | ElementDragged DragData
-    | FileAdded MarkdownFile
-    | FileDeleted String
-    | FileRenamed ( String, String )
-    | FileUpdated MarkdownFile
     | FilterCandidates (List Filter)
-    | AllMarkdownLoaded
     | SettingsUpdated Settings
     | ShowBoard Int
+    | TaskItemsAdded TaskList
+    | TaskItemsDeleted (List String)
+    | TaskItemsDeletedAndAdded ( List String, List TaskItem )
+    | TaskItemsRefreshed TaskList
+    | TaskItemsUpdated (List ( String, TaskItem ))
 
 
 type alias Flags =
@@ -69,73 +64,6 @@ interop =
     , fromElm = fromElm
     , flags = flags
     }
-
-
-
--- ENCODERS
-
-
-addFilePreviewHoversEncoder : TsEncode.Encoder (List { filePath : String, id : String })
-addFilePreviewHoversEncoder =
-    TsEncode.list
-        (TsEncode.object
-            [ required "filePath" .filePath TsEncode.string
-            , required "id" .id TsEncode.string
-            ]
-        )
-
-
-deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
-deleteTaskEncoder =
-    TsEncode.object
-        [ required "filePath" .filePath TsEncode.string
-        , required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
-        ]
-
-
-displayTaskMarkdownEncoder : TsEncode.Encoder (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
-displayTaskMarkdownEncoder =
-    TsEncode.list
-        (TsEncode.object
-            [ required "filePath" .filePath TsEncode.string
-            , required "taskMarkdown" .taskMarkdown (TsEncode.list markdownListEncoder)
-            ]
-        )
-
-
-openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalText : String }
-openTaskSourceFileEncoder =
-    TsEncode.object
-        [ required "filePath" .filePath TsEncode.string
-        , required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
-        ]
-
-
-showCardContextMenuEncoder : TsEncode.Encoder { a | clientPos : ( Float, Float ), cardId : String }
-showCardContextMenuEncoder =
-    TsEncode.object
-        [ required "clientPos" .clientPos (TsEncode.tuple TsEncode.float TsEncode.float)
-        , required "cardId" .cardId TsEncode.string
-        ]
-
-
-trackDraggableEncoder : TsEncode.Encoder { dragType : String, clientPos : Coords, draggableId : String }
-trackDraggableEncoder =
-    TsEncode.object
-        [ required "dragType" .dragType TsEncode.string
-        , required "clientPos" .clientPos Coords.encoder
-        , required "draggableId" .draggableId TsEncode.string
-        ]
-
-
-updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalText : String, newText : String } }
-updateTasksEncoder =
-    TsEncode.object
-        [ required "filePath" .filePath TsEncode.string
-        , required "tasks" .tasks (TsEncode.list taskUpdatesEncoder)
-        ]
 
 
 
@@ -161,21 +89,21 @@ toElm =
         , DecodeHelpers.toElmVariant "configChanged" ConfigChanged configChangedDecoder
         , DecodeHelpers.toElmVariant "editCardDueDate" EditCardDueDate TsDecode.string
         , DecodeHelpers.toElmVariant "elementDragged" ElementDragged DragData.decoder
-        , DecodeHelpers.toElmVariant "fileAdded" FileAdded MarkdownFile.decoder
-        , DecodeHelpers.toElmVariant "fileDeleted" FileDeleted TsDecode.string
-        , DecodeHelpers.toElmVariant "fileRenamed" FileRenamed renamedFileDecoder
-        , DecodeHelpers.toElmVariant "fileUpdated" FileUpdated MarkdownFile.decoder
         , DecodeHelpers.toElmVariant "filterCandidates" FilterCandidates (TsDecode.list Filter.decoder)
-        , DecodeHelpers.toElmVariant "allMarkdownLoaded" (always AllMarkdownLoaded) (TsDecode.succeed ())
         , DecodeHelpers.toElmVariant "settingsUpdated" SettingsUpdated Settings.decoder
         , DecodeHelpers.toElmVariant "showBoard" ShowBoard TsDecode.int
+        , DecodeHelpers.toElmVariant "taskItemsAdded" TaskItemsAdded TaskList.decoder
+        , DecodeHelpers.toElmVariant "taskItemsDeleted" TaskItemsDeleted (TsDecode.list TsDecode.string)
+        , DecodeHelpers.toElmVariant "taskItemsDeletedAndAdded" TaskItemsDeletedAndAdded deleteAndAddDecoder
+        , DecodeHelpers.toElmVariant "taskItemsRefreshed" TaskItemsRefreshed TaskList.decoder
+        , DecodeHelpers.toElmVariant "taskItemsUpdated" TaskItemsUpdated updateDetailsDecoder
         ]
 
 
 fromElm : TsEncode.Encoder FromElm
 fromElm =
     TsEncode.union
-        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vShowCardContextMenu vTrackDraggable _ vUpdateTasks value ->
+        (\vAddFilePreviewHovers vCloseView vDeleteTask vDisplayTaskMarkdown vElmInitialized vOpenTaskSourceFile vRequestPaths vShowCardContextMenu vTrackDraggable vUpdateSettings vUpdateTasks value ->
             case value of
                 AddFilePreviewHovers info ->
                     vAddFilePreviewHovers info
@@ -183,17 +111,17 @@ fromElm =
                 CloseView ->
                     vCloseView
 
-                DeleteTask info ->
-                    vDeleteTask info
+                DeleteTask taskItemFields ->
+                    vDeleteTask taskItemFields
 
                 DisplayTaskMarkdown info ->
                     vDisplayTaskMarkdown info
 
-                ElmInitialized ->
-                    vElmInitialized
+                ElmInitialized uniqueId ->
+                    vElmInitialized uniqueId
 
-                OpenTaskSourceFile info ->
-                    vOpenTaskSourceFile info
+                OpenTaskSourceFile taskItemFields ->
+                    vOpenTaskSourceFile taskItemFields
 
                 RequestFilterCandidates ->
                     vRequestPaths
@@ -204,6 +132,9 @@ fromElm =
                 TrackDraggable info ->
                     vTrackDraggable info
 
+                UpdateSettings settings ->
+                    vUpdateSettings settings
+
                 UpdateTasks info ->
                     vUpdateTasks info
         )
@@ -211,7 +142,7 @@ fromElm =
         |> TsEncode.variant0 "closeView"
         |> TsEncode.variantTagged "deleteTask" deleteTaskEncoder
         |> TsEncode.variantTagged "displayTaskMarkdown" displayTaskMarkdownEncoder
-        |> TsEncode.variant0 "elmInitialized"
+        |> TsEncode.variantTagged "elmInitialized" TsEncode.string
         |> TsEncode.variantTagged "openTaskSourceFile" openTaskSourceFileEncoder
         |> TsEncode.variant0 "requestFilterCandidates"
         |> TsEncode.variantTagged "showCardContextMenu" showCardContextMenuEncoder
@@ -225,10 +156,44 @@ fromElm =
 -- HELPERS
 
 
+addFilePreviewHoversEncoder : TsEncode.Encoder (List { filePath : String, id : String })
+addFilePreviewHoversEncoder =
+    TsEncode.list
+        (TsEncode.object
+            [ required "filePath" .filePath TsEncode.string
+            , required "id" .id TsEncode.string
+            ]
+        )
+
+
 configChangedDecoder : TsDecode.Decoder TextDirection
 configChangedDecoder =
     TsDecode.succeed TextDirection.fromRtlFlag
         |> TsDecode.andMap (TsDecode.field "rightToLeft" TsDecode.bool)
+
+
+deleteAndAddDecoder : TsDecode.Decoder ( List String, List TaskItem )
+deleteAndAddDecoder =
+    TsDecode.tuple (TsDecode.list TsDecode.string) (TsDecode.list TaskItem.decoder)
+
+
+deleteTaskEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalLine : String }
+deleteTaskEncoder =
+    TsEncode.object
+        [ required "filePath" .filePath TsEncode.string
+        , required "lineNumber" .lineNumber TsEncode.int
+        , required "originalLine" .originalLine TsEncode.string
+        ]
+
+
+displayTaskMarkdownEncoder : TsEncode.Encoder (List { filePath : String, taskMarkdown : List { id : String, markdown : String } })
+displayTaskMarkdownEncoder =
+    TsEncode.list
+        (TsEncode.object
+            [ required "filePath" .filePath TsEncode.string
+            , required "taskMarkdown" .taskMarkdown (TsEncode.list markdownListEncoder)
+            ]
+        )
 
 
 markdownListEncoder : TsEncode.Encoder { id : String, markdown : String }
@@ -239,17 +204,49 @@ markdownListEncoder =
         ]
 
 
-renamedFileDecoder : TsDecode.Decoder ( String, String )
-renamedFileDecoder =
-    TsDecode.succeed Tuple.pair
-        |> TsDecode.andMap (TsDecode.field "oldPath" TsDecode.string)
-        |> TsDecode.andMap (TsDecode.field "newPath" TsDecode.string)
+openTaskSourceFileEncoder : TsEncode.Encoder { a | filePath : String, lineNumber : Int, originalLine : String }
+openTaskSourceFileEncoder =
+    TsEncode.object
+        [ required "filePath" .filePath TsEncode.string
+        , required "lineNumber" .lineNumber TsEncode.int
+        , required "originalLine" .originalLine TsEncode.string
+        ]
 
 
-taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalText : String, newText : String }
+showCardContextMenuEncoder : TsEncode.Encoder { a | clientPos : ( Float, Float ), cardId : String }
+showCardContextMenuEncoder =
+    TsEncode.object
+        [ required "clientPos" .clientPos (TsEncode.tuple TsEncode.float TsEncode.float)
+        , required "cardId" .cardId TsEncode.string
+        ]
+
+
+taskUpdatesEncoder : TsEncode.Encoder { lineNumber : Int, originalLine : String, newText : String }
 taskUpdatesEncoder =
     TsEncode.object
         [ required "lineNumber" .lineNumber TsEncode.int
-        , required "originalText" .originalText TsEncode.string
+        , required "originalLine" .originalLine TsEncode.string
         , required "newText" .newText TsEncode.string
+        ]
+
+
+updateDetailsDecoder : TsDecode.Decoder (List ( String, TaskItem ))
+updateDetailsDecoder =
+    TsDecode.list <| TsDecode.tuple TsDecode.string TaskItem.decoder
+
+
+trackDraggableEncoder : TsEncode.Encoder { dragType : String, clientPos : Coords, draggableId : String }
+trackDraggableEncoder =
+    TsEncode.object
+        [ required "dragType" .dragType TsEncode.string
+        , required "clientPos" .clientPos Coords.encoder
+        , required "draggableId" .draggableId TsEncode.string
+        ]
+
+
+updateTasksEncoder : TsEncode.Encoder { filePath : String, tasks : List { lineNumber : Int, originalLine : String, newText : String } }
+updateTasksEncoder =
+    TsEncode.object
+        [ required "filePath" .filePath TsEncode.string
+        , required "tasks" .tasks (TsEncode.list taskUpdatesEncoder)
         ]

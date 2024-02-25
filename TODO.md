@@ -1,8 +1,45 @@
+- column sorting
+    - title, due date, path
+    - do I want to introduce priority at this point?
+
+STEP 3
+------
+- V: maintains (via W) file(s) to hold the order of cards
+     W needs to maintain the files as it needs keeping up to date
+     irrespcetive of whether the view is active
+     V needs to read the file at startup so it puts cards in the right places
+     if user DnDs then V sends postion changes to W which writes them to the file
+     hmmmmmmm
+
+
+- compare somne different forms of taskItem serialisation
+    - basic TsEncode/Decode
+    - can I make the taskItem encoding a bit more compact -> specially encoding Union types!
+    - original strings and parse to decode
+- TaskItemFields -> make alphabetical (contents is at the end atm)
+- perhaps when I am removing taskItems from the view I could request a reload of all if
+  the taskItem I am deleting doesn't exist
+- howabout when adding taskItems communicating the expected total and if this doesn't match
+  what the view has it can request a reload.
+- do I need the same states in the view now that I am not loading markdown?
+- typescipt tidying -> am I using async only where I need to?
+
+- can I make it so I load any settings at startup but save the latest version
+  when I get them back from elm?
+- do I want to deal with Settings (as in ensure they are the latest version) in the worker?
+- bug: if a file is deleted and it includes something which is shown in the completed
+  column then a blank item is added at the end as I do not render the markdown for
+  the newly added card.
+- I get an error in the js console if I click on the command icon when the
+  cardboard view is visible
+
 ---
 - touch events - iPad ??
 - show errors on settings pane ??
 
 # Cleanups
+- do I need TaskItem.originalLine as it's the first line of originalBlock
+  would need a bit of work as there is no originalBlock for subtasks atm
 - simplify parsing as per typing tutor
 - replace regex stuff in TaskItem.toToggledSting with some form of token parsing
 - if something is on a board because of a subtask tag and that line also has a due date on it, should I use
@@ -62,6 +99,7 @@
 - undo buffer
   - for toggling completion
   - for deletion
+  - see: https://erkal.github.io/UndoRedo/index.html
 - could/should I use some taskpaper tags:
     @defer(date) - defer until date, e.g. 2016-04-19 5pm or next Thursday -3d
     @estimate(time span) - time estimate, e.g. 2h for 2 hours or 3w for 3 weeks.

@@ -1,6 +1,8 @@
 module Tag exposing
     ( Tag
     , containsInvalidCharacters
+    , decoder
+    , encoder
     , equals
     , matches
     , parser
@@ -10,6 +12,8 @@ module Tag exposing
 
 import Parser as P exposing ((|.), (|=), Parser)
 import ParserHelper
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 import Unicode
 
 
@@ -33,6 +37,20 @@ parser =
                 |> P.andThen (ParserHelper.checkIfEmpty "Tag.parser")
                 |> P.andThen (ParserHelper.checkIsNotNumeric "Tag.parser")
            )
+
+
+
+-- SERIALISE
+
+
+decoder : TsDecode.Decoder Tag
+decoder =
+    TsDecode.map Tag TsDecode.string
+
+
+encoder : TsEncode.Encoder Tag
+encoder =
+    TsEncode.map toString TsEncode.string
 
 
 

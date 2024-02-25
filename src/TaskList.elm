@@ -1,32 +1,38 @@
 module TaskList exposing
     ( TaskList
+    , TaskListDiff
     , add
     , append
     , concat
     , containsTask
+    , decoder
     , empty
+    , encoder
     , filter
     , foldl
+    , fromList
     , fromMarkdown
     , map
-    , parser
-    , removeForFile
-    , replaceForFile
+    , markdownDiffs
+    , replaceTaskItems
     , taskContainingId
     , taskFromId
     , taskIds
     , taskTitles
-    , tasks
+    , toList
     , topLevelTasks
     )
 
 import DataviewTaskCompletion exposing (DataviewTaskCompletion)
+import Dict exposing (Dict)
 import List.Extra as LE
 import MarkdownFile exposing (MarkdownFile)
 import Parser as P exposing (Parser)
 import ParserHelper exposing (anyLineParser)
 import TagList exposing (TagList)
 import TaskItem exposing (TaskItem)
+import TsJson.Decode as TsDecode
+import TsJson.Encode as TsEncode
 
 
 
@@ -37,6 +43,12 @@ type TaskList
     = TaskList (List TaskItem)
 
 
+type alias TaskListDiff =
+    { toAdd : List TaskItem
+    , toDelete : List TaskItem
+    }
+
+
 
 -- CREATE
 
@@ -44,6 +56,11 @@ type TaskList
 empty : TaskList
 empty =
     TaskList []
+
+
+fromList : List TaskItem -> TaskList
+fromList =
+    TaskList
 
 
 fromMarkdown : DataviewTaskCompletion -> MarkdownFile -> TaskList
@@ -66,13 +83,17 @@ add item (TaskList list) =
 
 
 
--- PARSE
+-- SERIALIZE
 
 
-parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
-parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
-    P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
-        |> P.map (\ts -> TaskList ts)
+decoder : TsDecode.Decoder TaskList
+decoder =
+    TsDecode.map TaskList (TsDecode.list TaskItem.decoder)
+
+
+encoder : TsEncode.Encoder TaskList
+encoder =
+    TsEncode.map topLevelTasks (TsEncode.list TaskItem.encoder)
 
 
 
@@ -108,14 +129,20 @@ map fn =
     TaskList << List.map fn << topLevelTasks
 
 
-replaceForFile : String -> TaskList -> TaskList -> TaskList
-replaceForFile filePath updatedList =
-    append updatedList << removeForFile filePath
+replaceTaskItems : List ( String, TaskItem ) -> TaskList -> TaskList
+replaceTaskItems replacementDetails taskList =
+    let
+        idsToRemove : List String
+        idsToRemove =
+            List.map Tuple.first replacementDetails
 
-
-removeForFile : String -> TaskList -> TaskList
-removeForFile filePath =
-    TaskList << itemsNotFromFile filePath << topLevelTasks
+        taskListToAdd : TaskList
+        taskListToAdd =
+            TaskList <| List.map Tuple.second replacementDetails
+    in
+    taskList
+        |> filter (\i -> not <| List.member (TaskItem.id i) idsToRemove)
+        |> append taskListToAdd
 
 
 
@@ -127,6 +154,38 @@ containsTask taskId taskList =
     taskList
         |> topLevelTasks
         |> List.any (\ti -> TaskItem.id ti == taskId)
+
+
+markdownDiffs : DataviewTaskCompletion -> MarkdownFile -> TaskList -> TaskListDiff
+markdownDiffs dataviewTaskCompletion updatedMarkdown taskList =
+    let
+        updatedTasks : Dict String TaskItem
+        updatedTasks =
+            fromMarkdown dataviewTaskCompletion updatedMarkdown
+                |> topLevelTasks
+                |> List.map (\i -> ( TaskItem.id i ++ ":" ++ TaskItem.originalBlock i, i ))
+                |> Dict.fromList
+
+        existingTasks : Dict String TaskItem
+        existingTasks =
+            filter (TaskItem.isFromFile updatedMarkdown.filePath) taskList
+                |> topLevelTasks
+                |> List.map (\i -> ( TaskItem.id i ++ ":" ++ TaskItem.originalBlock i, i ))
+                |> Dict.fromList
+
+        toAdd : List TaskItem
+        toAdd =
+            Dict.diff updatedTasks existingTasks
+                |> Dict.toList
+                |> List.map Tuple.second
+
+        toRemove : List TaskItem
+        toRemove =
+            Dict.diff existingTasks updatedTasks
+                |> Dict.toList
+                |> List.map Tuple.second
+    in
+    TaskListDiff toAdd toRemove
 
 
 taskTitles : TaskList -> List String
@@ -141,16 +200,16 @@ taskIds =
 
 taskContainingId : String -> TaskList -> Maybe TaskItem
 taskContainingId id =
-    LE.find (TaskItem.containsId id) << tasks
+    LE.find (TaskItem.containsId id) << toList
 
 
 taskFromId : String -> TaskList -> Maybe TaskItem
 taskFromId id =
-    LE.find (\i -> TaskItem.id i == id) << tasks
+    LE.find (\i -> TaskItem.id i == id) << toList
 
 
-tasks : TaskList -> List TaskItem
-tasks =
+toList : TaskList -> List TaskItem
+toList =
     List.concatMap (\t -> t :: TaskItem.descendantTasks t) << topLevelTasks
 
 
@@ -163,9 +222,10 @@ topLevelTasks (TaskList taskList) =
 -- PRIVATE
 
 
-itemsNotFromFile : String -> List TaskItem -> List TaskItem
-itemsNotFromFile pathToFile =
-    List.filter (\t -> not (TaskItem.isFromFile pathToFile t))
+parser : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> Parser TaskList
+parser dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset =
+    P.loop [] (taskItemsHelp dataviewTaskCompletion filePath fileDate frontMatterTags bodyOffset)
+        |> P.map (\ts -> TaskList ts)
 
 
 taskItemsHelp : DataviewTaskCompletion -> String -> Maybe String -> TagList -> Int -> List TaskItem -> Parser (P.Step (List TaskItem) (List TaskItem))

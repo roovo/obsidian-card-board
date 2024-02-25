@@ -7,3 +7,4 @@ index.html
 main.js
 node_modules/
 src/Main/index.d.ts
+src/Worker/index.d.ts

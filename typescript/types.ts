@@ -1,5 +1,59 @@
 export type CardBoardPluginSettings = CardBoardPluginSettingsPreV11 | CardBoardPluginSettingsPostV11;
 
+type AutoCompleteTag =
+  { tag : "FalseSpecified" | "NotSpecifed" | "TrueSpecified" }
+
+type AutoComplete =
+  { tag : "AutoCompleteTag", data : AutoCompleteTag }
+
+type CompletionTag =
+  { tag : "Completed" } |
+  { tag : "CompletedAt", data : number } |
+  { tag : "Incomplete" }
+
+type Completion =
+  { tag : "CompletedTag", data : number }
+
+type DueTag =
+  { tag : "NotSet" } |
+  { tag : "SetToDate", date : number } |
+  { tag : "SetToNone" }
+
+type Due = {
+  tag : "DueTag",
+  data : DueTag
+}
+
+type Tag = {
+  tag : "ObsidianTag",
+  data : string
+}
+
+type Word =
+  { tag : "Word", data : string }
+
+type Content = AutoComplete | Completion | Due | Tag | Word;
+
+export type TaskItemFields = {
+  autoComplete : AutoCompleteTag;
+  completion : CompletionTag;
+  contents : Content[];
+  dueFile : number | null;
+  dueTag : DueTag;
+  filePath : string;
+  lineNumber : number;
+  notes : string;
+  originalBlock : string;
+  originalLine : string;
+  tags : string[];
+  title : string[];
+}
+
+export type TaskItem = {
+  fields : TaskItemFields;
+  subFields : TaskItemFields[];
+}
+
 export type CardBoardPluginSettingsPostV11 = {
   data : {
     boardConfigs : ({

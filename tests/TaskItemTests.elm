@@ -4,14 +4,16 @@ import DataviewTaskCompletion
 import Date
 import Expect
 import Filter
+import Helpers.DecodeHelpers as DecodeTestHelpers
 import Helpers.FilterHelpers as FilterHelpers
 import Helpers.TaskHelpers as TaskHelpers
 import Helpers.TaskItemHelpers as TaskItemHelpers
 import Parser exposing ((|=))
 import TagList
-import TaskItem exposing (Completion(..))
+import TaskItem exposing (Completion(..), TaskItem)
 import Test exposing (..)
 import Time
+import TsJson.Encode as TsEncode
 
 
 suite : Test
@@ -19,11 +21,14 @@ suite =
     concat
         [ allSubtasksWithMatchingTagCompleted
         , blockLink
+        , compare
         , completedPosix
         , completion
         , containsId
+        , decoder
         , descendantTasks
         , due
+        , encoder
         , filePath
         , hasTags
         , hasThisTagBasic
@@ -37,7 +42,8 @@ suite =
         , isDated
         , lineNumber
         , notes
-        , originalText
+        , originalBlock
+        , originalLine
         , parsing
         , removeMatchingTags
         , removeTags
@@ -120,6 +126,212 @@ blockLink =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo ^bar baz")
+        ]
+
+
+compare : Test
+compare =
+    describe "compare"
+        [ test "returns Identical for two basic taskItems" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Identical for two taskItems with notes" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Identical for two taskItems with notes and subtasks" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Identical
+        , test "returns Updated if a subtask has been added" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if a subtask and notes have been added" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the subtask and notes have been edited" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the subtask and notes have been deleted" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if tags have been added" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo #bar @due(2021-01-01)"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Updated if the title 'is similar'" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] this is something I need to do"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Updated
+        , test "returns Moved if a basic task block is the same but it is in a different location" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns Moved if a task block with notes and subtasks is the same but it is in a different location" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns Moved if a task block with notes is the same but it is in a different location" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Moved
+        , test "returns MovedAndUpdated if a subtask has been added and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if a subtask and notes have been added and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some notes\n - [ ] bar\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if the subtask and notes have been edited and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some notes\n - [ ] bar\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if the subtask and notes have been deleted and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] foo\n some edited notes\n - [ ] bar-foo\n"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns MovedAndUpdated if tags have been added and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] foo #bar @due(2021-01-01)"
+                in
+                taskItemPlus "a" 0 "- [ ] foo"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "returns Updated if the title 'is similar' and it has been moved" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] this is something xxxx"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.MovedAndUpdated
+        , test "is more fussy about similarity when moved and edited than when just edited" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 1 "- [ ] this is something I need to do"
+                in
+                taskItemPlus "a" 0 "- [ ] this is something"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Different
+        , test "returns Different if the top level title is different" <|
+            \() ->
+                let
+                    other : TaskItem
+                    other =
+                        taskItemPlus "a" 0 "- [ ] foo"
+                in
+                taskItemPlus "a" 0 "- [ ] bar"
+                    |> TaskItem.compare other
+                    |> Expect.equal TaskItem.Different
         ]
 
 
@@ -315,6 +527,47 @@ containsId =
         ]
 
 
+decoder : Test
+decoder =
+    describe "decoder"
+        [ test "decodes a basic TaskItem" <|
+            \() ->
+                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}"""
+                    |> DecodeTestHelpers.runDecoder TaskItem.decoder
+                    |> .decoded
+                    |> Result.map TaskItem.title
+                    |> Expect.equal (Ok <| "foo")
+        , test "decodes a well decorated TaskItem" <|
+            \() ->
+                let
+                    taskItem : TaskItem
+                    taskItem =
+                        "- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]"
+                            |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                            |> Result.withDefault TaskItem.dummy
+                in
+                """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}"""
+                    |> DecodeTestHelpers.runDecoder TaskItem.decoder
+                    |> .decoded
+                    |> Result.toMaybe
+                    |> Expect.equal (Just taskItem)
+        , test "decodes a TaskItem with subtasks" <|
+            \() ->
+                let
+                    taskItem : TaskItem
+                    taskItem =
+                        "- [ ] foo\n  - [ ] bar"
+                            |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                            |> Result.withDefault TaskItem.dummy
+                in
+                """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo\\n  - [ ] bar","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalBlock":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}"""
+                    |> DecodeTestHelpers.runDecoder TaskItem.decoder
+                    |> .decoded
+                    |> Result.toMaybe
+                    |> Expect.equal (Just taskItem)
+        ]
+
+
 descendantTasks : Test
 descendantTasks =
     describe "descendantTasks"
@@ -496,6 +749,33 @@ due =
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.title
                     |> Expect.equal (Ok "foo @due(2020-51-01)x bar")
+        ]
+
+
+encoder : Test
+encoder =
+    describe "encoder"
+        [ test "encodes a basic TaskItem" <|
+            \() ->
+                "- [ ] foo"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[]}""")
+        , test "encodes a well decorated TaskItem" <|
+            \() ->
+                "- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"TrueSpecified"},"completion":{"tag":"Completed"},"contents":[{"tag":"DueTag","data":{"tag":"SetToDate","date":738886}},{"tag":"AutoCompleteTag","data":{"tag":"TrueSpecified"}},{"tag":"ObsidianTag","data":"bar"},{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"SetToDate","date":738886},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","originalLine":"- [x] foo #bar @autocomplete(true) [due:: 2024-01-01]","tags":["bar"],"title":["foo"]},"subFields":[]}""")
+        , test "encodes a TaskItem with subtasks" <|
+            \() ->
+                "- [ ] foo\n  - [ ] bar"
+                    |> Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion "" Nothing TagList.empty 0)
+                    |> Result.map (TsEncode.runExample TaskItem.encoder)
+                    |> Result.map .output
+                    |> Expect.equal (Ok """{"fields":{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"foo"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":1,"notes":"","originalBlock":"- [ ] foo\\n  - [ ] bar","originalLine":"- [ ] foo","tags":[],"title":["foo"]},"subFields":[{"autoComplete":{"tag":"NotSpecifed"},"completion":{"tag":"Incomplete"},"contents":[{"tag":"Word","data":"bar"}],"dueFile":null,"dueTag":{"tag":"NotSet"},"filePath":"","lineNumber":2,"notes":"","originalBlock":"","originalLine":"  - [ ] bar","tags":[],"title":["bar"]}]}""")
         ]
 
 
@@ -974,27 +1254,51 @@ notes =
         ]
 
 
-originalText : Test
-originalText =
-    describe "originalText"
+originalBlock : Test
+originalBlock =
+    describe "originalBlock"
+        [ test "retains the original line text for a single line task" <|
+            \() ->
+                "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title "
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title")
+        , test "retains the original line including any indented notes" <|
+            \() ->
+                "- [ ] foo\n some notes\n"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [ ] foo\n some notes")
+        , test "retains the original line including any subtasks" <|
+            \() ->
+                "- [ ] foo\n some notes\n  - [ ] a subtask\n\n  more notes\n  - [ ]invalid subtask\n"
+                    |> Parser.run TaskItemHelpers.basicParser
+                    |> Result.map TaskItem.originalBlock
+                    |> Expect.equal (Ok "- [ ] foo\n some notes\n  - [ ] a subtask\n\n  more notes\n  - [ ]invalid subtask")
+        ]
+
+
+originalLine : Test
+originalLine =
+    describe "originalLine"
         [ test "retains the original line text" <|
             \() ->
                 "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title "
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.originalText
+                    |> Result.map TaskItem.originalLine
                     |> Expect.equal (Ok "- [X]  the @due(2019-12-30) task @completed(2020-01-01) title ")
         , test "retains the original line text even with a '*' list marker" <|
             \() ->
                 "* [X]  the @due(2019-12-30) task @completed(2020-01-01) title "
                     |> Parser.run TaskItemHelpers.basicParser
-                    |> Result.map TaskItem.originalText
+                    |> Result.map TaskItem.originalLine
                     |> Expect.equal (Ok "* [X]  the @due(2019-12-30) task @completed(2020-01-01) title ")
         , test "retains leading whitepace for the original line text for descendantTasks" <|
             \() ->
                 "- [X] task\n   \t - [ ] sub-task"
                     |> Parser.run TaskItemHelpers.basicParser
                     |> Result.map TaskItem.descendantTasks
-                    |> Result.map (List.map TaskItem.originalText)
+                    |> Result.map (List.map TaskItem.originalLine)
                     |> Expect.equal (Ok [ "   \t - [ ] sub-task" ])
         ]
 
@@ -1399,3 +1703,13 @@ updateFilePath =
                     |> TaskItem.filePath
                     |> Expect.equal "old/path"
         ]
+
+
+
+-- HELPERS
+
+
+taskItemPlus : String -> Int -> String -> TaskItem
+taskItemPlus file offset markdown =
+    Parser.run (TaskItem.parser DataviewTaskCompletion.NoCompletion file Nothing TagList.empty offset) markdown
+        |> Result.withDefault TaskItem.dummy
