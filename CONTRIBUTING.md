@@ -13,6 +13,7 @@ npm run dev             # run dev build
 ```
 
 ## Release Checklist
+- run ts generators
 - elm-review
 - elm-test
 - elm-coverage
