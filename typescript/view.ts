@@ -268,7 +268,7 @@ export class CardBoardView extends ItemView {
   }
 
   async handleElmInitialized(uniqueId : string) {
-    console.log("view: fromView -> elmInitialised");
+    console.debug("CardBoard: [view] fromView -> elmInitialised");
 
     this.plugin.viewInitialized();
   }
@@ -499,7 +499,7 @@ export class CardBoardView extends ItemView {
   }
 
   taskItemsRefreshed(taskItems: TaskItem[]) {
-    console.log("view: toView <- taskItemsRefreshed: " + taskItems.length);
+    console.debug("CardBoard: [view] toView <- taskItemsRefreshed: " + taskItems.length);
 
     this.elm.ports.interopToElm.send({
       tag: "taskItemsRefreshed",
@@ -515,7 +515,7 @@ export class CardBoardView extends ItemView {
   }
 
   taskItemsDeleted(taskIds: string[]) {
-    console.log("view: toView <- taskItemsDeleted: " + taskIds.length);
+    console.debug("CardBoard: [view] toView <- taskItemsDeleted: " + taskIds.length);
 
     this.elm.ports.interopToElm.send({
       tag: "taskItemsDeleted",
@@ -524,7 +524,7 @@ export class CardBoardView extends ItemView {
   }
 
   taskItemsDeletedAndAdded(toDeleteAndAdd : [string[], TaskItem[]]) {
-    console.log("view: toView <- taskItemsDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
+    console.debug("CardBoard: [view] toView <- taskItemsDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
 
     this.elm.ports.interopToElm.send({
       tag: "taskItemsDeletedAndAdded",
@@ -533,7 +533,7 @@ export class CardBoardView extends ItemView {
   }
 
   taskItemsUpdated(updateDetails : [string, TaskItem][]) {
-    console.log("view: toView <- taskItemsUpdated: " + updateDetails.length);
+    console.debug("CardBoard: [view] toView <- taskItemsUpdated: " + updateDetails.length);
 
     this.elm.ports.interopToElm.send({
       tag: "taskItemsUpdated",

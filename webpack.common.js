@@ -16,17 +16,6 @@ module.exports = {
         test: /\.ts$/,
         use: 'ts-loader',
       },
-      {
-        test: [/\.elm$/],
-        exclude: [/elm-stuff/, /node_modules/],
-          use: [
-            { loader: "elm-reloader" },
-            {
-              loader: "elm-webpack-loader",
-              options: {}
-            }
-          ]
-      },
     ]
   },
   externals: {

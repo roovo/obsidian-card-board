@@ -23,7 +23,7 @@ export default class CardBoardPlugin extends Plugin {
   settings:           CardBoardPluginSettings;
 
   async onload() {
-    console.log('loading CardBoard plugin');
+    console.log('CardBoard: loading plugin');
 
     await this.loadSettings();
 
@@ -36,7 +36,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async onLayoutReady() {
-    console.log("main: onLayoutReady");
+    console.debug("Cardboard: [main] onLayoutReady");
 
     const globalSettings : any = this.settings?.data.globalSettings;
 
@@ -57,7 +57,7 @@ export default class CardBoardPlugin extends Plugin {
       }
     };
 
-    console.log("main: Elm.Worker.init");
+    console.debug("CardBoard: [main] Elm.Worker.init");
     // @ts-ignore
     this.worker = Elm.Worker.init({
       flags: workerFlags
@@ -117,19 +117,19 @@ export default class CardBoardPlugin extends Plugin {
       });
     }
 
-    console.log("main: toWorker <- allMarkdownLoaded");
+    console.debug("CardBoard: [main] toWorker <- allMarkdownLoaded");
     this.worker.ports.interopToElm.send({
       tag: "allMarkdownLoaded",
       data: { }
     });
 
-    console.log("CardBoard: " + markdownFiles.length + " markdown files in vault.");
+    console.debug("CardBoard: " + markdownFiles.length + " markdown files in vault.");
     console.log("CardBoard: " + filteredFiles.length + " files scanned for tasks.");
   }
 
 
   async handleAllTaskItems(taskItems: TaskItem[]) {
-    console.log("main: fromWorker -> allTasksItems");
+    console.debug("CardBoard: [main] fromWorker -> allTasksItems");
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
@@ -141,7 +141,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleAllTasksLoaded() {
-    console.log("main: fromWorker -> allTasksLoaded");
+    console.debug("CardBoard: [main] fromWorker -> allTasksLoaded");
 
     addIcon("card-board",
       '<rect x="2" y="2" width="96" height="96" rx="12" ry="12" fill="none" stroke="currentColor" stroke-width="5"></rect>' +
@@ -156,7 +156,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async viewInitialized() {
-    console.log("main: toWorker <- viewInitialized");
+    console.debug("CardBoard: [main] toWorker <- viewInitialized");
     this.worker?.ports.interopToElm.send({
       tag: "viewInitialized"
     });
@@ -174,7 +174,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleTasksDeleted(taskIds : string[]) {
-    console.log("main: fromWorker -> tasksDeleted");
+    console.debug("CardBoard: [main] fromWorker -> tasksDeleted");
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
@@ -186,7 +186,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleTasksDeletedAndAdded(toDeleteAndAdd : [string[], TaskItem[]]) {
-    console.log("main: fromWorker -> tasksDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
+    console.debug("CardBoard: [main] fromWorker -> tasksDeletedAndAdded: (" + toDeleteAndAdd[0].length + ", " + toDeleteAndAdd[1].length + ")");
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
@@ -198,7 +198,7 @@ export default class CardBoardPlugin extends Plugin {
   }
 
   async handleTasksUpdated(updateDetails : [string, TaskItem][]) {
-    console.log("main: fromWorker -> tasksUpdated: " + updateDetails.length);
+    console.debug("CardBoard: [main] fromWorker -> tasksUpdated: " + updateDetails.length);
 
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_CARD_BOARD);
 
