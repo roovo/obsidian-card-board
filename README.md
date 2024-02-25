@@ -15,10 +15,9 @@ An [Obsidian](https://obsidian.md/) plugin to make working with tasks a pleasure
   - Tag based (use `#tags` to define columns).
 
 ## New
-- Due dates can be edited on the board - right click on a card
-  to bring up the context menu.  See the [Editing due date section](#editing-due-date).
-
-
+- No new features: I have split out some of the internal workings in preparation
+  for drag and drop - hopefully managed this without introducing any bugs or
+  performance issues.
 
 ## Installation
 Please install via the regular Community Plugins setting tab within Obsidian.
