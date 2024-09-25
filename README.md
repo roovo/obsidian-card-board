@@ -317,7 +317,7 @@ The other types of tag based columns are:
 You cannot have more that one of each of these on a board.
 
 ### Completed column
-You can include a complted column on your board. This will only include
+You can include a completed column on your board. This will only include
 completed tasks that would have appeared in one of the other columns had it not been
 completed; i.e. it only contains tasks that _belong_ on the board.
 
